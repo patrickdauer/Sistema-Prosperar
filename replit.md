@@ -74,8 +74,10 @@ The system uses a `business_registrations` table with:
 - `GET /api/business-registration/:id/pdf` - Generate and download PDF
 
 ### Frontend Pages
-- **Business Registration Form**: Multi-partner form with file uploads and theme toggle
-- **Dashboard**: Admin interface for viewing and managing submissions
+- **Business Registration Form (/)**: Public form for clients to submit registration data
+- **Dashboard (/dashboard)**: Admin interface for viewing submissions
+- **Team Access (/equipe)**: Login page for internal team members
+- **Internal Dashboard (/interno)**: Protected Kanban system for authenticated users
 - **404 Page**: Custom not found page
 
 ## Data Flow
