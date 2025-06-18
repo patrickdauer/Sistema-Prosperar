@@ -13,7 +13,12 @@ import {
   FileText,
   LogOut,
   User,
-  Filter
+  Filter,
+  Trash2,
+  Edit,
+  Settings,
+  UserPlus,
+  Key
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -21,8 +26,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 
 interface Task {
   id: number;
@@ -59,6 +68,10 @@ export default function InternalDashboard() {
   const queryClient = useQueryClient();
   const [selectedRegistration, setSelectedRegistration] = useState<BusinessRegistration | null>(null);
   const [departmentFilter, setDepartmentFilter] = useState('all');
+  const [editingCompany, setEditingCompany] = useState<BusinessRegistration | null>(null);
+  const [userManagementOpen, setUserManagementOpen] = useState(false);
+  const [newUserData, setNewUserData] = useState({ username: '', password: '', name: '', email: '', role: 'user', department: '' });
+  const [changePasswordData, setChangePasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
 
   const { data: registrations, isLoading } = useQuery({
     queryKey: ['/api/internal/registrations'],
@@ -96,6 +109,125 @@ export default function InternalDashboard() {
       toast({
         title: "Erro",
         description: error.message || "Falha ao atualizar tarefa.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Mutação para deletar empresa
+  const deleteCompanyMutation = useMutation({
+    mutationFn: async (companyId: number) => {
+      const response = await fetch(`/api/internal/registration/${companyId}`, {
+        method: 'DELETE',
+        headers: { 
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (!response.ok) throw new Error('Failed to delete company');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/internal/registrations'] });
+      toast({
+        title: "Empresa deletada",
+        description: "A empresa foi removida com sucesso.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erro",
+        description: error.message || "Falha ao deletar empresa.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Mutação para editar empresa
+  const editCompanyMutation = useMutation({
+    mutationFn: async (companyData: BusinessRegistration) => {
+      const response = await fetch(`/api/internal/registration/${companyData.id}`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(companyData)
+      });
+      if (!response.ok) throw new Error('Failed to update company');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/internal/registrations'] });
+      setEditingCompany(null);
+      toast({
+        title: "Empresa atualizada",
+        description: "Os dados da empresa foram atualizados com sucesso.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erro",
+        description: error.message || "Falha ao atualizar empresa.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Mutação para criar usuário
+  const createUserMutation = useMutation({
+    mutationFn: async (userData: any) => {
+      const response = await fetch('/api/internal/users', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(userData)
+      });
+      if (!response.ok) throw new Error('Failed to create user');
+      return response.json();
+    },
+    onSuccess: () => {
+      setNewUserData({ username: '', password: '', name: '', email: '', role: 'user', department: '' });
+      toast({
+        title: "Usuário criado",
+        description: "Novo usuário foi criado com sucesso.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erro",
+        description: error.message || "Falha ao criar usuário.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Mutação para alterar senha
+  const changePasswordMutation = useMutation({
+    mutationFn: async (passwordData: any) => {
+      const response = await fetch('/api/internal/change-password', {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(passwordData)
+      });
+      if (!response.ok) throw new Error('Failed to change password');
+      return response.json();
+    },
+    onSuccess: () => {
+      setChangePasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      toast({
+        title: "Senha alterada",
+        description: "Sua senha foi alterada com sucesso.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erro",
+        description: error.message || "Falha ao alterar senha.",
         variant: "destructive",
       });
     }
@@ -157,8 +289,13 @@ export default function InternalDashboard() {
 
   const filteredRegistrations = registrations?.filter((reg: BusinessRegistration) => {
     if (departmentFilter === 'all') return true;
-    return reg.tasks.some(task => task.department === departmentFilter);
+    // Filtrar por departamento - verificar se a empresa tem tarefas do departamento selecionado
+    return reg.tasks && reg.tasks.some(task => task.department === departmentFilter);
   }) || [];
+
+  console.log('Department filter:', departmentFilter);
+  console.log('Total registrations:', registrations?.length);
+  console.log('Filtered registrations:', filteredRegistrations.length);
 
   if (isLoading) {
     return (
@@ -184,6 +321,14 @@ export default function InternalDashboard() {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setUserManagementOpen(true)}
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Gestão de Usuários
+              </Button>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <User className="h-4 w-4" />
                 <span>{user?.name}</span>
@@ -292,13 +437,14 @@ export default function InternalDashboard() {
                     <p className="text-sm text-muted-foreground">
                       Recebido em {format(new Date(registration.createdAt), 'dd/MM/yyyy', { locale: ptBR })}
                     </p>
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="outline" size="sm" className="mt-2">
-                          <FileText className="h-4 w-4 mr-2" />
-                          Ver Detalhes
-                        </Button>
-                      </DialogTrigger>
+                    <div className="flex gap-2 mt-2">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <FileText className="h-4 w-4 mr-2" />
+                            Ver Detalhes
+                          </Button>
+                        </DialogTrigger>
                       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                           <DialogTitle className="text-xl">{registration.razaoSocial} - Dados Completos</DialogTitle>
@@ -400,6 +546,28 @@ export default function InternalDashboard() {
                         </div>
                       </DialogContent>
                     </Dialog>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setEditingCompany(registration)}
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Editar
+                    </Button>
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      onClick={() => {
+                        if (confirm('Tem certeza que deseja deletar esta empresa?')) {
+                          deleteCompanyMutation.mutate(registration.id);
+                        }
+                      }}
+                      disabled={deleteCompanyMutation.isPending}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Deletar
+                    </Button>
+                    </div>
                   </div>
                 </div>
               </CardHeader>
