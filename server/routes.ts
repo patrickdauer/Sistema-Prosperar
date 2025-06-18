@@ -246,11 +246,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Business registration submission endpoint
   app.post("/api/business-registration", upload.any(), async (req, res) => {
     try {
+      console.log('Received form data:', req.body.data);
+      
       // Parse form data
       const formData = JSON.parse(req.body.data);
+      console.log('Parsed form data:', formData);
       
-      // Validate form data
-      const validatedData = insertBusinessRegistrationSchema.parse(formData);
+      // Create a more flexible validation schema for this endpoint
+      const flexibleSchema = z.object({
+        razaoSocial: z.string().min(1),
+        nomeFantasia: z.string().min(1),
+        endereco: z.string().min(1),
+        inscricaoImobiliaria: z.string().min(1),
+        metragem: z.number(),
+        telefoneEmpresa: z.string().min(1),
+        emailEmpresa: z.string().email(),
+        capitalSocial: z.string().min(1),
+        atividadePrincipal: z.string().min(1),
+        atividadesSecundarias: z.string().optional(),
+        atividadesSugeridas: z.array(z.string()).optional(),
+        socios: z.array(z.any()).min(1)
+      });
+      
+      // Validate form data with flexible schema
+      const validatedData = flexibleSchema.parse(formData);
       
       // Handle file uploads for partners (In a real app, this would upload to Google Drive)
       const files = req.files as Express.Multer.File[];
@@ -382,15 +401,21 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
       console.error('Registration error:', error);
       
       if (error instanceof z.ZodError) {
+        console.log('Validation errors:', error.errors);
         res.status(400).json({ 
           success: false, 
-          message: "Dados inválidos",
+          message: "Dados inválidos: " + error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', '),
           errors: error.errors 
+        });
+      } else if (error instanceof SyntaxError) {
+        res.status(400).json({ 
+          success: false, 
+          message: "Erro ao processar dados do formulário" 
         });
       } else {
         res.status(500).json({ 
           success: false, 
-          message: "Erro interno do servidor" 
+          message: "Erro interno do servidor: " + (error instanceof Error ? error.message : String(error))
         });
       }
     }

@@ -95,7 +95,8 @@ export default function BusinessRegistration() {
       });
       
       if (!response.ok) {
-        throw new Error('Erro ao enviar formulário');
+        const errorData = await response.json().catch(() => ({ message: 'Erro desconhecido' }));
+        throw new Error(errorData.message || `Erro ${response.status}: ${response.statusText}`);
       }
       
       return response.json();
@@ -107,10 +108,11 @@ export default function BusinessRegistration() {
         description: "Dados enviados com sucesso! Em breve entraremos em contato.",
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
+      console.error('Submission error:', error);
       toast({
         title: "Erro",
-        description: "Erro ao enviar dados. Tente novamente.",
+        description: error.message || "Erro ao enviar dados. Tente novamente.",
         variant: "destructive",
       });
     }
