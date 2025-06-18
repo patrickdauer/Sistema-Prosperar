@@ -40,7 +40,7 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [token, setToken] = useState<string | null>(() => 
-    localStorage.getItem('auth_token')
+    localStorage.getItem('token')
   );
   const queryClient = useQueryClient();
 
@@ -80,7 +80,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     },
     onSuccess: (data) => {
       setToken(data.token);
-      localStorage.setItem('auth_token', data.token);
+      localStorage.setItem('token', data.token);
       queryClient.setQueryData(['/api/auth/me'], data);
     },
   });
@@ -91,7 +91,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = () => {
     setToken(null);
-    localStorage.removeItem('auth_token');
+    localStorage.removeItem('token');
     queryClient.clear();
   };
 
