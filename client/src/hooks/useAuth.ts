@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import React, { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface User {
@@ -29,13 +29,17 @@ export function useAuth() {
   return context;
 }
 
-export function AuthProvider({ children }: { children: ReactNode }): JSX.Element {
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export function AuthProvider(props: AuthProviderProps) {
+  const { children } = props;
   const [token, setToken] = useState<string | null>(() => 
     localStorage.getItem('auth_token')
   );
   const queryClient = useQueryClient();
 
-  // Get user data if token exists
   const { data: userData, isLoading } = useQuery({
     queryKey: ['/api/auth/me'],
     queryFn: async () => {
@@ -87,7 +91,6 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
     queryClient.clear();
   };
 
-  // Set up fetch interceptor for token
   useEffect(() => {
     if (token) {
       const originalFetch = window.fetch;
@@ -108,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
   const user = userData?.user || null;
   const isAuthenticated = !!user && !!token;
 
-  const authValue = {
+  const authValue: AuthContextType = {
     user,
     token,
     isLoading,
@@ -117,9 +120,5 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
     logout,
   };
 
-  return (
-    <AuthContext.Provider value={authValue}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return React.createElement(AuthContext.Provider, { value: authValue }, children);
 }
