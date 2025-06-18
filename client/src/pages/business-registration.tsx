@@ -32,29 +32,21 @@ const businessRegistrationSchema = z.object({
   atividadePrincipal: z.string().min(1, "Atividade principal é obrigatória"),
   atividadesSecundarias: z.string().optional(),
   atividadesSugeridas: z.array(z.string()).optional(),
-  
-  // Partner Data
-  nomeCompleto: z.string().min(1, "Nome completo é obrigatório"),
-  nacionalidade: z.string().min(1, "Nacionalidade é obrigatória"),
-  cpf: z.string().min(1, "CPF é obrigatório"),
-  senhaGov: z.string().min(1, "Senha do Gov é obrigatória"),
-  rg: z.string().min(1, "RG é obrigatório"),
-  dataNascimento: z.string().min(1, "Data de nascimento é obrigatória"),
-  filiacao: z.string().min(1, "Filiação é obrigatória"),
-  profissao: z.string().min(1, "Profissão é obrigatória"),
-  estadoCivil: z.string().min(1, "Estado civil é obrigatório"),
-  enderecoPessoal: z.string().min(1, "Endereço pessoal é obrigatório"),
-  telefonePessoal: z.string().min(1, "Telefone pessoal é obrigatório"),
-  emailPessoal: z.string().email("Email inválido"),
+  socios: z.array(z.any()).min(1, "Pelo menos um sócio é obrigatório"),
 });
 
 type BusinessRegistrationForm = z.infer<typeof businessRegistrationSchema>;
 
 export default function BusinessRegistration() {
-  const [documentoComFoto, setDocumentoComFoto] = useState<File[]>([]);
-  const [certidaoCasamento, setCertidaoCasamento] = useState<File[]>([]);
-  const [documentosAdicionais, setDocumentosAdicionais] = useState<File[]>([]);
+  const [partners, setPartners] = useState<Partner[]>([]);
+  const [showPartnerForm, setShowPartnerForm] = useState(false);
+  const [editingPartnerIndex, setEditingPartnerIndex] = useState<number | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [partnerFiles, setPartnerFiles] = useState<Map<number, { 
+    documentoComFoto: File[], 
+    certidaoCasamento: File[], 
+    documentosAdicionais: File[] 
+  }>>(new Map());
   
   const { toast } = useToast();
   
@@ -72,18 +64,7 @@ export default function BusinessRegistration() {
       atividadePrincipal: '',
       atividadesSecundarias: '',
       atividadesSugeridas: [],
-      nomeCompleto: '',
-      nacionalidade: 'Brasileira',
-      cpf: '',
-      senhaGov: '',
-      rg: '',
-      dataNascimento: '',
-      filiacao: '',
-      profissao: '',
-      estadoCivil: '',
-      enderecoPessoal: '',
-      telefonePessoal: '',
-      emailPessoal: '',
+      socios: [],
     }
   });
 
@@ -92,16 +73,18 @@ export default function BusinessRegistration() {
       const formData = new FormData();
       formData.append('data', JSON.stringify(data));
       
-      if (documentoComFoto[0]) {
-        formData.append('documentoComFoto', documentoComFoto[0]);
-      }
-      
-      if (certidaoCasamento[0]) {
-        formData.append('certidaoCasamento', certidaoCasamento[0]);
-      }
-      
-      documentosAdicionais.forEach((file, index) => {
-        formData.append('documentosAdicionais', file);
+      // Add all partner files
+      partners.forEach((partner, index) => {
+        const files = partnerFiles.get(index);
+        if (files?.documentoComFoto[0]) {
+          formData.append(`socio_${index}_documentoComFoto`, files.documentoComFoto[0]);
+        }
+        if (files?.certidaoCasamento[0]) {
+          formData.append(`socio_${index}_certidaoCasamento`, files.certidaoCasamento[0]);
+        }
+        files?.documentosAdicionais.forEach((file, fileIndex) => {
+          formData.append(`socio_${index}_documentosAdicionais`, file);
+        });
       });
       
       const response = await fetch('/api/business-registration', {
@@ -132,29 +115,63 @@ export default function BusinessRegistration() {
     }
   });
 
-  const onSubmit = (data: BusinessRegistrationForm) => {
-    if (documentoComFoto.length === 0) {
-      toast({
-        title: "Erro",
-        description: "Documento com foto é obrigatório",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (data.estadoCivil === 'casado' && certidaoCasamento.length === 0) {
-      toast({
-        title: "Erro",
-        description: "Certidão de casamento é obrigatória para pessoas casadas",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    submitMutation.mutate(data);
+  const handleAddPartner = () => {
+    setShowPartnerForm(true);
+    setEditingPartnerIndex(null);
   };
 
-  const estadoCivil = form.watch('estadoCivil');
+  const handleEditPartner = (index: number) => {
+    setEditingPartnerIndex(index);
+    setShowPartnerForm(true);
+  };
+
+  const handleSavePartner = (partner: Partner) => {
+    if (editingPartnerIndex !== null) {
+      const updatedPartners = [...partners];
+      updatedPartners[editingPartnerIndex] = partner;
+      setPartners(updatedPartners);
+    } else {
+      setPartners([...partners, partner]);
+    }
+    setShowPartnerForm(false);
+    setEditingPartnerIndex(null);
+    
+    // Update form with current partners
+    form.setValue('socios', editingPartnerIndex !== null 
+      ? partners.map((p, i) => i === editingPartnerIndex ? partner : p)
+      : [...partners, partner]
+    );
+  };
+
+  const handleDeletePartner = (index: number) => {
+    const updatedPartners = partners.filter((_, i) => i !== index);
+    setPartners(updatedPartners);
+    form.setValue('socios', updatedPartners);
+    
+    // Remove files for this partner
+    const newPartnerFiles = new Map(partnerFiles);
+    newPartnerFiles.delete(index);
+    setPartnerFiles(newPartnerFiles);
+  };
+
+  const onSubmit = (data: BusinessRegistrationForm) => {
+    if (partners.length === 0) {
+      toast({
+        title: "Erro",
+        description: "Pelo menos um sócio é obrigatório",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Update data with partners
+    const submissionData = {
+      ...data,
+      socios: partners
+    };
+    
+    submitMutation.mutate(submissionData);
+  };
 
   const suggestedActivities = [
     { value: '7319002', label: '7319002 - Promoção de vendas' },

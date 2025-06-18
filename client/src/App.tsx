@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import NotFound from "@/pages/not-found";
-import BusinessRegistration from "@/pages/business-registration";
+import BusinessRegistration from "@/pages/business-registration-new";
 
 function Router() {
   return (

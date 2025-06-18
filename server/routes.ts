@@ -24,11 +24,7 @@ const upload = multer({
 export async function registerRoutes(app: Express): Promise<Server> {
   
   // Business registration submission endpoint
-  app.post("/api/business-registration", upload.fields([
-    { name: 'documentoComFoto', maxCount: 1 },
-    { name: 'certidaoCasamento', maxCount: 1 },
-    { name: 'documentosAdicionais', maxCount: 10 }
-  ]), async (req, res) => {
+  app.post("/api/business-registration", upload.any(), async (req, res) => {
     try {
       // Parse form data
       const formData = JSON.parse(req.body.data);
@@ -36,62 +32,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validate form data
       const validatedData = insertBusinessRegistrationSchema.parse(formData);
       
-      // Handle file uploads (In a real app, this would upload to Google Drive)
-      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      // Handle file uploads for partners (In a real app, this would upload to Google Drive)
+      const files = req.files as Express.Multer.File[];
       
-      let documentoComFotoUrl = null;
-      let certidaoCasamentoUrl = null;
-      let documentosAdicionaisUrls: string[] = [];
-      
-      if (files.documentoComFoto) {
-        // Simulate Google Drive upload
-        documentoComFotoUrl = `https://drive.google.com/file/documento-${Date.now()}`;
+      // Process partner files and update their URLs
+      if (validatedData.socios && Array.isArray(validatedData.socios)) {
+        validatedData.socios = validatedData.socios.map((socio: any, index: number) => {
+          const partnerFiles = files.filter(file => file.fieldname.startsWith(`socio_${index}_`));
+          
+          const documentoComFoto = partnerFiles.find(f => f.fieldname === `socio_${index}_documentoComFoto`);
+          const certidaoCasamento = partnerFiles.find(f => f.fieldname === `socio_${index}_certidaoCasamento`);
+          const documentosAdicionais = partnerFiles.filter(f => f.fieldname === `socio_${index}_documentosAdicionais`);
+          
+          return {
+            ...socio,
+            documentoComFotoUrl: documentoComFoto ? `https://drive.google.com/file/socio-${index}-doc-${Date.now()}` : socio.documentoComFotoUrl,
+            certidaoCasamentoUrl: certidaoCasamento ? `https://drive.google.com/file/socio-${index}-cert-${Date.now()}` : socio.certidaoCasamentoUrl,
+            documentosAdicionaisUrls: documentosAdicionais.length > 0 
+              ? documentosAdicionais.map((_, fileIndex) => `https://drive.google.com/file/socio-${index}-add-${Date.now()}-${fileIndex}`)
+              : socio.documentosAdicionaisUrls || []
+          };
+        });
       }
       
-      if (files.certidaoCasamento) {
-        certidaoCasamentoUrl = `https://drive.google.com/file/certidao-${Date.now()}`;
-      }
-      
-      if (files.documentosAdicionais) {
-        documentosAdicionaisUrls = files.documentosAdicionais.map((_, index) => 
-          `https://drive.google.com/file/adicional-${Date.now()}-${index}`
-        );
-      }
-      
-      // Create registration with file URLs
-      const registration = await storage.createBusinessRegistration({
-        ...validatedData,
-        documentoComFotoUrl,
-        certidaoCasamentoUrl,
-        documentosAdicionaisUrls
-      });
+      // Create registration
+      const registration = await storage.createBusinessRegistration(validatedData);
       
       // Send webhook to n8n for WhatsApp notification
       try {
         const webhookUrl = process.env.N8N_WEBHOOK_URL;
         if (webhookUrl) {
+          // Format partners information
+          const socios = registration.socios as any[];
+          const sociosInfo = socios.map((socio: any, index: number) => 
+            `*Sócio ${index + 1}:*
+• Nome: ${socio.nomeCompleto}
+• CPF: ${socio.cpf}
+• Estado Civil: ${socio.estadoCivil}
+• Telefone: ${socio.telefonePessoal}
+• Email: ${socio.emailPessoal}
+• Documentos: ${socio.documentoComFotoUrl ? 'Doc. com foto ✓' : 'Doc. com foto ✗'} ${socio.certidaoCasamentoUrl ? 'Certidão ✓' : ''}`
+          ).join('\n\n');
+
           const webhookData = {
             registration,
-            message: `Nova solicitação de abertura de empresa recebida!
-            
+            message: `🏢 *NOVA SOLICITAÇÃO DE ABERTURA DE EMPRESA*
+
 📋 *DADOS DA EMPRESA*
 • Razão Social: ${registration.razaoSocial}
 • Nome Fantasia: ${registration.nomeFantasia}
+• Endereço: ${registration.endereco}
 • Telefone: ${registration.telefoneEmpresa}
 • Email: ${registration.emailEmpresa}
+• Capital Social: ${registration.capitalSocial}
+• Atividade Principal: ${registration.atividadePrincipal}
 
-👤 *DADOS DO SÓCIO*
-• Nome: ${registration.nomeCompleto}
-• CPF: ${registration.cpf}
-• Estado Civil: ${registration.estadoCivil}
-• Telefone: ${registration.telefonePessoal}
+👥 *SÓCIOS (${socios.length})*
+${sociosInfo}
 
-📎 *DOCUMENTOS*
-• Documento com foto: ${documentoComFotoUrl ? 'Anexado' : 'Não anexado'}
-• Certidão de casamento: ${certidaoCasamentoUrl ? 'Anexado' : 'Não anexado'}
-• Documentos adicionais: ${documentosAdicionaisUrls.length} arquivo(s)
+📎 *STATUS DOS DOCUMENTOS*
+Todos os arquivos foram enviados e estão sendo processados para upload no Google Drive.
 
-Os arquivos foram salvos no Google Drive.`
+⏰ *Recebido em:* ${new Date().toLocaleString('pt-BR')}`
           };
           
           await fetch(webhookUrl, {
