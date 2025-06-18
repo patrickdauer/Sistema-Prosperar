@@ -81,25 +81,46 @@ export default function BusinessRegistration() {
 
   const submitMutation = useMutation({
     mutationFn: async (data: BusinessRegistrationForm) => {
+      console.log('Starting form submission...');
+      console.log('Form data:', data);
+      console.log('Partners:', partners);
+      
       const formData = new FormData();
       const submissionData = {
         ...data,
         socios: partners
       };
+      
+      console.log('Submission data:', submissionData);
       formData.append('data', JSON.stringify(submissionData));
       
+      console.log('Making fetch request...');
       const response = await fetch('/api/business-registration', {
         method: 'POST',
         body: formData,
         credentials: 'include'
       });
       
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+      
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Erro desconhecido' }));
+        const errorText = await response.text();
+        console.log('Error response text:', errorText);
+        
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { message: `HTTP ${response.status}: ${errorText || 'Erro desconhecido'}` };
+        }
+        
         throw new Error(errorData.message || `Erro ${response.status}: ${response.statusText}`);
       }
       
-      return response.json();
+      const result = await response.json();
+      console.log('Success response:', result);
+      return result;
     },
     onSuccess: () => {
       setShowSuccess(true);

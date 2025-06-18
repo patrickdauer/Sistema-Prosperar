@@ -243,59 +243,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Simple test endpoint
+  app.get("/api/test", (req, res) => {
+    res.json({ message: "Server is working!" });
+  });
+
   // Business registration submission endpoint
   app.post("/api/business-registration", upload.any(), async (req, res) => {
+    console.log('=== Business Registration Request ===');
+    console.log('Headers:', req.headers);
+    console.log('Body keys:', Object.keys(req.body || {}));
+    console.log('Files count:', req.files ? req.files.length : 0);
+    
     try {
-      console.log('Received form data:', req.body.data);
-      
-      // Parse form data
-      const formData = JSON.parse(req.body.data);
-      console.log('Parsed form data:', formData);
-      
-      // Create a more flexible validation schema for this endpoint
-      const flexibleSchema = z.object({
-        razaoSocial: z.string().min(1),
-        nomeFantasia: z.string().min(1),
-        endereco: z.string().min(1),
-        inscricaoImobiliaria: z.string().min(1),
-        metragem: z.number(),
-        telefoneEmpresa: z.string().min(1),
-        emailEmpresa: z.string().email(),
-        capitalSocial: z.string().min(1),
-        atividadePrincipal: z.string().min(1),
-        atividadesSecundarias: z.string().optional(),
-        atividadesSugeridas: z.array(z.string()).optional(),
-        socios: z.array(z.any()).min(1)
-      });
-      
-      // Validate form data with flexible schema
-      const validatedData = flexibleSchema.parse(formData);
-      
-      // Handle file uploads for partners (In a real app, this would upload to Google Drive)
-      const files = req.files as Express.Multer.File[];
-      
-      // Process partner files and update their URLs
-      if (validatedData.socios && Array.isArray(validatedData.socios)) {
-        validatedData.socios = validatedData.socios.map((socio: any, index: number) => {
-          const partnerFiles = files.filter(file => file.fieldname.startsWith(`socio_${index}_`));
-          
-          const documentoComFoto = partnerFiles.find(f => f.fieldname === `socio_${index}_documentoComFoto`);
-          const certidaoCasamento = partnerFiles.find(f => f.fieldname === `socio_${index}_certidaoCasamento`);
-          const documentosAdicionais = partnerFiles.filter(f => f.fieldname === `socio_${index}_documentosAdicionais`);
-          
-          return {
-            ...socio,
-            documentoComFotoUrl: documentoComFoto ? `https://drive.google.com/file/socio-${index}-doc-${Date.now()}` : socio.documentoComFotoUrl,
-            certidaoCasamentoUrl: certidaoCasamento ? `https://drive.google.com/file/socio-${index}-cert-${Date.now()}` : socio.certidaoCasamentoUrl,
-            documentosAdicionaisUrls: documentosAdicionais.length > 0 
-              ? documentosAdicionais.map((_, fileIndex) => `https://drive.google.com/file/socio-${index}-add-${Date.now()}-${fileIndex}`)
-              : socio.documentosAdicionaisUrls || []
-          };
+      // Check if we have form data
+      if (!req.body || !req.body.data) {
+        console.error('No form data received');
+        return res.status(400).json({ 
+          success: false, 
+          message: "Nenhum dado foi recebido do formulário" 
         });
       }
       
-      // Create registration
-      const registration = await storage.createBusinessRegistration(validatedData);
+      // Parse and validate the JSON data
+      let formData;
+      try {
+        formData = JSON.parse(req.body.data);
+        console.log('Successfully parsed form data:', {
+          razaoSocial: formData.razaoSocial,
+          sociosCount: formData.socios ? formData.socios.length : 0
+        });
+      } catch (parseError) {
+        console.error('JSON parsing failed:', parseError);
+        return res.status(400).json({ 
+          success: false, 
+          message: "Dados do formulário estão corrompidos" 
+        });
+      }
+      
+      // Basic validation
+      const requiredFields = ['razaoSocial', 'nomeFantasia', 'endereco', 'telefoneEmpresa', 'emailEmpresa'];
+      for (const field of requiredFields) {
+        if (!formData[field]) {
+          return res.status(400).json({ 
+            success: false, 
+            message: `Campo obrigatório não preenchido: ${field}` 
+          });
+        }
+      }
+      
+      if (!formData.socios || !Array.isArray(formData.socios) || formData.socios.length === 0) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "É necessário adicionar pelo menos um sócio" 
+        });
+      }
+      
+      // Prepare data for database storage
+      const registrationData = {
+        razaoSocial: formData.razaoSocial,
+        nomeFantasia: formData.nomeFantasia,
+        endereco: formData.endereco,
+        inscricaoImobiliaria: formData.inscricaoImobiliaria || '',
+        metragem: parseInt(formData.metragem) || 0,
+        telefoneEmpresa: formData.telefoneEmpresa,
+        emailEmpresa: formData.emailEmpresa,
+        capitalSocial: formData.capitalSocial || '',
+        atividadePrincipal: formData.atividadePrincipal || '',
+        atividadesSecundarias: formData.atividadesSecundarias || '',
+        atividadesSugeridas: formData.atividadesSugeridas || [],
+        socios: formData.socios
+      };
+      
+      console.log('Creating business registration...');
+      
+      // Create registration in database
+      const registration = await storage.createBusinessRegistration(registrationData);
+      console.log('Registration created with ID:', registration.id);
       
       // Process uploads and integrations in parallel
       const promises = [];
