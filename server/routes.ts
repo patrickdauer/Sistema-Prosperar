@@ -484,6 +484,29 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
       res.status(500).json({ message: "Erro ao buscar registros" });
     }
   });
+
+  // API for internal dashboard - get all registrations with tasks
+  app.get("/api/internal/registrations", authenticateToken, async (req, res) => {
+    try {
+      const registrations = await storage.getAllBusinessRegistrations();
+      
+      // Add tasks for each registration
+      const registrationsWithTasks = await Promise.all(
+        registrations.map(async (registration) => {
+          const tasks = await storage.getTasksByRegistration(registration.id);
+          return {
+            ...registration,
+            tasks: tasks
+          };
+        })
+      );
+      
+      res.json(registrationsWithTasks);
+    } catch (error) {
+      console.error("Error fetching registrations:", error);
+      res.status(500).json({ message: "Erro ao buscar registros" });
+    }
+  });
   
   // Get specific registration
   app.get("/api/business-registration/:id", async (req, res) => {

@@ -39,8 +39,16 @@ interface BusinessRegistration {
   id: number;
   razaoSocial: string;
   nomeFantasia: string;
+  endereco: string;
+  inscricaoImobiliaria?: string;
+  metragem?: number;
   emailEmpresa: string;
   telefoneEmpresa: string;
+  capitalSocial?: string;
+  atividadePrincipal?: string;
+  atividadesSecundarias?: string;
+  atividadesSugeridas?: string[];
+  socios: any[];
   createdAt: string;
   tasks: Task[];
 }
@@ -65,10 +73,16 @@ export default function InternalDashboard() {
     mutationFn: async ({ taskId, status }: { taskId: number; status: string }) => {
       const response = await fetch(`/api/internal/task/${taskId}/status`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         body: JSON.stringify({ status })
       });
-      if (!response.ok) throw new Error('Failed to update task');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update task');
+      }
       return response.json();
     },
     onSuccess: () => {
@@ -78,10 +92,10 @@ export default function InternalDashboard() {
         description: "Status da tarefa foi atualizado com sucesso.",
       });
     },
-    onError: () => {
+    onError: (error: Error) => {
       toast({
         title: "Erro",
-        description: "Falha ao atualizar tarefa.",
+        description: error.message || "Falha ao atualizar tarefa.",
         variant: "destructive",
       });
     }
@@ -129,7 +143,16 @@ export default function InternalDashboard() {
   };
 
   const handleTaskStatusChange = (taskId: number, status: string) => {
+    console.log('Updating task status:', taskId, status);
     updateTaskMutation.mutate({ taskId, status });
+  };
+
+  const handleStartTask = (taskId: number) => {
+    handleTaskStatusChange(taskId, 'in_progress');
+  };
+
+  const handleCompleteTask = (taskId: number) => {
+    handleTaskStatusChange(taskId, 'completed');
   };
 
   const filteredRegistrations = registrations?.filter((reg: BusinessRegistration) => {
@@ -276,23 +299,102 @@ export default function InternalDashboard() {
                           Ver Detalhes
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
-                          <DialogTitle>{registration.razaoSocial}</DialogTitle>
+                          <DialogTitle className="text-xl">{registration.razaoSocial} - Dados Completos</DialogTitle>
                         </DialogHeader>
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                              <strong>Nome Fantasia:</strong> {registration.nomeFantasia}
+                        <div className="space-y-6">
+                          {/* Dados da Empresa */}
+                          <div className="border rounded-lg p-4">
+                            <h3 className="font-semibold mb-3 text-lg">Dados da Empresa</h3>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div><strong>Razão Social:</strong> {registration.razaoSocial}</div>
+                              <div><strong>Nome Fantasia:</strong> {registration.nomeFantasia}</div>
+                              <div><strong>Endereço:</strong> {registration.endereco}</div>
+                              <div><strong>Inscrição Imobiliária:</strong> {registration.inscricaoImobiliaria || 'Não informado'}</div>
+                              <div><strong>Metragem:</strong> {registration.metragem || 'Não informado'} m²</div>
+                              <div><strong>Telefone:</strong> {registration.telefoneEmpresa}</div>
+                              <div><strong>Email:</strong> {registration.emailEmpresa}</div>
+                              <div><strong>Capital Social:</strong> {registration.capitalSocial || 'Não informado'}</div>
+                              <div><strong>Atividade Principal:</strong> {registration.atividadePrincipal || 'Não informado'}</div>
+                              <div><strong>Atividades Secundárias:</strong> {registration.atividadesSecundarias || 'Não informado'}</div>
+                              <div><strong>Data de Registro:</strong> {format(new Date(registration.createdAt), 'dd/MM/yyyy HH:mm', { locale: ptBR })}</div>
                             </div>
-                            <div>
-                              <strong>Email:</strong> {registration.emailEmpresa}
-                            </div>
-                            <div>
-                              <strong>Telefone:</strong> {registration.telefoneEmpresa}
-                            </div>
-                            <div>
-                              <strong>Data:</strong> {format(new Date(registration.createdAt), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
+                            {registration.atividadesSugeridas && registration.atividadesSugeridas.length > 0 && (
+                              <div className="mt-3">
+                                <strong>Atividades Sugeridas:</strong>
+                                <ul className="list-disc list-inside text-sm mt-1">
+                                  {registration.atividadesSugeridas.map((atividade, index) => (
+                                    <li key={index}>{atividade}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Dados dos Sócios */}
+                          <div className="border rounded-lg p-4">
+                            <h3 className="font-semibold mb-3 text-lg">Sócios ({registration.socios?.length || 0})</h3>
+                            {registration.socios && registration.socios.length > 0 ? (
+                              <div className="space-y-4">
+                                {registration.socios.map((socio: any, index: number) => (
+                                  <div key={index} className="border-l-4 border-blue-500 pl-4 py-2 bg-muted/30">
+                                    <h4 className="font-medium mb-2">Sócio {index + 1}: {socio.nomeCompleto}</h4>
+                                    <div className="grid grid-cols-2 gap-3 text-sm">
+                                      <div><strong>CPF:</strong> {socio.cpf}</div>
+                                      <div><strong>RG:</strong> {socio.rg}</div>
+                                      <div><strong>Data de Nascimento:</strong> {socio.dataNascimento}</div>
+                                      <div><strong>Nacionalidade:</strong> {socio.nacionalidade}</div>
+                                      <div><strong>Estado Civil:</strong> {socio.estadoCivil}</div>
+                                      <div><strong>Profissão:</strong> {socio.profissao}</div>
+                                      <div><strong>Endereço Pessoal:</strong> {socio.enderecoPessoal}</div>
+                                      <div><strong>Telefone Pessoal:</strong> {socio.telefonePessoal}</div>
+                                      <div><strong>Email Pessoal:</strong> {socio.emailPessoal}</div>
+                                      <div><strong>Filiação:</strong> {socio.filiacao}</div>
+                                      {socio.senhaGov && <div><strong>Senha Gov.br:</strong> {socio.senhaGov}</div>}
+                                    </div>
+                                    {/* Links de documentos se existirem */}
+                                    <div className="mt-2 flex gap-2">
+                                      {socio.documentoComFotoUrl && (
+                                        <a href={socio.documentoComFotoUrl} target="_blank" rel="noopener noreferrer" 
+                                           className="text-blue-600 hover:underline text-xs">
+                                          📄 Documento com Foto
+                                        </a>
+                                      )}
+                                      {socio.certidaoCasamentoUrl && (
+                                        <a href={socio.certidaoCasamentoUrl} target="_blank" rel="noopener noreferrer" 
+                                           className="text-blue-600 hover:underline text-xs">
+                                          📄 Certidão de Casamento
+                                        </a>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-muted-foreground">Nenhum sócio cadastrado</p>
+                            )}
+                          </div>
+
+                          {/* Status das Tarefas */}
+                          <div className="border rounded-lg p-4">
+                            <h3 className="font-semibold mb-3 text-lg">Status das Tarefas</h3>
+                            <div className="grid grid-cols-3 gap-4">
+                              {['societario', 'fiscal', 'pessoal'].map(dept => {
+                                const deptTasks = registration.tasks.filter(t => t.department === dept);
+                                const completedTasks = deptTasks.filter(t => t.status === 'completed');
+                                return (
+                                  <div key={dept} className="text-center">
+                                    <h4 className="font-medium">{getDepartmentTitle(dept)}</h4>
+                                    <p className="text-2xl font-bold">
+                                      {completedTasks.length}/{deptTasks.length}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {Math.round((completedTasks.length / deptTasks.length) * 100) || 0}% concluído
+                                    </p>
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
                         </div>

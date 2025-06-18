@@ -52,23 +52,39 @@ export class GoogleDriveService {
     try {
       console.log(`Creating folder "${folderName}"`);
       
-      // Por agora, criar sempre na raiz até que as permissões sejam configuradas
       const folderMetadata = {
         name: folderName,
         mimeType: 'application/vnd.google-apps.folder',
-        // Remover parents por enquanto - criar na raiz da conta de serviço
+        // Criar na raiz da conta de serviço - sem parent
       };
 
       console.log('Creating folder in service account root directory');
       const response = await this.drive.files.create({
         resource: folderMetadata,
-        fields: 'id, webViewLink',
+        fields: 'id, webViewLink, parents',
       });
 
-      console.log(`Folder created successfully with ID: ${response.data.id}`);
-      console.log(`Folder URL: ${response.data.webViewLink}`);
+      const folderId = response.data.id;
+      const folderUrl = response.data.webViewLink;
       
-      return response.data.id;
+      console.log(`✓ Folder created successfully with ID: ${folderId}`);
+      console.log(`✓ Folder URL: ${folderUrl}`);
+      
+      // Compartilhar a pasta publicamente para facilitar o acesso
+      try {
+        await this.drive.permissions.create({
+          fileId: folderId,
+          resource: {
+            role: 'reader',
+            type: 'anyone'
+          }
+        });
+        console.log('✓ Folder shared publicly for viewing');
+      } catch (shareError) {
+        console.log('Note: Could not share folder publicly, but folder was created successfully');
+      }
+      
+      return folderId;
     } catch (error: any) {
       console.error('Error creating folder:', error);
       console.error('Error details:', error.response?.data || error.message);
