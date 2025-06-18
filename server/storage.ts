@@ -115,7 +115,7 @@ export class DatabaseStorage implements IStorage {
       department: template.department,
       status: 'pending' as const,
       order: template.order,
-      dueDate: new Date(Date.now() + template.estimatedDays * 24 * 60 * 60 * 1000),
+      dueDate: new Date(Date.now() + (template.estimatedDays || 3) * 24 * 60 * 60 * 1000),
     }));
 
     const createdTasks = await db.insert(tasks).values(tasksToCreate).returning();
