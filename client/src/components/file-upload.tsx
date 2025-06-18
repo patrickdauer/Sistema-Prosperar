@@ -60,8 +60,8 @@ export function FileUpload({
 
   return (
     <div className={className}>
-      <label className="block text-sm font-medium text-gray-700 mb-3">
-        {label} {required && <span className="text-red-500">*</span>}
+      <label className="block text-sm font-medium text-foreground mb-3">
+        {label} {required && <span className="text-destructive">*</span>}
       </label>
       
       <div
@@ -69,13 +69,13 @@ export function FileUpload({
         className={cn(
           "border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors duration-200",
           isDragActive 
-            ? "border-blue-500 bg-blue-50" 
-            : "border-gray-300 hover:border-blue-500"
+            ? "border-primary bg-primary/10 dark:bg-primary/20" 
+            : "border-border hover:border-primary dark:border-border dark:hover:border-primary"
         )}
       >
         <input {...getInputProps()} />
-        <Upload className="h-10 w-10 text-gray-400 mx-auto mb-4" />
-        <p className="text-gray-600 mb-2">
+        <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
+        <p className="text-foreground mb-2">
           {isDragActive 
             ? "Solte os arquivos aqui..." 
             : "Arraste e solte arquivos aqui ou"}
@@ -84,19 +84,19 @@ export function FileUpload({
           Selecionar Arquivo{maxFiles > 1 ? 's' : ''}
         </Button>
         {description && (
-          <p className="text-xs text-gray-500 mt-2">{description}</p>
+          <p className="text-xs text-muted-foreground mt-2">{description}</p>
         )}
       </div>
 
       {uploadedFiles.length > 0 && (
         <div className="mt-4 space-y-2">
           {uploadedFiles.map((file, index) => (
-            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div key={index} className="flex items-center justify-between p-3 bg-muted dark:bg-muted/50 rounded-lg border border-border">
               <div className="flex items-center space-x-3">
-                <File className="h-5 w-5 text-gray-500" />
+                <File className="h-5 w-5 text-muted-foreground" />
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{file.name}</p>
-                  <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
+                  <p className="text-sm font-medium text-foreground">{file.name}</p>
+                  <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
                 </div>
               </div>
               <div className="flex items-center space-x-2">

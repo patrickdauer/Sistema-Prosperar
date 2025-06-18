@@ -3,9 +3,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation } from '@tanstack/react-query';
-import { Building, User, FileUp, Shield, Save, Send, Loader2 } from 'lucide-react';
+import { Building, User, FileUp, Shield, Save, Send, Loader2, Plus, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -13,8 +13,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { FileUpload } from '@/components/file-upload';
+import { PartnerForm } from '@/components/partner-form';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
+import { insertBusinessRegistrationSchema, type Partner } from '@shared/schema';
 
 const businessRegistrationSchema = z.object({
   // Company Data
