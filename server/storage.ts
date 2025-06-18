@@ -1,4 +1,6 @@
 import { businessRegistrations, type BusinessRegistration, type InsertBusinessRegistration } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: number): Promise<any | undefined>;
@@ -9,55 +11,36 @@ export interface IStorage {
   getAllBusinessRegistrations(): Promise<BusinessRegistration[]>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, any>;
-  private businessRegistrations: Map<number, BusinessRegistration>;
-  private currentUserId: number;
-  private currentRegistrationId: number;
-
-  constructor() {
-    this.users = new Map();
-    this.businessRegistrations = new Map();
-    this.currentUserId = 1;
-    this.currentRegistrationId = 1;
-  }
-
+export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<any | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(businessRegistrations).where(eq(businessRegistrations.id, id));
+    return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<any | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    return undefined; // Not implemented for business registration
   }
 
   async createUser(insertUser: any): Promise<any> {
-    const id = this.currentUserId++;
-    const user: any = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+    return insertUser; // Not implemented for business registration
   }
 
   async createBusinessRegistration(insertRegistration: InsertBusinessRegistration): Promise<BusinessRegistration> {
-    const id = this.currentRegistrationId++;
-    const registration: BusinessRegistration = { 
-      ...insertRegistration, 
-      id,
-      createdAt: new Date(),
-      status: "pending"
-    };
-    this.businessRegistrations.set(id, registration);
+    const [registration] = await db
+      .insert(businessRegistrations)
+      .values(insertRegistration)
+      .returning();
     return registration;
   }
 
   async getBusinessRegistration(id: number): Promise<BusinessRegistration | undefined> {
-    return this.businessRegistrations.get(id);
+    const [registration] = await db.select().from(businessRegistrations).where(eq(businessRegistrations.id, id));
+    return registration || undefined;
   }
 
   async getAllBusinessRegistrations(): Promise<BusinessRegistration[]> {
-    return Array.from(this.businessRegistrations.values());
+    return await db.select().from(businessRegistrations);
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

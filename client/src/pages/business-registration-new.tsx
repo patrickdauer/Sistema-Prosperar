@@ -690,7 +690,7 @@ export default function BusinessRegistration() {
 
                     <FileUpload
                       label="Documentos Adicionais"
-                      description="Anexe outros documentos necessários (opcional)"
+                      description="Ideal enviar: Comprovante de endereço atual. Se casado(a), enviar certidão de casamento."
                       onFilesChange={setDocumentosAdicionais}
                       accept={{
                         'image/*': ['.jpeg', '.jpg', '.png'],
