@@ -50,15 +50,22 @@ export class GoogleDriveService {
 
   async createFolder(folderName: string, parentFolderId?: string): Promise<string> {
     try {
-      console.log(`Creating folder "${folderName}"`);
+      console.log(`Creating folder "${folderName}" ${parentFolderId ? `in parent ${parentFolderId}` : 'in specified parent folder'}`);
       
-      const folderMetadata = {
+      const folderMetadata: any = {
         name: folderName,
         mimeType: 'application/vnd.google-apps.folder',
-        // Criar na raiz da conta de serviço - sem parent
       };
 
-      console.log('Creating folder in service account root directory');
+      // Se um parentFolderId for fornecido, usar ele; caso contrário, usar a pasta específica
+      if (parentFolderId) {
+        folderMetadata.parents = [parentFolderId];
+      } else {
+        // Usar a pasta específica fornecida pelo usuário
+        folderMetadata.parents = ['1zyAOSo2-wUHGkPgml8mQDIKL99LGrUIZ'];
+      }
+
+      console.log(`Creating folder in parent: ${folderMetadata.parents[0]}`);
       const response = await this.drive.files.create({
         resource: folderMetadata,
         fields: 'id, webViewLink, parents',
@@ -70,25 +77,36 @@ export class GoogleDriveService {
       console.log(`✓ Folder created successfully with ID: ${folderId}`);
       console.log(`✓ Folder URL: ${folderUrl}`);
       
-      // Compartilhar a pasta publicamente para facilitar o acesso
-      try {
-        await this.drive.permissions.create({
-          fileId: folderId,
-          resource: {
-            role: 'reader',
-            type: 'anyone'
-          }
-        });
-        console.log('✓ Folder shared publicly for viewing');
-      } catch (shareError) {
-        console.log('Note: Could not share folder publicly, but folder was created successfully');
-      }
-      
       return folderId;
     } catch (error: any) {
       console.error('Error creating folder:', error);
       console.error('Error details:', error.response?.data || error.message);
       throw new Error(`Failed to create folder: ${error.message}`);
+    }
+  }
+
+  async createBusinessFolderStructure(businessName: string, businessId: number): Promise<{ mainFolderId: string, societarioFolderId: string }> {
+    try {
+      console.log(`Creating folder structure for business: ${businessName} (ID: ${businessId})`);
+      
+      // 1. Criar pasta principal da empresa na pasta especificada
+      const mainFolderName = `${businessName} - ${businessId}`;
+      const mainFolderId = await this.createFolder(mainFolderName);
+      
+      // 2. Criar sub-pasta "DEPTO SOCIETARIO" dentro da pasta principal
+      const societarioFolderId = await this.createFolder('DEPTO SOCIETARIO', mainFolderId);
+      
+      console.log(`✓ Business folder structure created:`);
+      console.log(`  Main folder ID: ${mainFolderId}`);
+      console.log(`  Societário folder ID: ${societarioFolderId}`);
+      
+      return {
+        mainFolderId,
+        societarioFolderId
+      };
+    } catch (error: any) {
+      console.error('Error creating business folder structure:', error);
+      throw new Error(`Failed to create business folder structure: ${error.message}`);
     }
   }
 
