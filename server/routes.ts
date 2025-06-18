@@ -345,7 +345,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // 1. Create Google Drive folder and upload files
       promises.push((async () => {
         try {
+          console.log('Starting Google Drive integration...');
+          
+          // Test connection first
+          const connectionOk = await googleDriveService.testConnection();
+          if (!connectionOk) {
+            throw new Error('Google Drive connection failed');
+          }
+          
           const folderName = `${registration.razaoSocial} - ${registration.id}`;
+          console.log(`Creating folder: "${folderName}"`);
           const folderId = await googleDriveService.createFolder(folderName);
           
           // Upload partner files to Google Drive if any

@@ -4,23 +4,62 @@ import { Readable } from 'stream';
 export class GoogleDriveService {
   private drive: any;
   private auth: any;
+  private readonly PARENT_FOLDER_ID = '1-7ezmqCc75VJK6xerrO4-n5oVPvFwrxX'; // Pasta específica do cliente
 
   constructor() {
-    // Initialize Google Auth with service account or OAuth
-    this.auth = new google.auth.GoogleAuth({
-      credentials: process.env.GOOGLE_SERVICE_ACCOUNT_KEY ? JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY) : undefined,
-      scopes: ['https://www.googleapis.com/auth/drive.file'],
-    });
+    console.log('Initializing Google Drive service...');
     
-    this.drive = google.drive({ version: 'v3', auth: this.auth });
+    if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
+      console.error('GOOGLE_SERVICE_ACCOUNT_KEY not found in environment variables');
+      throw new Error('Google Service Account Key not configured');
+    }
+    
+    try {
+      const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
+      console.log('Service account email:', credentials.client_email);
+      
+      this.auth = new google.auth.GoogleAuth({
+        credentials: credentials,
+        scopes: [
+          'https://www.googleapis.com/auth/drive.file',
+          'https://www.googleapis.com/auth/drive'
+        ],
+      });
+      
+      this.drive = google.drive({ version: 'v3', auth: this.auth });
+      console.log('Google Drive service initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize Google Drive service:', error);
+      throw new Error('Invalid Google Service Account Key format');
+    }
+  }
+
+  async testConnection(): Promise<boolean> {
+    try {
+      console.log('Testing Google Drive connection...');
+      await this.drive.files.list({
+        pageSize: 1,
+        fields: 'files(id, name)',
+      });
+      console.log('Google Drive connection test successful');
+      return true;
+    } catch (error: any) {
+      console.error('Google Drive connection test failed:', error.message);
+      return false;
+    }
   }
 
   async createFolder(folderName: string, parentFolderId?: string): Promise<string> {
     try {
+      // Sempre usar a pasta pai específica se não for fornecida outra
+      const targetParentId = parentFolderId || this.PARENT_FOLDER_ID;
+      
+      console.log(`Creating folder "${folderName}" in parent: ${targetParentId}`);
+      
       const folderMetadata = {
         name: folderName,
         mimeType: 'application/vnd.google-apps.folder',
-        parents: parentFolderId ? [parentFolderId] : undefined,
+        parents: [targetParentId],
       };
 
       const response = await this.drive.files.create({
@@ -28,10 +67,12 @@ export class GoogleDriveService {
         fields: 'id',
       });
 
+      console.log(`Folder created successfully with ID: ${response.data.id}`);
       return response.data.id;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating folder:', error);
-      throw error;
+      console.error('Error details:', error.response?.data || error.message);
+      throw new Error(`Failed to create folder: ${error.message}`);
     }
   }
 
@@ -42,6 +83,9 @@ export class GoogleDriveService {
     folderId: string
   ): Promise<string> {
     try {
+      console.log(`Uploading file "${fileName}" to folder: ${folderId}`);
+      console.log(`File size: ${fileBuffer.length} bytes, MIME type: ${mimeType}`);
+      
       const fileMetadata = {
         name: fileName,
         parents: [folderId],
@@ -58,10 +102,13 @@ export class GoogleDriveService {
         fields: 'id',
       });
 
-      return `https://drive.google.com/file/d/${response.data.id}/view`;
-    } catch (error) {
+      const fileUrl = `https://drive.google.com/file/d/${response.data.id}/view`;
+      console.log(`File uploaded successfully: ${fileUrl}`);
+      return fileUrl;
+    } catch (error: any) {
       console.error('Error uploading file:', error);
-      throw error;
+      console.error('Error details:', error.response?.data || error.message);
+      throw new Error(`Failed to upload file: ${error.message}`);
     }
   }
 
