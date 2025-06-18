@@ -4,28 +4,53 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import BusinessRegistration from "@/pages/business-registration-new";
 import Dashboard from "@/pages/dashboard";
+import Login from "@/pages/login";
+import InternalDashboard from "@/pages/internal-dashboard";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={BusinessRegistration} />
       <Route path="/dashboard" component={Dashboard} />
+      <Route path="/login" component={Login} />
+      <Route path="/internal" component={ProtectedRoute} />
       <Route component={NotFound} />
     </Switch>
   );
+}
+
+function ProtectedRoute() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground">Carregando...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Login />;
+  }
+
+  return <InternalDashboard />;
 }
 
 function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="business-form-theme">
       <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );

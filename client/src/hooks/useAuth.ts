@@ -29,7 +29,7 @@ export function useAuth() {
   return context;
 }
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }): JSX.Element {
   const [token, setToken] = useState<string | null>(() => 
     localStorage.getItem('auth_token')
   );
@@ -108,15 +108,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const user = userData?.user || null;
   const isAuthenticated = !!user && !!token;
 
+  const authValue = {
+    user,
+    token,
+    isLoading,
+    isAuthenticated,
+    login,
+    logout,
+  };
+
   return (
-    <AuthContext.Provider value={{
-      user,
-      token,
-      isLoading,
-      isAuthenticated,
-      login,
-      logout,
-    }}>
+    <AuthContext.Provider value={authValue}>
       {children}
     </AuthContext.Provider>
   );
