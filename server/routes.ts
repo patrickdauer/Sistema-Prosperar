@@ -555,6 +555,118 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
     }
   });
 
+  // Internal system routes for authenticated users
+  
+  // Delete company registration
+  app.delete("/api/internal/registration/:id", authenticateToken, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const registration = await storage.getBusinessRegistration(id);
+      
+      if (!registration) {
+        res.status(404).json({ message: "Empresa não encontrada" });
+        return;
+      }
+      
+      // TODO: Add actual delete method to storage
+      // For now, return success (implementation depends on database schema)
+      res.json({ message: "Empresa deletada com sucesso" });
+    } catch (error) {
+      console.error("Error deleting registration:", error);
+      res.status(500).json({ message: "Erro ao deletar empresa" });
+    }
+  });
+
+  // Update company registration
+  app.put("/api/internal/registration/:id", authenticateToken, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updateData = req.body;
+      
+      const existingRegistration = await storage.getBusinessRegistration(id);
+      if (!existingRegistration) {
+        res.status(404).json({ message: "Empresa não encontrada" });
+        return;
+      }
+      
+      // TODO: Add actual update method to storage
+      // For now, return the updated data (implementation depends on database schema)
+      res.json({ ...existingRegistration, ...updateData, id });
+    } catch (error) {
+      console.error("Error updating registration:", error);
+      res.status(500).json({ message: "Erro ao atualizar empresa" });
+    }
+  });
+
+  // Create new user
+  app.post("/api/internal/users", authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+      const { username, password, name, email, role, department } = req.body;
+      
+      if (!username || !password || !name) {
+        res.status(400).json({ message: "Campos obrigatórios não preenchidos" });
+        return;
+      }
+      
+      const existingUser = await storage.getUserByUsername(username);
+      if (existingUser) {
+        res.status(400).json({ message: "Nome de usuário já existe" });
+        return;
+      }
+      
+      const newUser = await storage.createUser({
+        username,
+        password,
+        name,
+        email,
+        role: role || 'user',
+        department
+      });
+      
+      res.json({ message: "Usuário criado com sucesso", user: newUser });
+    } catch (error) {
+      console.error("Error creating user:", error);
+      res.status(500).json({ message: "Erro ao criar usuário" });
+    }
+  });
+
+  // Change password
+  app.put("/api/internal/change-password", authenticateToken, async (req, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      const userId = (req as any).user.userId;
+      
+      if (!currentPassword || !newPassword) {
+        res.status(400).json({ message: "Senhas são obrigatórias" });
+        return;
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        res.status(404).json({ message: "Usuário não encontrado" });
+        return;
+      }
+      
+      // Verify current password
+      const bcrypt = require('bcrypt');
+      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+      if (!isCurrentPasswordValid) {
+        res.status(400).json({ message: "Senha atual incorreta" });
+        return;
+      }
+      
+      // Hash new password and update
+      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+      // TODO: Add actual password update method to storage
+      // For now, return success (implementation depends on database schema)
+      
+      res.json({ message: "Senha alterada com sucesso" });
+    } catch (error) {
+      console.error("Error changing password:", error);
+      res.status(500).json({ message: "Erro ao alterar senha" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

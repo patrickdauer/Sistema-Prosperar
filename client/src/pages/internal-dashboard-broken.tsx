@@ -28,7 +28,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { useToast } from '@/hooks/use-toast';
 
@@ -94,7 +93,10 @@ export default function InternalDashboard() {
         },
         body: JSON.stringify({ status })
       });
-      if (!response.ok) throw new Error('Failed to update task');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update task');
+      }
       return response.json();
     },
     onSuccess: () => {
@@ -113,6 +115,7 @@ export default function InternalDashboard() {
     }
   });
 
+  // Mutação para deletar empresa
   const deleteCompanyMutation = useMutation({
     mutationFn: async (companyId: number) => {
       const response = await fetch(`/api/internal/registration/${companyId}`, {
@@ -140,6 +143,7 @@ export default function InternalDashboard() {
     }
   });
 
+  // Mutação para editar empresa
   const editCompanyMutation = useMutation({
     mutationFn: async (companyData: BusinessRegistration) => {
       const response = await fetch(`/api/internal/registration/${companyData.id}`, {
@@ -170,6 +174,7 @@ export default function InternalDashboard() {
     }
   });
 
+  // Mutação para criar usuário
   const createUserMutation = useMutation({
     mutationFn: async (userData: any) => {
       const response = await fetch('/api/internal/users', {
@@ -199,6 +204,7 @@ export default function InternalDashboard() {
     }
   });
 
+  // Mutação para alterar senha
   const changePasswordMutation = useMutation({
     mutationFn: async (passwordData: any) => {
       const response = await fetch('/api/internal/change-password', {
@@ -274,8 +280,17 @@ export default function InternalDashboard() {
     updateTaskMutation.mutate({ taskId, status });
   };
 
+  const handleStartTask = (taskId: number) => {
+    handleTaskStatusChange(taskId, 'in_progress');
+  };
+
+  const handleCompleteTask = (taskId: number) => {
+    handleTaskStatusChange(taskId, 'completed');
+  };
+
   const filteredRegistrations = registrations?.filter((reg: BusinessRegistration) => {
     if (departmentFilter === 'all') return true;
+    // Filtrar por departamento - verificar se a empresa tem tarefas do departamento selecionado
     return reg.tasks && reg.tasks.some(task => task.department === departmentFilter);
   }) || [];
 
@@ -331,53 +346,54 @@ export default function InternalDashboard() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+      <main className="max-w-7xl mx-auto px-4 py-8">
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
-            <CardContent className="flex items-center p-6">
-              <Building className="h-8 w-8 text-blue-500 mr-3" />
-              <div>
-                <div className="text-2xl font-bold text-foreground">
-                  {registrations?.length || 0}
-                </div>
-                <p className="text-sm text-muted-foreground">Total de Empresas</p>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total de Empresas</CardTitle>
+              <Building className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{registrations?.length || 0}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Tarefas Pendentes</CardTitle>
+              <Clock className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
+                  acc + reg.tasks.filter(t => t.status === 'pending').length, 0) || 0}
               </div>
             </CardContent>
           </Card>
+
           <Card>
-            <CardContent className="flex items-center p-6">
-              <Clock className="h-8 w-8 text-yellow-500 mr-3" />
-              <div>
-                <div className="text-2xl font-bold text-foreground">
-                  {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
-                    acc + reg.tasks.filter(t => t.status === 'pending').length, 0) || 0}
-                </div>
-                <p className="text-sm text-muted-foreground">Tarefas Pendentes</p>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Em Andamento</CardTitle>
+              <AlertCircle className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
+                  acc + reg.tasks.filter(t => t.status === 'in_progress').length, 0) || 0}
               </div>
             </CardContent>
           </Card>
+
           <Card>
-            <CardContent className="flex items-center p-6">
-              <AlertCircle className="h-8 w-8 text-orange-500 mr-3" />
-              <div>
-                <div className="text-2xl font-bold text-foreground">
-                  {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
-                    acc + reg.tasks.filter(t => t.status === 'in_progress').length, 0) || 0}
-                </div>
-                <p className="text-sm text-muted-foreground">Em Andamento</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="flex items-center p-6">
-              <CheckCircle className="h-8 w-8 text-green-500 mr-3" />
-              <div>
-                <div className="text-2xl font-bold text-foreground">
-                  {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
-                    acc + reg.tasks.filter(t => t.status === 'completed').length, 0) || 0}
-                </div>
-                <p className="text-sm text-muted-foreground">Concluídas</p>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Concluídas</CardTitle>
+              <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
+                  acc + reg.tasks.filter(t => t.status === 'completed').length, 0) || 0}
               </div>
             </CardContent>
           </Card>
@@ -403,7 +419,7 @@ export default function InternalDashboard() {
           </CardContent>
         </Card>
 
-        {/* Companies Grid */}
+        {/* Companies Grid with Kanban-style Tasks */}
         <div className="space-y-6">
           {filteredRegistrations.map((registration: BusinessRegistration) => (
             <Card key={registration.id} className="overflow-hidden">
@@ -430,69 +446,128 @@ export default function InternalDashboard() {
                             Ver Detalhes
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-                          <DialogHeader>
-                            <DialogTitle className="text-xl">{registration.razaoSocial} - Dados Completos</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-6">
-                            {/* Dados da Empresa */}
-                            <div className="border rounded-lg p-4">
-                              <h3 className="font-semibold mb-3 text-lg">Dados da Empresa</h3>
-                              <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div><strong>Razão Social:</strong> {registration.razaoSocial}</div>
-                                <div><strong>Nome Fantasia:</strong> {registration.nomeFantasia}</div>
-                                <div><strong>Endereço:</strong> {registration.endereco}</div>
-                                <div><strong>Telefone:</strong> {registration.telefoneEmpresa}</div>
-                                <div><strong>Email:</strong> {registration.emailEmpresa}</div>
-                                <div><strong>Data de Registro:</strong> {format(new Date(registration.createdAt), 'dd/MM/yyyy HH:mm', { locale: ptBR })}</div>
-                              </div>
+                      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle className="text-xl">{registration.razaoSocial} - Dados Completos</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-6">
+                          {/* Dados da Empresa */}
+                          <div className="border rounded-lg p-4">
+                            <h3 className="font-semibold mb-3 text-lg">Dados da Empresa</h3>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div><strong>Razão Social:</strong> {registration.razaoSocial}</div>
+                              <div><strong>Nome Fantasia:</strong> {registration.nomeFantasia}</div>
+                              <div><strong>Endereço:</strong> {registration.endereco}</div>
+                              <div><strong>Inscrição Imobiliária:</strong> {registration.inscricaoImobiliaria || 'Não informado'}</div>
+                              <div><strong>Metragem:</strong> {registration.metragem || 'Não informado'} m²</div>
+                              <div><strong>Telefone:</strong> {registration.telefoneEmpresa}</div>
+                              <div><strong>Email:</strong> {registration.emailEmpresa}</div>
+                              <div><strong>Capital Social:</strong> {registration.capitalSocial || 'Não informado'}</div>
+                              <div><strong>Atividade Principal:</strong> {registration.atividadePrincipal || 'Não informado'}</div>
+                              <div><strong>Atividades Secundárias:</strong> {registration.atividadesSecundarias || 'Não informado'}</div>
+                              <div><strong>Data de Registro:</strong> {format(new Date(registration.createdAt), 'dd/MM/yyyy HH:mm', { locale: ptBR })}</div>
                             </div>
-
-                            {/* Dados dos Sócios */}
-                            <div className="border rounded-lg p-4">
-                              <h3 className="font-semibold mb-3 text-lg">Sócios ({registration.socios?.length || 0})</h3>
-                              {registration.socios && registration.socios.length > 0 ? (
-                                <div className="space-y-4">
-                                  {registration.socios.map((socio: any, index: number) => (
-                                    <div key={index} className="border-l-4 border-blue-500 pl-4 py-2 bg-muted/30">
-                                      <h4 className="font-medium mb-2">Sócio {index + 1}: {socio.nomeCompleto}</h4>
-                                      <div className="grid grid-cols-2 gap-3 text-sm">
-                                        <div><strong>CPF:</strong> {socio.cpf}</div>
-                                        <div><strong>RG:</strong> {socio.rg}</div>
-                                        <div><strong>Email:</strong> {socio.emailPessoal}</div>
-                                        <div><strong>Telefone:</strong> {socio.telefonePessoal}</div>
-                                      </div>
-                                    </div>
+                            {registration.atividadesSugeridas && registration.atividadesSugeridas.length > 0 && (
+                              <div className="mt-3">
+                                <strong>Atividades Sugeridas:</strong>
+                                <ul className="list-disc list-inside text-sm mt-1">
+                                  {registration.atividadesSugeridas.map((atividade, index) => (
+                                    <li key={index}>{atividade}</li>
                                   ))}
-                                </div>
-                              ) : (
-                                <p className="text-muted-foreground">Nenhum sócio cadastrado</p>
-                              )}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Dados dos Sócios */}
+                          <div className="border rounded-lg p-4">
+                            <h3 className="font-semibold mb-3 text-lg">Sócios ({registration.socios?.length || 0})</h3>
+                            {registration.socios && registration.socios.length > 0 ? (
+                              <div className="space-y-4">
+                                {registration.socios.map((socio: any, index: number) => (
+                                  <div key={index} className="border-l-4 border-blue-500 pl-4 py-2 bg-muted/30">
+                                    <h4 className="font-medium mb-2">Sócio {index + 1}: {socio.nomeCompleto}</h4>
+                                    <div className="grid grid-cols-2 gap-3 text-sm">
+                                      <div><strong>CPF:</strong> {socio.cpf}</div>
+                                      <div><strong>RG:</strong> {socio.rg}</div>
+                                      <div><strong>Data de Nascimento:</strong> {socio.dataNascimento}</div>
+                                      <div><strong>Nacionalidade:</strong> {socio.nacionalidade}</div>
+                                      <div><strong>Estado Civil:</strong> {socio.estadoCivil}</div>
+                                      <div><strong>Profissão:</strong> {socio.profissao}</div>
+                                      <div><strong>Endereço Pessoal:</strong> {socio.enderecoPessoal}</div>
+                                      <div><strong>Telefone Pessoal:</strong> {socio.telefonePessoal}</div>
+                                      <div><strong>Email Pessoal:</strong> {socio.emailPessoal}</div>
+                                      <div><strong>Filiação:</strong> {socio.filiacao}</div>
+                                      {socio.senhaGov && <div><strong>Senha Gov.br:</strong> {socio.senhaGov}</div>}
+                                    </div>
+                                    {/* Links de documentos se existirem */}
+                                    <div className="mt-2 flex gap-2">
+                                      {socio.documentoComFotoUrl && (
+                                        <a href={socio.documentoComFotoUrl} target="_blank" rel="noopener noreferrer" 
+                                           className="text-blue-600 hover:underline text-xs">
+                                          📄 Documento com Foto
+                                        </a>
+                                      )}
+                                      {socio.certidaoCasamentoUrl && (
+                                        <a href={socio.certidaoCasamentoUrl} target="_blank" rel="noopener noreferrer" 
+                                           className="text-blue-600 hover:underline text-xs">
+                                          📄 Certidão de Casamento
+                                        </a>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-muted-foreground">Nenhum sócio cadastrado</p>
+                            )}
+                          </div>
+
+                          {/* Status das Tarefas */}
+                          <div className="border rounded-lg p-4">
+                            <h3 className="font-semibold mb-3 text-lg">Status das Tarefas</h3>
+                            <div className="grid grid-cols-3 gap-4">
+                              {['societario', 'fiscal', 'pessoal'].map(dept => {
+                                const deptTasks = registration.tasks.filter(t => t.department === dept);
+                                const completedTasks = deptTasks.filter(t => t.status === 'completed');
+                                return (
+                                  <div key={dept} className="text-center">
+                                    <h4 className="font-medium">{getDepartmentTitle(dept)}</h4>
+                                    <p className="text-2xl font-bold">
+                                      {completedTasks.length}/{deptTasks.length}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {Math.round((completedTasks.length / deptTasks.length) * 100) || 0}% concluído
+                                    </p>
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
-                        </DialogContent>
-                      </Dialog>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setEditingCompany(registration)}
-                      >
-                        <Edit className="h-4 w-4 mr-2" />
-                        Editar
-                      </Button>
-                      <Button 
-                        variant="destructive" 
-                        size="sm"
-                        onClick={() => {
-                          if (confirm('Tem certeza que deseja deletar esta empresa?')) {
-                            deleteCompanyMutation.mutate(registration.id);
-                          }
-                        }}
-                        disabled={deleteCompanyMutation.isPending}
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Deletar
-                      </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setEditingCompany(registration)}
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Editar
+                    </Button>
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      onClick={() => {
+                        if (confirm('Tem certeza que deseja deletar esta empresa?')) {
+                          deleteCompanyMutation.mutate(registration.id);
+                        }
+                      }}
+                      disabled={deleteCompanyMutation.isPending}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Deletar
+                    </Button>
                     </div>
                   </div>
                 </div>
@@ -503,8 +578,8 @@ export default function InternalDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {['societario', 'fiscal', 'pessoal'].map(department => {
                     const departmentTasks = registration.tasks
-                      ?.filter(task => task.department === department)
-                      ?.sort((a, b) => a.order - b.order) || [];
+                      .filter(task => task.department === department)
+                      .sort((a, b) => a.order - b.order);
                     
                     return (
                       <div key={department} className={`p-4 rounded-lg border ${getDepartmentColor(department)}`}>
@@ -574,213 +649,7 @@ export default function InternalDashboard() {
             </CardContent>
           </Card>
         )}
-      </div>
-
-      {/* Dialog de Gestão de Usuários */}
-      <Dialog open={userManagementOpen} onOpenChange={setUserManagementOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Gestão de Usuários</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-6">
-            {/* Criar Novo Usuário */}
-            <div className="border rounded-lg p-4">
-              <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <UserPlus className="h-4 w-4" />
-                Criar Novo Usuário
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="username">Nome de Usuário</Label>
-                  <Input
-                    id="username"
-                    value={newUserData.username}
-                    onChange={(e) => setNewUserData({...newUserData, username: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="password">Senha</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={newUserData.password}
-                    onChange={(e) => setNewUserData({...newUserData, password: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="name">Nome Completo</Label>
-                  <Input
-                    id="name"
-                    value={newUserData.name}
-                    onChange={(e) => setNewUserData({...newUserData, name: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={newUserData.email}
-                    onChange={(e) => setNewUserData({...newUserData, email: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="role">Função</Label>
-                  <Select value={newUserData.role} onValueChange={(value) => setNewUserData({...newUserData, role: value})}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="user">Usuário</SelectItem>
-                      <SelectItem value="admin">Administrador</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="department">Departamento</Label>
-                  <Select value={newUserData.department} onValueChange={(value) => setNewUserData({...newUserData, department: value})}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="societario">Societário</SelectItem>
-                      <SelectItem value="fiscal">Fiscal</SelectItem>
-                      <SelectItem value="pessoal">Pessoal</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <Button 
-                className="mt-4" 
-                onClick={() => createUserMutation.mutate(newUserData)}
-                disabled={createUserMutation.isPending}
-              >
-                Criar Usuário
-              </Button>
-            </div>
-
-            {/* Alterar Senha */}
-            <div className="border rounded-lg p-4">
-              <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <Key className="h-4 w-4" />
-                Alterar Minha Senha
-              </h3>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="currentPassword">Senha Atual</Label>
-                  <Input
-                    id="currentPassword"
-                    type="password"
-                    value={changePasswordData.currentPassword}
-                    onChange={(e) => setChangePasswordData({...changePasswordData, currentPassword: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="newPassword">Nova Senha</Label>
-                  <Input
-                    id="newPassword"
-                    type="password"
-                    value={changePasswordData.newPassword}
-                    onChange={(e) => setChangePasswordData({...changePasswordData, newPassword: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="confirmPassword">Confirmar Nova Senha</Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    value={changePasswordData.confirmPassword}
-                    onChange={(e) => setChangePasswordData({...changePasswordData, confirmPassword: e.target.value})}
-                  />
-                </div>
-              </div>
-              <Button 
-                className="mt-4" 
-                onClick={() => {
-                  if (changePasswordData.newPassword !== changePasswordData.confirmPassword) {
-                    toast({
-                      title: "Erro",
-                      description: "As senhas não coincidem.",
-                      variant: "destructive",
-                    });
-                    return;
-                  }
-                  changePasswordMutation.mutate(changePasswordData);
-                }}
-                disabled={changePasswordMutation.isPending}
-              >
-                Alterar Senha
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Dialog de Edição de Empresa */}
-      {editingCompany && (
-        <Dialog open={!!editingCompany} onOpenChange={() => setEditingCompany(null)}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Editar Empresa - {editingCompany.razaoSocial}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="razaoSocial">Razão Social</Label>
-                  <Input
-                    id="razaoSocial"
-                    value={editingCompany.razaoSocial}
-                    onChange={(e) => setEditingCompany({...editingCompany, razaoSocial: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="nomeFantasia">Nome Fantasia</Label>
-                  <Input
-                    id="nomeFantasia"
-                    value={editingCompany.nomeFantasia}
-                    onChange={(e) => setEditingCompany({...editingCompany, nomeFantasia: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="endereco">Endereço</Label>
-                  <Input
-                    id="endereco"
-                    value={editingCompany.endereco}
-                    onChange={(e) => setEditingCompany({...editingCompany, endereco: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="telefoneEmpresa">Telefone</Label>
-                  <Input
-                    id="telefoneEmpresa"
-                    value={editingCompany.telefoneEmpresa}
-                    onChange={(e) => setEditingCompany({...editingCompany, telefoneEmpresa: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="emailEmpresa">Email</Label>
-                  <Input
-                    id="emailEmpresa"
-                    value={editingCompany.emailEmpresa}
-                    onChange={(e) => setEditingCompany({...editingCompany, emailEmpresa: e.target.value})}
-                  />
-                </div>
-              </div>
-              <div className="flex gap-2 pt-4">
-                <Button 
-                  onClick={() => editCompanyMutation.mutate(editingCompany)}
-                  disabled={editCompanyMutation.isPending}
-                >
-                  Salvar Alterações
-                </Button>
-                <Button variant="outline" onClick={() => setEditingCompany(null)}>
-                  Cancelar
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+      </main>
     </div>
   );
 }
