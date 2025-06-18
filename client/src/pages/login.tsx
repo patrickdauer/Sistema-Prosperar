@@ -10,6 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Building, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { useLocation } from 'wouter';
 
 const loginSchema = z.object({
   username: z.string().min(1, 'Username é obrigatório'),
@@ -22,6 +23,7 @@ export default function Login() {
   const { login } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [, setLocation] = useLocation();
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -37,8 +39,12 @@ export default function Login() {
       await login(data.username, data.password);
       toast({
         title: "Login realizado com sucesso",
-        description: "Bem-vindo ao sistema interno!",
+        description: "Redirecionando para o sistema interno...",
       });
+      // Redirect to internal system after successful login
+      setTimeout(() => {
+        setLocation('/interno');
+      }, 1000);
     } catch (error: any) {
       toast({
         title: "Erro no login",
