@@ -4,7 +4,6 @@ import { Readable } from 'stream';
 export class GoogleDriveService {
   private drive: any;
   private auth: any;
-  private readonly PARENT_FOLDER_ID = '1-7ezmqCc75VJK6xerrO4-n5oVPvFwrxX'; // Pasta específica do cliente
 
   constructor() {
     console.log('Initializing Google Drive service...');
@@ -51,23 +50,24 @@ export class GoogleDriveService {
 
   async createFolder(folderName: string, parentFolderId?: string): Promise<string> {
     try {
-      // Sempre usar a pasta pai específica se não for fornecida outra
-      const targetParentId = parentFolderId || this.PARENT_FOLDER_ID;
+      console.log(`Creating folder "${folderName}"`);
       
-      console.log(`Creating folder "${folderName}" in parent: ${targetParentId}`);
-      
+      // Por agora, criar sempre na raiz até que as permissões sejam configuradas
       const folderMetadata = {
         name: folderName,
         mimeType: 'application/vnd.google-apps.folder',
-        parents: [targetParentId],
+        // Remover parents por enquanto - criar na raiz da conta de serviço
       };
 
+      console.log('Creating folder in service account root directory');
       const response = await this.drive.files.create({
         resource: folderMetadata,
-        fields: 'id',
+        fields: 'id, webViewLink',
       });
 
       console.log(`Folder created successfully with ID: ${response.data.id}`);
+      console.log(`Folder URL: ${response.data.webViewLink}`);
+      
       return response.data.id;
     } catch (error: any) {
       console.error('Error creating folder:', error);
