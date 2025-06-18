@@ -339,60 +339,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const registration = await storage.createBusinessRegistration(registrationData);
       console.log('Registration created with ID:', registration.id);
       
-      // Process uploads and integrations in parallel
-      const promises = [];
+      // Process uploads and integrations in sequence to ensure folder data is available for email
+      let folderData: { mainFolderId: string, societarioFolderId: string } | undefined;
       
-      // 1. Create Google Drive folder and upload files
-      promises.push((async () => {
-        try {
-          console.log('Starting Google Drive integration...');
+      // 1. Create Google Drive folder and upload files first
+      try {
+        console.log('Starting Google Drive integration...');
+        
+        // Test connection first
+        const connectionOk = await googleDriveService.testConnection();
+        if (!connectionOk) {
+          throw new Error('Google Drive connection failed');
+        }
+        
+        // Criar estrutura completa: Pasta principal > DEPTO SOCIETARIO
+        folderData = await googleDriveService.createBusinessFolderStructure(
+          registration.razaoSocial, 
+          registration.id
+        );
+        
+        console.log(`Folder structure created - Main: ${folderData.mainFolderId}, Societário: ${folderData.societarioFolderId}`);
+        
+        // Upload partner files to DEPTO SOCIETARIO folder
+        const uploadedFiles = req.files as Express.Multer.File[];
+        if (uploadedFiles && uploadedFiles.length > 0) {
+          console.log(`Uploading ${uploadedFiles.length} files to DEPTO SOCIETARIO folder...`);
+          const socios = registration.socios as any[];
           
-          // Test connection first
-          const connectionOk = await googleDriveService.testConnection();
-          if (!connectionOk) {
-            throw new Error('Google Drive connection failed');
-          }
-          
-          // Criar estrutura completa: Pasta principal > DEPTO SOCIETARIO
-          const folderStructure = await googleDriveService.createBusinessFolderStructure(
-            registration.razaoSocial, 
-            registration.id
-          );
-          
-          console.log(`Folder structure created - Main: ${folderStructure.mainFolderId}, Societário: ${folderStructure.societarioFolderId}`);
-          
-          // Upload partner files to DEPTO SOCIETARIO folder
-          const uploadedFiles = req.files as Express.Multer.File[];
-          if (uploadedFiles && uploadedFiles.length > 0) {
-            console.log(`Uploading ${uploadedFiles.length} files to DEPTO SOCIETARIO folder...`);
-            const socios = registration.socios as any[];
+          for (let i = 0; i < socios.length; i++) {
+            const partnerFiles = uploadedFiles.filter((file: Express.Multer.File) => file.fieldname.startsWith(`socio_${i}_`));
             
-            for (let i = 0; i < socios.length; i++) {
-              const partnerFiles = uploadedFiles.filter((file: Express.Multer.File) => file.fieldname.startsWith(`socio_${i}_`));
-              
-              for (const file of partnerFiles) {
-                const fileName = `${socios[i].nomeCompleto}_${file.fieldname.split('_').pop()}_${file.originalname}`;
-                console.log(`Uploading file: ${fileName}`);
-                await googleDriveService.uploadFile(fileName, file.buffer, file.mimetype, folderStructure.societarioFolderId);
-                console.log(`✓ File uploaded: ${fileName}`);
-              }
+            for (const file of partnerFiles) {
+              const fileName = `${socios[i].nomeCompleto}_${file.fieldname.split('_').pop()}_${file.originalname}`;
+              console.log(`Uploading file: ${fileName}`);
+              await googleDriveService.uploadFile(fileName, file.buffer, file.mimetype, folderData.societarioFolderId);
+              console.log(`✓ File uploaded: ${fileName}`);
             }
           }
-          
-          // Generate and upload PDF to main folder
-          const pdfBuffer = await generateBusinessRegistrationPDF(registration);
-          await googleDriveService.uploadPDF(`${registration.razaoSocial}_Dados_Empresa.pdf`, pdfBuffer, folderStructure.mainFolderId);
-          
-          console.log(`Files uploaded to Google Drive folder structure successfully`);
-        } catch (error) {
-          console.error('Google Drive error:', error);
         }
-      })());
+        
+        // Generate and upload PDF to main folder
+        const pdfBuffer = await generateBusinessRegistrationPDF(registration);
+        await googleDriveService.uploadPDF(`${registration.razaoSocial}_Dados_Empresa.pdf`, pdfBuffer, folderData.mainFolderId);
+        
+        console.log(`Files uploaded to Google Drive folder structure successfully`);
+      } catch (error) {
+        console.error('Google Drive error:', error);
+      }
       
-      // 2. Send confirmation emails
+      // Now process other integrations in parallel
+      const promises = [];
+      
+      // 2. Send confirmation emails with folder data
       promises.push((async () => {
         try {
-          await sendConfirmationEmail(registration);
+          await sendConfirmationEmail(registration, folderData);
           console.log('Confirmation emails sent successfully');
         } catch (error) {
           console.error('Email error:', error);

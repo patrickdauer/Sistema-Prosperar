@@ -9,7 +9,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export async function sendConfirmationEmail(registration: BusinessRegistration) {
+export async function sendConfirmationEmail(registration: BusinessRegistration, folderData?: { mainFolderId: string, societarioFolderId: string }) {
   const socios = registration.socios as any[];
   
   // Email para o cliente
@@ -31,6 +31,13 @@ export async function sendConfirmationEmail(registration: BusinessRegistration) 
       <li><strong>Atividade Principal:</strong> ${registration.atividadePrincipal}</li>
       <li><strong>Número de Sócios:</strong> ${socios.length}</li>
     </ul>
+    
+    ${folderData ? `
+    <h3>📂 Acesso aos Documentos:</h3>
+    <p>Todos os documentos enviados foram organizados em uma pasta exclusiva no Google Drive:</p>
+    <p><a href="https://drive.google.com/drive/folders/${folderData.mainFolderId}" target="_blank" style="background-color: #4285f4; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">🔗 Acessar Pasta dos Documentos</a></p>
+    <p><small>Clique no link acima para visualizar todos os documentos enviados organizados por departamento.</small></p>
+    ` : ''}
     
     <h3>📝 Próximos Passos:</h3>
     <p>Nossa equipe irá analisar os documentos enviados e entrar em contato em até 2 dias úteis para dar continuidade ao processo de abertura da empresa.</p>
@@ -82,9 +89,13 @@ export async function sendConfirmationEmail(registration: BusinessRegistration) 
     `).join('')}
     
     <h3>📎 Status dos Documentos:</h3>
-    <p>Todos os arquivos foram enviados e estão sendo processados para upload no Google Drive.</p>
+    <p>Todos os arquivos foram enviados e organizados no Google Drive.</p>
     
-    <p><strong>Pasta no Google Drive:</strong> ${registration.razaoSocial}</p>
+    ${folderData ? `
+    <p><strong>🔗 Acesso Direto aos Documentos:</strong></p>
+    <p><a href="https://drive.google.com/drive/folders/${folderData.mainFolderId}" target="_blank" style="background-color: #4285f4; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px;">📂 Pasta Principal: ${registration.razaoSocial}</a></p>
+    <p><a href="https://drive.google.com/drive/folders/${folderData.societarioFolderId}" target="_blank" style="background-color: #34a853; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px;">📁 DEPTO SOCIETARIO</a></p>
+    ` : `<p><strong>Pasta no Google Drive:</strong> ${registration.razaoSocial}</p>`}
     
     <p><strong>Data/Hora do Envio:</strong> ${registration.createdAt?.toLocaleString('pt-BR')}</p>
     
