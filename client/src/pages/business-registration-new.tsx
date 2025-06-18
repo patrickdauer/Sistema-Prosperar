@@ -81,9 +81,27 @@ export default function BusinessRegistration() {
 
   const submitMutation = useMutation({
     mutationFn: async (data: BusinessRegistrationForm) => {
-      console.log('Starting form submission...');
+      console.log('=== FORM SUBMISSION START ===');
       console.log('Form data:', data);
-      console.log('Partners:', partners);
+      console.log('Partners count:', partners.length);
+      console.log('Partners data:', partners);
+      
+      // Validate required fields before submission
+      if (!data.razaoSocial || !data.nomeFantasia || !data.endereco || !data.telefoneEmpresa || !data.emailEmpresa) {
+        throw new Error('Preencha todos os campos obrigatórios da empresa');
+      }
+      
+      if (partners.length === 0) {
+        throw new Error('Adicione pelo menos um sócio');
+      }
+      
+      // Check if all partners have required fields
+      for (let i = 0; i < partners.length; i++) {
+        const partner = partners[i];
+        if (!partner.nomeCompleto || !partner.cpf || !partner.rg) {
+          throw new Error(`Sócio ${i + 1}: Preencha nome completo, CPF e RG`);
+        }
+      }
       
       const formData = new FormData();
       const submissionData = {
@@ -91,36 +109,51 @@ export default function BusinessRegistration() {
         socios: partners
       };
       
-      console.log('Submission data:', submissionData);
+      console.log('Final submission data:', JSON.stringify(submissionData, null, 2));
       formData.append('data', JSON.stringify(submissionData));
       
-      console.log('Making fetch request...');
-      const response = await fetch('/api/business-registration', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include'
-      });
+      console.log('Making API request to /api/business-registration...');
       
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.log('Error response text:', errorText);
+      try {
+        const response = await fetch('/api/business-registration', {
+          method: 'POST',
+          body: formData,
+          credentials: 'include'
+        });
         
-        let errorData;
-        try {
-          errorData = JSON.parse(errorText);
-        } catch {
-          errorData = { message: `HTTP ${response.status}: ${errorText || 'Erro desconhecido'}` };
+        console.log('Response received:', {
+          status: response.status,
+          statusText: response.statusText,
+          ok: response.ok
+        });
+        
+        const responseText = await response.text();
+        console.log('Raw response:', responseText);
+        
+        if (!response.ok) {
+          let errorMessage;
+          try {
+            const errorData = JSON.parse(responseText);
+            errorMessage = errorData.message || `Erro ${response.status}`;
+          } catch {
+            errorMessage = `Erro ${response.status}: ${responseText || 'Resposta inválida do servidor'}`;
+          }
+          
+          console.error('Server error:', errorMessage);
+          throw new Error(errorMessage);
         }
         
-        throw new Error(errorData.message || `Erro ${response.status}: ${response.statusText}`);
+        const result = JSON.parse(responseText);
+        console.log('Success response:', result);
+        return result;
+        
+      } catch (error) {
+        console.error('Network or parsing error:', error);
+        if (error instanceof Error) {
+          throw error;
+        }
+        throw new Error('Erro de conexão com o servidor');
       }
-      
-      const result = await response.json();
-      console.log('Success response:', result);
-      return result;
     },
     onSuccess: () => {
       setShowSuccess(true);

@@ -250,18 +250,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Business registration submission endpoint
   app.post("/api/business-registration", upload.any(), async (req, res) => {
-    console.log('=== Business Registration Request ===');
-    console.log('Headers:', req.headers);
-    console.log('Body keys:', Object.keys(req.body || {}));
+    console.log('=== INCOMING REGISTRATION REQUEST ===');
+    console.log('Method:', req.method);
+    console.log('URL:', req.url);
+    console.log('Content-Type:', req.headers['content-type']);
+    console.log('Body exists:', !!req.body);
+    console.log('Body keys:', req.body ? Object.keys(req.body) : 'NO BODY');
     console.log('Files count:', req.files ? req.files.length : 0);
+    
+    // Log raw body data for debugging
+    if (req.body && req.body.data) {
+      console.log('Raw data field length:', req.body.data.length);
+      console.log('Data starts with:', req.body.data.substring(0, 100));
+    }
     
     try {
       // Check if we have form data
-      if (!req.body || !req.body.data) {
-        console.error('No form data received');
+      if (!req.body) {
+        console.error('ERROR: No request body received');
         return res.status(400).json({ 
           success: false, 
-          message: "Nenhum dado foi recebido do formulário" 
+          message: "Nenhum corpo da requisição foi recebido" 
+        });
+      }
+      
+      if (!req.body.data) {
+        console.error('ERROR: No data field in request body');
+        console.log('Available body fields:', Object.keys(req.body));
+        return res.status(400).json({ 
+          success: false, 
+          message: "Campo 'data' não encontrado na requisição" 
         });
       }
       

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Form Submission</title>
+</head>
+<body>
+    <h1>Test Business Registration</h1>
+    <form id="testForm">
+        <input type="text" id="razaoSocial" placeholder="Razão Social" value="Teste Empresa LTDA" required>
+        <input type="text" id="nomeFantasia" placeholder="Nome Fantasia" value="Teste Empresa" required>
+        <input type="text" id="endereco" placeholder="Endereço" value="Rua Teste 123" required>
+        <input type="text" id="telefone" placeholder="Telefone" value="11999999999" required>
+        <input type="email" id="email" placeholder="Email" value="teste@empresa.com" required>
+        <button type="submit">Enviar Teste</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('testForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const data = {
+                razaoSocial: document.getElementById('razaoSocial').value,
+                nomeFantasia: document.getElementById('nomeFantasia').value,
+                endereco: document.getElementById('endereco').value,
+                telefoneEmpresa: document.getElementById('telefone').value,
+                emailEmpresa: document.getElementById('email').value,
+                inscricaoImobiliaria: '',
+                metragem: 0,
+                capitalSocial: '',
+                atividadePrincipal: '',
+                atividadesSecundarias: '',
+                atividadesSugeridas: [],
+                socios: [{
+                    nomeCompleto: 'João Silva',
+                    cpf: '123.456.789-00',
+                    rg: '12.345.678-9',
+                    dataNascimento: '1990-01-01',
+                    nacionalidade: 'Brasileira',
+                    estadoCivil: 'Solteiro',
+                    profissao: 'Empresário',
+                    enderecoPessoal: 'Rua João 456',
+                    telefonePessoal: '11888888888',
+                    emailPessoal: 'joao@email.com',
+                    filiacao: 'Maria Silva e José Silva'
+                }]
+            };
+            
+            formData.append('data', JSON.stringify(data));
+            
+            try {
+                console.log('Sending test data:', data);
+                const response = await fetch('/api/business-registration', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.text();
+                console.log('Response:', result);
+                
+                document.getElementById('result').innerHTML = `
+                    <h3>Response Status: ${response.status}</h3>
+                    <pre>${result}</pre>
+                `;
+                
+                if (response.ok) {
+                    document.getElementById('result').style.color = 'green';
+                } else {
+                    document.getElementById('result').style.color = 'red';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').innerHTML = `
+                    <h3 style="color: red">Error: ${error.message}</h3>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
