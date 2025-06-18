@@ -330,14 +330,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const folderName = `${registration.razaoSocial} - ${registration.id}`;
           const folderId = await googleDriveService.createFolder(folderName);
           
-          // Upload partner files to Google Drive
-          const socios = registration.socios as any[];
-          for (let i = 0; i < socios.length; i++) {
-            const partnerFiles = files.filter(file => file.fieldname.startsWith(`socio_${i}_`));
-            
-            for (const file of partnerFiles) {
-              const fileName = `${socios[i].nomeCompleto}_${file.fieldname.split('_').pop()}_${file.originalname}`;
-              await googleDriveService.uploadFile(fileName, file.buffer, file.mimetype, folderId);
+          // Upload partner files to Google Drive if any
+          const uploadedFiles = req.files as Express.Multer.File[];
+          if (uploadedFiles && uploadedFiles.length > 0) {
+            const socios = registration.socios as any[];
+            for (let i = 0; i < socios.length; i++) {
+              const partnerFiles = uploadedFiles.filter((file: Express.Multer.File) => file.fieldname.startsWith(`socio_${i}_`));
+              
+              for (const file of partnerFiles) {
+                const fileName = `${socios[i].nomeCompleto}_${file.fieldname.split('_').pop()}_${file.originalname}`;
+                await googleDriveService.uploadFile(fileName, file.buffer, file.mimetype, folderId);
+              }
             }
           }
           
