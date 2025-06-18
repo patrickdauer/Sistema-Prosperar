@@ -654,10 +654,8 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
         return;
       }
       
-      // Hash new password and update
-      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-      // TODO: Add actual password update method to storage
-      // For now, return success (implementation depends on database schema)
+      // Update password using storage method
+      await storage.updateUserPassword(userId, newPassword);
       
       res.json({ message: "Senha alterada com sucesso" });
     } catch (error) {
