@@ -71,16 +71,27 @@ export default function InternalDashboard() {
   const [newUserData, setNewUserData] = useState({ username: '', password: '', name: '', email: '', role: 'user', department: '' });
   const [changePasswordData, setChangePasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
 
-  const { data: registrations, isLoading } = useQuery({
+  const { data: registrations, isLoading, error } = useQuery({
     queryKey: ['/api/internal/registrations'],
     queryFn: async () => {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('No token found');
+      
       const response = await fetch('/api/internal/registrations', {
         headers: { 
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
-      if (!response.ok) throw new Error('Failed to fetch registrations');
-      return response.json();
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to fetch registrations: ${response.status} ${errorText}`);
+      }
+      
+      const data = await response.json();
+      console.log('Registrations loaded:', data);
+      return data;
     }
   });
 
@@ -275,8 +286,13 @@ export default function InternalDashboard() {
   };
 
   const filteredRegistrations = registrations?.filter((reg: BusinessRegistration) => {
+    console.log('Filtering registration:', reg.id, 'departmentFilter:', departmentFilter);
     if (departmentFilter === 'all') return true;
-    return reg.tasks && reg.tasks.some(task => task.department === departmentFilter);
+    const hasMatchingTask = reg.tasks && reg.tasks.some(task => {
+      console.log('Task department:', task.department, 'matches filter:', task.department === departmentFilter);
+      return task.department === departmentFilter;
+    });
+    return hasMatchingTask;
   }) || [];
 
   console.log('Department filter:', departmentFilter);
@@ -286,7 +302,28 @@ export default function InternalDashboard() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground">Carregando...</div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <div className="text-muted-foreground">Carregando dados do sistema interno...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    console.error('Dashboard error:', error);
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <h2 className="text-xl font-bold text-destructive mb-2">Erro ao carregar dados</h2>
+          <p className="text-muted-foreground mb-4">{error.message}</p>
+          <div className="space-y-2">
+            <Button onClick={() => window.location.reload()}>Recarregar página</Button>
+            <Button variant="outline" onClick={() => window.location.href = '/equipe'}>
+              Fazer login novamente
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
