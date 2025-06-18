@@ -24,21 +24,26 @@ function Router() {
 }
 
 function ProtectedRoute() {
-  const { isAuthenticated, isLoading } = useAuth();
+  try {
+    const { isAuthenticated, isLoading } = useAuth();
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground">Carregando...</div>
-      </div>
-    );
-  }
+    if (isLoading) {
+      return (
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-muted-foreground">Carregando...</div>
+        </div>
+      );
+    }
 
-  if (!isAuthenticated) {
+    if (!isAuthenticated) {
+      return <Login />;
+    }
+
+    return <InternalDashboard />;
+  } catch (error) {
+    // Fallback if auth hook fails
     return <Login />;
   }
-
-  return <InternalDashboard />;
 }
 
 function App() {
