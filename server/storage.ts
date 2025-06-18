@@ -27,11 +27,14 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   authenticateUser(username: string, password: string): Promise<User | null>;
+  updateUserPassword(userId: number, newPassword: string): Promise<void>;
   
   // Business registration
   createBusinessRegistration(registration: InsertBusinessRegistration): Promise<BusinessRegistration>;
   getBusinessRegistration(id: number): Promise<BusinessRegistration | undefined>;
   getAllBusinessRegistrations(): Promise<BusinessRegistration[]>;
+  updateBusinessRegistration(id: number, data: Partial<BusinessRegistration>): Promise<BusinessRegistration>;
+  deleteBusinessRegistration(id: number): Promise<void>;
   
   // Task management
   createTasksForRegistration(registrationId: number): Promise<Task[]>;
@@ -102,6 +105,27 @@ export class DatabaseStorage implements IStorage {
 
   async getAllBusinessRegistrations(): Promise<BusinessRegistration[]> {
     return await db.select().from(businessRegistrations).orderBy(desc(businessRegistrations.createdAt));
+  }
+
+  async updateBusinessRegistration(id: number, data: Partial<BusinessRegistration>): Promise<BusinessRegistration> {
+    const [updatedRegistration] = await db
+      .update(businessRegistrations)
+      .set(data)
+      .where(eq(businessRegistrations.id, id))
+      .returning();
+    
+    return updatedRegistration;
+  }
+
+  async deleteBusinessRegistration(id: number): Promise<void> {
+    // Delete related tasks first
+    await db.delete(tasks).where(eq(tasks.businessRegistrationId, id));
+    
+    // Delete related activities
+    await db.delete(activities).where(eq(activities.businessRegistrationId, id));
+    
+    // Delete the registration
+    await db.delete(businessRegistrations).where(eq(businessRegistrations.id, id));
   }
 
   // Task management

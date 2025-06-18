@@ -569,8 +569,7 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
         return;
       }
       
-      // TODO: Add actual delete method to storage
-      // For now, return success (implementation depends on database schema)
+      await storage.deleteBusinessRegistration(id);
       res.json({ message: "Empresa deletada com sucesso" });
     } catch (error) {
       console.error("Error deleting registration:", error);
@@ -590,9 +589,8 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
         return;
       }
       
-      // TODO: Add actual update method to storage
-      // For now, return the updated data (implementation depends on database schema)
-      res.json({ ...existingRegistration, ...updateData, id });
+      const updatedRegistration = await storage.updateBusinessRegistration(id, updateData);
+      res.json(updatedRegistration);
     } catch (error) {
       console.error("Error updating registration:", error);
       res.status(500).json({ message: "Erro ao atualizar empresa" });
