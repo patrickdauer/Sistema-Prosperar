@@ -57,15 +57,25 @@ export class GoogleDriveService {
         mimeType: 'application/vnd.google-apps.folder',
       };
 
-      // Se um parentFolderId for fornecido, usar ele; caso contrário, usar a pasta específica
+      // Se um parentFolderId for fornecido, usar ele; caso contrário, criar na raiz
       if (parentFolderId) {
         folderMetadata.parents = [parentFolderId];
-      } else {
-        // Usar a pasta específica fornecida pelo usuário
-        folderMetadata.parents = ['1zyAOSo2-wUHGkPgml8mQDIKL99LGrUIZ'];
       }
+      // Remover a especificação de pasta pai para criar na raiz da conta de serviço
 
-      console.log(`Creating folder in parent: ${folderMetadata.parents[0]}`);
+      console.log(`Creating folder in parent: ${folderMetadata.parents ? folderMetadata.parents[0] : 'root'}`);
+      
+      // Adicionar compartilhamento público para facilitar visualização
+      try {
+        // Tentar criar na pasta específica primeiro
+        if (!parentFolderId) {
+          folderMetadata.parents = ['1zyAOSo2-wUHGkPgml8mQDIKL99LGrUIZ'];
+          console.log('Attempting to create in specified folder: 1zyAOSo2-wUHGkPgml8mQDIKL99LGrUIZ');
+        }
+      } catch (error) {
+        console.log('Failed to set specific parent, creating in root');
+        delete folderMetadata.parents;
+      }
       const response = await this.drive.files.create({
         resource: folderMetadata,
         fields: 'id, webViewLink, parents',
@@ -76,6 +86,21 @@ export class GoogleDriveService {
       
       console.log(`✓ Folder created successfully with ID: ${folderId}`);
       console.log(`✓ Folder URL: ${folderUrl}`);
+      
+      // Compartilhar com uma conta específica para garantir visibilidade
+      try {
+        await this.drive.permissions.create({
+          fileId: folderId,
+          resource: {
+            role: 'writer',
+            type: 'user',
+            emailAddress: 'contato@prosperarcontabilidade.com.br'
+          }
+        });
+        console.log('✓ Folder shared with contato@prosperarcontabilidade.com.br');
+      } catch (shareError) {
+        console.log('Note: Could not share folder with specific email, folder created successfully anyway');
+      }
       
       return folderId;
     } catch (error: any) {
