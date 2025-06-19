@@ -93,14 +93,14 @@ export default function DashboardInterno() {
   return (
     <div style={{ 
       minHeight: '100vh', 
-      background: '#1a1a2e',
-      color: 'white'
+      background: '#0a0a0f',
+      color: '#ffffff'
     }}>
       {/* Header */}
       <div style={{ 
-        background: 'linear-gradient(45deg, #16213e 0%, #0f3460 100%)',
+        background: 'linear-gradient(45deg, #0d1117 0%, #161b22 100%)',
         padding: '20px 0',
-        borderBottom: '2px solid #0f3460'
+        borderBottom: '2px solid #21262d'
       }}>
         <div style={{ 
           maxWidth: '1400px', 
@@ -125,23 +125,25 @@ export default function DashboardInterno() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             <div style={{ 
-              background: 'rgba(233, 69, 96, 0.2)', 
-              padding: '10px 20px', 
+              background: 'rgba(88, 166, 255, 0.15)', 
+              padding: '12px 24px', 
               borderRadius: '25px',
-              border: '1px solid #e94560'
+              border: '1px solid #58a6ff',
+              backdropFilter: 'blur(10px)'
             }}>
-              <span>{user?.name} - {user?.role}</span>
+              <span style={{ color: '#f0f6fc' }}>{user?.name} - {user?.role}</span>
             </div>
             <button
               onClick={logout}
               style={{
-                background: '#e94560',
+                background: 'linear-gradient(135deg, #f85149 0%, #da3633 100%)',
                 border: 'none',
                 color: 'white',
-                padding: '10px 20px',
+                padding: '12px 24px',
                 borderRadius: '8px',
                 cursor: 'pointer',
-                fontWeight: 'bold'
+                fontWeight: 'bold',
+                boxShadow: '0 4px 12px rgba(248, 81, 73, 0.3)'
               }}
             >
               Sair
@@ -163,54 +165,62 @@ export default function DashboardInterno() {
           marginBottom: '40px'
         }}>
           <div style={{ 
-            background: 'linear-gradient(135deg, #e94560 0%, #f27a7a 100%)',
+            background: 'linear-gradient(135deg, #161b22 0%, #21262d 100%)',
             padding: '25px',
             borderRadius: '15px',
-            textAlign: 'center'
+            textAlign: 'center',
+            border: '1px solid #30363d',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)'
           }}>
-            <div style={{ fontSize: '36px', fontWeight: 'bold' }}>
+            <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#58a6ff' }}>
               {registrations?.length || 0}
             </div>
-            <div>Total de Empresas</div>
+            <div style={{ color: '#8b949e' }}>Total de Empresas</div>
           </div>
           
           <div style={{ 
-            background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%)',
+            background: 'linear-gradient(135deg, #161b22 0%, #21262d 100%)',
             padding: '25px',
             borderRadius: '15px',
-            textAlign: 'center'
+            textAlign: 'center',
+            border: '1px solid #da3633',
+            boxShadow: '0 8px 24px rgba(218, 54, 51, 0.2)'
           }}>
-            <div style={{ fontSize: '36px', fontWeight: 'bold' }}>
+            <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#f85149' }}>
               {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
                 acc + (reg.tasks?.filter((t: Task) => t.status === 'pending').length || 0), 0) || 0}
             </div>
-            <div>Pendentes</div>
+            <div style={{ color: '#8b949e' }}>Pendentes</div>
           </div>
 
           <div style={{ 
-            background: 'linear-gradient(135deg, #ffa726 0%, #ff9800 100%)',
+            background: 'linear-gradient(135deg, #161b22 0%, #21262d 100%)',
             padding: '25px',
             borderRadius: '15px',
-            textAlign: 'center'
+            textAlign: 'center',
+            border: '1px solid #d29922',
+            boxShadow: '0 8px 24px rgba(210, 153, 34, 0.2)'
           }}>
-            <div style={{ fontSize: '36px', fontWeight: 'bold' }}>
+            <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#f2cc60' }}>
               {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
                 acc + (reg.tasks?.filter((t: Task) => t.status === 'in_progress').length || 0), 0) || 0}
             </div>
-            <div>Em Andamento</div>
+            <div style={{ color: '#8b949e' }}>Em Andamento</div>
           </div>
 
           <div style={{ 
-            background: 'linear-gradient(135deg, #66bb6a 0%, #4caf50 100%)',
+            background: 'linear-gradient(135deg, #161b22 0%, #21262d 100%)',
             padding: '25px',
             borderRadius: '15px',
-            textAlign: 'center'
+            textAlign: 'center',
+            border: '1px solid #238636',
+            boxShadow: '0 8px 24px rgba(35, 134, 54, 0.2)'
           }}>
-            <div style={{ fontSize: '36px', fontWeight: 'bold' }}>
+            <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#3fb950' }}>
               {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
                 acc + (reg.tasks?.filter((t: Task) => t.status === 'completed').length || 0), 0) || 0}
             </div>
-            <div>Concluídas</div>
+            <div style={{ color: '#8b949e' }}>Concluídas</div>
           </div>
         </div>
 
@@ -218,25 +228,26 @@ export default function DashboardInterno() {
         <div style={{ display: 'grid', gap: '30px' }}>
           {registrations?.map((registration: BusinessRegistration) => (
             <div key={registration.id} style={{ 
-              background: 'linear-gradient(145deg, #16213e 0%, #0f3460 100%)',
+              background: 'linear-gradient(145deg, #0d1117 0%, #161b22 100%)',
               borderRadius: '20px',
               overflow: 'hidden',
-              border: '1px solid #e94560'
+              border: '1px solid #21262d',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6)'
             }}>
               {/* Company Header */}
               <div style={{ 
-                background: 'rgba(233, 69, 96, 0.1)', 
+                background: 'rgba(88, 166, 255, 0.08)', 
                 padding: '25px',
-                borderBottom: '1px solid #e94560'
+                borderBottom: '1px solid #21262d'
               }}>
                 <h3 style={{ 
                   fontSize: '24px', 
                   margin: '0 0 10px 0',
-                  color: '#e94560'
+                  color: '#58a6ff'
                 }}>
                   {registration.razaoSocial}
                 </h3>
-                <p style={{ margin: '0 0 15px 0', opacity: 0.8 }}>
+                <p style={{ margin: '0 0 15px 0', color: '#8b949e' }}>
                   {registration.nomeFantasia}
                 </p>
                 <div style={{ 
@@ -244,7 +255,7 @@ export default function DashboardInterno() {
                   gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
                   gap: '10px',
                   fontSize: '14px',
-                  opacity: 0.7
+                  color: '#7d8590'
                 }}>
                   <div>📧 {registration.emailEmpresa}</div>
                   <div>📞 {registration.telefoneEmpresa}</div>
@@ -262,25 +273,28 @@ export default function DashboardInterno() {
                 }}>
                   {/* Societário */}
                   <div style={{ 
-                    background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                    background: 'linear-gradient(135deg, #0d1117 0%, #161b22 100%)',
                     borderRadius: '15px',
-                    overflow: 'hidden'
+                    overflow: 'hidden',
+                    border: '1px solid #58a6ff'
                   }}>
                     <div style={{ 
-                      background: 'rgba(0,0,0,0.2)', 
+                      background: 'rgba(88, 166, 255, 0.1)', 
                       padding: '15px',
                       fontWeight: 'bold',
-                      fontSize: '18px'
+                      fontSize: '18px',
+                      color: '#58a6ff'
                     }}>
                       🏢 Depto. Societário
                     </div>
                     <div style={{ padding: '20px' }}>
                       {registration.tasks?.filter(task => task.department === 'societario').map(task => (
                         <div key={task.id} style={{ 
-                          background: 'rgba(255,255,255,0.1)', 
+                          background: 'rgba(88, 166, 255, 0.05)', 
                           padding: '15px', 
                           borderRadius: '10px',
-                          marginBottom: '15px'
+                          marginBottom: '15px',
+                          border: '1px solid #21262d'
                         }}>
                           <h4 style={{ margin: '0 0 8px 0', fontSize: '16px' }}>
                             {task.title}
