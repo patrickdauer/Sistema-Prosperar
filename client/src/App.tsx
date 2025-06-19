@@ -11,7 +11,7 @@ import BusinessRegistration from "@/pages/business-registration-new";
 import Dashboard from "@/pages/dashboard";
 import Login from "@/pages/login";
 import DashboardInterno from "@/pages/sistema-novo";
-import DarkSistema from "@/pages/dark-sistema";
+import SistemaFinal from "@/pages/sistema-final";
 import NotFound from "@/pages/not-found";
 
 function ProtectedDashboardInterno() {
@@ -64,7 +64,7 @@ function ProtectedSistemaDark() {
     return <Login />;
   }
 
-  return <DarkSistema />;
+  return <SistemaFinal />;
 }
 
 function App() {
@@ -79,8 +79,8 @@ function App() {
               <Route path="/dashboard" component={Dashboard} />
               <Route path="/equipe" component={Login} />
               <Route path="/dashboard-interno" component={ProtectedDashboardInterno} />
-              <Route path="/novo-sistema" component={DarkSistema} />
-              <Route path="/dark" component={DarkSistema} />
+              <Route path="/novo-sistema" component={SistemaFinal} />
+              <Route path="/dark" component={SistemaFinal} />
               <Route component={NotFound} />
             </Switch>
           </TooltipProvider>
