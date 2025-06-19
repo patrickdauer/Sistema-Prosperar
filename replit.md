@@ -146,6 +146,15 @@ The system uses a `business_registrations` table with:
 
 ## Recent Changes
 
+### December 19, 2025 - Dark Minimalist Theme Implementation
+- **Sistema Dark**: Created new minimalist dark theme from scratch at `/sistema-dark`
+- **Sober Professional Design**: Black background (#0a0a0a) with gray elements for corporate environment
+- **Selective Color Usage**: Only status buttons have colors (red, orange, green) as requested
+- **Toggle Functionality**: Status buttons can be clicked on/off for better task management
+- **Clean Interface**: Removed all unnecessary colorful elements from departments
+- **Protected Route**: Added authentication protection with proper loading states
+- **User Preference**: Implemented exactly as requested - dark theme with minimal colors
+
 ### December 19, 2025 - Complete System Redesign
 - **New Internal System**: Completely rebuilt the internal dashboard with modern architecture and visual design
 - **Custom Status Buttons**: Implemented hardcoded color system with inline styles that cannot be overridden

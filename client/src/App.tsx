@@ -41,6 +41,32 @@ function ProtectedDashboardInterno() {
   return <DashboardInterno />;
 }
 
+function ProtectedSistemaDark() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        background: '#0a0a0a',
+        color: '#ffffff',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '16px'
+      }}>
+        Carregando...
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Login />;
+  }
+
+  return <SistemaDark />;
+}
+
 function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="business-form-theme">
@@ -54,7 +80,7 @@ function App() {
               <Route path="/equipe" component={Login} />
               <Route path="/dashboard-interno" component={ProtectedDashboardInterno} />
               <Route path="/novo-sistema" component={ProtectedDashboardInterno} />
-              <Route path="/sistema-dark" component={SistemaDark} />
+              <Route path="/sistema-dark" component={ProtectedSistemaDark} />
               <Route component={NotFound} />
             </Switch>
           </TooltipProvider>
