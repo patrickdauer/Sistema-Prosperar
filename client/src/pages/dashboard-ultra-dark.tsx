@@ -362,86 +362,82 @@ export default function DashboardUltraDark() {
 
                   {/* Fiscal */}
                   <div style={{ 
-                    background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)',
-                    borderRadius: '20px',
-                    overflow: 'hidden',
-                    border: '1px solid #444444'
+                    background: '#000000'
                   }}>
                     <div style={{ 
-                      background: 'linear-gradient(135deg, #222222 0%, #333333 100%)', 
+                      background: '#111111', 
                       padding: '20px',
-                      fontWeight: 'bold',
-                      fontSize: '20px',
+                      fontWeight: '600',
+                      fontSize: '12px',
                       color: '#ffffff',
-                      borderBottom: '1px solid #444444'
+                      letterSpacing: '0.1em',
+                      textTransform: 'uppercase'
                     }}>
-                      📊 Departamento Fiscal
+                      Fiscal
                     </div>
-                    <div style={{ padding: '25px' }}>
+                    <div style={{ padding: '30px' }}>
                       {registration.tasks?.filter(task => task.department === 'fiscal').map(task => (
                         <div key={task.id} style={{ 
-                          background: 'linear-gradient(135deg, #1a1a1a 0%, #222222 100%)', 
-                          padding: '20px', 
-                          borderRadius: '15px',
-                          marginBottom: '20px',
-                          border: '1px solid #333333'
+                          borderBottom: '1px solid #111111',
+                          paddingBottom: '20px',
+                          marginBottom: '20px'
                         }}>
-                          <h4 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#ffffff', fontWeight: '600' }}>
+                          <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#ffffff', fontWeight: '500' }}>
                             {task.title}
                           </h4>
                           {task.description && (
-                            <p style={{ margin: '0 0 20px 0', fontSize: '15px', color: '#aaaaaa', lineHeight: '1.5' }}>
+                            <p style={{ margin: '0 0 15px 0', fontSize: '12px', color: '#666666', lineHeight: '1.4' }}>
                               {task.description}
                             </p>
                           )}
-                          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                          <div style={{ display: 'flex', gap: '8px' }}>
                             <button
                               onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'pending' })}
                               style={{
-                                background: task.status === 'pending' ? '#dc2626' : 'rgba(220, 38, 38, 0.2)',
+                                background: task.status === 'pending' ? '#dc2626' : '#111111',
                                 color: '#ffffff',
-                                border: task.status === 'pending' ? '2px solid #dc2626' : '2px solid rgba(220, 38, 38, 0.5)',
-                                padding: '10px 16px',
-                                borderRadius: '8px',
-                                fontSize: '13px',
-                                fontWeight: 'bold',
+                                border: 'none',
+                                padding: '6px 12px',
+                                fontSize: '10px',
+                                fontWeight: '600',
                                 cursor: 'pointer',
-                                textTransform: 'uppercase'
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em'
                               }}
                             >
-                              PENDENTE
+                              PEN
                             </button>
                             <button
                               onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'in_progress' })}
                               style={{
-                                background: task.status === 'in_progress' ? '#ca8a04' : 'rgba(202, 138, 4, 0.2)',
+                                background: task.status === 'in_progress' ? '#ca8a04' : '#111111',
                                 color: '#ffffff',
-                                border: task.status === 'in_progress' ? '2px solid #ca8a04' : '2px solid rgba(202, 138, 4, 0.5)',
-                                padding: '10px 16px',
-                                borderRadius: '8px',
-                                fontSize: '13px',
-                                fontWeight: 'bold',
+                                border: 'none',
+                                padding: '6px 12px',
+                                fontSize: '10px',
+                                fontWeight: '600',
                                 cursor: 'pointer',
-                                textTransform: 'uppercase'
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em'
                               }}
                             >
-                              EM ANDAMENTO
+                              AND
                             </button>
                             <button
                               onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'completed' })}
                               style={{
-                                background: task.status === 'completed' ? '#16a34a' : 'rgba(22, 163, 74, 0.2)',
+                                background: task.status === 'completed' ? '#16a34a' : '#111111',
                                 color: '#ffffff',
-                                border: task.status === 'completed' ? '2px solid #16a34a' : '2px solid rgba(22, 163, 74, 0.5)',
-                                padding: '10px 16px',
-                                borderRadius: '8px',
-                                fontSize: '13px',
-                                fontWeight: 'bold',
+                                border: 'none',
+                                padding: '6px 12px',
+                                fontSize: '10px',
+                                fontWeight: '600',
                                 cursor: 'pointer',
-                                textTransform: 'uppercase'
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em'
                               }}
                             >
-                              CONCLUÍDA
+                              CON
                             </button>
                           </div>
                         </div>
@@ -451,86 +447,82 @@ export default function DashboardUltraDark() {
 
                   {/* Pessoal */}
                   <div style={{ 
-                    background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)',
-                    borderRadius: '20px',
-                    overflow: 'hidden',
-                    border: '1px solid #444444'
+                    background: '#000000'
                   }}>
                     <div style={{ 
-                      background: 'linear-gradient(135deg, #222222 0%, #333333 100%)', 
+                      background: '#111111', 
                       padding: '20px',
-                      fontWeight: 'bold',
-                      fontSize: '20px',
+                      fontWeight: '600',
+                      fontSize: '12px',
                       color: '#ffffff',
-                      borderBottom: '1px solid #444444'
+                      letterSpacing: '0.1em',
+                      textTransform: 'uppercase'
                     }}>
-                      👥 Departamento Pessoal
+                      Pessoal
                     </div>
-                    <div style={{ padding: '25px' }}>
+                    <div style={{ padding: '30px' }}>
                       {registration.tasks?.filter(task => task.department === 'pessoal').map(task => (
                         <div key={task.id} style={{ 
-                          background: 'linear-gradient(135deg, #1a1a1a 0%, #222222 100%)', 
-                          padding: '20px', 
-                          borderRadius: '15px',
-                          marginBottom: '20px',
-                          border: '1px solid #333333'
+                          borderBottom: '1px solid #111111',
+                          paddingBottom: '20px',
+                          marginBottom: '20px'
                         }}>
-                          <h4 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#ffffff', fontWeight: '600' }}>
+                          <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#ffffff', fontWeight: '500' }}>
                             {task.title}
                           </h4>
                           {task.description && (
-                            <p style={{ margin: '0 0 20px 0', fontSize: '15px', color: '#aaaaaa', lineHeight: '1.5' }}>
+                            <p style={{ margin: '0 0 15px 0', fontSize: '12px', color: '#666666', lineHeight: '1.4' }}>
                               {task.description}
                             </p>
                           )}
-                          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                          <div style={{ display: 'flex', gap: '8px' }}>
                             <button
                               onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'pending' })}
                               style={{
-                                background: task.status === 'pending' ? '#dc2626' : 'rgba(220, 38, 38, 0.2)',
+                                background: task.status === 'pending' ? '#dc2626' : '#111111',
                                 color: '#ffffff',
-                                border: task.status === 'pending' ? '2px solid #dc2626' : '2px solid rgba(220, 38, 38, 0.5)',
-                                padding: '10px 16px',
-                                borderRadius: '8px',
-                                fontSize: '13px',
-                                fontWeight: 'bold',
+                                border: 'none',
+                                padding: '6px 12px',
+                                fontSize: '10px',
+                                fontWeight: '600',
                                 cursor: 'pointer',
-                                textTransform: 'uppercase'
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em'
                               }}
                             >
-                              PENDENTE
+                              PEN
                             </button>
                             <button
                               onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'in_progress' })}
                               style={{
-                                background: task.status === 'in_progress' ? '#ca8a04' : 'rgba(202, 138, 4, 0.2)',
+                                background: task.status === 'in_progress' ? '#ca8a04' : '#111111',
                                 color: '#ffffff',
-                                border: task.status === 'in_progress' ? '2px solid #ca8a04' : '2px solid rgba(202, 138, 4, 0.5)',
-                                padding: '10px 16px',
-                                borderRadius: '8px',
-                                fontSize: '13px',
-                                fontWeight: 'bold',
+                                border: 'none',
+                                padding: '6px 12px',
+                                fontSize: '10px',
+                                fontWeight: '600',
                                 cursor: 'pointer',
-                                textTransform: 'uppercase'
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em'
                               }}
                             >
-                              EM ANDAMENTO
+                              AND
                             </button>
                             <button
                               onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'completed' })}
                               style={{
-                                background: task.status === 'completed' ? '#16a34a' : 'rgba(22, 163, 74, 0.2)',
+                                background: task.status === 'completed' ? '#16a34a' : '#111111',
                                 color: '#ffffff',
-                                border: task.status === 'completed' ? '2px solid #16a34a' : '2px solid rgba(22, 163, 74, 0.5)',
-                                padding: '10px 16px',
-                                borderRadius: '8px',
-                                fontSize: '13px',
-                                fontWeight: 'bold',
+                                border: 'none',
+                                padding: '6px 12px',
+                                fontSize: '10px',
+                                fontWeight: '600',
                                 cursor: 'pointer',
-                                textTransform: 'uppercase'
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em'
                               }}
                             >
-                              CONCLUÍDA
+                              CON
                             </button>
                           </div>
                         </div>
