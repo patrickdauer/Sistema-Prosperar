@@ -631,7 +631,7 @@ export default function InternalDashboardFixed() {
           </DialogHeader>
           <div className="space-y-6">
             {/* Criar Usuário - Apenas para Admin */}
-            {isAdmin ? (
+            {isAdmin && (
               <div className="border rounded-lg p-4">
                 <h3 className="font-semibold mb-3 flex items-center gap-2">
                   <UserPlus className="h-4 w-4" />
@@ -716,18 +716,6 @@ export default function InternalDashboardFixed() {
                 >
                   Criar Usuário
                 </Button>
-              </div>
-            ) : (
-              <div className="border rounded-lg p-4 bg-muted">
-                <h3 className="font-semibold mb-3 flex items-center gap-2">
-                  <UserPlus className="h-4 w-4" />
-                  Criar Novo Usuário
-                </h3>
-                <p className="text-muted-foreground text-center">
-                  Apenas administradores podem criar novos usuários.
-                  <br />
-                  <span className="text-sm">Seu perfil: {user?.role} | Necessário: admin</span>
-                </p>
               </div>
             )}
 
