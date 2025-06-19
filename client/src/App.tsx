@@ -10,7 +10,7 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import BusinessRegistration from "@/pages/business-registration-new";
 import Dashboard from "@/pages/dashboard";
 import Login from "@/pages/login";
-import DashboardInterno from "@/pages/dashboard-interno";
+import DashboardInterno from "@/pages/dashboard-ultra-dark";
 import NotFound from "@/pages/not-found";
 
 function ProtectedDashboardInterno() {
