@@ -263,15 +263,15 @@ export default function InternalDashboardFixed() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="secondary">Pendente</Badge>;
+        return <Badge className="bg-red-500 hover:bg-red-600 text-white">Pendente</Badge>;
       case 'in_progress':
-        return <Badge variant="default">Em Andamento</Badge>;
+        return <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white">Em Andamento</Badge>;
       case 'completed':
-        return <Badge variant="destructive">Concluída</Badge>;
+        return <Badge className="bg-green-500 hover:bg-green-600 text-white">Concluída</Badge>;
       case 'blocked':
         return <Badge variant="outline">Bloqueada</Badge>;
       default:
-        return <Badge variant="secondary">Pendente</Badge>;
+        return <Badge className="bg-red-500 hover:bg-red-600 text-white">Pendente</Badge>;
     }
   };
 
@@ -560,24 +560,36 @@ export default function InternalDashboardFixed() {
                                 <div className="flex gap-1">
                                   <Button
                                     size="sm"
-                                    variant={task.status === 'pending' ? 'default' : 'outline'}
-                                    className="text-xs px-2 py-1 h-6"
+                                    variant="outline"
+                                    className={`text-xs px-2 py-1 h-6 ${
+                                      task.status === 'pending' 
+                                        ? 'bg-red-500 text-white border-red-500 hover:bg-red-600' 
+                                        : 'hover:bg-red-50 hover:text-red-700 hover:border-red-300'
+                                    }`}
                                     onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'pending' })}
                                   >
                                     Pendente
                                   </Button>
                                   <Button
                                     size="sm"
-                                    variant={task.status === 'in_progress' ? 'default' : 'outline'}
-                                    className="text-xs px-2 py-1 h-6"
+                                    variant="outline"
+                                    className={`text-xs px-2 py-1 h-6 ${
+                                      task.status === 'in_progress' 
+                                        ? 'bg-yellow-500 text-white border-yellow-500 hover:bg-yellow-600' 
+                                        : 'hover:bg-yellow-50 hover:text-yellow-700 hover:border-yellow-300'
+                                    }`}
                                     onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'in_progress' })}
                                   >
                                     Andamento
                                   </Button>
                                   <Button
                                     size="sm"
-                                    variant={task.status === 'completed' ? 'default' : 'outline'}
-                                    className="text-xs px-2 py-1 h-6"
+                                    variant="outline"
+                                    className={`text-xs px-2 py-1 h-6 ${
+                                      task.status === 'completed' 
+                                        ? 'bg-green-500 text-white border-green-500 hover:bg-green-600' 
+                                        : 'hover:bg-green-50 hover:text-green-700 hover:border-green-300'
+                                    }`}
                                     onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'completed' })}
                                   >
                                     Concluída
