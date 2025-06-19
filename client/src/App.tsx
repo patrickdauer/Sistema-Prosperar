@@ -18,7 +18,7 @@ function Router() {
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/equipe" component={Login} />
       <Route path="/interno" component={ProtectedRoute} />
-      <Route path="/dashboard-interno" component={ProtectedRoute} />
+      <Route path="/dashboard-interno" component={NewDashboardRoute} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -43,6 +43,35 @@ function ProtectedRoute() {
     return <InternalDashboard />;
   } catch (error) {
     // Fallback if auth hook fails
+    return <Login />;
+  }
+}
+
+function NewDashboardRoute() {
+  try {
+    const { isAuthenticated, isLoading } = useAuth();
+
+    if (isLoading) {
+      return (
+        <div style={{ 
+          minHeight: '100vh', 
+          background: '#1a1a2e',
+          color: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <div>Carregando...</div>
+        </div>
+      );
+    }
+
+    if (!isAuthenticated) {
+      return <Login />;
+    }
+
+    return <InternalDashboard />;
+  } catch (error) {
     return <Login />;
   }
 }
