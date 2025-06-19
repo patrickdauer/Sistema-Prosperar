@@ -79,7 +79,7 @@ function App() {
               <Route path="/dashboard" component={Dashboard} />
               <Route path="/equipe" component={Login} />
               <Route path="/dashboard-interno" component={ProtectedDashboardInterno} />
-              <Route path="/novo-sistema" component={ProtectedDashboardInterno} />
+              <Route path="/novo-sistema" component={TesteDark} />
               <Route path="/dark" component={TesteDark} />
               <Route component={NotFound} />
             </Switch>
