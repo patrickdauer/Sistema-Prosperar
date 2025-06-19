@@ -94,8 +94,9 @@ export default function DashboardUltraDark() {
     <div style={{ 
       minHeight: '100vh', 
       background: '#000000',
-      color: '#ffffff',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+      color: '#00ff00',
+      fontFamily: 'monospace',
+      fontSize: '14px'
     }}>
       {/* Header */}
       <div style={{ 
@@ -114,16 +115,17 @@ export default function DashboardUltraDark() {
         }}>
           <div>
             <h1 style={{ 
-              fontSize: '40px', 
+              fontSize: '50px', 
               fontWeight: '900', 
               margin: 0,
-              color: '#ffffff',
-              letterSpacing: '-0.02em'
+              color: '#00ff00',
+              letterSpacing: '0.1em',
+              textShadow: '0 0 20px #00ff00'
             }}>
-              SISTEMA INTERNO
+              ▓▓▓ SISTEMA ULTRA ▓▓▓
             </h1>
-            <p style={{ margin: '8px 0 0 0', color: '#444444', fontSize: '14px', fontWeight: '500', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-              Dashboard Executivo
+            <p style={{ margin: '15px 0 0 0', color: '#00ff00', fontSize: '16px', fontWeight: '700', letterSpacing: '0.3em' }}>
+              ► MATRIX MODE ACTIVATED ◄
             </p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '25px' }}>
