@@ -620,25 +620,37 @@ export default function InternalDashboardFixed() {
                                 )}
                                 <div className="flex gap-1">
                                   <button
-                                    className={`text-xs px-2 py-1 rounded cursor-pointer font-medium ${
-                                      task.status === 'pending' ? 'task-status-pending' : 'task-status-inactive'
-                                    }`}
+                                    className="text-xs px-2 py-1 rounded cursor-pointer font-medium"
+                                    style={{
+                                      backgroundColor: task.status === 'pending' ? '#ef4444' : 'rgba(0,0,0,0)',
+                                      color: task.status === 'pending' ? 'white' : '#6b7280',
+                                      border: `1px solid ${task.status === 'pending' ? '#ef4444' : '#d1d5db'}`,
+                                      minWidth: '60px'
+                                    }}
                                     onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'pending' })}
                                   >
                                     Pendente
                                   </button>
                                   <button
-                                    className={`text-xs px-2 py-1 rounded cursor-pointer font-medium ${
-                                      task.status === 'in_progress' ? 'task-status-in-progress' : 'task-status-inactive'
-                                    }`}
+                                    className="text-xs px-2 py-1 rounded cursor-pointer font-medium"
+                                    style={{
+                                      backgroundColor: task.status === 'in_progress' ? '#eab308' : 'rgba(0,0,0,0)',
+                                      color: task.status === 'in_progress' ? 'white' : '#6b7280',
+                                      border: `1px solid ${task.status === 'in_progress' ? '#eab308' : '#d1d5db'}`,
+                                      minWidth: '80px'
+                                    }}
                                     onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'in_progress' })}
                                   >
                                     Em Andamento
                                   </button>
                                   <button
-                                    className={`text-xs px-2 py-1 rounded cursor-pointer font-medium ${
-                                      task.status === 'completed' ? 'task-status-completed' : 'task-status-inactive'
-                                    }`}
+                                    className="text-xs px-2 py-1 rounded cursor-pointer font-medium"
+                                    style={{
+                                      backgroundColor: task.status === 'completed' ? '#22c55e' : 'rgba(0,0,0,0)',
+                                      color: task.status === 'completed' ? 'white' : '#6b7280',
+                                      border: `1px solid ${task.status === 'completed' ? '#22c55e' : '#d1d5db'}`,
+                                      minWidth: '70px'
+                                    }}
                                     onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'completed' })}
                                   >
                                     Concluída

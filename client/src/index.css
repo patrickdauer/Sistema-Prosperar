@@ -87,27 +87,72 @@
   }
 }
 
-/* Task Status Button Colors */
+/* Task Status Button Colors - Force Override */
+button.task-status-pending,
 .task-status-pending {
   background-color: #ef4444 !important;
+  background: #ef4444 !important;
   color: white !important;
   border: 1px solid #ef4444 !important;
+  border-color: #ef4444 !important;
 }
 
+button.task-status-in-progress,
 .task-status-in-progress {
   background-color: #eab308 !important;
+  background: #eab308 !important;
   color: white !important;
   border: 1px solid #eab308 !important;
+  border-color: #eab308 !important;
 }
 
+button.task-status-completed,
 .task-status-completed {
   background-color: #22c55e !important;
+  background: #22c55e !important;
   color: white !important;
   border: 1px solid #22c55e !important;
+  border-color: #22c55e !important;
 }
 
+button.task-status-inactive,
 .task-status-inactive {
   background-color: transparent !important;
+  background: transparent !important;
   color: #374151 !important;
   border: 1px solid #d1d5db !important;
+  border-color: #d1d5db !important;
+}
+
+/* Dark mode overrides */
+.dark button.task-status-pending,
+.dark .task-status-pending {
+  background-color: #ef4444 !important;
+  background: #ef4444 !important;
+  color: white !important;
+  border-color: #ef4444 !important;
+}
+
+.dark button.task-status-in-progress,
+.dark .task-status-in-progress {
+  background-color: #eab308 !important;
+  background: #eab308 !important;
+  color: white !important;
+  border-color: #eab308 !important;
+}
+
+.dark button.task-status-completed,
+.dark .task-status-completed {
+  background-color: #22c55e !important;
+  background: #22c55e !important;
+  color: white !important;
+  border-color: #22c55e !important;
+}
+
+.dark button.task-status-inactive,
+.dark .task-status-inactive {
+  background-color: transparent !important;
+  background: transparent !important;
+  color: #d1d5db !important;
+  border-color: #6b7280 !important;
 }
