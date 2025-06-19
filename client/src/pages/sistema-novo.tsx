@@ -84,22 +84,21 @@ export default function SistemaNovo() {
   return (
     <div style={{ 
       minHeight: '100vh', 
-      background: '#000',
-      color: '#0f0',
-      fontFamily: 'monospace',
+      background: '#1a1a1a',
+      color: '#e0e0e0',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       padding: '0',
       margin: '0'
     }}>
       
-      {/* Header Terminal Style */}
+      {/* Header Professional */}
       <div style={{ 
-        background: '#000',
-        padding: '20px',
-        borderBottom: '2px solid #0f0',
-        fontFamily: 'monospace'
+        background: '#2a2a2a',
+        padding: '24px',
+        borderBottom: '1px solid #404040'
       }}>
         <div style={{ 
-          maxWidth: '1200px', 
+          maxWidth: '1400px', 
           margin: '0 auto',
           display: 'flex',
           justifyContent: 'space-between',
@@ -107,187 +106,198 @@ export default function SistemaNovo() {
         }}>
           <div>
             <div style={{ 
-              fontSize: '32px', 
-              fontWeight: 'bold',
-              color: '#0f0',
-              textShadow: '0 0 10px #0f0'
+              fontSize: '28px', 
+              fontWeight: '600',
+              color: '#ffffff',
+              marginBottom: '4px'
             }}>
-              [SISTEMA_INTERNO_v2.0]
+              Sistema de Gestão Interno
             </div>
-            <div style={{ fontSize: '14px', color: '#0a0' }}>
-              &gt; STATUS: ONLINE | USER: {user?.name} | ROLE: {user?.role}
+            <div style={{ fontSize: '14px', color: '#a0a0a0' }}>
+              {user?.name} • {user?.role} • Sistema Ativo
             </div>
           </div>
           <button
             onClick={logout}
             style={{
-              background: '#000',
-              border: '2px solid #0f0',
-              color: '#0f0',
-              padding: '10px 20px',
-              fontFamily: 'monospace',
+              background: '#404040',
+              border: '1px solid #606060',
+              color: '#ffffff',
+              padding: '12px 24px',
+              borderRadius: '6px',
               cursor: 'pointer',
-              fontSize: '14px'
+              fontSize: '14px',
+              fontWeight: '500'
             }}
           >
-            [LOGOUT]
+            Sair
           </button>
         </div>
       </div>
 
-      {/* Stats Terminal */}
+      {/* Stats Professional */}
       <div style={{ 
-        maxWidth: '1200px', 
+        maxWidth: '1400px', 
         margin: '0 auto', 
-        padding: '30px 20px' 
+        padding: '30px 24px' 
       }}>
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: '1fr 1fr 1fr 1fr', 
-          gap: '2px',
-          marginBottom: '40px',
-          border: '2px solid #0f0'
+          gridTemplateColumns: 'repeat(4, 1fr)', 
+          gap: '16px',
+          marginBottom: '40px'
         }}>
           <div style={{ 
-            background: '#000',
-            padding: '20px',
+            background: '#2a2a2a',
+            padding: '24px',
+            borderRadius: '8px',
             textAlign: 'center',
-            borderRight: '1px solid #0f0'
+            border: '1px solid #404040'
           }}>
-            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#0f0' }}>
-              {String(registrations?.length || 0).padStart(3, '0')}
+            <div style={{ fontSize: '32px', fontWeight: '700', color: '#ffffff', marginBottom: '8px' }}>
+              {registrations?.length || 0}
             </div>
-            <div style={{ fontSize: '10px', color: '#0a0' }}>EMPRESAS</div>
+            <div style={{ fontSize: '14px', color: '#a0a0a0', fontWeight: '500' }}>Total de Empresas</div>
           </div>
           
           <div style={{ 
-            background: '#000',
-            padding: '20px',
+            background: '#2a2a2a',
+            padding: '24px',
+            borderRadius: '8px',
             textAlign: 'center',
-            borderRight: '1px solid #0f0'
+            border: '1px solid #e74c3c'
           }}>
-            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#f00' }}>
-              {String(registrations?.reduce((acc: number, reg: BusinessRegistration) => 
-                acc + (reg.tasks?.filter((t: Task) => t.status === 'pending').length || 0), 0) || 0).padStart(3, '0')}
+            <div style={{ fontSize: '32px', fontWeight: '700', color: '#e74c3c', marginBottom: '8px' }}>
+              {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
+                acc + (reg.tasks?.filter((t: Task) => t.status === 'pending').length || 0), 0) || 0}
             </div>
-            <div style={{ fontSize: '10px', color: '#0a0' }}>PENDENTES</div>
+            <div style={{ fontSize: '14px', color: '#a0a0a0', fontWeight: '500' }}>Pendentes</div>
           </div>
 
           <div style={{ 
-            background: '#000',
-            padding: '20px',
+            background: '#2a2a2a',
+            padding: '24px',
+            borderRadius: '8px',
             textAlign: 'center',
-            borderRight: '1px solid #0f0'
+            border: '1px solid #f39c12'
           }}>
-            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#ff0' }}>
-              {String(registrations?.reduce((acc: number, reg: BusinessRegistration) => 
-                acc + (reg.tasks?.filter((t: Task) => t.status === 'in_progress').length || 0), 0) || 0).padStart(3, '0')}
+            <div style={{ fontSize: '32px', fontWeight: '700', color: '#f39c12', marginBottom: '8px' }}>
+              {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
+                acc + (reg.tasks?.filter((t: Task) => t.status === 'in_progress').length || 0), 0) || 0}
             </div>
-            <div style={{ fontSize: '10px', color: '#0a0' }}>ANDAMENTO</div>
+            <div style={{ fontSize: '14px', color: '#a0a0a0', fontWeight: '500' }}>Em Andamento</div>
           </div>
 
           <div style={{ 
-            background: '#000',
-            padding: '20px',
-            textAlign: 'center'
+            background: '#2a2a2a',
+            padding: '24px',
+            borderRadius: '8px',
+            textAlign: 'center',
+            border: '1px solid #27ae60'
           }}>
-            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#0f0' }}>
-              {String(registrations?.reduce((acc: number, reg: BusinessRegistration) => 
-                acc + (reg.tasks?.filter((t: Task) => t.status === 'completed').length || 0), 0) || 0).padStart(3, '0')}
+            <div style={{ fontSize: '32px', fontWeight: '700', color: '#27ae60', marginBottom: '8px' }}>
+              {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
+                acc + (reg.tasks?.filter((t: Task) => t.status === 'completed').length || 0), 0) || 0}
             </div>
-            <div style={{ fontSize: '10px', color: '#0a0' }}>CONCLUIDAS</div>
+            <div style={{ fontSize: '14px', color: '#a0a0a0', fontWeight: '500' }}>Concluídas</div>
           </div>
         </div>
 
-        {/* Companies Terminal List */}
-        <div style={{ display: 'grid', gap: '20px' }}>
+        {/* Companies Professional List */}
+        <div style={{ display: 'grid', gap: '24px' }}>
           {registrations?.map((registration: BusinessRegistration) => (
             <div key={registration.id} style={{ 
-              border: '2px solid #0f0',
-              background: '#000'
+              border: '1px solid #404040',
+              background: '#2a2a2a',
+              borderRadius: '8px',
+              overflow: 'hidden'
             }}>
               
               {/* Company Header */}
               <div style={{ 
-                background: '#001100', 
-                padding: '15px',
-                borderBottom: '1px solid #0f0'
+                background: '#333333', 
+                padding: '20px',
+                borderBottom: '1px solid #404040'
               }}>
-                <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#0f0' }}>
-                  &gt; {registration.razaoSocial}
+                <div style={{ fontSize: '18px', fontWeight: '600', color: '#ffffff', marginBottom: '8px' }}>
+                  {registration.razaoSocial}
                 </div>
-                <div style={{ fontSize: '12px', color: '#0a0', marginTop: '5px' }}>
-                  ID:{registration.id} | {registration.emailEmpresa} | {registration.telefoneEmpresa}
+                <div style={{ fontSize: '14px', color: '#a0a0a0' }}>
+                  {registration.nomeFantasia && `${registration.nomeFantasia} • `}
+                  ID: {registration.id} • {registration.emailEmpresa} • {registration.telefoneEmpresa}
                 </div>
               </div>
 
-              {/* Departments Terminal Grid */}
+              {/* Departments Professional Grid */}
               <div style={{ 
                 display: 'grid', 
                 gridTemplateColumns: '1fr 1fr 1fr',
-                gap: '1px',
-                background: '#0f0'
+                gap: '16px',
+                padding: '20px'
               }}>
                 
                 {/* Societário */}
-                <div style={{ background: '#000', padding: '15px' }}>
+                <div style={{ background: '#333333', padding: '16px', borderRadius: '6px' }}>
                   <div style={{ 
-                    fontSize: '12px', 
-                    fontWeight: 'bold', 
-                    color: '#0f0',
-                    marginBottom: '10px',
-                    borderBottom: '1px solid #0f0',
-                    paddingBottom: '5px'
+                    fontSize: '14px', 
+                    fontWeight: '600', 
+                    color: '#ffffff',
+                    marginBottom: '16px',
+                    paddingBottom: '8px',
+                    borderBottom: '1px solid #505050'
                   }}>
-                    [SOCIETARIO]
+                    Departamento Societário
                   </div>
                   {registration.tasks?.filter(task => task.department === 'societario').map(task => (
-                    <div key={task.id} style={{ marginBottom: '15px' }}>
-                      <div style={{ fontSize: '11px', color: '#0f0', marginBottom: '5px' }}>
-                        &gt; {task.title}
+                    <div key={task.id} style={{ marginBottom: '16px' }}>
+                      <div style={{ fontSize: '13px', color: '#e0e0e0', marginBottom: '8px', lineHeight: '1.4' }}>
+                        {task.title}
                       </div>
-                      <div style={{ display: 'flex', gap: '5px' }}>
+                      <div style={{ display: 'flex', gap: '6px' }}>
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'pending' })}
                           style={{
-                            background: task.status === 'pending' ? '#f00' : '#000',
-                            color: task.status === 'pending' ? '#000' : '#f00',
-                            border: '1px solid #f00',
-                            padding: '2px 6px',
-                            fontSize: '9px',
-                            fontFamily: 'monospace',
-                            cursor: 'pointer'
+                            background: task.status === 'pending' ? '#e74c3c' : '#404040',
+                            color: '#ffffff',
+                            border: 'none',
+                            padding: '6px 12px',
+                            fontSize: '11px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontWeight: '500'
                           }}
                         >
-                          PEN
+                          Pendente
                         </button>
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'in_progress' })}
                           style={{
-                            background: task.status === 'in_progress' ? '#ff0' : '#000',
-                            color: task.status === 'in_progress' ? '#000' : '#ff0',
-                            border: '1px solid #ff0',
-                            padding: '2px 6px',
-                            fontSize: '9px',
-                            fontFamily: 'monospace',
-                            cursor: 'pointer'
+                            background: task.status === 'in_progress' ? '#f39c12' : '#404040',
+                            color: '#ffffff',
+                            border: 'none',
+                            padding: '6px 12px',
+                            fontSize: '11px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontWeight: '500'
                           }}
                         >
-                          AND
+                          Andamento
                         </button>
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'completed' })}
                           style={{
-                            background: task.status === 'completed' ? '#0f0' : '#000',
-                            color: task.status === 'completed' ? '#000' : '#0f0',
-                            border: '1px solid #0f0',
-                            padding: '2px 6px',
-                            fontSize: '9px',
-                            fontFamily: 'monospace',
-                            cursor: 'pointer'
+                            background: task.status === 'completed' ? '#27ae60' : '#404040',
+                            color: '#ffffff',
+                            border: 'none',
+                            padding: '6px 12px',
+                            fontSize: '11px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontWeight: '500'
                           }}
                         >
-                          OK
+                          Concluído
                         </button>
                       </div>
                     </div>
@@ -295,64 +305,67 @@ export default function SistemaNovo() {
                 </div>
 
                 {/* Fiscal */}
-                <div style={{ background: '#000', padding: '15px' }}>
+                <div style={{ background: '#333333', padding: '16px', borderRadius: '6px' }}>
                   <div style={{ 
-                    fontSize: '12px', 
-                    fontWeight: 'bold', 
-                    color: '#0f0',
-                    marginBottom: '10px',
-                    borderBottom: '1px solid #0f0',
-                    paddingBottom: '5px'
+                    fontSize: '14px', 
+                    fontWeight: '600', 
+                    color: '#ffffff',
+                    marginBottom: '16px',
+                    paddingBottom: '8px',
+                    borderBottom: '1px solid #505050'
                   }}>
-                    [FISCAL]
+                    Departamento Fiscal
                   </div>
                   {registration.tasks?.filter(task => task.department === 'fiscal').map(task => (
-                    <div key={task.id} style={{ marginBottom: '15px' }}>
-                      <div style={{ fontSize: '11px', color: '#0f0', marginBottom: '5px' }}>
-                        &gt; {task.title}
+                    <div key={task.id} style={{ marginBottom: '16px' }}>
+                      <div style={{ fontSize: '13px', color: '#e0e0e0', marginBottom: '8px', lineHeight: '1.4' }}>
+                        {task.title}
                       </div>
-                      <div style={{ display: 'flex', gap: '5px' }}>
+                      <div style={{ display: 'flex', gap: '6px' }}>
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'pending' })}
                           style={{
-                            background: task.status === 'pending' ? '#f00' : '#000',
-                            color: task.status === 'pending' ? '#000' : '#f00',
-                            border: '1px solid #f00',
-                            padding: '2px 6px',
-                            fontSize: '9px',
-                            fontFamily: 'monospace',
-                            cursor: 'pointer'
+                            background: task.status === 'pending' ? '#e74c3c' : '#404040',
+                            color: '#ffffff',
+                            border: 'none',
+                            padding: '6px 12px',
+                            fontSize: '11px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontWeight: '500'
                           }}
                         >
-                          PEN
+                          Pendente
                         </button>
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'in_progress' })}
                           style={{
-                            background: task.status === 'in_progress' ? '#ff0' : '#000',
-                            color: task.status === 'in_progress' ? '#000' : '#ff0',
-                            border: '1px solid #ff0',
-                            padding: '2px 6px',
-                            fontSize: '9px',
-                            fontFamily: 'monospace',
-                            cursor: 'pointer'
+                            background: task.status === 'in_progress' ? '#f39c12' : '#404040',
+                            color: '#ffffff',
+                            border: 'none',
+                            padding: '6px 12px',
+                            fontSize: '11px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontWeight: '500'
                           }}
                         >
-                          AND
+                          Andamento
                         </button>
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'completed' })}
                           style={{
-                            background: task.status === 'completed' ? '#0f0' : '#000',
-                            color: task.status === 'completed' ? '#000' : '#0f0',
-                            border: '1px solid #0f0',
-                            padding: '2px 6px',
-                            fontSize: '9px',
-                            fontFamily: 'monospace',
-                            cursor: 'pointer'
+                            background: task.status === 'completed' ? '#27ae60' : '#404040',
+                            color: '#ffffff',
+                            border: 'none',
+                            padding: '6px 12px',
+                            fontSize: '11px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontWeight: '500'
                           }}
                         >
-                          OK
+                          Concluído
                         </button>
                       </div>
                     </div>
@@ -360,64 +373,67 @@ export default function SistemaNovo() {
                 </div>
 
                 {/* Pessoal */}
-                <div style={{ background: '#000', padding: '15px' }}>
+                <div style={{ background: '#333333', padding: '16px', borderRadius: '6px' }}>
                   <div style={{ 
-                    fontSize: '12px', 
-                    fontWeight: 'bold', 
-                    color: '#0f0',
-                    marginBottom: '10px',
-                    borderBottom: '1px solid #0f0',
-                    paddingBottom: '5px'
+                    fontSize: '14px', 
+                    fontWeight: '600', 
+                    color: '#ffffff',
+                    marginBottom: '16px',
+                    paddingBottom: '8px',
+                    borderBottom: '1px solid #505050'
                   }}>
-                    [PESSOAL]
+                    Departamento Pessoal
                   </div>
                   {registration.tasks?.filter(task => task.department === 'pessoal').map(task => (
-                    <div key={task.id} style={{ marginBottom: '15px' }}>
-                      <div style={{ fontSize: '11px', color: '#0f0', marginBottom: '5px' }}>
-                        &gt; {task.title}
+                    <div key={task.id} style={{ marginBottom: '16px' }}>
+                      <div style={{ fontSize: '13px', color: '#e0e0e0', marginBottom: '8px', lineHeight: '1.4' }}>
+                        {task.title}
                       </div>
-                      <div style={{ display: 'flex', gap: '5px' }}>
+                      <div style={{ display: 'flex', gap: '6px' }}>
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'pending' })}
                           style={{
-                            background: task.status === 'pending' ? '#f00' : '#000',
-                            color: task.status === 'pending' ? '#000' : '#f00',
-                            border: '1px solid #f00',
-                            padding: '2px 6px',
-                            fontSize: '9px',
-                            fontFamily: 'monospace',
-                            cursor: 'pointer'
+                            background: task.status === 'pending' ? '#e74c3c' : '#404040',
+                            color: '#ffffff',
+                            border: 'none',
+                            padding: '6px 12px',
+                            fontSize: '11px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontWeight: '500'
                           }}
                         >
-                          PEN
+                          Pendente
                         </button>
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'in_progress' })}
                           style={{
-                            background: task.status === 'in_progress' ? '#ff0' : '#000',
-                            color: task.status === 'in_progress' ? '#000' : '#ff0',
-                            border: '1px solid #ff0',
-                            padding: '2px 6px',
-                            fontSize: '9px',
-                            fontFamily: 'monospace',
-                            cursor: 'pointer'
+                            background: task.status === 'in_progress' ? '#f39c12' : '#404040',
+                            color: '#ffffff',
+                            border: 'none',
+                            padding: '6px 12px',
+                            fontSize: '11px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontWeight: '500'
                           }}
                         >
-                          AND
+                          Andamento
                         </button>
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'completed' })}
                           style={{
-                            background: task.status === 'completed' ? '#0f0' : '#000',
-                            color: task.status === 'completed' ? '#000' : '#0f0',
-                            border: '1px solid #0f0',
-                            padding: '2px 6px',
-                            fontSize: '9px',
-                            fontFamily: 'monospace',
-                            cursor: 'pointer'
+                            background: task.status === 'completed' ? '#27ae60' : '#404040',
+                            color: '#ffffff',
+                            border: 'none',
+                            padding: '6px 12px',
+                            fontSize: '11px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontWeight: '500'
                           }}
                         >
-                          OK
+                          Concluído
                         </button>
                       </div>
                     </div>
