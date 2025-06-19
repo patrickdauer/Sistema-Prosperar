@@ -622,9 +622,12 @@ export default function InternalDashboardFixed() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    className={`text-xs px-2 py-1 h-6 ${
+                                    style={task.status === 'pending' 
+                                      ? {backgroundColor: '#ef4444', color: 'white', borderColor: '#ef4444', fontSize: '12px', padding: '2px 8px', height: '24px'}
+                                      : {fontSize: '12px', padding: '2px 8px', height: '24px'}}
+                                    className={`text-xs ${
                                       task.status === 'pending' 
-                                        ? 'bg-red-500 text-white border-red-500 hover:bg-red-600' 
+                                        ? '' 
                                         : 'hover:bg-red-50 hover:text-red-700 hover:border-red-300'
                                     }`}
                                     onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'pending' })}
@@ -634,9 +637,12 @@ export default function InternalDashboardFixed() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    className={`text-xs px-2 py-1 h-6 ${
+                                    style={task.status === 'in_progress' 
+                                      ? {backgroundColor: '#eab308', color: 'white', borderColor: '#eab308', fontSize: '12px', padding: '2px 8px', height: '24px'}
+                                      : {fontSize: '12px', padding: '2px 8px', height: '24px'}}
+                                    className={`text-xs ${
                                       task.status === 'in_progress' 
-                                        ? 'bg-yellow-500 text-white border-yellow-500 hover:bg-yellow-600' 
+                                        ? '' 
                                         : 'hover:bg-yellow-50 hover:text-yellow-700 hover:border-yellow-300'
                                     }`}
                                     onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'in_progress' })}
@@ -646,9 +652,12 @@ export default function InternalDashboardFixed() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    className={`text-xs px-2 py-1 h-6 ${
+                                    style={task.status === 'completed' 
+                                      ? {backgroundColor: '#22c55e', color: 'white', borderColor: '#22c55e', fontSize: '12px', padding: '2px 8px', height: '24px'}
+                                      : {fontSize: '12px', padding: '2px 8px', height: '24px'}}
+                                    className={`text-xs ${
                                       task.status === 'completed' 
-                                        ? 'bg-green-500 text-white border-green-500 hover:bg-green-600' 
+                                        ? '' 
                                         : 'hover:bg-green-50 hover:text-green-700 hover:border-green-300'
                                     }`}
                                     onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'completed' })}
