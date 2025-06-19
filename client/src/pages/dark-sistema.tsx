@@ -1,56 +1,54 @@
-import { useAuth } from '@/hooks/useAuth';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 
 interface Task {
   id: number;
   title: string;
-  description: string;
   department: string;
   status: string;
-  dueDate: string;
-  businessRegistrationId: number;
-  order: number;
 }
 
 interface BusinessRegistration {
   id: number;
   razaoSocial: string;
   nomeFantasia: string;
-  endereco: string;
   emailEmpresa: string;
-  telefoneEmpresa: string;
-  createdAt: string;
   tasks: Task[];
 }
 
-export default function TesteDark() {
-  const { user, logout, isAuthenticated, isLoading } = useAuth();
-  const queryClient = useQueryClient();
+export default function DarkSistema() {
+  const [registrations, setRegistrations] = useState<BusinessRegistration[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const { data: registrations, isLoading: registrationsLoading } = useQuery<BusinessRegistration[]>({
-    queryKey: ['/api/business-registrations'],
-    enabled: true, // Remove auth dependency temporarily
-  });
-
-  const updateTaskMutation = useMutation({
-    mutationFn: async ({ taskId, status }: { taskId: number; status: string }) => {
-      const response = await fetch(`/api/tasks/${taskId}/status`, {
-        method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ status }),
+  useEffect(() => {
+    // Fetch data from API
+    fetch('/api/business-registrations')
+      .then(res => res.json())
+      .then(data => {
+        setRegistrations(data || []);
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
       });
-      if (!response.ok) throw new Error('Failed to update task');
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/business-registrations'] });
-    },
-  });
+  }, []);
 
-  if (isLoading || registrationsLoading) {
+  const updateTaskStatus = (taskId: number, newStatus: string) => {
+    fetch(`/api/tasks/${taskId}/status`, {
+      method: 'PUT',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({ status: newStatus }),
+    }).then(() => {
+      // Reload data
+      fetch('/api/business-registrations')
+        .then(res => res.json())
+        .then(data => setRegistrations(data || []));
+    });
+  };
+
+  if (loading) {
     return (
       <div style={{
         minHeight: '100vh',
@@ -60,10 +58,18 @@ export default function TesteDark() {
         alignItems: 'center',
         justifyContent: 'center'
       }}>
-        <div>Carregando...</div>
+        Carregando...
       </div>
     );
   }
+
+  const totalTasks = registrations.reduce((acc, reg) => acc + (reg.tasks?.length || 0), 0);
+  const pendingTasks = registrations.reduce((acc, reg) => 
+    acc + (reg.tasks?.filter(t => t.status === 'pending').length || 0), 0);
+  const inProgressTasks = registrations.reduce((acc, reg) => 
+    acc + (reg.tasks?.filter(t => t.status === 'in_progress').length || 0), 0);
+  const completedTasks = registrations.reduce((acc, reg) => 
+    acc + (reg.tasks?.filter(t => t.status === 'completed').length || 0), 0);
 
   return (
     <div style={{
@@ -86,21 +92,16 @@ export default function TesteDark() {
           justifyContent: 'space-between',
           alignItems: 'center'
         }}>
-          <div>
-            <h1 style={{
-              fontSize: '24px',
-              fontWeight: '600',
-              margin: '0 0 4px 0',
-              color: '#ffffff'
-            }}>
-              Sistema Dark
-            </h1>
-            <div style={{ fontSize: '14px', color: '#666666' }}>
-              {user?.name} • {user?.role}
-            </div>
-          </div>
+          <h1 style={{
+            fontSize: '24px',
+            fontWeight: '600',
+            margin: '0',
+            color: '#ffffff'
+          }}>
+            Sistema Dark
+          </h1>
           <button
-            onClick={logout}
+            onClick={() => window.location.href = '/equipe'}
             style={{
               background: '#222222',
               border: '1px solid #333333',
@@ -138,7 +139,7 @@ export default function TesteDark() {
             border: '1px solid #222222'
           }}>
             <div style={{ fontSize: '28px', fontWeight: '700', color: '#ffffff', marginBottom: '8px' }}>
-              {(registrations as BusinessRegistration[])?.length || 0}
+              {registrations.length}
             </div>
             <div style={{ fontSize: '14px', color: '#666666' }}>Empresas</div>
           </div>
@@ -151,8 +152,7 @@ export default function TesteDark() {
             border: '1px solid #222222'
           }}>
             <div style={{ fontSize: '28px', fontWeight: '700', color: '#ffffff', marginBottom: '8px' }}>
-              {(registrations as BusinessRegistration[])?.reduce((acc: number, reg: BusinessRegistration) => 
-                acc + (reg.tasks?.filter((t: Task) => t.status === 'pending').length || 0), 0) || 0}
+              {pendingTasks}
             </div>
             <div style={{ fontSize: '14px', color: '#666666' }}>Pendentes</div>
           </div>
@@ -165,8 +165,7 @@ export default function TesteDark() {
             border: '1px solid #222222'
           }}>
             <div style={{ fontSize: '28px', fontWeight: '700', color: '#ffffff', marginBottom: '8px' }}>
-              {(registrations as BusinessRegistration[])?.reduce((acc: number, reg: BusinessRegistration) => 
-                acc + (reg.tasks?.filter((t: Task) => t.status === 'in_progress').length || 0), 0) || 0}
+              {inProgressTasks}
             </div>
             <div style={{ fontSize: '14px', color: '#666666' }}>Em Andamento</div>
           </div>
@@ -179,8 +178,7 @@ export default function TesteDark() {
             border: '1px solid #222222'
           }}>
             <div style={{ fontSize: '28px', fontWeight: '700', color: '#ffffff', marginBottom: '8px' }}>
-              {(registrations as BusinessRegistration[])?.reduce((acc: number, reg: BusinessRegistration) => 
-                acc + (reg.tasks?.filter((t: Task) => t.status === 'completed').length || 0), 0) || 0}
+              {completedTasks}
             </div>
             <div style={{ fontSize: '14px', color: '#666666' }}>Concluídas</div>
           </div>
@@ -188,7 +186,7 @@ export default function TesteDark() {
 
         {/* Companies */}
         <div style={{ display: 'grid', gap: '30px' }}>
-          {(registrations as BusinessRegistration[])?.map((registration: BusinessRegistration) => (
+          {registrations.map((registration) => (
             <div key={registration.id} style={{
               background: '#111111',
               borderRadius: '6px',
@@ -248,7 +246,7 @@ export default function TesteDark() {
                         <button
                           onClick={() => {
                             const newStatus = task.status === 'pending' ? 'idle' : 'pending';
-                            updateTaskMutation.mutate({ taskId: task.id, status: newStatus });
+                            updateTaskStatus(task.id, newStatus);
                           }}
                           style={{
                             background: task.status === 'pending' ? '#dc3545' : '#333333',
@@ -266,7 +264,7 @@ export default function TesteDark() {
                         <button
                           onClick={() => {
                             const newStatus = task.status === 'in_progress' ? 'idle' : 'in_progress';
-                            updateTaskMutation.mutate({ taskId: task.id, status: newStatus });
+                            updateTaskStatus(task.id, newStatus);
                           }}
                           style={{
                             background: task.status === 'in_progress' ? '#fd7e14' : '#333333',
@@ -284,7 +282,7 @@ export default function TesteDark() {
                         <button
                           onClick={() => {
                             const newStatus = task.status === 'completed' ? 'idle' : 'completed';
-                            updateTaskMutation.mutate({ taskId: task.id, status: newStatus });
+                            updateTaskStatus(task.id, newStatus);
                           }}
                           style={{
                             background: task.status === 'completed' ? '#198754' : '#333333',
@@ -333,7 +331,7 @@ export default function TesteDark() {
                         <button
                           onClick={() => {
                             const newStatus = task.status === 'pending' ? 'idle' : 'pending';
-                            updateTaskMutation.mutate({ taskId: task.id, status: newStatus });
+                            updateTaskStatus(task.id, newStatus);
                           }}
                           style={{
                             background: task.status === 'pending' ? '#dc3545' : '#333333',
@@ -351,7 +349,7 @@ export default function TesteDark() {
                         <button
                           onClick={() => {
                             const newStatus = task.status === 'in_progress' ? 'idle' : 'in_progress';
-                            updateTaskMutation.mutate({ taskId: task.id, status: newStatus });
+                            updateTaskStatus(task.id, newStatus);
                           }}
                           style={{
                             background: task.status === 'in_progress' ? '#fd7e14' : '#333333',
@@ -369,7 +367,7 @@ export default function TesteDark() {
                         <button
                           onClick={() => {
                             const newStatus = task.status === 'completed' ? 'idle' : 'completed';
-                            updateTaskMutation.mutate({ taskId: task.id, status: newStatus });
+                            updateTaskStatus(task.id, newStatus);
                           }}
                           style={{
                             background: task.status === 'completed' ? '#198754' : '#333333',
@@ -418,7 +416,7 @@ export default function TesteDark() {
                         <button
                           onClick={() => {
                             const newStatus = task.status === 'pending' ? 'idle' : 'pending';
-                            updateTaskMutation.mutate({ taskId: task.id, status: newStatus });
+                            updateTaskStatus(task.id, newStatus);
                           }}
                           style={{
                             background: task.status === 'pending' ? '#dc3545' : '#333333',
@@ -436,7 +434,7 @@ export default function TesteDark() {
                         <button
                           onClick={() => {
                             const newStatus = task.status === 'in_progress' ? 'idle' : 'in_progress';
-                            updateTaskMutation.mutate({ taskId: task.id, status: newStatus });
+                            updateTaskStatus(task.id, newStatus);
                           }}
                           style={{
                             background: task.status === 'in_progress' ? '#fd7e14' : '#333333',
@@ -454,7 +452,7 @@ export default function TesteDark() {
                         <button
                           onClick={() => {
                             const newStatus = task.status === 'completed' ? 'idle' : 'completed';
-                            updateTaskMutation.mutate({ taskId: task.id, status: newStatus });
+                            updateTaskStatus(task.id, newStatus);
                           }}
                           style={{
                             background: task.status === 'completed' ? '#198754' : '#333333',
