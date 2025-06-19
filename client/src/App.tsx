@@ -10,7 +10,7 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import BusinessRegistration from "@/pages/business-registration-new";
 import Dashboard from "@/pages/dashboard";
 import Login from "@/pages/login";
-import DashboardInterno from "@/pages/dashboard-ultra-dark";
+import DashboardInterno from "@/pages/sistema-novo";
 import NotFound from "@/pages/not-found";
 
 function ProtectedDashboardInterno() {
@@ -20,13 +20,15 @@ function ProtectedDashboardInterno() {
     return (
       <div style={{ 
         minHeight: '100vh', 
-        background: '#1a1a2e',
-        color: 'white',
+        background: '#ff0000',
+        color: '#00ff00',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        fontSize: '50px',
+        fontWeight: 'bold'
       }}>
-        <div>Carregando...</div>
+        <div>🔥 NOVO SISTEMA CARREGANDO 🔥</div>
       </div>
     );
   }
