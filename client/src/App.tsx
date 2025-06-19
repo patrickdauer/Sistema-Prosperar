@@ -9,7 +9,7 @@ import NotFound from "@/pages/not-found";
 import BusinessRegistration from "@/pages/business-registration-new";
 import Dashboard from "@/pages/dashboard";
 import Login from "@/pages/login";
-import InternalDashboard from "@/pages/sistema-interno";
+import InternalDashboard from "@/pages/dashboard-interno";
 
 function Router() {
   return (
@@ -18,6 +18,7 @@ function Router() {
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/equipe" component={Login} />
       <Route path="/interno" component={ProtectedRoute} />
+      <Route path="/dashboard-interno" component={ProtectedRoute} />
       <Route component={NotFound} />
     </Switch>
   );
