@@ -265,20 +265,73 @@ export default function InternalDashboardFixed() {
     }
   });
 
+  // Custom status badge component
+  const StatusBadge = ({ status }: { status: string }) => {
+    const getStatusStyle = () => {
+      switch (status) {
+        case 'pending':
+          return {
+            backgroundColor: '#ef4444',
+            color: 'white',
+            border: '1px solid #ef4444',
+            padding: '2px 8px',
+            borderRadius: '4px',
+            fontSize: '12px',
+            fontWeight: '500'
+          };
+        case 'in_progress':
+          return {
+            backgroundColor: '#eab308',
+            color: 'white',
+            border: '1px solid #eab308',
+            padding: '2px 8px',
+            borderRadius: '4px',
+            fontSize: '12px',
+            fontWeight: '500'
+          };
+        case 'completed':
+          return {
+            backgroundColor: '#22c55e',
+            color: 'white',
+            border: '1px solid #22c55e',
+            padding: '2px 8px',
+            borderRadius: '4px',
+            fontSize: '12px',
+            fontWeight: '500'
+          };
+        default:
+          return {
+            backgroundColor: '#ef4444',
+            color: 'white',
+            border: '1px solid #ef4444',
+            padding: '2px 8px',
+            borderRadius: '4px',
+            fontSize: '12px',
+            fontWeight: '500'
+          };
+      }
+    };
+
+    const getStatusText = () => {
+      switch (status) {
+        case 'pending': return 'Pendente';
+        case 'in_progress': return 'Em Andamento';
+        case 'completed': return 'Concluída';
+        case 'blocked': return 'Bloqueada';
+        default: return 'Pendente';
+      }
+    };
+
+    return (
+      <span style={getStatusStyle()}>
+        {getStatusText()}
+      </span>
+    );
+  };
+
   // Helper functions
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return <Badge className="!bg-red-500 !hover:bg-red-600 !text-white !border-red-500" style={{backgroundColor: '#ef4444', color: 'white', borderColor: '#ef4444'}}>Pendente</Badge>;
-      case 'in_progress':
-        return <Badge className="!bg-yellow-500 !hover:bg-yellow-600 !text-white !border-yellow-500" style={{backgroundColor: '#eab308', color: 'white', borderColor: '#eab308'}}>Em Andamento</Badge>;
-      case 'completed':
-        return <Badge className="!bg-green-500 !hover:bg-green-600 !text-white !border-green-500" style={{backgroundColor: '#22c55e', color: 'white', borderColor: '#22c55e'}}>Concluída</Badge>;
-      case 'blocked':
-        return <Badge variant="outline" className="border-gray-500 text-gray-700">Bloqueada</Badge>;
-      default:
-        return <Badge className="!bg-red-500 !hover:bg-red-600 !text-white !border-red-500" style={{backgroundColor: '#ef4444', color: 'white', borderColor: '#ef4444'}}>Pendente</Badge>;
-    }
+    return <StatusBadge status={status} />;
   };
 
   const getDepartmentColor = (department: string) => {
@@ -357,14 +410,16 @@ export default function InternalDashboardFixed() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => setUserManagementOpen(true)}
-              >
-                <Settings className="h-4 w-4 mr-2" />
-                Gestão de Usuários
-              </Button>
+              {isAdmin && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setUserManagementOpen(true)}
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Gestão de Usuários
+                </Button>
+              )}
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <User className="h-4 w-4" />
                 <span>{user?.name}</span>
