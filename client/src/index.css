@@ -86,3 +86,28 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
+
+/* Task Status Button Colors */
+.task-status-pending {
+  background-color: #ef4444 !important;
+  color: white !important;
+  border: 1px solid #ef4444 !important;
+}
+
+.task-status-in-progress {
+  background-color: #eab308 !important;
+  color: white !important;
+  border: 1px solid #eab308 !important;
+}
+
+.task-status-completed {
+  background-color: #22c55e !important;
+  color: white !important;
+  border: 1px solid #22c55e !important;
+}
+
+.task-status-inactive {
+  background-color: transparent !important;
+  color: #374151 !important;
+  border: 1px solid #d1d5db !important;
+}
