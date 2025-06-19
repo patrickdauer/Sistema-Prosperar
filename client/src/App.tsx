@@ -80,7 +80,7 @@ function App() {
               <Route path="/equipe" component={Login} />
               <Route path="/dashboard-interno" component={ProtectedDashboardInterno} />
               <Route path="/novo-sistema" component={ProtectedDashboardInterno} />
-              <Route path="/sistema-dark" component={ProtectedSistemaDark} />
+              <Route path="/dark" component={ProtectedSistemaDark} />
               <Route component={NotFound} />
             </Switch>
           </TooltipProvider>
