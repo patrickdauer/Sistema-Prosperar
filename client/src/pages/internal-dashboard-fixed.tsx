@@ -619,51 +619,51 @@ export default function InternalDashboardFixed() {
                                   <p className="text-xs text-muted-foreground mb-2">{task.description}</p>
                                 )}
                                 <div className="flex gap-1">
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    style={task.status === 'pending' 
-                                      ? {backgroundColor: '#ef4444', color: 'white', borderColor: '#ef4444', fontSize: '12px', padding: '2px 8px', height: '24px'}
-                                      : {fontSize: '12px', padding: '2px 8px', height: '24px'}}
-                                    className={`text-xs ${
-                                      task.status === 'pending' 
-                                        ? '' 
-                                        : 'hover:bg-red-50 hover:text-red-700 hover:border-red-300'
-                                    }`}
+                                  <button
+                                    style={{
+                                      backgroundColor: task.status === 'pending' ? '#ef4444' : 'transparent',
+                                      color: task.status === 'pending' ? 'white' : '#374151',
+                                      border: task.status === 'pending' ? '1px solid #ef4444' : '1px solid #d1d5db',
+                                      fontSize: '12px',
+                                      padding: '4px 8px',
+                                      borderRadius: '4px',
+                                      cursor: 'pointer',
+                                      fontWeight: '500'
+                                    }}
                                     onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'pending' })}
                                   >
                                     Pendente
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    style={task.status === 'in_progress' 
-                                      ? {backgroundColor: '#eab308', color: 'white', borderColor: '#eab308', fontSize: '12px', padding: '2px 8px', height: '24px'}
-                                      : {fontSize: '12px', padding: '2px 8px', height: '24px'}}
-                                    className={`text-xs ${
-                                      task.status === 'in_progress' 
-                                        ? '' 
-                                        : 'hover:bg-yellow-50 hover:text-yellow-700 hover:border-yellow-300'
-                                    }`}
+                                  </button>
+                                  <button
+                                    style={{
+                                      backgroundColor: task.status === 'in_progress' ? '#eab308' : 'transparent',
+                                      color: task.status === 'in_progress' ? 'white' : '#374151',
+                                      border: task.status === 'in_progress' ? '1px solid #eab308' : '1px solid #d1d5db',
+                                      fontSize: '12px',
+                                      padding: '4px 8px',
+                                      borderRadius: '4px',
+                                      cursor: 'pointer',
+                                      fontWeight: '500'
+                                    }}
                                     onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'in_progress' })}
                                   >
-                                    Andamento
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    style={task.status === 'completed' 
-                                      ? {backgroundColor: '#22c55e', color: 'white', borderColor: '#22c55e', fontSize: '12px', padding: '2px 8px', height: '24px'}
-                                      : {fontSize: '12px', padding: '2px 8px', height: '24px'}}
-                                    className={`text-xs ${
-                                      task.status === 'completed' 
-                                        ? '' 
-                                        : 'hover:bg-green-50 hover:text-green-700 hover:border-green-300'
-                                    }`}
+                                    Em Andamento
+                                  </button>
+                                  <button
+                                    style={{
+                                      backgroundColor: task.status === 'completed' ? '#22c55e' : 'transparent',
+                                      color: task.status === 'completed' ? 'white' : '#374151',
+                                      border: task.status === 'completed' ? '1px solid #22c55e' : '1px solid #d1d5db',
+                                      fontSize: '12px',
+                                      padding: '4px 8px',
+                                      borderRadius: '4px',
+                                      cursor: 'pointer',
+                                      fontWeight: '500'
+                                    }}
                                     onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'completed' })}
                                   >
                                     Concluída
-                                  </Button>
+                                  </button>
                                 </div>
                               </div>
                             ))}
