@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -28,7 +28,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { useToast } from '@/hooks/use-toast';
 
@@ -61,7 +60,7 @@ interface BusinessRegistration {
   tasks: Task[];
 }
 
-export default function InternalDashboardWorking() {
+export default function InternalDashboardFixed() {
   const { user, logout } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -302,40 +301,6 @@ export default function InternalDashboardWorking() {
     }
   };
 
-  const handleTaskStatusChange = (taskId: number, status: string) => {
-    updateTaskMutation.mutate({ taskId, status });
-  };
-
-  const handleDeleteCompany = (companyId: number) => {
-    if (confirm('Tem certeza que deseja deletar esta empresa?')) {
-      deleteCompanyMutation.mutate(companyId);
-    }
-  };
-
-  const handleCreateUser = () => {
-    if (!newUserData.username || !newUserData.password || !newUserData.name) {
-      toast({
-        title: "Erro",
-        description: "Preencha todos os campos obrigatórios.",
-        variant: "destructive",
-      });
-      return;
-    }
-    createUserMutation.mutate(newUserData);
-  };
-
-  const handleChangePassword = () => {
-    if (changePasswordData.newPassword !== changePasswordData.confirmPassword) {
-      toast({
-        title: "Erro",
-        description: "As senhas não coincidem.",
-        variant: "destructive",
-      });
-      return;
-    }
-    changePasswordMutation.mutate(changePasswordData);
-  };
-
   // Filter registrations
   const filteredRegistrations = registrations?.filter((reg: BusinessRegistration) => {
     if (departmentFilter === 'all') return true;
@@ -531,7 +496,6 @@ export default function InternalDashboardWorking() {
                               <DialogTitle className="text-xl">{registration.razaoSocial} - Dados Completos</DialogTitle>
                             </DialogHeader>
                             <div className="space-y-6">
-                              {/* Dados da Empresa */}
                               <div className="border rounded-lg p-4">
                                 <h3 className="font-semibold mb-3 text-lg">Dados da Empresa</h3>
                                 <div className="grid grid-cols-2 gap-4 text-sm">
@@ -542,28 +506,6 @@ export default function InternalDashboardWorking() {
                                   <div><strong>Email:</strong> {registration.emailEmpresa}</div>
                                   <div><strong>Data de Registro:</strong> {format(new Date(registration.createdAt), 'dd/MM/yyyy HH:mm', { locale: ptBR })}</div>
                                 </div>
-                              </div>
-
-                              {/* Dados dos Sócios */}
-                              <div className="border rounded-lg p-4">
-                                <h3 className="font-semibold mb-3 text-lg">Sócios ({registration.socios?.length || 0})</h3>
-                                {registration.socios && registration.socios.length > 0 ? (
-                                  <div className="space-y-4">
-                                    {registration.socios.map((socio: any, index: number) => (
-                                      <div key={index} className="border-l-4 border-blue-500 pl-4 py-2 bg-muted/30">
-                                        <h4 className="font-medium mb-2">Sócio {index + 1}: {socio.nomeCompleto}</h4>
-                                        <div className="grid grid-cols-2 gap-3 text-sm">
-                                          <div><strong>CPF:</strong> {socio.cpf}</div>
-                                          <div><strong>RG:</strong> {socio.rg}</div>
-                                          <div><strong>Email:</strong> {socio.emailPessoal}</div>
-                                          <div><strong>Telefone:</strong> {socio.telefonePessoal}</div>
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <p className="text-muted-foreground">Nenhum sócio cadastrado</p>
-                                )}
                               </div>
                             </div>
                           </DialogContent>
@@ -579,7 +521,11 @@ export default function InternalDashboardWorking() {
                         <Button 
                           variant="destructive" 
                           size="sm"
-                          onClick={() => handleDeleteCompany(registration.id)}
+                          onClick={() => {
+                            if (confirm('Tem certeza que deseja deletar esta empresa?')) {
+                              deleteCompanyMutation.mutate(registration.id);
+                            }
+                          }}
                           disabled={deleteCompanyMutation.isPending}
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
@@ -616,7 +562,7 @@ export default function InternalDashboardWorking() {
                                     size="sm"
                                     variant={task.status === 'pending' ? 'default' : 'outline'}
                                     className="text-xs px-2 py-1 h-6"
-                                    onClick={() => handleTaskStatusChange(task.id, 'pending')}
+                                    onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'pending' })}
                                   >
                                     Pendente
                                   </Button>
@@ -624,7 +570,7 @@ export default function InternalDashboardWorking() {
                                     size="sm"
                                     variant={task.status === 'in_progress' ? 'default' : 'outline'}
                                     className="text-xs px-2 py-1 h-6"
-                                    onClick={() => handleTaskStatusChange(task.id, 'in_progress')}
+                                    onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'in_progress' })}
                                   >
                                     Andamento
                                   </Button>
@@ -632,7 +578,7 @@ export default function InternalDashboardWorking() {
                                     size="sm"
                                     variant={task.status === 'completed' ? 'default' : 'outline'}
                                     className="text-xs px-2 py-1 h-6"
-                                    onClick={() => handleTaskStatusChange(task.id, 'completed')}
+                                    onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'completed' })}
                                   >
                                     Concluída
                                   </Button>
@@ -667,7 +613,7 @@ export default function InternalDashboardWorking() {
           </DialogHeader>
           <div className="space-y-6">
             {/* Criar Usuário - Apenas para Admin */}
-            {user?.role === 'admin' && (
+            {user?.role === 'admin' ? (
               <div className="border rounded-lg p-4">
                 <h3 className="font-semibold mb-3 flex items-center gap-2">
                   <UserPlus className="h-4 w-4" />
@@ -737,11 +683,27 @@ export default function InternalDashboardWorking() {
                 </div>
                 <Button 
                   className="mt-4" 
-                  onClick={handleCreateUser}
+                  onClick={() => {
+                    if (!newUserData.username || !newUserData.password || !newUserData.name) {
+                      toast({
+                        title: "Erro",
+                        description: "Preencha todos os campos obrigatórios.",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    createUserMutation.mutate(newUserData);
+                  }}
                   disabled={createUserMutation.isPending}
                 >
                   Criar Usuário
                 </Button>
+              </div>
+            ) : (
+              <div className="border rounded-lg p-4 bg-muted">
+                <p className="text-muted-foreground text-center">
+                  Apenas administradores podem criar novos usuários.
+                </p>
               </div>
             )}
 
@@ -782,7 +744,17 @@ export default function InternalDashboardWorking() {
               </div>
               <Button 
                 className="mt-4" 
-                onClick={handleChangePassword}
+                onClick={() => {
+                  if (changePasswordData.newPassword !== changePasswordData.confirmPassword) {
+                    toast({
+                      title: "Erro",
+                      description: "As senhas não coincidem.",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                  changePasswordMutation.mutate(changePasswordData);
+                }}
                 disabled={changePasswordMutation.isPending}
               >
                 Alterar Senha

@@ -9,7 +9,7 @@ import NotFound from "@/pages/not-found";
 import BusinessRegistration from "@/pages/business-registration-new";
 import Dashboard from "@/pages/dashboard";
 import Login from "@/pages/login";
-import InternalDashboard from "@/pages/internal-dashboard-working";
+import InternalDashboard from "@/pages/internal-dashboard-fixed";
 
 function Router() {
   return (
