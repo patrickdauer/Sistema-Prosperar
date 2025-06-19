@@ -269,15 +269,15 @@ export default function InternalDashboardFixed() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge className="bg-red-500 hover:bg-red-600 text-white border-red-500">Pendente</Badge>;
+        return <Badge className="!bg-red-500 !hover:bg-red-600 !text-white !border-red-500" style={{backgroundColor: '#ef4444', color: 'white', borderColor: '#ef4444'}}>Pendente</Badge>;
       case 'in_progress':
-        return <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white border-yellow-500">Em Andamento</Badge>;
+        return <Badge className="!bg-yellow-500 !hover:bg-yellow-600 !text-white !border-yellow-500" style={{backgroundColor: '#eab308', color: 'white', borderColor: '#eab308'}}>Em Andamento</Badge>;
       case 'completed':
-        return <Badge className="bg-green-500 hover:bg-green-600 text-white border-green-500">Concluída</Badge>;
+        return <Badge className="!bg-green-500 !hover:bg-green-600 !text-white !border-green-500" style={{backgroundColor: '#22c55e', color: 'white', borderColor: '#22c55e'}}>Concluída</Badge>;
       case 'blocked':
         return <Badge variant="outline" className="border-gray-500 text-gray-700">Bloqueada</Badge>;
       default:
-        return <Badge className="bg-red-500 hover:bg-red-600 text-white border-red-500">Pendente</Badge>;
+        return <Badge className="!bg-red-500 !hover:bg-red-600 !text-white !border-red-500" style={{backgroundColor: '#ef4444', color: 'white', borderColor: '#ef4444'}}>Pendente</Badge>;
     }
   };
 
