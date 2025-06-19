@@ -20,8 +20,12 @@ export default function DarkSistema() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch data from API
-    fetch('/api/business-registrations')
+    // Fetch data from API with tasks included
+    fetch('/api/internal/registrations', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
       .then(res => res.json())
       .then(data => {
         setRegistrations(data || []);
@@ -33,7 +37,7 @@ export default function DarkSistema() {
   }, []);
 
   const updateTaskStatus = (taskId: number, newStatus: string) => {
-    fetch(`/api/tasks/${taskId}/status`, {
+    fetch(`/api/internal/task/${taskId}/status`, {
       method: 'PUT',
       headers: { 
         'Content-Type': 'application/json',
@@ -42,7 +46,11 @@ export default function DarkSistema() {
       body: JSON.stringify({ status: newStatus }),
     }).then(() => {
       // Reload data
-      fetch('/api/business-registrations')
+      fetch('/api/internal/registrations', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      })
         .then(res => res.json())
         .then(data => setRegistrations(data || []));
     });
@@ -63,12 +71,13 @@ export default function DarkSistema() {
     );
   }
 
-  const totalTasks = registrations.reduce((acc, reg) => acc + (reg.tasks?.length || 0), 0);
-  const pendingTasks = registrations.reduce((acc, reg) => 
+  const safeRegistrations = Array.isArray(registrations) ? registrations : [];
+  const totalTasks = safeRegistrations.reduce((acc, reg) => acc + (reg.tasks?.length || 0), 0);
+  const pendingTasks = safeRegistrations.reduce((acc, reg) => 
     acc + (reg.tasks?.filter(t => t.status === 'pending').length || 0), 0);
-  const inProgressTasks = registrations.reduce((acc, reg) => 
+  const inProgressTasks = safeRegistrations.reduce((acc, reg) => 
     acc + (reg.tasks?.filter(t => t.status === 'in_progress').length || 0), 0);
-  const completedTasks = registrations.reduce((acc, reg) => 
+  const completedTasks = safeRegistrations.reduce((acc, reg) => 
     acc + (reg.tasks?.filter(t => t.status === 'completed').length || 0), 0);
 
   return (
@@ -139,7 +148,7 @@ export default function DarkSistema() {
             border: '1px solid #222222'
           }}>
             <div style={{ fontSize: '28px', fontWeight: '700', color: '#ffffff', marginBottom: '8px' }}>
-              {registrations.length}
+              {safeRegistrations.length}
             </div>
             <div style={{ fontSize: '14px', color: '#666666' }}>Empresas</div>
           </div>
@@ -186,7 +195,7 @@ export default function DarkSistema() {
 
         {/* Companies */}
         <div style={{ display: 'grid', gap: '30px' }}>
-          {registrations.map((registration) => (
+          {safeRegistrations.map((registration) => (
             <div key={registration.id} style={{
               background: '#111111',
               borderRadius: '6px',
