@@ -165,7 +165,7 @@ export default function SistemaDark() {
             border: '1px solid #222222'
           }}>
             <div style={{ fontSize: '28px', fontWeight: '700', color: '#ffffff', marginBottom: '8px' }}>
-              {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
+              {(registrations as BusinessRegistration[])?.reduce((acc: number, reg: BusinessRegistration) => 
                 acc + (reg.tasks?.filter((t: Task) => t.status === 'pending').length || 0), 0) || 0}
             </div>
             <div style={{ fontSize: '14px', color: '#666666' }}>Pendentes</div>
@@ -179,7 +179,7 @@ export default function SistemaDark() {
             border: '1px solid #222222'
           }}>
             <div style={{ fontSize: '28px', fontWeight: '700', color: '#ffffff', marginBottom: '8px' }}>
-              {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
+              {(registrations as BusinessRegistration[])?.reduce((acc: number, reg: BusinessRegistration) => 
                 acc + (reg.tasks?.filter((t: Task) => t.status === 'in_progress').length || 0), 0) || 0}
             </div>
             <div style={{ fontSize: '14px', color: '#666666' }}>Em Andamento</div>
@@ -193,7 +193,7 @@ export default function SistemaDark() {
             border: '1px solid #222222'
           }}>
             <div style={{ fontSize: '28px', fontWeight: '700', color: '#ffffff', marginBottom: '8px' }}>
-              {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
+              {(registrations as BusinessRegistration[])?.reduce((acc: number, reg: BusinessRegistration) => 
                 acc + (reg.tasks?.filter((t: Task) => t.status === 'completed').length || 0), 0) || 0}
             </div>
             <div style={{ fontSize: '14px', color: '#666666' }}>Concluídas</div>
@@ -202,7 +202,7 @@ export default function SistemaDark() {
 
         {/* Companies */}
         <div style={{ display: 'grid', gap: '30px' }}>
-          {registrations?.map((registration: BusinessRegistration) => (
+          {(registrations as BusinessRegistration[])?.map((registration: BusinessRegistration) => (
             <div key={registration.id} style={{
               background: '#111111',
               borderRadius: '6px',
