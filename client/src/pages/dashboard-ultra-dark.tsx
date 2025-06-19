@@ -94,14 +94,15 @@ export default function DashboardUltraDark() {
     <div style={{ 
       minHeight: '100vh', 
       background: '#000000',
-      color: '#ffffff'
+      color: '#ffffff',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
     }}>
       {/* Header */}
       <div style={{ 
-        background: 'linear-gradient(135deg, #111111 0%, #1a1a1a 100%)',
-        padding: '25px 0',
-        borderBottom: '1px solid #222222',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.8)'
+        background: '#000000',
+        padding: '30px 0',
+        borderBottom: '1px solid #111111',
+        position: 'relative'
       }}>
         <div style={{ 
           maxWidth: '1400px', 
@@ -113,53 +114,43 @@ export default function DashboardUltraDark() {
         }}>
           <div>
             <h1 style={{ 
-              fontSize: '36px', 
-              fontWeight: 'bold', 
+              fontSize: '40px', 
+              fontWeight: '900', 
               margin: 0,
-              background: 'linear-gradient(45deg, #ffffff 0%, #888888 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
+              color: '#ffffff',
+              letterSpacing: '-0.02em'
             }}>
-              Sistema Interno Ultra
+              SISTEMA INTERNO
             </h1>
-            <p style={{ margin: '10px 0 0 0', color: '#666666', fontSize: '16px' }}>
-              Dashboard Empresarial Premium
+            <p style={{ margin: '8px 0 0 0', color: '#444444', fontSize: '14px', fontWeight: '500', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              Dashboard Executivo
             </p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '25px' }}>
             <div style={{ 
-              background: 'linear-gradient(135deg, #222222 0%, #333333 100%)', 
-              padding: '15px 25px', 
-              borderRadius: '50px',
-              border: '1px solid #444444',
-              backdropFilter: 'blur(20px)'
+              background: '#111111', 
+              padding: '12px 20px', 
+              borderRadius: '4px',
+              border: '1px solid #222222'
             }}>
-              <span style={{ color: '#ffffff', fontSize: '14px', fontWeight: '500' }}>
-                {user?.name} • {user?.role}
+              <span style={{ color: '#cccccc', fontSize: '13px', fontWeight: '500' }}>
+                {user?.name} / {user?.role}
               </span>
             </div>
             <button
               onClick={logout}
               style={{
-                background: 'linear-gradient(135deg, #333333 0%, #444444 100%)',
-                border: '1px solid #555555',
+                background: '#111111',
+                border: '1px solid #333333',
                 color: '#ffffff',
-                padding: '15px 25px',
-                borderRadius: '10px',
+                padding: '12px 20px',
+                borderRadius: '4px',
                 cursor: 'pointer',
-                fontWeight: '600',
-                fontSize: '14px',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(135deg, #444444 0%, #555555 100%)';
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(135deg, #333333 0%, #444444 100%)';
+                fontWeight: '500',
+                fontSize: '13px'
               }}
             >
-              Sair do Sistema
+              SAIR
             </button>
           </div>
         </div>
@@ -173,67 +164,66 @@ export default function DashboardUltraDark() {
       }}>
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
-          gap: '25px',
-          marginBottom: '50px'
+          gridTemplateColumns: 'repeat(4, 1fr)', 
+          gap: '1px',
+          marginBottom: '60px',
+          background: '#111111',
+          borderRadius: '2px',
+          overflow: 'hidden'
         }}>
           <div style={{ 
-            background: 'linear-gradient(135deg, #111111 0%, #222222 100%)',
-            padding: '30px',
-            borderRadius: '20px',
-            textAlign: 'center',
-            border: '1px solid #333333',
-            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.7)'
+            background: '#000000',
+            padding: '40px 20px',
+            textAlign: 'center'
           }}>
-            <div style={{ fontSize: '42px', fontWeight: '900', color: '#ffffff', marginBottom: '10px' }}>
-              {registrations?.length || 0}
+            <div style={{ fontSize: '48px', fontWeight: '900', color: '#ffffff', marginBottom: '8px', fontFamily: 'monospace' }}>
+              {String(registrations?.length || 0).padStart(2, '0')}
             </div>
-            <div style={{ color: '#888888', fontSize: '16px', fontWeight: '500' }}>Total de Empresas</div>
+            <div style={{ color: '#444444', fontSize: '11px', fontWeight: '500', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              Empresas
+            </div>
           </div>
           
           <div style={{ 
-            background: 'linear-gradient(135deg, #111111 0%, #222222 100%)',
-            padding: '30px',
-            borderRadius: '20px',
-            textAlign: 'center',
-            border: '1px solid #dc2626',
-            boxShadow: '0 10px 30px rgba(220, 38, 38, 0.2)'
+            background: '#000000',
+            padding: '40px 20px',
+            textAlign: 'center'
           }}>
-            <div style={{ fontSize: '42px', fontWeight: '900', color: '#ff4444', marginBottom: '10px' }}>
-              {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
-                acc + (reg.tasks?.filter((t: Task) => t.status === 'pending').length || 0), 0) || 0}
+            <div style={{ fontSize: '48px', fontWeight: '900', color: '#ff3333', marginBottom: '8px', fontFamily: 'monospace' }}>
+              {String(registrations?.reduce((acc: number, reg: BusinessRegistration) => 
+                acc + (reg.tasks?.filter((t: Task) => t.status === 'pending').length || 0), 0) || 0).padStart(2, '0')}
             </div>
-            <div style={{ color: '#888888', fontSize: '16px', fontWeight: '500' }}>Tarefas Pendentes</div>
+            <div style={{ color: '#444444', fontSize: '11px', fontWeight: '500', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              Pendentes
+            </div>
           </div>
 
           <div style={{ 
-            background: 'linear-gradient(135deg, #111111 0%, #222222 100%)',
-            padding: '30px',
-            borderRadius: '20px',
-            textAlign: 'center',
-            border: '1px solid #ca8a04',
-            boxShadow: '0 10px 30px rgba(202, 138, 4, 0.2)'
+            background: '#000000',
+            padding: '40px 20px',
+            textAlign: 'center'
           }}>
-            <div style={{ fontSize: '42px', fontWeight: '900', color: '#ffaa00', marginBottom: '10px' }}>
-              {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
-                acc + (reg.tasks?.filter((t: Task) => t.status === 'in_progress').length || 0), 0) || 0}
+            <div style={{ fontSize: '48px', fontWeight: '900', color: '#ffaa00', marginBottom: '8px', fontFamily: 'monospace' }}>
+              {String(registrations?.reduce((acc: number, reg: BusinessRegistration) => 
+                acc + (reg.tasks?.filter((t: Task) => t.status === 'in_progress').length || 0), 0) || 0).padStart(2, '0')}
             </div>
-            <div style={{ color: '#888888', fontSize: '16px', fontWeight: '500' }}>Em Andamento</div>
+            <div style={{ color: '#444444', fontSize: '11px', fontWeight: '500', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              Andamento
+            </div>
           </div>
 
           <div style={{ 
-            background: 'linear-gradient(135deg, #111111 0%, #222222 100%)',
-            padding: '30px',
-            borderRadius: '20px',
-            textAlign: 'center',
-            border: '1px solid #16a34a',
-            boxShadow: '0 10px 30px rgba(22, 163, 74, 0.2)'
+            background: '#000000',
+            padding: '40px 20px',
+            textAlign: 'center'
           }}>
-            <div style={{ fontSize: '42px', fontWeight: '900', color: '#00cc44', marginBottom: '10px' }}>
-              {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
-                acc + (reg.tasks?.filter((t: Task) => t.status === 'completed').length || 0), 0) || 0}
+            <div style={{ fontSize: '48px', fontWeight: '900', color: '#00cc44', marginBottom: '8px', fontFamily: 'monospace' }}>
+              {String(registrations?.reduce((acc: number, reg: BusinessRegistration) => 
+                acc + (reg.tasks?.filter((t: Task) => t.status === 'completed').length || 0), 0) || 0).padStart(2, '0')}
             </div>
-            <div style={{ color: '#888888', fontSize: '16px', fontWeight: '500' }}>Concluídas</div>
+            <div style={{ color: '#444444', fontSize: '11px', fontWeight: '500', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              Concluídas
+            </div>
           </div>
         </div>
 
@@ -241,143 +231,128 @@ export default function DashboardUltraDark() {
         <div style={{ display: 'grid', gap: '40px' }}>
           {registrations?.map((registration: BusinessRegistration) => (
             <div key={registration.id} style={{ 
-              background: 'linear-gradient(145deg, #111111 0%, #1a1a1a 100%)',
-              borderRadius: '25px',
-              overflow: 'hidden',
-              border: '1px solid #333333',
-              boxShadow: '0 15px 40px rgba(0, 0, 0, 0.8)'
+              background: '#000000',
+              border: '1px solid #111111',
+              overflow: 'hidden'
             }}>
               {/* Company Header */}
               <div style={{ 
-                background: 'linear-gradient(135deg, #1a1a1a 0%, #222222 100%)', 
+                background: '#000000', 
                 padding: '30px',
-                borderBottom: '1px solid #333333'
+                borderBottom: '1px solid #111111'
               }}>
                 <h3 style={{ 
-                  fontSize: '28px', 
-                  margin: '0 0 15px 0',
+                  fontSize: '24px', 
+                  margin: '0 0 8px 0',
                   color: '#ffffff',
-                  fontWeight: '700'
+                  fontWeight: '600',
+                  letterSpacing: '-0.01em'
                 }}>
                   {registration.razaoSocial}
                 </h3>
-                <p style={{ margin: '0 0 20px 0', color: '#aaaaaa', fontSize: '18px' }}>
+                <p style={{ margin: '0 0 20px 0', color: '#666666', fontSize: '14px' }}>
                   {registration.nomeFantasia}
                 </p>
                 <div style={{ 
                   display: 'grid', 
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-                  gap: '15px',
-                  fontSize: '15px',
-                  color: '#777777'
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+                  gap: '12px',
+                  fontSize: '12px',
+                  color: '#444444'
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ color: '#555555' }}>✉</span> {registration.emailEmpresa}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ color: '#555555' }}>☎</span> {registration.telefoneEmpresa}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ color: '#555555' }}>🆔</span> ID: {registration.id}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ color: '#555555' }}>📅</span> {new Date(registration.createdAt).toLocaleDateString('pt-BR')}
-                  </div>
+                  <div>{registration.emailEmpresa}</div>
+                  <div>{registration.telefoneEmpresa}</div>
+                  <div>ID {registration.id}</div>
+                  <div>{new Date(registration.createdAt).toLocaleDateString('pt-BR')}</div>
                 </div>
               </div>
 
               {/* Departments */}
-              <div style={{ padding: '40px' }}>
+              <div style={{ padding: '0' }}>
                 <div style={{ 
                   display: 'grid', 
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', 
-                  gap: '30px' 
+                  gridTemplateColumns: 'repeat(3, 1fr)', 
+                  gap: '1px',
+                  background: '#111111'
                 }}>
                   {/* Societário */}
                   <div style={{ 
-                    background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)',
-                    borderRadius: '20px',
-                    overflow: 'hidden',
-                    border: '1px solid #444444'
+                    background: '#000000'
                   }}>
                     <div style={{ 
-                      background: 'linear-gradient(135deg, #222222 0%, #333333 100%)', 
+                      background: '#111111', 
                       padding: '20px',
-                      fontWeight: 'bold',
-                      fontSize: '20px',
+                      fontWeight: '600',
+                      fontSize: '12px',
                       color: '#ffffff',
-                      borderBottom: '1px solid #444444'
+                      letterSpacing: '0.1em',
+                      textTransform: 'uppercase'
                     }}>
-                      🏢 Departamento Societário
+                      Societário
                     </div>
-                    <div style={{ padding: '25px' }}>
+                    <div style={{ padding: '30px' }}>
                       {registration.tasks?.filter(task => task.department === 'societario').map(task => (
                         <div key={task.id} style={{ 
-                          background: 'linear-gradient(135deg, #1a1a1a 0%, #222222 100%)', 
-                          padding: '20px', 
-                          borderRadius: '15px',
-                          marginBottom: '20px',
-                          border: '1px solid #333333'
+                          borderBottom: '1px solid #111111',
+                          paddingBottom: '20px',
+                          marginBottom: '20px'
                         }}>
-                          <h4 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#ffffff', fontWeight: '600' }}>
+                          <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#ffffff', fontWeight: '500' }}>
                             {task.title}
                           </h4>
                           {task.description && (
-                            <p style={{ margin: '0 0 20px 0', fontSize: '15px', color: '#aaaaaa', lineHeight: '1.5' }}>
+                            <p style={{ margin: '0 0 15px 0', fontSize: '12px', color: '#666666', lineHeight: '1.4' }}>
                               {task.description}
                             </p>
                           )}
-                          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                          <div style={{ display: 'flex', gap: '8px' }}>
                             <button
                               onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'pending' })}
                               style={{
-                                background: task.status === 'pending' ? '#dc2626' : 'rgba(220, 38, 38, 0.2)',
+                                background: task.status === 'pending' ? '#dc2626' : '#111111',
                                 color: '#ffffff',
-                                border: task.status === 'pending' ? '2px solid #dc2626' : '2px solid rgba(220, 38, 38, 0.5)',
-                                padding: '10px 16px',
-                                borderRadius: '8px',
-                                fontSize: '13px',
-                                fontWeight: 'bold',
+                                border: 'none',
+                                padding: '6px 12px',
+                                fontSize: '10px',
+                                fontWeight: '600',
                                 cursor: 'pointer',
                                 textTransform: 'uppercase',
-                                transition: 'all 0.3s ease'
+                                letterSpacing: '0.05em'
                               }}
                             >
-                              PENDENTE
+                              PEN
                             </button>
                             <button
                               onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'in_progress' })}
                               style={{
-                                background: task.status === 'in_progress' ? '#ca8a04' : 'rgba(202, 138, 4, 0.2)',
+                                background: task.status === 'in_progress' ? '#ca8a04' : '#111111',
                                 color: '#ffffff',
-                                border: task.status === 'in_progress' ? '2px solid #ca8a04' : '2px solid rgba(202, 138, 4, 0.5)',
-                                padding: '10px 16px',
-                                borderRadius: '8px',
-                                fontSize: '13px',
-                                fontWeight: 'bold',
+                                border: 'none',
+                                padding: '6px 12px',
+                                fontSize: '10px',
+                                fontWeight: '600',
                                 cursor: 'pointer',
                                 textTransform: 'uppercase',
-                                transition: 'all 0.3s ease'
+                                letterSpacing: '0.05em'
                               }}
                             >
-                              EM ANDAMENTO
+                              AND
                             </button>
                             <button
                               onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'completed' })}
                               style={{
-                                background: task.status === 'completed' ? '#16a34a' : 'rgba(22, 163, 74, 0.2)',
+                                background: task.status === 'completed' ? '#16a34a' : '#111111',
                                 color: '#ffffff',
-                                border: task.status === 'completed' ? '2px solid #16a34a' : '2px solid rgba(22, 163, 74, 0.5)',
-                                padding: '10px 16px',
-                                borderRadius: '8px',
-                                fontSize: '13px',
-                                fontWeight: 'bold',
+                                border: 'none',
+                                padding: '6px 12px',
+                                fontSize: '10px',
+                                fontWeight: '600',
                                 cursor: 'pointer',
                                 textTransform: 'uppercase',
-                                transition: 'all 0.3s ease'
+                                letterSpacing: '0.05em'
                               }}
                             >
-                              CONCLUÍDA
+                              CON
                             </button>
                           </div>
                         </div>
