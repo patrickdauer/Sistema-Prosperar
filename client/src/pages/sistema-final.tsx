@@ -11,7 +11,15 @@ interface BusinessRegistration {
   id: number;
   razaoSocial: string;
   nomeFantasia: string;
+  endereco: string;
+  inscricaoImobiliaria: string;
+  metragem: number;
+  telefoneEmpresa: string;
   emailEmpresa: string;
+  capitalSocial: string;
+  atividadePrincipal: string;
+  atividadesSecundarias: string;
+  socios: any[];
   tasks: Task[];
 }
 
@@ -20,6 +28,8 @@ export default function SistemaFinal() {
   const [loading, setLoading] = useState(true);
   const [editingCompany, setEditingCompany] = useState<BusinessRegistration | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showNewTaskModal, setShowNewTaskModal] = useState(false);
+  const [newTaskDepartment, setNewTaskDepartment] = useState('');
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -83,6 +93,61 @@ export default function SistemaFinal() {
     })
     .catch(error => {
       console.error('Error updating task status:', error);
+    });
+  };
+
+  const deleteTask = (taskId: number) => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    if (!confirm('Tem certeza que deseja deletar esta tarefa?')) return;
+
+    fetch(`/api/internal/task/${taskId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    .then(() => {
+      // Remove task from local state
+      setRegistrations(prev =>
+        prev.map(reg => ({
+          ...reg,
+          tasks: reg.tasks.filter(task => task.id !== taskId)
+        }))
+      );
+    })
+    .catch(error => {
+      console.error('Error deleting task:', error);
+    });
+  };
+
+  const createNewTask = (registrationId: number, department: string, title: string, description: string) => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    fetch(`/api/internal/registration/${registrationId}/task`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ title, description, department })
+    })
+    .then(res => res.json())
+    .then(newTask => {
+      // Add new task to local state
+      setRegistrations(prev =>
+        prev.map(reg =>
+          reg.id === registrationId
+            ? { ...reg, tasks: [...reg.tasks, newTask] }
+            : reg
+        )
+      );
+      setShowNewTaskModal(false);
+    })
+    .catch(error => {
+      console.error('Error creating task:', error);
     });
   };
 
@@ -288,9 +353,30 @@ export default function SistemaFinal() {
                     color: '#ffffff',
                     marginBottom: '16px',
                     paddingBottom: '8px',
-                    borderBottom: '1px solid #222222'
+                    borderBottom: '1px solid #222222',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
                   }}>
-                    Societário
+                    <span>Societário</span>
+                    <button
+                      onClick={() => {
+                        setEditingCompany(registration);
+                        setNewTaskDepartment('societario');
+                        setShowNewTaskModal(true);
+                      }}
+                      style={{
+                        background: '#333333',
+                        border: '1px solid #555555',
+                        color: '#ffffff',
+                        padding: '4px 8px',
+                        borderRadius: '3px',
+                        cursor: 'pointer',
+                        fontSize: '10px'
+                      }}
+                    >
+                      + Nova
+                    </button>
                   </div>
                   {registration.tasks.filter(task => task.department === 'societario').map(task => (
                     <div key={task.id} style={{ marginBottom: '16px' }}>
@@ -298,9 +384,26 @@ export default function SistemaFinal() {
                         fontSize: '13px',
                         color: '#cccccc',
                         marginBottom: '10px',
-                        lineHeight: '1.4'
+                        lineHeight: '1.4',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
                       }}>
-                        {task.title}
+                        <span>{task.title}</span>
+                        <button
+                          onClick={() => deleteTask(task.id)}
+                          style={{
+                            background: '#dc3545',
+                            border: 'none',
+                            color: '#ffffff',
+                            padding: '2px 6px',
+                            borderRadius: '2px',
+                            cursor: 'pointer',
+                            fontSize: '10px'
+                          }}
+                        >
+                          ×
+                        </button>
                       </div>
                       <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                         <button
@@ -364,9 +467,30 @@ export default function SistemaFinal() {
                     color: '#ffffff',
                     marginBottom: '16px',
                     paddingBottom: '8px',
-                    borderBottom: '1px solid #222222'
+                    borderBottom: '1px solid #222222',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
                   }}>
-                    Fiscal
+                    <span>Fiscal</span>
+                    <button
+                      onClick={() => {
+                        setEditingCompany(registration);
+                        setNewTaskDepartment('fiscal');
+                        setShowNewTaskModal(true);
+                      }}
+                      style={{
+                        background: '#333333',
+                        border: '1px solid #555555',
+                        color: '#ffffff',
+                        padding: '4px 8px',
+                        borderRadius: '3px',
+                        cursor: 'pointer',
+                        fontSize: '10px'
+                      }}
+                    >
+                      + Nova
+                    </button>
                   </div>
                   {registration.tasks.filter(task => task.department === 'fiscal').map(task => (
                     <div key={task.id} style={{ marginBottom: '16px' }}>
@@ -374,9 +498,26 @@ export default function SistemaFinal() {
                         fontSize: '13px',
                         color: '#cccccc',
                         marginBottom: '10px',
-                        lineHeight: '1.4'
+                        lineHeight: '1.4',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
                       }}>
-                        {task.title}
+                        <span>{task.title}</span>
+                        <button
+                          onClick={() => deleteTask(task.id)}
+                          style={{
+                            background: '#dc3545',
+                            border: 'none',
+                            color: '#ffffff',
+                            padding: '2px 6px',
+                            borderRadius: '2px',
+                            cursor: 'pointer',
+                            fontSize: '10px'
+                          }}
+                        >
+                          ×
+                        </button>
                       </div>
                       <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                         <button
@@ -440,9 +581,30 @@ export default function SistemaFinal() {
                     color: '#ffffff',
                     marginBottom: '16px',
                     paddingBottom: '8px',
-                    borderBottom: '1px solid #222222'
+                    borderBottom: '1px solid #222222',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
                   }}>
-                    Pessoal
+                    <span>Pessoal</span>
+                    <button
+                      onClick={() => {
+                        setEditingCompany(registration);
+                        setNewTaskDepartment('pessoal');
+                        setShowNewTaskModal(true);
+                      }}
+                      style={{
+                        background: '#333333',
+                        border: '1px solid #555555',
+                        color: '#ffffff',
+                        padding: '4px 8px',
+                        borderRadius: '3px',
+                        cursor: 'pointer',
+                        fontSize: '10px'
+                      }}
+                    >
+                      + Nova
+                    </button>
                   </div>
                   {registration.tasks.filter(task => task.department === 'pessoal').map(task => (
                     <div key={task.id} style={{ marginBottom: '16px' }}>
@@ -450,9 +612,26 @@ export default function SistemaFinal() {
                         fontSize: '13px',
                         color: '#cccccc',
                         marginBottom: '10px',
-                        lineHeight: '1.4'
+                        lineHeight: '1.4',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
                       }}>
-                        {task.title}
+                        <span>{task.title}</span>
+                        <button
+                          onClick={() => deleteTask(task.id)}
+                          style={{
+                            background: '#dc3545',
+                            border: 'none',
+                            color: '#ffffff',
+                            padding: '2px 6px',
+                            borderRadius: '2px',
+                            cursor: 'pointer',
+                            fontSize: '10px'
+                          }}
+                        >
+                          ×
+                        </button>
                       </div>
                       <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                         <button
@@ -569,7 +748,14 @@ export default function SistemaFinal() {
               const updatedData = {
                 razaoSocial: formData.get('razaoSocial') as string,
                 nomeFantasia: formData.get('nomeFantasia') as string,
+                endereco: formData.get('endereco') as string,
+                inscricaoImobiliaria: formData.get('inscricaoImobiliaria') as string,
+                metragem: parseInt(formData.get('metragem') as string) || 0,
+                telefoneEmpresa: formData.get('telefoneEmpresa') as string,
                 emailEmpresa: formData.get('emailEmpresa') as string,
+                capitalSocial: formData.get('capitalSocial') as string,
+                atividadePrincipal: formData.get('atividadePrincipal') as string,
+                atividadesSecundarias: formData.get('atividadesSecundarias') as string,
               };
               
               const token = localStorage.getItem('token');
@@ -652,19 +838,19 @@ export default function SistemaFinal() {
                 />
               </div>
 
-              <div style={{ marginBottom: '30px' }}>
+              <div style={{ marginBottom: '20px' }}>
                 <label style={{
                   display: 'block',
                   color: '#cccccc',
                   fontSize: '14px',
                   marginBottom: '8px'
                 }}>
-                  Email da Empresa
+                  Endereço
                 </label>
                 <input
-                  type="email"
-                  name="emailEmpresa"
-                  defaultValue={editingCompany.emailEmpresa}
+                  type="text"
+                  name="endereco"
+                  defaultValue={editingCompany.endereco}
                   style={{
                     width: '100%',
                     background: '#222222',
@@ -675,6 +861,186 @@ export default function SistemaFinal() {
                     fontSize: '14px'
                   }}
                   required
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
+                <div>
+                  <label style={{
+                    display: 'block',
+                    color: '#cccccc',
+                    fontSize: '14px',
+                    marginBottom: '8px'
+                  }}>
+                    Inscrição Imobiliária
+                  </label>
+                  <input
+                    type="text"
+                    name="inscricaoImobiliaria"
+                    defaultValue={editingCompany.inscricaoImobiliaria}
+                    style={{
+                      width: '100%',
+                      background: '#222222',
+                      border: '1px solid #444444',
+                      color: '#ffffff',
+                      padding: '12px',
+                      borderRadius: '4px',
+                      fontSize: '14px'
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{
+                    display: 'block',
+                    color: '#cccccc',
+                    fontSize: '14px',
+                    marginBottom: '8px'
+                  }}>
+                    Metragem (m²)
+                  </label>
+                  <input
+                    type="number"
+                    name="metragem"
+                    defaultValue={editingCompany.metragem}
+                    style={{
+                      width: '100%',
+                      background: '#222222',
+                      border: '1px solid #444444',
+                      color: '#ffffff',
+                      padding: '12px',
+                      borderRadius: '4px',
+                      fontSize: '14px'
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
+                <div>
+                  <label style={{
+                    display: 'block',
+                    color: '#cccccc',
+                    fontSize: '14px',
+                    marginBottom: '8px'
+                  }}>
+                    Telefone da Empresa
+                  </label>
+                  <input
+                    type="text"
+                    name="telefoneEmpresa"
+                    defaultValue={editingCompany.telefoneEmpresa}
+                    style={{
+                      width: '100%',
+                      background: '#222222',
+                      border: '1px solid #444444',
+                      color: '#ffffff',
+                      padding: '12px',
+                      borderRadius: '4px',
+                      fontSize: '14px'
+                    }}
+                    required
+                  />
+                </div>
+                <div>
+                  <label style={{
+                    display: 'block',
+                    color: '#cccccc',
+                    fontSize: '14px',
+                    marginBottom: '8px'
+                  }}>
+                    Email da Empresa
+                  </label>
+                  <input
+                    type="email"
+                    name="emailEmpresa"
+                    defaultValue={editingCompany.emailEmpresa}
+                    style={{
+                      width: '100%',
+                      background: '#222222',
+                      border: '1px solid #444444',
+                      color: '#ffffff',
+                      padding: '12px',
+                      borderRadius: '4px',
+                      fontSize: '14px'
+                    }}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{
+                  display: 'block',
+                  color: '#cccccc',
+                  fontSize: '14px',
+                  marginBottom: '8px'
+                }}>
+                  Capital Social
+                </label>
+                <input
+                  type="text"
+                  name="capitalSocial"
+                  defaultValue={editingCompany.capitalSocial}
+                  style={{
+                    width: '100%',
+                    background: '#222222',
+                    border: '1px solid #444444',
+                    color: '#ffffff',
+                    padding: '12px',
+                    borderRadius: '4px',
+                    fontSize: '14px'
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{
+                  display: 'block',
+                  color: '#cccccc',
+                  fontSize: '14px',
+                  marginBottom: '8px'
+                }}>
+                  Atividade Principal
+                </label>
+                <input
+                  type="text"
+                  name="atividadePrincipal"
+                  defaultValue={editingCompany.atividadePrincipal}
+                  style={{
+                    width: '100%',
+                    background: '#222222',
+                    border: '1px solid #444444',
+                    color: '#ffffff',
+                    padding: '12px',
+                    borderRadius: '4px',
+                    fontSize: '14px'
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '30px' }}>
+                <label style={{
+                  display: 'block',
+                  color: '#cccccc',
+                  fontSize: '14px',
+                  marginBottom: '8px'
+                }}>
+                  Atividades Secundárias
+                </label>
+                <textarea
+                  name="atividadesSecundarias"
+                  defaultValue={editingCompany.atividadesSecundarias}
+                  rows={3}
+                  style={{
+                    width: '100%',
+                    background: '#222222',
+                    border: '1px solid #444444',
+                    color: '#ffffff',
+                    padding: '12px',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    resize: 'vertical'
+                  }}
                 />
               </div>
 
