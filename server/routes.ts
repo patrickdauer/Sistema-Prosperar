@@ -112,6 +112,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/internal/registration/:id", authenticateToken, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updateData = req.body;
+      
+      const updatedRegistration = await storage.updateBusinessRegistration(id, updateData);
+      
+      res.json(updatedRegistration);
+    } catch (error) {
+      console.error('Error updating registration:', error);
+      res.status(500).json({ message: "Erro ao atualizar registro" });
+    }
+  });
+
   app.get("/api/internal/my-tasks", authenticateToken, async (req, res) => {
     try {
       const tasks = await storage.getTasksByUser(req.user!.id);
@@ -338,6 +352,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create registration in database
       const registration = await storage.createBusinessRegistration(registrationData);
       console.log('Registration created with ID:', registration.id);
+      
+      // Create initial tasks for the registration (all pending)
+      console.log('Creating initial tasks for registration...');
+      await storage.createTasksForRegistration(registration.id);
+      console.log('Initial tasks created successfully');
       
       // Process uploads and integrations in sequence to ensure folder data is available for email
       let folderData: { mainFolderId: string, societarioFolderId: string } | undefined;
