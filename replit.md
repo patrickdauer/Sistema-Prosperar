@@ -146,14 +146,14 @@ The system uses a `business_registrations` table with:
 
 ## Recent Changes
 
-### December 19, 2025 - Dark Minimalist Theme Implementation
-- **Sistema Dark**: Created new minimalist dark theme from scratch at `/sistema-dark`
-- **Sober Professional Design**: Black background (#0a0a0a) with gray elements for corporate environment
-- **Selective Color Usage**: Only status buttons have colors (red, orange, green) as requested
-- **Toggle Functionality**: Status buttons can be clicked on/off for better task management
-- **Clean Interface**: Removed all unnecessary colorful elements from departments
-- **Protected Route**: Added authentication protection with proper loading states
-- **User Preference**: Implemented exactly as requested - dark theme with minimal colors
+### December 20, 2025 - Complete Task Management & Full Form Editing
+- **Task Management**: Added complete CRUD operations for tasks in each department
+- **Delete Tasks**: Red "×" button to remove tasks with confirmation dialog
+- **Create Tasks**: "+ Nova" button in each department opens modal for custom task creation
+- **Full Form Editing**: Expanded edit modal to include all company fields (address, capital, activities, etc.)
+- **Real-time Updates**: All changes persist to PostgreSQL and update interface immediately
+- **Public Form Integration**: Companies from public form automatically appear in internal system with pending tasks
+- **Enhanced UX**: Organized form fields in logical groups with professional dark theme styling
 
 ### December 19, 2025 - Complete System Redesign
 - **New Internal System**: Completely rebuilt the internal dashboard with modern architecture and visual design

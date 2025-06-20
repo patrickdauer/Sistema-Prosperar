@@ -1084,6 +1084,161 @@ export default function SistemaFinal() {
           </div>
         </div>
       )}
+
+      {/* New Task Modal */}
+      {showNewTaskModal && editingCompany && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: '#111111',
+            border: '1px solid #333333',
+            borderRadius: '8px',
+            padding: '30px',
+            maxWidth: '500px',
+            width: '90%'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '20px'
+            }}>
+              <h2 style={{
+                color: '#ffffff',
+                fontSize: '18px',
+                fontWeight: '600',
+                margin: 0
+              }}>
+                Nova Tarefa - {newTaskDepartment === 'societario' ? 'Societário' : 
+                               newTaskDepartment === 'fiscal' ? 'Fiscal' : 'Pessoal'}
+              </h2>
+              <button
+                onClick={() => setShowNewTaskModal(false)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#666666',
+                  fontSize: '20px',
+                  cursor: 'pointer'
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.target as HTMLFormElement);
+              const title = formData.get('title') as string;
+              const description = formData.get('description') as string;
+              
+              if (title.trim()) {
+                createNewTask(editingCompany.id, newTaskDepartment, title, description || '');
+              }
+            }}>
+              
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{
+                  display: 'block',
+                  color: '#cccccc',
+                  fontSize: '14px',
+                  marginBottom: '8px'
+                }}>
+                  Título da Tarefa
+                </label>
+                <input
+                  type="text"
+                  name="title"
+                  style={{
+                    width: '100%',
+                    background: '#222222',
+                    border: '1px solid #444444',
+                    color: '#ffffff',
+                    padding: '12px',
+                    borderRadius: '4px',
+                    fontSize: '14px'
+                  }}
+                  required
+                  placeholder="Ex: Análise de documentos"
+                />
+              </div>
+
+              <div style={{ marginBottom: '30px' }}>
+                <label style={{
+                  display: 'block',
+                  color: '#cccccc',
+                  fontSize: '14px',
+                  marginBottom: '8px'
+                }}>
+                  Descrição (opcional)
+                </label>
+                <textarea
+                  name="description"
+                  rows={3}
+                  style={{
+                    width: '100%',
+                    background: '#222222',
+                    border: '1px solid #444444',
+                    color: '#ffffff',
+                    padding: '12px',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    resize: 'vertical'
+                  }}
+                  placeholder="Descrição detalhada da tarefa..."
+                />
+              </div>
+
+              <div style={{
+                display: 'flex',
+                gap: '12px',
+                justifyContent: 'flex-end'
+              }}>
+                <button
+                  type="button"
+                  onClick={() => setShowNewTaskModal(false)}
+                  style={{
+                    background: '#333333',
+                    border: '1px solid #555555',
+                    color: '#ffffff',
+                    padding: '10px 20px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '14px'
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  style={{
+                    background: '#198754',
+                    border: 'none',
+                    color: '#ffffff',
+                    padding: '10px 20px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                  }}
+                >
+                  Criar Tarefa
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
