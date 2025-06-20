@@ -42,6 +42,8 @@ export interface IStorage {
   getTasksByUser(userId: number): Promise<Task[]>;
   updateTaskStatus(taskId: number, status: string, userId: number): Promise<Task>;
   assignTask(taskId: number, userId: number): Promise<Task>;
+  deleteTask(taskId: number): Promise<void>;
+  createTask(task: Omit<InsertTask, 'id' | 'createdAt' | 'templateId'>): Promise<Task>;
   
   // Task templates
   getTaskTemplates(): Promise<TaskTemplate[]>;
@@ -203,6 +205,22 @@ export class DatabaseStorage implements IStorage {
       .returning();
 
     return updatedTask;
+  }
+
+  async deleteTask(taskId: number): Promise<void> {
+    await db.delete(tasks).where(eq(tasks.id, taskId));
+  }
+
+  async createTask(task: Omit<InsertTask, 'id' | 'createdAt' | 'templateId'>): Promise<Task> {
+    const [newTask] = await db
+      .insert(tasks)
+      .values({
+        ...task,
+        templateId: null,
+        createdAt: new Date()
+      })
+      .returning();
+    return newTask;
   }
 
   // Task templates

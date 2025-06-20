@@ -126,6 +126,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/internal/task/:id", authenticateToken, async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.id);
+      await storage.deleteTask(taskId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      res.status(500).json({ message: "Erro ao deletar tarefa" });
+    }
+  });
+
+  app.post("/api/internal/registration/:id/task", authenticateToken, async (req, res) => {
+    try {
+      const registrationId = parseInt(req.params.id);
+      const { title, description, department } = req.body;
+      
+      const newTask = await storage.createTask({
+        businessRegistrationId: registrationId,
+        title,
+        description,
+        department,
+        status: 'pending',
+        order: 99
+      });
+      
+      res.json(newTask);
+    } catch (error) {
+      console.error('Error creating task:', error);
+      res.status(500).json({ message: "Erro ao criar tarefa" });
+    }
+  });
+
   app.get("/api/internal/my-tasks", authenticateToken, async (req, res) => {
     try {
       const tasks = await storage.getTasksByUser(req.user!.id);
