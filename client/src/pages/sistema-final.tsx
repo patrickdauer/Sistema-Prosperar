@@ -36,6 +36,20 @@ interface TaskFile {
   createdAt: string;
 }
 
+interface Socio {
+  nomeCompleto: string;
+  cpf: string;
+  rg: string;
+  dataNascimento: string;
+  estadoCivil: string;
+  profissao: string;
+  nacionalidade: string;
+  enderecoPessoal: string;
+  telefonePessoal: string;
+  emailPessoal: string;
+  filiacao: string;
+}
+
 interface BusinessRegistration {
   id: number;
   razaoSocial: string;
@@ -46,6 +60,7 @@ interface BusinessRegistration {
   cnpj?: string;
   capitalSocial?: string;
   atividadePrincipal?: string;
+  socios?: Socio[];
   createdAt: string;
   tasks: Task[];
 }

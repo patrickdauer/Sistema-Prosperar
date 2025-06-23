@@ -196,15 +196,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Prepare data for Excel
       const excelData = registrations.map((reg: any) => ({
         'ID': reg.id,
-        'Razão Social': reg.razaoSocial,
-        'Nome Fantasia': reg.nomeFantasia,
-        'Email': reg.emailEmpresa,
-        'Telefone': reg.telefoneEmpresa,
+        'Razão Social': reg.razao_social || reg.razaoSocial,
+        'Nome Fantasia': reg.nome_fantasia || reg.nomeFantasia,
+        'Email': reg.email_empresa || reg.emailEmpresa,
+        'Telefone': reg.telefone_empresa || reg.telefoneEmpresa,
         'Endereço': reg.endereco,
         'CNPJ': reg.cnpj || 'Não informado',
-        'Capital Social': reg.capitalSocial || 'Não informado',
-        'Atividade Principal': reg.atividadePrincipal || 'Não informado',
-        'Data Criação': new Date(reg.createdAt).toLocaleDateString('pt-BR'),
+        'Capital Social': reg.capital_social || reg.capitalSocial || 'Não informado',
+        'Atividade Principal': reg.atividade_principal || reg.atividadePrincipal || 'Não informado',
+        'Data Criação': new Date(reg.created_at || reg.createdAt).toLocaleDateString('pt-BR'),
         'Total Tarefas': reg.tasks?.length || 0,
         'Tarefas Pendentes': reg.tasks?.filter((t: any) => t.status === 'pending').length || 0,
         'Tarefas Em Andamento': reg.tasks?.filter((t: any) => t.status === 'in_progress').length || 0,
@@ -296,12 +296,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           <h2>Detalhes das Empresas</h2>
           ${registrations.map((reg: any) => `
             <div class="company">
-              <div class="company-title">${reg.razaoSocial}</div>
-              <div class="info"><strong>Nome Fantasia:</strong> ${reg.nomeFantasia}</div>
-              <div class="info"><strong>Email:</strong> ${reg.emailEmpresa}</div>
-              <div class="info"><strong>Telefone:</strong> ${reg.telefoneEmpresa}</div>
+              <div class="company-title">${reg.razao_social || reg.razaoSocial}</div>
+              <div class="info"><strong>Nome Fantasia:</strong> ${reg.nome_fantasia || reg.nomeFantasia}</div>
+              <div class="info"><strong>Email:</strong> ${reg.email_empresa || reg.emailEmpresa}</div>
+              <div class="info"><strong>Telefone:</strong> ${reg.telefone_empresa || reg.telefoneEmpresa}</div>
               ${reg.cnpj ? `<div class="info"><strong>CNPJ:</strong> ${reg.cnpj}</div>` : ''}
-              <div class="info"><strong>Data de Cadastro:</strong> ${new Date(reg.createdAt).toLocaleDateString('pt-BR')}</div>
+              <div class="info"><strong>Data de Cadastro:</strong> ${new Date(reg.created_at || reg.createdAt).toLocaleDateString('pt-BR')}</div>
               
               ${reg.tasks && reg.tasks.length > 0 ? `
                 <div class="tasks">
