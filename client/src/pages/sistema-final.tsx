@@ -44,6 +44,8 @@ interface BusinessRegistration {
   emailEmpresa: string;
   telefoneEmpresa: string;
   cnpj?: string;
+  capitalSocial?: string;
+  atividadePrincipal?: string;
   createdAt: string;
   tasks: Task[];
 }
@@ -723,7 +725,7 @@ export default function SistemaFinal() {
                 <div>Ações</div>
               </div>
               
-              {users.map((user: any) => (
+              {(users as any[]).map((user: any) => (
                 <div key={user.id} className="grid grid-cols-4 gap-4 p-4 border-t">
                   <div>{user.name}</div>
                   <div>{user.email}</div>
@@ -800,22 +802,7 @@ export default function SistemaFinal() {
                     onChange={(e) => setEditingCompany({...editingCompany, cnpj: e.target.value})}
                   />
                 </div>
-                <div>
-                  <Label htmlFor="capitalSocial">Capital Social</Label>
-                  <Input
-                    id="capitalSocial"
-                    value={editingCompany.capitalSocial || ''}
-                    onChange={(e) => setEditingCompany({...editingCompany, capitalSocial: e.target.value})}
-                  />
-                </div>
-                <div className="col-span-2">
-                  <Label htmlFor="atividadePrincipal">Atividade Principal</Label>
-                  <Input
-                    id="atividadePrincipal"
-                    value={editingCompany.atividadePrincipal || ''}
-                    onChange={(e) => setEditingCompany({...editingCompany, atividadePrincipal: e.target.value})}
-                  />
-                </div>
+
               </div>
               
               <div className="flex gap-2 pt-4">
