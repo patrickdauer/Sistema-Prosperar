@@ -75,6 +75,8 @@ export default function SistemaFinal() {
   const [dataLembrete, setDataLembrete] = useState('');
   const [cnpjValue, setCnpjValue] = useState('');
   const [showUserManagement, setShowUserManagement] = useState(false);
+  const [showCompanyEdit, setShowCompanyEdit] = useState(false);
+  const [editingCompanyData, setEditingCompanyData] = useState<BusinessRegistration | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { toast } = useToast();
@@ -92,6 +94,31 @@ export default function SistemaFinal() {
   const { data: users = [] } = useQuery({
     queryKey: ['/api/internal/users'],
     enabled: showUserManagement,
+  });
+
+  // Update company mutation
+  const updateCompanyMutation = useMutation({
+    mutationFn: async (companyData: BusinessRegistration) => {
+      const response = await fetch(`/api/internal/business-registrations/${companyData.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(companyData),
+      });
+      if (!response.ok) throw new Error('Falha ao atualizar empresa');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/internal/business-registrations/with-tasks'] });
+      setShowCompanyEdit(false);
+      setEditingCompanyData(null);
+      toast({ title: "Empresa atualizada com sucesso!", variant: "default" });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Erro ao atualizar empresa", variant: "destructive" });
+    },
   });
 
   // Update task field mutation
