@@ -151,28 +151,52 @@ export default function SistemaFinal() {
     }
   };
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
     const token = localStorage.getItem('token');
-    if (!token) return;
+    if (!token) {
+      alert('Token de autenticação não encontrado. Faça login novamente.');
+      return;
+    }
 
-    fetch('/api/internal/export/excel', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-    .then(res => res.blob())
-    .then(blob => {
+    try {
+      const response = await fetch('/api/internal/export/excel', {
+        method: 'GET',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Erro HTTP: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      if (blob.size === 0) {
+        throw new Error('Arquivo Excel vazio recebido');
+      }
+
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = url;
-      a.download = `empresas-${new Date().toISOString().split('T')[0]}.xlsx`;
+      a.download = `empresas_${new Date().toISOString().split('T')[0]}.xlsx`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-    })
-    .catch(error => {
+
+      // Mostrar mensagem de sucesso
+      const successMsg = document.createElement('div');
+      successMsg.textContent = 'Excel exportado com sucesso!';
+      successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #28a745; color: white; padding: 15px; border-radius: 5px; z-index: 1000; font-size: 14px;';
+      document.body.appendChild(successMsg);
+      setTimeout(() => document.body.removeChild(successMsg), 3000);
+    } catch (error) {
       console.error('Error exporting to Excel:', error);
-    });
+      alert(`Erro ao exportar Excel: ${error.message}`);
+    }
   };
 
   const exportToPDF = () => {
@@ -472,12 +496,13 @@ export default function SistemaFinal() {
             gap: '15px'
           }}>
             <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-              <div>
+              <div style={{ display: 'flex', gap: '5px' }}>
                 <input
                   type="text"
                   placeholder="Pesquisar empresas..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && setSearchTerm(searchTerm)}
                   style={{
                     background: '#222222',
                     border: '1px solid #444444',
@@ -488,6 +513,38 @@ export default function SistemaFinal() {
                     width: '300px'
                   }}
                 />
+                <button
+                  onClick={() => setSearchTerm(searchTerm)}
+                  style={{
+                    background: '#0d6efd',
+                    border: 'none',
+                    color: '#ffffff',
+                    padding: '10px 15px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                  }}
+                >
+                  Buscar
+                </button>
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    style={{
+                      background: '#6c757d',
+                      border: 'none',
+                      color: '#ffffff',
+                      padding: '10px 15px',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    Limpar
+                  </button>
+                )}
               </div>
               <div>
                 <select

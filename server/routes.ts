@@ -728,20 +728,26 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
       const registrations = await storage.getAllBusinessRegistrations();
       const XLSX = require('xlsx');
       
-      // Prepare data for Excel
-      const excelData = registrations.map((reg: any) => ({
-        'ID': reg.id,
-        'Razão Social': reg.razaoSocial,
-        'Nome Fantasia': reg.nomeFantasia || '',
-        'Email': reg.emailEmpresa,
-        'Telefone': reg.telefoneEmpresa,
-        'Endereço': reg.endereco || '',
-        'Capital Social': reg.capitalSocial || '',
-        'Atividade Principal': reg.atividadePrincipal || '',
-        'Data Cadastro': reg.createdAt ? new Date(reg.createdAt).toLocaleDateString('pt-BR') : 'N/A',
-        'Sócios': reg.socios && Array.isArray(reg.socios) ? reg.socios.map((s: any) => s.nomeCompleto).join('; ') : '',
-        'Status Geral': 'Ativo'
-      }));
+      // Prepare data for Excel with safe property access
+      const excelData = registrations.map((reg: any) => {
+        const socios = reg.socios && typeof reg.socios === 'object' && Array.isArray(reg.socios) 
+          ? reg.socios.map((s: any) => s.nomeCompleto || 'Nome não informado').join('; ')
+          : 'Nenhum sócio cadastrado';
+
+        return {
+          'ID': reg.id || '',
+          'Razão Social': reg.razaoSocial || '',
+          'Nome Fantasia': reg.nomeFantasia || '',
+          'Email': reg.emailEmpresa || '',
+          'Telefone': reg.telefoneEmpresa || '',
+          'Endereço': reg.endereco || '',
+          'Capital Social': reg.capitalSocial || '',
+          'Atividade Principal': reg.atividadePrincipal || '',
+          'Data Cadastro': reg.createdAt ? new Date(reg.createdAt).toLocaleDateString('pt-BR') : '',
+          'Sócios': socios,
+          'Status': 'Ativo'
+        };
+      });
 
       // Create workbook
       const wb = XLSX.utils.book_new();
@@ -749,31 +755,39 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
 
       // Auto-width columns
       const colWidths = [
-        {wch: 5},   // ID
-        {wch: 30},  // Razão Social
+        {wch: 8},   // ID
+        {wch: 35},  // Razão Social
         {wch: 25},  // Nome Fantasia
         {wch: 30},  // Email
-        {wch: 15},  // Telefone
-        {wch: 40},  // Endereço
-        {wch: 15},  // Capital Social
-        {wch: 30},  // Atividade Principal
-        {wch: 12},  // Data Cadastro
-        {wch: 40},  // Sócios
-        {wch: 12}   // Status Geral
+        {wch: 18},  // Telefone
+        {wch: 45},  // Endereço
+        {wch: 18},  // Capital Social
+        {wch: 35},  // Atividade Principal
+        {wch: 15},  // Data Cadastro
+        {wch: 50},  // Sócios
+        {wch: 12}   // Status
       ];
       ws['!cols'] = colWidths;
 
       XLSX.utils.book_append_sheet(wb, ws, 'Empresas');
 
-      // Generate buffer
-      const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+      // Generate buffer with proper options
+      const buffer = XLSX.write(wb, { 
+        type: 'buffer', 
+        bookType: 'xlsx',
+        cellStyles: true,
+        sheetStubs: false
+      });
 
+      // Set proper headers
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', `attachment; filename="empresas-${new Date().toISOString().split('T')[0]}.xlsx"`);
-      res.send(buffer);
+      res.setHeader('Content-Disposition', `attachment; filename="empresas_${new Date().toISOString().split('T')[0]}.xlsx"`);
+      res.setHeader('Content-Length', buffer.length);
+      
+      res.end(buffer);
     } catch (error) {
       console.error("Error exporting to Excel:", error);
-      res.status(500).json({ message: "Erro ao exportar para Excel" });
+      res.status(500).json({ message: "Erro ao exportar para Excel", error: error instanceof Error ? error.message : 'Erro desconhecido' });
     }
   });
 
@@ -785,9 +799,23 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
 
       const browser = await puppeteer.launch({ 
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu']
       });
       const page = await browser.newPage();
+
+      // Safe data processing
+      const safeRegistrations = registrations.map((reg: any) => ({
+        id: reg.id || 0,
+        razaoSocial: reg.razaoSocial || 'Não informado',
+        nomeFantasia: reg.nomeFantasia || 'Não informado',
+        emailEmpresa: reg.emailEmpresa || 'Não informado',
+        telefoneEmpresa: reg.telefoneEmpresa || 'Não informado',
+        endereco: reg.endereco || 'Não informado',
+        capitalSocial: reg.capitalSocial || 'Não informado',
+        atividadePrincipal: reg.atividadePrincipal || 'Não informado',
+        createdAt: reg.createdAt ? new Date(reg.createdAt).toLocaleDateString('pt-BR') : 'Não informado',
+        socios: reg.socios && Array.isArray(reg.socios) ? reg.socios : []
+      }));
 
       // Create HTML content
       const htmlContent = `
@@ -797,58 +825,129 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
           <meta charset="UTF-8">
           <title>Relatório de Empresas</title>
           <style>
-            body { font-family: Arial, sans-serif; margin: 20px; }
-            h1 { color: #333; text-align: center; margin-bottom: 30px; }
-            .header { text-align: center; margin-bottom: 30px; }
-            .company { margin-bottom: 30px; border: 1px solid #ddd; padding: 15px; }
-            .company-title { font-size: 18px; font-weight: bold; color: #2c3e50; margin-bottom: 10px; }
-            .info-row { margin-bottom: 8px; }
-            .label { font-weight: bold; color: #34495e; }
-            .partners { margin-top: 15px; }
-            .partner { background: #f8f9fa; padding: 10px; margin: 5px 0; border-left: 3px solid #007bff; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background-color: #f2f2f2; }
+            body { 
+              font-family: Arial, sans-serif; 
+              margin: 20px; 
+              color: #333;
+            }
+            h1 { 
+              color: #2c3e50; 
+              text-align: center; 
+              margin-bottom: 30px; 
+              font-size: 24px;
+            }
+            .header { 
+              text-align: center; 
+              margin-bottom: 40px; 
+              padding: 20px;
+              border-bottom: 2px solid #3498db;
+            }
+            .company { 
+              margin-bottom: 30px; 
+              border: 1px solid #ddd; 
+              padding: 20px; 
+              border-radius: 8px;
+              background: #f9f9f9;
+            }
+            .company-title { 
+              font-size: 18px; 
+              font-weight: bold; 
+              color: #2c3e50; 
+              margin-bottom: 15px;
+              border-bottom: 1px solid #3498db;
+              padding-bottom: 8px;
+            }
+            .info-row { 
+              margin-bottom: 8px; 
+              display: flex;
+            }
+            .label { 
+              font-weight: bold; 
+              color: #34495e; 
+              min-width: 150px;
+            }
+            .value {
+              flex: 1;
+              color: #2c3e50;
+            }
+            .partners { 
+              margin-top: 20px; 
+              padding: 15px;
+              background: #ecf0f1;
+              border-radius: 5px;
+            }
+            .partner { 
+              background: #fff; 
+              padding: 12px; 
+              margin: 8px 0; 
+              border-left: 4px solid #3498db;
+              border-radius: 4px;
+            }
           </style>
         </head>
         <body>
           <div class="header">
             <h1>Relatório de Empresas Cadastradas</h1>
-            <p>Data: ${new Date().toLocaleDateString('pt-BR')}</p>
-            <p>Total de empresas: ${registrations.length}</p>
+            <p><strong>Data do Relatório:</strong> ${new Date().toLocaleDateString('pt-BR')}</p>
+            <p><strong>Total de Empresas:</strong> ${safeRegistrations.length}</p>
           </div>
 
-          ${registrations.map((reg: any) => `
+          ${safeRegistrations.map((reg, index) => `
             <div class="company">
               <div class="company-title">${reg.razaoSocial}</div>
-              <div class="info-row"><span class="label">ID:</span> ${reg.id}</div>
-              <div class="info-row"><span class="label">Nome Fantasia:</span> ${reg.nomeFantasia || 'N/A'}</div>
-              <div class="info-row"><span class="label">Email:</span> ${reg.emailEmpresa}</div>
-              <div class="info-row"><span class="label">Telefone:</span> ${reg.telefoneEmpresa}</div>
-              <div class="info-row"><span class="label">Endereço:</span> ${reg.endereco || 'N/A'}</div>
-              <div class="info-row"><span class="label">Capital Social:</span> ${reg.capitalSocial || 'N/A'}</div>
-              <div class="info-row"><span class="label">Atividade Principal:</span> ${reg.atividadePrincipal || 'N/A'}</div>
-              <div class="info-row"><span class="label">Data de Cadastro:</span> ${reg.createdAt ? new Date(reg.createdAt).toLocaleDateString('pt-BR') : 'N/A'}</div>
+              <div class="info-row">
+                <span class="label">ID:</span>
+                <span class="value">${reg.id}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Nome Fantasia:</span>
+                <span class="value">${reg.nomeFantasia}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Email:</span>
+                <span class="value">${reg.emailEmpresa}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Telefone:</span>
+                <span class="value">${reg.telefoneEmpresa}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Endereço:</span>
+                <span class="value">${reg.endereco}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Capital Social:</span>
+                <span class="value">${reg.capitalSocial}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Atividade Principal:</span>
+                <span class="value">${reg.atividadePrincipal}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Data de Cadastro:</span>
+                <span class="value">${reg.createdAt}</span>
+              </div>
               
-              ${reg.socios && Array.isArray(reg.socios) && reg.socios.length > 0 ? `
+              ${reg.socios.length > 0 ? `
                 <div class="partners">
-                  <div class="label">Sócios:</div>
+                  <div class="label" style="margin-bottom: 10px;">Sócios:</div>
                   ${reg.socios.map((socio: any) => `
                     <div class="partner">
-                      <strong>${socio.nomeCompleto}</strong><br>
-                      CPF: ${socio.cpf || 'N/A'} | RG: ${socio.rg || 'N/A'}<br>
-                      Participação: ${socio.percentualSociedade || 'N/A'}%
+                      <strong>${socio.nomeCompleto || 'Nome não informado'}</strong><br>
+                      <span>CPF: ${socio.cpf || 'Não informado'}</span> | 
+                      <span>RG: ${socio.rg || 'Não informado'}</span><br>
+                      <span>Participação: ${socio.percentualSociedade || 'Não informado'}%</span>
                     </div>
                   `).join('')}
                 </div>
-              ` : ''}
+              ` : '<div style="margin-top: 15px; color: #7f8c8d;"><em>Nenhum sócio cadastrado</em></div>'}
             </div>
           `).join('')}
         </body>
         </html>
       `;
 
-      await page.setContent(htmlContent);
+      await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
       
       const pdfBuffer = await page.pdf({
         format: 'A4',
@@ -857,17 +956,20 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
           right: '15mm',
           bottom: '20mm',
           left: '15mm'
-        }
+        },
+        printBackground: true
       });
 
       await browser.close();
 
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename="relatorio-empresas-${new Date().toISOString().split('T')[0]}.pdf"`);
-      res.send(pdfBuffer);
+      res.setHeader('Content-Disposition', `attachment; filename="relatorio_empresas_${new Date().toISOString().split('T')[0]}.pdf"`);
+      res.setHeader('Content-Length', pdfBuffer.length);
+      
+      res.end(pdfBuffer);
     } catch (error) {
       console.error("Error exporting to PDF:", error);
-      res.status(500).json({ message: "Erro ao exportar para PDF" });
+      res.status(500).json({ message: "Erro ao exportar para PDF", error: error instanceof Error ? error.message : 'Erro desconhecido' });
     }
   });
 
