@@ -437,30 +437,7 @@ export default function SistemaFinal() {
             </select>
           </div>
 
-          {/* Export Buttons */}
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportExcel}
-              disabled={exportExcelMutation.isPending}
-              className="flex items-center gap-2"
-            >
-              <FileSpreadsheet className="h-4 w-4" />
-              {exportExcelMutation.isPending ? "Exportando..." : "Excel"}
-            </Button>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportPDF}
-              disabled={exportPdfMutation.isPending}
-              className="flex items-center gap-2"
-            >
-              <FileDown className="h-4 w-4" />
-              {exportPdfMutation.isPending ? "Gerando..." : "PDF"}
-            </Button>
-          </div>
+
         </div>
 
         {/* Companies and Tasks */}
