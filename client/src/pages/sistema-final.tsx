@@ -35,6 +35,8 @@ export default function SistemaFinal() {
   const [showCreateUserModal, setShowCreateUserModal] = useState(false);
   const [showEditUserModal, setShowEditUserModal] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -148,6 +150,69 @@ export default function SistemaFinal() {
       });
     }
   };
+
+  const exportToExcel = () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    fetch('/api/internal/export/excel', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(res => res.blob())
+    .then(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `empresas-${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    })
+    .catch(error => {
+      console.error('Error exporting to Excel:', error);
+    });
+  };
+
+  const exportToPDF = () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    fetch('/api/internal/export/pdf', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(res => res.blob())
+    .then(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `relatorio-empresas-${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    })
+    .catch(error => {
+      console.error('Error exporting to PDF:', error);
+    });
+  };
+
+  // Filter registrations based on search term and status
+  const filteredRegistrations = registrations.filter(registration => {
+    const matchesSearch = searchTerm === '' || 
+      registration.razaoSocial.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      registration.nomeFantasia.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      registration.emailEmpresa.toLowerCase().includes(searchTerm.toLowerCase());
+
+    if (statusFilter === 'all') {
+      return matchesSearch;
+    }
+
+    const hasStatus = registration.tasks?.some(task => task.status === statusFilter);
+    return matchesSearch && hasStatus;
+  });
 
   const updateTaskStatus = (taskId: number, currentStatus: string, newStatus: string) => {
     const token = localStorage.getItem('token');
@@ -391,9 +456,108 @@ export default function SistemaFinal() {
           </div>
         </div>
 
+        {/* Filters and Export Section */}
+        <div style={{
+          background: '#111111',
+          border: '1px solid #222222',
+          borderRadius: '6px',
+          padding: '20px',
+          marginBottom: '30px'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '15px'
+          }}>
+            <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+              <div>
+                <input
+                  type="text"
+                  placeholder="Pesquisar empresas..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{
+                    background: '#222222',
+                    border: '1px solid #444444',
+                    color: '#ffffff',
+                    padding: '10px 15px',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    width: '300px'
+                  }}
+                />
+              </div>
+              <div>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  style={{
+                    background: '#222222',
+                    border: '1px solid #444444',
+                    color: '#ffffff',
+                    padding: '10px 15px',
+                    borderRadius: '4px',
+                    fontSize: '14px'
+                  }}
+                >
+                  <option value="all">Todas as empresas</option>
+                  <option value="pending">Com tarefas pendentes</option>
+                  <option value="in_progress">Com tarefas em andamento</option>
+                  <option value="completed">Com tarefas concluídas</option>
+                </select>
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={exportToExcel}
+                style={{
+                  background: '#198754',
+                  border: 'none',
+                  color: '#ffffff',
+                  padding: '10px 20px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}
+              >
+                Exportar Excel
+              </button>
+              <button
+                onClick={exportToPDF}
+                style={{
+                  background: '#dc3545',
+                  border: 'none',
+                  color: '#ffffff',
+                  padding: '10px 20px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}
+              >
+                Exportar PDF
+              </button>
+            </div>
+          </div>
+          
+          {filteredRegistrations.length !== registrations.length && (
+            <div style={{
+              marginTop: '15px',
+              color: '#cccccc',
+              fontSize: '13px'
+            }}>
+              Mostrando {filteredRegistrations.length} de {registrations.length} empresas
+            </div>
+          )}
+        </div>
+
         {/* Companies */}
         <div style={{ display: 'grid', gap: '30px' }}>
-          {registrations.map((registration) => (
+          {filteredRegistrations.map((registration) => (
             <div key={registration.id} style={{
               background: '#111111',
               borderRadius: '6px',
