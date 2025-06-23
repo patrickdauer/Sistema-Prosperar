@@ -237,15 +237,10 @@ export default function SistemaFinal() {
   // Export mutations
   const exportExcelMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch('/api/internal/export/excel', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
+      return apiRequest('/api/internal/export/excel', {
+        method: 'GET',
+        responseType: 'blob',
       });
-      
-      if (!response.ok) throw new Error('Failed to export Excel');
-      
-      return response.blob();
     },
     onSuccess: (blob) => {
       const url = window.URL.createObjectURL(blob);
@@ -265,15 +260,10 @@ export default function SistemaFinal() {
 
   const exportPdfMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch('/api/internal/export/pdf', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
+      return apiRequest('/api/internal/export/pdf', {
+        method: 'GET',
+        responseType: 'blob',
       });
-      
-      if (!response.ok) throw new Error('Failed to export PDF');
-      
-      return response.blob();
     },
     onSuccess: (blob) => {
       const url = window.URL.createObjectURL(blob);
@@ -581,7 +571,10 @@ export default function SistemaFinal() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setEditingCompany(registration)}
+                      onClick={() => {
+                        setEditingCompanyData(registration);
+                        setShowCompanyEdit(true);
+                      }}
                       className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950"
                     >
                       <Edit className="h-4 w-4" />
@@ -888,6 +881,311 @@ export default function SistemaFinal() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Complete Company Edit Modal */}
+      <Dialog open={showCompanyEdit} onOpenChange={setShowCompanyEdit}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Editar Empresa Completa</DialogTitle>
+          </DialogHeader>
+          
+          {editingCompanyData && (
+            <div className="space-y-6">
+              {/* Company Basic Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="razaoSocial">Razão Social</Label>
+                  <Input
+                    id="razaoSocial"
+                    value={editingCompanyData.razaoSocial}
+                    onChange={(e) => setEditingCompanyData({...editingCompanyData, razaoSocial: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="nomeFantasia">Nome Fantasia</Label>
+                  <Input
+                    id="nomeFantasia"
+                    value={editingCompanyData.nomeFantasia}
+                    onChange={(e) => setEditingCompanyData({...editingCompanyData, nomeFantasia: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="emailEmpresa">Email da Empresa</Label>
+                  <Input
+                    id="emailEmpresa"
+                    value={editingCompanyData.emailEmpresa}
+                    onChange={(e) => setEditingCompanyData({...editingCompanyData, emailEmpresa: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="telefoneEmpresa">Telefone da Empresa</Label>
+                  <Input
+                    id="telefoneEmpresa"
+                    value={editingCompanyData.telefoneEmpresa}
+                    onChange={(e) => setEditingCompanyData({...editingCompanyData, telefoneEmpresa: e.target.value})}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Label htmlFor="endereco">Endereço</Label>
+                  <Input
+                    id="endereco"
+                    value={editingCompanyData.endereco}
+                    onChange={(e) => setEditingCompanyData({...editingCompanyData, endereco: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="cnpj">CNPJ</Label>
+                  <Input
+                    id="cnpj"
+                    value={editingCompanyData.cnpj || ''}
+                    onChange={(e) => setEditingCompanyData({...editingCompanyData, cnpj: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="capitalSocial">Capital Social</Label>
+                  <Input
+                    id="capitalSocial"
+                    value={editingCompanyData.capitalSocial || ''}
+                    onChange={(e) => setEditingCompanyData({...editingCompanyData, capitalSocial: e.target.value})}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Label htmlFor="atividadePrincipal">Atividade Principal</Label>
+                  <Input
+                    id="atividadePrincipal"
+                    value={editingCompanyData.atividadePrincipal || ''}
+                    onChange={(e) => setEditingCompanyData({...editingCompanyData, atividadePrincipal: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              {/* Sócios Section */}
+              <div className="border-t pt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Sócios</h3>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const newSocio = {
+                        nomeCompleto: '',
+                        cpf: '',
+                        rg: '',
+                        dataNascimento: '',
+                        estadoCivil: '',
+                        profissao: '',
+                        nacionalidade: '',
+                        enderecoPessoal: '',
+                        telefonePessoal: '',
+                        emailPessoal: '',
+                        filiacao: ''
+                      };
+                      const updatedSocios = [...(editingCompanyData.socios || []), newSocio];
+                      setEditingCompanyData({...editingCompanyData, socios: updatedSocios});
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Adicionar Sócio
+                  </Button>
+                </div>
+                
+                {editingCompanyData.socios && editingCompanyData.socios.length > 0 ? (
+                  <div className="space-y-4">
+                    {editingCompanyData.socios.map((socio, index) => (
+                      <Card key={index} className="p-4">
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="font-medium">Sócio {index + 1}</h4>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const updatedSocios = editingCompanyData.socios?.filter((_, i) => i !== index) || [];
+                              setEditingCompanyData({...editingCompanyData, socios: updatedSocios});
+                            }}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          <div>
+                            <Label>Nome Completo</Label>
+                            <Input
+                              value={socio.nomeCompleto}
+                              onChange={(e) => {
+                                const updatedSocios = [...(editingCompanyData.socios || [])];
+                                updatedSocios[index] = {...socio, nomeCompleto: e.target.value};
+                                setEditingCompanyData({...editingCompanyData, socios: updatedSocios});
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <Label>CPF</Label>
+                            <Input
+                              value={socio.cpf}
+                              onChange={(e) => {
+                                const updatedSocios = [...(editingCompanyData.socios || [])];
+                                updatedSocios[index] = {...socio, cpf: e.target.value};
+                                setEditingCompanyData({...editingCompanyData, socios: updatedSocios});
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <Label>RG</Label>
+                            <Input
+                              value={socio.rg}
+                              onChange={(e) => {
+                                const updatedSocios = [...(editingCompanyData.socios || [])];
+                                updatedSocios[index] = {...socio, rg: e.target.value};
+                                setEditingCompanyData({...editingCompanyData, socios: updatedSocios});
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <Label>Data de Nascimento</Label>
+                            <Input
+                              type="date"
+                              value={socio.dataNascimento}
+                              onChange={(e) => {
+                                const updatedSocios = [...(editingCompanyData.socios || [])];
+                                updatedSocios[index] = {...socio, dataNascimento: e.target.value};
+                                setEditingCompanyData({...editingCompanyData, socios: updatedSocios});
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <Label>Estado Civil</Label>
+                            <Input
+                              value={socio.estadoCivil}
+                              onChange={(e) => {
+                                const updatedSocios = [...(editingCompanyData.socios || [])];
+                                updatedSocios[index] = {...socio, estadoCivil: e.target.value};
+                                setEditingCompanyData({...editingCompanyData, socios: updatedSocios});
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <Label>Profissão</Label>
+                            <Input
+                              value={socio.profissao}
+                              onChange={(e) => {
+                                const updatedSocios = [...(editingCompanyData.socios || [])];
+                                updatedSocios[index] = {...socio, profissao: e.target.value};
+                                setEditingCompanyData({...editingCompanyData, socios: updatedSocios});
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <Label>Nacionalidade</Label>
+                            <Input
+                              value={socio.nacionalidade}
+                              onChange={(e) => {
+                                const updatedSocios = [...(editingCompanyData.socios || [])];
+                                updatedSocios[index] = {...socio, nacionalidade: e.target.value};
+                                setEditingCompanyData({...editingCompanyData, socios: updatedSocios});
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <Label>Telefone Pessoal</Label>
+                            <Input
+                              value={socio.telefonePessoal}
+                              onChange={(e) => {
+                                const updatedSocios = [...(editingCompanyData.socios || [])];
+                                updatedSocios[index] = {...socio, telefonePessoal: e.target.value};
+                                setEditingCompanyData({...editingCompanyData, socios: updatedSocios});
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <Label>Email Pessoal</Label>
+                            <Input
+                              value={socio.emailPessoal}
+                              onChange={(e) => {
+                                const updatedSocios = [...(editingCompanyData.socios || [])];
+                                updatedSocios[index] = {...socio, emailPessoal: e.target.value};
+                                setEditingCompanyData({...editingCompanyData, socios: updatedSocios});
+                              }}
+                            />
+                          </div>
+                          <div className="md:col-span-2 lg:col-span-3">
+                            <Label>Endereço Pessoal</Label>
+                            <Input
+                              value={socio.enderecoPessoal}
+                              onChange={(e) => {
+                                const updatedSocios = [...(editingCompanyData.socios || [])];
+                                updatedSocios[index] = {...socio, enderecoPessoal: e.target.value};
+                                setEditingCompanyData({...editingCompanyData, socios: updatedSocios});
+                              }}
+                            />
+                          </div>
+                          <div className="md:col-span-2 lg:col-span-3">
+                            <Label>Filiação</Label>
+                            <Input
+                              value={socio.filiacao}
+                              onChange={(e) => {
+                                const updatedSocios = [...(editingCompanyData.socios || [])];
+                                updatedSocios[index] = {...socio, filiacao: e.target.value};
+                                setEditingCompanyData({...editingCompanyData, socios: updatedSocios});
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-center py-4">
+                    Nenhum sócio cadastrado. Clique em "Adicionar Sócio" para começar.
+                  </p>
+                )}
+              </div>
+
+              {/* Documents Section */}
+              <div className="border-t pt-6">
+                <h3 className="text-lg font-semibold mb-4">Documentos da Empresa</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card className="p-4">
+                    <h4 className="font-medium mb-2">Pasta Principal</h4>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open(`https://drive.google.com/drive/folders/${editingCompanyData.id}`, '_blank')}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Abrir no Google Drive
+                    </Button>
+                  </Card>
+                  <Card className="p-4">
+                    <h4 className="font-medium mb-2">Departamento Societário</h4>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open(`https://drive.google.com/drive/folders/${editingCompanyData.id}/societario`, '_blank')}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Abrir Pasta Societário
+                    </Button>
+                  </Card>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-2 pt-4 border-t">
+                <Button 
+                  onClick={() => updateCompanyMutation.mutate(editingCompanyData)}
+                  disabled={updateCompanyMutation.isPending}
+                >
+                  {updateCompanyMutation.isPending ? "Salvando..." : "Salvar Alterações"}
+                </Button>
+                <Button variant="outline" onClick={() => setShowCompanyEdit(false)}>
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
