@@ -178,6 +178,20 @@ export class GoogleDriveService {
   ): Promise<string> {
     return this.uploadFile(fileName, pdfBuffer, 'application/pdf', folderId);
   }
+
+  async downloadFile(fileId: string): Promise<Buffer> {
+    try {
+      const response = await this.drive.files.get({
+        fileId: fileId,
+        alt: 'media'
+      }, { responseType: 'arraybuffer' });
+
+      return Buffer.from(response.data as ArrayBuffer);
+    } catch (error) {
+      console.error('Error downloading file from Google Drive:', error);
+      throw error;
+    }
+  }
 }
 
 export const googleDriveService = new GoogleDriveService();

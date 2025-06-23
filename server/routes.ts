@@ -722,6 +722,121 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
     }
   });
 
+  // Update task field (observacao, dataLembrete)
+  app.put("/api/internal/tasks/:id/field", authenticateToken, async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.id);
+      const { field, value } = req.body;
+      
+      const updatedTask = await storage.updateTaskField(taskId, field, value);
+      res.json(updatedTask);
+    } catch (error) {
+      console.error("Error updating task field:", error);
+      res.status(500).json({ message: "Erro ao atualizar campo da tarefa" });
+    }
+  });
+
+  // Upload file for task
+  app.post("/api/internal/tasks/:id/upload", authenticateToken, upload.single('file'), async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.id);
+      const file = req.file;
+      
+      if (!file) {
+        return res.status(400).json({ message: "Nenhum arquivo enviado" });
+      }
+
+      // Get task and business registration info
+      const task = await storage.getTaskById(taskId);
+      if (!task) {
+        return res.status(404).json({ message: "Tarefa não encontrada" });
+      }
+
+      const registration = await storage.getBusinessRegistration(task.businessRegistrationId);
+      if (!registration) {
+        return res.status(404).json({ message: "Empresa não encontrada" });
+      }
+
+      // Create subfolder based on task title
+      const subfolderName = task.title.toUpperCase().replace(/[^A-Z0-9]/g, '_');
+      
+      // Get or create company folder structure
+      const folderStructure = await googleDriveService.createBusinessFolderStructure(
+        registration.razaoSocial, 
+        registration.id
+      );
+      
+      // Create task-specific subfolder in DEPTO SOCIETARIO
+      const taskFolderId = await googleDriveService.createFolder(
+        subfolderName, 
+        folderStructure.societarioFolderId
+      );
+
+      // Upload file to task subfolder
+      const fileName = `${task.title}_${Date.now()}_${file.originalname}`;
+      const driveFileId = await googleDriveService.uploadFile(
+        fileName,
+        file.buffer,
+        file.mimetype,
+        taskFolderId
+      );
+
+      // Save file record to database
+      const taskFile = await storage.createTaskFile({
+        taskId: taskId,
+        fileName: fileName,
+        originalName: file.originalname,
+        filePath: driveFileId,
+        fileSize: file.size,
+        mimeType: file.mimetype,
+        uploadedBy: (req as any).user.userId
+      });
+
+      res.json({
+        message: "Arquivo enviado com sucesso",
+        file: taskFile,
+        driveFileId: driveFileId
+      });
+    } catch (error) {
+      console.error("Error uploading task file:", error);
+      res.status(500).json({ message: "Erro ao fazer upload do arquivo" });
+    }
+  });
+
+  // Get task files
+  app.get("/api/internal/tasks/:id/files", authenticateToken, async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.id);
+      const files = await storage.getTaskFiles(taskId);
+      res.json(files);
+    } catch (error) {
+      console.error("Error getting task files:", error);
+      res.status(500).json({ message: "Erro ao buscar arquivos da tarefa" });
+    }
+  });
+
+  // Download task file
+  app.get("/api/internal/files/:fileId/download", authenticateToken, async (req, res) => {
+    try {
+      const fileId = parseInt(req.params.fileId);
+      const taskFile = await storage.getTaskFileById(fileId);
+      
+      if (!taskFile) {
+        return res.status(404).json({ message: "Arquivo não encontrado" });
+      }
+
+      // Download from Google Drive using the stored file ID
+      const fileBuffer = await googleDriveService.downloadFile(taskFile.filePath);
+      
+      res.setHeader('Content-Disposition', `attachment; filename="${taskFile.originalName}"`);
+      res.setHeader('Content-Type', taskFile.mimeType || 'application/octet-stream');
+      res.send(fileBuffer);
+    } catch (error) {
+      console.error("Error downloading task file:", error);
+      res.status(500).json({ message: "Erro ao baixar arquivo" });
+    }
+  });
+
   // Export to Excel
   app.get("/api/internal/export/excel", authenticateToken, async (req, res) => {
     try {
