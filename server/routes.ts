@@ -185,6 +185,168 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Export to Excel endpoint
+  app.get("/api/internal/export/excel", authenticateToken, async (req, res) => {
+    try {
+      const registrations = await storage.getAllBusinessRegistrationsWithTasks();
+      
+      // Import xlsx at the top of the file if not already imported
+      const XLSX = require('xlsx');
+      
+      // Prepare data for Excel
+      const excelData = registrations.map((reg: any) => ({
+        'ID': reg.id,
+        'Razão Social': reg.razaoSocial,
+        'Nome Fantasia': reg.nomeFantasia,
+        'Email': reg.emailEmpresa,
+        'Telefone': reg.telefoneEmpresa,
+        'Endereço': reg.endereco,
+        'CNPJ': reg.cnpj || 'Não informado',
+        'Capital Social': reg.capitalSocial || 'Não informado',
+        'Atividade Principal': reg.atividadePrincipal || 'Não informado',
+        'Data Criação': new Date(reg.createdAt).toLocaleDateString('pt-BR'),
+        'Total Tarefas': reg.tasks?.length || 0,
+        'Tarefas Pendentes': reg.tasks?.filter((t: any) => t.status === 'pending').length || 0,
+        'Tarefas Em Andamento': reg.tasks?.filter((t: any) => t.status === 'in_progress').length || 0,
+        'Tarefas Concluídas': reg.tasks?.filter((t: any) => t.status === 'completed').length || 0,
+      }));
+
+      // Create workbook and worksheet
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+      
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Empresas');
+      
+      // Generate buffer
+      const excelBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+      
+      // Set headers
+      res.setHeader('Content-Disposition', `attachment; filename="empresas_${new Date().toISOString().split('T')[0]}.xlsx"`);
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      
+      // Send file
+      res.send(excelBuffer);
+    } catch (error) {
+      console.error("Error exporting to Excel:", error);
+      res.status(500).json({ message: "Erro ao exportar para Excel" });
+    }
+  });
+
+  // Export to PDF endpoint
+  app.get("/api/internal/export/pdf", authenticateToken, async (req, res) => {
+    try {
+      const registrations = await storage.getAllBusinessRegistrationsWithTasks();
+      
+      const puppeteer = require('puppeteer');
+      const browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+      });
+      
+      const page = await browser.newPage();
+      
+      // Generate HTML content
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Relatório de Empresas</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .company { margin-bottom: 30px; border: 1px solid #ddd; padding: 15px; }
+            .company-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 10px; }
+            .info { margin: 5px 0; }
+            .tasks { margin-top: 15px; }
+            .task { padding: 5px; margin: 3px 0; border-radius: 3px; }
+            .task.pending { background-color: #fee; }
+            .task.in_progress { background-color: #ffc; }
+            .task.completed { background-color: #efe; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f5f5f5; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Relatório de Empresas Cadastradas</h1>
+            <p>Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}</p>
+          </div>
+          
+          <h2>Resumo Geral</h2>
+          <table>
+            <tr>
+              <th>Total de Empresas</th>
+              <th>Total de Tarefas</th>
+              <th>Tarefas Pendentes</th>
+              <th>Tarefas Em Andamento</th>
+              <th>Tarefas Concluídas</th>
+            </tr>
+            <tr>
+              <td>${registrations.length}</td>
+              <td>${registrations.reduce((acc: number, reg: any) => acc + (reg.tasks?.length || 0), 0)}</td>
+              <td>${registrations.reduce((acc: number, reg: any) => acc + (reg.tasks?.filter((t: any) => t.status === 'pending').length || 0), 0)}</td>
+              <td>${registrations.reduce((acc: number, reg: any) => acc + (reg.tasks?.filter((t: any) => t.status === 'in_progress').length || 0), 0)}</td>
+              <td>${registrations.reduce((acc: number, reg: any) => acc + (reg.tasks?.filter((t: any) => t.status === 'completed').length || 0), 0)}</td>
+            </tr>
+          </table>
+
+          <h2>Detalhes das Empresas</h2>
+          ${registrations.map((reg: any) => `
+            <div class="company">
+              <div class="company-title">${reg.razaoSocial}</div>
+              <div class="info"><strong>Nome Fantasia:</strong> ${reg.nomeFantasia}</div>
+              <div class="info"><strong>Email:</strong> ${reg.emailEmpresa}</div>
+              <div class="info"><strong>Telefone:</strong> ${reg.telefoneEmpresa}</div>
+              ${reg.cnpj ? `<div class="info"><strong>CNPJ:</strong> ${reg.cnpj}</div>` : ''}
+              <div class="info"><strong>Data de Cadastro:</strong> ${new Date(reg.createdAt).toLocaleDateString('pt-BR')}</div>
+              
+              ${reg.tasks && reg.tasks.length > 0 ? `
+                <div class="tasks">
+                  <strong>Tarefas (${reg.tasks.length}):</strong>
+                  ${reg.tasks.map((task: any) => `
+                    <div class="task ${task.status}">
+                      <strong>${task.title}</strong> - 
+                      <span style="font-weight: bold;">
+                        ${task.status === 'pending' ? 'Pendente' : task.status === 'in_progress' ? 'Em Andamento' : 'Concluída'}
+                      </span>
+                      ${task.description ? `<br><em style="color: #666;">${task.description}</em>` : ''}
+                    </div>
+                  `).join('')}
+                </div>
+              ` : '<div style="margin-top: 15px; color: #7f8c8d;"><em>Nenhuma tarefa cadastrada</em></div>'}
+            </div>
+          `).join('')}
+        </body>
+        </html>
+      `;
+
+      await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+      
+      const pdfBuffer = await page.pdf({
+        format: 'A4',
+        margin: {
+          top: '20mm',
+          right: '15mm',
+          bottom: '20mm',
+          left: '15mm'
+        },
+        printBackground: true
+      });
+
+      await browser.close();
+      
+      res.setHeader('Content-Disposition', `attachment; filename="relatorio_empresas_${new Date().toISOString().split('T')[0]}.pdf"`);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error("Error exporting to PDF:", error);
+      res.status(500).json({ message: "Erro ao exportar para PDF" });
+    }
+  });
+
   app.get("/api/internal/my-tasks", authenticateToken, async (req, res) => {
     try {
       const tasks = await storage.getTasksByUser(req.user!.id);

@@ -70,6 +70,11 @@ export default function SistemaFinal() {
     enabled: !!selectedTask?.id,
   });
 
+  const { data: users = [] } = useQuery({
+    queryKey: ['/api/internal/users'],
+    enabled: showUserManagement,
+  });
+
   // Update task field mutation
   const updateTaskFieldMutation = useMutation({
     mutationFn: async ({ taskId, field, value }: { taskId: number; field: string; value: any }) => {
@@ -156,6 +161,63 @@ export default function SistemaFinal() {
     },
     onError: () => {
       toast({ title: "Erro ao deletar empresa", variant: "destructive" });
+    },
+  });
+
+  // Export mutations
+  const exportExcelMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/internal/export/excel', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      
+      if (!response.ok) throw new Error('Failed to export Excel');
+      
+      return response.blob();
+    },
+    onSuccess: (blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `empresas_${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      toast({ title: "Excel exportado com sucesso!", variant: "default" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao exportar Excel", variant: "destructive" });
+    },
+  });
+
+  const exportPdfMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/internal/export/pdf', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      
+      if (!response.ok) throw new Error('Failed to export PDF');
+      
+      return response.blob();
+    },
+    onSuccess: (blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `relatorio_empresas_${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      toast({ title: "PDF exportado com sucesso!", variant: "default" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao exportar PDF", variant: "destructive" });
     },
   });
 
@@ -302,6 +364,32 @@ export default function SistemaFinal() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <Button
+                variant="outline"
+                onClick={() => exportExcelMutation.mutate()}
+                disabled={exportExcelMutation.isPending}
+              >
+                <FileSpreadsheet className="h-4 w-4 mr-2" />
+                {exportExcelMutation.isPending ? "Exportando..." : "Excel"}
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={() => exportPdfMutation.mutate()}
+                disabled={exportPdfMutation.isPending}
+              >
+                <FileDown className="h-4 w-4 mr-2" />
+                {exportPdfMutation.isPending ? "Gerando..." : "PDF"}
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={() => setShowUserManagement(true)}
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Usuários
+              </Button>
+
               <ThemeToggle />
               <Button variant="outline" onClick={handleLogout}>
                 <LogOut className="h-4 w-4 mr-2" />
@@ -578,6 +666,50 @@ export default function SistemaFinal() {
           ))}
         </div>
       </main>
+
+      {/* User Management Modal */}
+      <Dialog open={showUserManagement} onOpenChange={setShowUserManagement}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Gestão de Usuários</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Usuários do Sistema</h3>
+              <Button>
+                <UserPlus className="h-4 w-4 mr-2" />
+                Novo Usuário
+              </Button>
+            </div>
+
+            <div className="border rounded-lg">
+              <div className="grid grid-cols-4 gap-4 p-4 bg-muted/50 font-medium">
+                <div>Nome</div>
+                <div>Email</div>
+                <div>Departamento</div>
+                <div>Ações</div>
+              </div>
+              
+              {users.map((user: any) => (
+                <div key={user.id} className="grid grid-cols-4 gap-4 p-4 border-t">
+                  <div>{user.name}</div>
+                  <div>{user.email}</div>
+                  <div>{user.department}</div>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline">
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="outline" className="text-red-600">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
