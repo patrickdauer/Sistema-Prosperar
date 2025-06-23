@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Building2, Users, Upload, Download, Calendar, MessageSquare, LogOut, Search, Filter, Trash2, Edit, Plus, Clock, CheckCircle2, AlertCircle, User, FileSpreadsheet, FileDown, UserPlus, Settings } from 'lucide-react';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -52,6 +53,7 @@ export default function SistemaFinal() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [selectedRegistration, setSelectedRegistration] = useState<BusinessRegistration | null>(null);
+  const [editingCompany, setEditingCompany] = useState<BusinessRegistration | null>(null);
   const [observacao, setObservacao] = useState('');
   const [dataLembrete, setDataLembrete] = useState('');
   const [cnpjValue, setCnpjValue] = useState('');
@@ -162,6 +164,30 @@ export default function SistemaFinal() {
     onError: () => {
       toast({ title: "Erro ao deletar empresa", variant: "destructive" });
     },
+  });
+
+  // Edit company mutation
+  const editCompanyMutation = useMutation({
+    mutationFn: async (companyData: BusinessRegistration) => {
+      const response = await fetch(`/api/internal/business-registrations/${companyData.id}`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(companyData)
+      });
+      if (!response.ok) throw new Error('Falha ao atualizar empresa');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/internal/business-registrations/with-tasks'] });
+      setEditingCompany(null);
+      toast({ title: "Empresa atualizada com sucesso!", variant: "default" });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Erro ao atualizar empresa", description: error.message, variant: "destructive" });
+    }
   });
 
   // Export mutations
@@ -317,6 +343,7 @@ export default function SistemaFinal() {
     
     if (selectedDepartment === 'all') return matchesSearch;
     
+    // Para filtros por departamento, mostrar empresas que tenham pelo menos uma tarefa do departamento
     return matchesSearch && reg.tasks?.some((task: Task) => 
       task.department === selectedDepartment
     );
@@ -484,7 +511,7 @@ export default function SistemaFinal() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setSelectedRegistration(registration)}
+                      onClick={() => setEditingCompany(registration)}
                       className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950"
                     >
                       <Edit className="h-4 w-4" />
@@ -510,12 +537,16 @@ export default function SistemaFinal() {
                     <TabsTrigger value="Pessoal">Pessoal</TabsTrigger>
                   </TabsList>
                   
-                  {['Societário', 'Fiscal', 'Pessoal'].map((department) => (
-                    <TabsContent key={department} value={department} className="space-y-4 mt-4">
-                      {registration.tasks
-                        ?.filter((task: Task) => task.department === department)
-                        .sort((a: Task, b: Task) => a.order - b.order)
-                        .map((task: Task) => (
+                  {['Societário', 'Fiscal', 'Pessoal'].map((department) => {
+                    // Only show tasks if no department filter is selected or if it matches the selected department
+                    const shouldShowDepartment = selectedDepartment === 'all' || selectedDepartment === department;
+                    const departmentTasks = registration.tasks
+                      ?.filter((task: Task) => task.department === department)
+                      .sort((a: Task, b: Task) => a.order - b.order);
+
+                    return (
+                      <TabsContent key={department} value={department} className="space-y-4 mt-4">
+                        {shouldShowDepartment && departmentTasks?.map((task: Task) => (
                           <div key={task.id} className="flex items-center justify-between p-4 border rounded-lg">
                             <div className="flex-1">
                               <h4 className="font-medium">{task.title}</h4>
@@ -658,8 +689,9 @@ export default function SistemaFinal() {
                             </div>
                           </div>
                         ))}
-                    </TabsContent>
-                  ))}
+                      </TabsContent>
+                    );
+                  })}
                 </Tabs>
               </CardContent>
             </Card>
@@ -710,6 +742,97 @@ export default function SistemaFinal() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Company Modal */}
+      {editingCompany && (
+        <Dialog open={!!editingCompany} onOpenChange={() => setEditingCompany(null)}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Editar Empresa - {editingCompany.razaoSocial}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="razaoSocial">Razão Social</Label>
+                  <Input
+                    id="razaoSocial"
+                    value={editingCompany.razaoSocial}
+                    onChange={(e) => setEditingCompany({...editingCompany, razaoSocial: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="nomeFantasia">Nome Fantasia</Label>
+                  <Input
+                    id="nomeFantasia"
+                    value={editingCompany.nomeFantasia}
+                    onChange={(e) => setEditingCompany({...editingCompany, nomeFantasia: e.target.value})}
+                  />
+                </div>
+                <div className="col-span-2">
+                  <Label htmlFor="endereco">Endereço</Label>
+                  <Input
+                    id="endereco"
+                    value={editingCompany.endereco}
+                    onChange={(e) => setEditingCompany({...editingCompany, endereco: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="telefoneEmpresa">Telefone</Label>
+                  <Input
+                    id="telefoneEmpresa"
+                    value={editingCompany.telefoneEmpresa}
+                    onChange={(e) => setEditingCompany({...editingCompany, telefoneEmpresa: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="emailEmpresa">Email</Label>
+                  <Input
+                    id="emailEmpresa"
+                    value={editingCompany.emailEmpresa}
+                    onChange={(e) => setEditingCompany({...editingCompany, emailEmpresa: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="cnpj">CNPJ</Label>
+                  <Input
+                    id="cnpj"
+                    value={editingCompany.cnpj || ''}
+                    onChange={(e) => setEditingCompany({...editingCompany, cnpj: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="capitalSocial">Capital Social</Label>
+                  <Input
+                    id="capitalSocial"
+                    value={editingCompany.capitalSocial || ''}
+                    onChange={(e) => setEditingCompany({...editingCompany, capitalSocial: e.target.value})}
+                  />
+                </div>
+                <div className="col-span-2">
+                  <Label htmlFor="atividadePrincipal">Atividade Principal</Label>
+                  <Input
+                    id="atividadePrincipal"
+                    value={editingCompany.atividadePrincipal || ''}
+                    onChange={(e) => setEditingCompany({...editingCompany, atividadePrincipal: e.target.value})}
+                  />
+                </div>
+              </div>
+              
+              <div className="flex gap-2 pt-4">
+                <Button 
+                  onClick={() => editCompanyMutation.mutate(editingCompany)}
+                  disabled={editCompanyMutation.isPending}
+                >
+                  {editCompanyMutation.isPending ? "Salvando..." : "Salvar Alterações"}
+                </Button>
+                <Button variant="outline" onClick={() => setEditingCompany(null)}>
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
