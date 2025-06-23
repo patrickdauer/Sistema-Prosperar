@@ -745,6 +745,26 @@ export default function SistemaFinal() {
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.target as HTMLFormElement);
+              // Collect partners data
+              const socios = editingCompany.socios.map((socio: any, index: number) => ({
+                nomeCompleto: formData.get(`socio_${index}_nomeCompleto`) as string || socio.nomeCompleto,
+                nacionalidade: formData.get(`socio_${index}_nacionalidade`) as string || socio.nacionalidade,
+                cpf: formData.get(`socio_${index}_cpf`) as string || socio.cpf,
+                rg: formData.get(`socio_${index}_rg`) as string || socio.rg,
+                dataNascimento: formData.get(`socio_${index}_dataNascimento`) as string || socio.dataNascimento,
+                filiacao: formData.get(`socio_${index}_filiacao`) as string || socio.filiacao,
+                profissao: formData.get(`socio_${index}_profissao`) as string || socio.profissao,
+                estadoCivil: formData.get(`socio_${index}_estadoCivil`) as string || socio.estadoCivil,
+                enderecoPessoal: formData.get(`socio_${index}_enderecoPessoal`) as string || socio.enderecoPessoal,
+                telefonePessoal: formData.get(`socio_${index}_telefonePessoal`) as string || socio.telefonePessoal,
+                emailPessoal: formData.get(`socio_${index}_emailPessoal`) as string || socio.emailPessoal,
+                percentualSociedade: formData.get(`socio_${index}_percentualSociedade`) as string || socio.percentualSociedade,
+                // Keep existing file URLs
+                documentoComFotoUrl: socio.documentoComFotoUrl,
+                certidaoCasamentoUrl: socio.certidaoCasamentoUrl,
+                documentosAdicionaisUrls: socio.documentosAdicionaisUrls
+              }));
+
               const updatedData = {
                 razaoSocial: formData.get('razaoSocial') as string,
                 nomeFantasia: formData.get('nomeFantasia') as string,
@@ -756,6 +776,7 @@ export default function SistemaFinal() {
                 capitalSocial: formData.get('capitalSocial') as string,
                 atividadePrincipal: formData.get('atividadePrincipal') as string,
                 atividadesSecundarias: formData.get('atividadesSecundarias') as string,
+                socios: socios
               };
               
               const token = localStorage.getItem('token');
@@ -1042,6 +1063,355 @@ export default function SistemaFinal() {
                     resize: 'vertical'
                   }}
                 />
+              </div>
+
+              {/* Partners Section */}
+              <div style={{
+                borderTop: '1px solid #333333',
+                paddingTop: '30px',
+                marginTop: '30px',
+                marginBottom: '30px'
+              }}>
+                <h3 style={{
+                  color: '#ffffff',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  marginBottom: '20px',
+                  margin: 0
+                }}>
+                  Dados dos Sócios
+                </h3>
+                
+                {editingCompany.socios.map((socio: any, index: number) => (
+                  <div key={index} style={{
+                    background: '#1a1a1a',
+                    border: '1px solid #333333',
+                    borderRadius: '6px',
+                    padding: '20px',
+                    marginBottom: '20px'
+                  }}>
+                    <h4 style={{
+                      color: '#cccccc',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      marginBottom: '15px',
+                      margin: '0 0 15px 0'
+                    }}>
+                      Sócio {index + 1}
+                    </h4>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+                      <div>
+                        <label style={{
+                          display: 'block',
+                          color: '#cccccc',
+                          fontSize: '13px',
+                          marginBottom: '6px'
+                        }}>
+                          Nome Completo
+                        </label>
+                        <input
+                          type="text"
+                          name={`socio_${index}_nomeCompleto`}
+                          defaultValue={socio.nomeCompleto}
+                          style={{
+                            width: '100%',
+                            background: '#222222',
+                            border: '1px solid #444444',
+                            color: '#ffffff',
+                            padding: '10px',
+                            borderRadius: '4px',
+                            fontSize: '13px'
+                          }}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label style={{
+                          display: 'block',
+                          color: '#cccccc',
+                          fontSize: '13px',
+                          marginBottom: '6px'
+                        }}>
+                          Nacionalidade
+                        </label>
+                        <input
+                          type="text"
+                          name={`socio_${index}_nacionalidade`}
+                          defaultValue={socio.nacionalidade}
+                          style={{
+                            width: '100%',
+                            background: '#222222',
+                            border: '1px solid #444444',
+                            color: '#ffffff',
+                            padding: '10px',
+                            borderRadius: '4px',
+                            fontSize: '13px'
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+                      <div>
+                        <label style={{
+                          display: 'block',
+                          color: '#cccccc',
+                          fontSize: '13px',
+                          marginBottom: '6px'
+                        }}>
+                          CPF
+                        </label>
+                        <input
+                          type="text"
+                          name={`socio_${index}_cpf`}
+                          defaultValue={socio.cpf}
+                          style={{
+                            width: '100%',
+                            background: '#222222',
+                            border: '1px solid #444444',
+                            color: '#ffffff',
+                            padding: '10px',
+                            borderRadius: '4px',
+                            fontSize: '13px'
+                          }}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label style={{
+                          display: 'block',
+                          color: '#cccccc',
+                          fontSize: '13px',
+                          marginBottom: '6px'
+                        }}>
+                          RG
+                        </label>
+                        <input
+                          type="text"
+                          name={`socio_${index}_rg`}
+                          defaultValue={socio.rg}
+                          style={{
+                            width: '100%',
+                            background: '#222222',
+                            border: '1px solid #444444',
+                            color: '#ffffff',
+                            padding: '10px',
+                            borderRadius: '4px',
+                            fontSize: '13px'
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{
+                          display: 'block',
+                          color: '#cccccc',
+                          fontSize: '13px',
+                          marginBottom: '6px'
+                        }}>
+                          Data de Nascimento
+                        </label>
+                        <input
+                          type="date"
+                          name={`socio_${index}_dataNascimento`}
+                          defaultValue={socio.dataNascimento}
+                          style={{
+                            width: '100%',
+                            background: '#222222',
+                            border: '1px solid #444444',
+                            color: '#ffffff',
+                            padding: '10px',
+                            borderRadius: '4px',
+                            fontSize: '13px'
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+                      <div>
+                        <label style={{
+                          display: 'block',
+                          color: '#cccccc',
+                          fontSize: '13px',
+                          marginBottom: '6px'
+                        }}>
+                          Filiação
+                        </label>
+                        <input
+                          type="text"
+                          name={`socio_${index}_filiacao`}
+                          defaultValue={socio.filiacao}
+                          style={{
+                            width: '100%',
+                            background: '#222222',
+                            border: '1px solid #444444',
+                            color: '#ffffff',
+                            padding: '10px',
+                            borderRadius: '4px',
+                            fontSize: '13px'
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{
+                          display: 'block',
+                          color: '#cccccc',
+                          fontSize: '13px',
+                          marginBottom: '6px'
+                        }}>
+                          Profissão
+                        </label>
+                        <input
+                          type="text"
+                          name={`socio_${index}_profissao`}
+                          defaultValue={socio.profissao}
+                          style={{
+                            width: '100%',
+                            background: '#222222',
+                            border: '1px solid #444444',
+                            color: '#ffffff',
+                            padding: '10px',
+                            borderRadius: '4px',
+                            fontSize: '13px'
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+                      <div>
+                        <label style={{
+                          display: 'block',
+                          color: '#cccccc',
+                          fontSize: '13px',
+                          marginBottom: '6px'
+                        }}>
+                          Estado Civil
+                        </label>
+                        <select
+                          name={`socio_${index}_estadoCivil`}
+                          defaultValue={socio.estadoCivil}
+                          style={{
+                            width: '100%',
+                            background: '#222222',
+                            border: '1px solid #444444',
+                            color: '#ffffff',
+                            padding: '10px',
+                            borderRadius: '4px',
+                            fontSize: '13px'
+                          }}
+                        >
+                          <option value="solteiro">Solteiro(a)</option>
+                          <option value="casado">Casado(a)</option>
+                          <option value="divorciado">Divorciado(a)</option>
+                          <option value="viuvo">Viúvo(a)</option>
+                          <option value="uniao_estavel">União Estável</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label style={{
+                          display: 'block',
+                          color: '#cccccc',
+                          fontSize: '13px',
+                          marginBottom: '6px'
+                        }}>
+                          Percentual Sociedade (%)
+                        </label>
+                        <input
+                          type="number"
+                          name={`socio_${index}_percentualSociedade`}
+                          defaultValue={socio.percentualSociedade}
+                          style={{
+                            width: '100%',
+                            background: '#222222',
+                            border: '1px solid #444444',
+                            color: '#ffffff',
+                            padding: '10px',
+                            borderRadius: '4px',
+                            fontSize: '13px'
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ marginBottom: '15px' }}>
+                      <label style={{
+                        display: 'block',
+                        color: '#cccccc',
+                        fontSize: '13px',
+                        marginBottom: '6px'
+                      }}>
+                        Endereço Pessoal
+                      </label>
+                      <input
+                        type="text"
+                        name={`socio_${index}_enderecoPessoal`}
+                        defaultValue={socio.enderecoPessoal}
+                        style={{
+                          width: '100%',
+                          background: '#222222',
+                          border: '1px solid #444444',
+                          color: '#ffffff',
+                          padding: '10px',
+                          borderRadius: '4px',
+                          fontSize: '13px'
+                        }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                      <div>
+                        <label style={{
+                          display: 'block',
+                          color: '#cccccc',
+                          fontSize: '13px',
+                          marginBottom: '6px'
+                        }}>
+                          Telefone Pessoal
+                        </label>
+                        <input
+                          type="text"
+                          name={`socio_${index}_telefonePessoal`}
+                          defaultValue={socio.telefonePessoal}
+                          style={{
+                            width: '100%',
+                            background: '#222222',
+                            border: '1px solid #444444',
+                            color: '#ffffff',
+                            padding: '10px',
+                            borderRadius: '4px',
+                            fontSize: '13px'
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{
+                          display: 'block',
+                          color: '#cccccc',
+                          fontSize: '13px',
+                          marginBottom: '6px'
+                        }}>
+                          Email Pessoal
+                        </label>
+                        <input
+                          type="email"
+                          name={`socio_${index}_emailPessoal`}
+                          defaultValue={socio.emailPessoal}
+                          style={{
+                            width: '100%',
+                            background: '#222222',
+                            border: '1px solid #444444',
+                            color: '#ffffff',
+                            padding: '10px',
+                            borderRadius: '4px',
+                            fontSize: '13px'
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               <div style={{
