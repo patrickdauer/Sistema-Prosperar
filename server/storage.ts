@@ -236,15 +236,17 @@ export class DatabaseStorage implements IStorage {
       .where(eq(tasks.id, taskId))
       .returning();
 
-    // Log activity
-    await this.createActivity({
-      businessRegistrationId: updatedTask.businessRegistrationId,
-      taskId: taskId,
-      userId: userId,
-      action: status === 'completed' ? 'task_completed' : 'task_updated',
-      description: `Tarefa "${updatedTask.title}" foi ${status === 'completed' ? 'concluída' : 'atualizada'}`,
-      metadata: { previousStatus: status, newStatus: status }
-    });
+    // Log activity (only if userId is provided)
+    if (userId) {
+      await this.createActivity({
+        businessRegistrationId: updatedTask.businessRegistrationId,
+        taskId: taskId,
+        userId: userId,
+        action: status === 'completed' ? 'task_completed' : 'task_updated',
+        description: `Tarefa "${updatedTask.title}" foi ${status === 'completed' ? 'concluída' : 'atualizada'}`,
+        metadata: { previousStatus: status, newStatus: status }
+      });
+    }
 
     return updatedTask;
   }

@@ -869,7 +869,7 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
     try {
       const taskId = parseInt(req.params.id);
       const { status } = req.body;
-      const userId = (req as any).user.userId;
+      const userId = req.user!.id; // Corrigido para usar req.user.id
       
       const updatedTask = await storage.updateTaskStatus(taskId, status, userId);
       res.json(updatedTask);
