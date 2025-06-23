@@ -269,7 +269,31 @@ export default function SistemaFinal() {
     window.location.href = '/equipe';
   };
 
-
+  const handleDownloadFile = async (fileId: number, fileName: string) => {
+    try {
+      const response = await fetch(`/api/internal/tasks/files/${fileId}/download`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      
+      if (!response.ok) throw new Error('Falha ao baixar arquivo');
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      
+      toast({ title: "Arquivo baixado com sucesso!", variant: "default" });
+    } catch (error) {
+      toast({ title: "Erro ao baixar arquivo", variant: "destructive" });
+    }
+  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -405,7 +429,7 @@ export default function SistemaFinal() {
             <div className="flex items-center space-x-4">
               <Building2 className="h-8 w-8 text-primary" />
               <div>
-                <h1 className="text-2xl font-bold">Sistema Interno</h1>
+                <h1 className="text-2xl font-bold">Sistema Interno Prosperar Contabilidade</h1>
                 <p className="text-sm text-muted-foreground">Gestão de Tarefas e Documentos</p>
               </div>
             </div>
@@ -693,7 +717,7 @@ export default function SistemaFinal() {
                                               <Button
                                                 size="sm"
                                                 variant="outline"
-                                                onClick={() => handleDownloadFile(file.id)}
+                                                onClick={() => handleDownloadFile(file.id, file.originalName)}
                                               >
                                                 <Download className="h-4 w-4" />
                                               </Button>

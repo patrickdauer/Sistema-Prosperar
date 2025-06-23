@@ -362,7 +362,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Set headers for download
       res.setHeader('Content-Disposition', `attachment; filename="${taskFile.originalName}"`);
-      res.setHeader('Content-Type', taskFile.mimeType);
+      res.setHeader('Content-Type', taskFile.mimeType || 'application/octet-stream');
       res.setHeader('Content-Length', fileBuffer.length);
       
       // Send file
@@ -1339,27 +1339,6 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
                   `).join('')}
                 </div>
               ` : '<div style="margin-top: 15px; color: #7f8c8d;"><em>Nenhum sócio cadastrado</em></div>'}
-
-              ${reg.tasks && Array.isArray(reg.tasks) && reg.tasks.length > 0 ? `
-                <div class="tasks" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
-                  <div class="label" style="margin-bottom: 10px;">Tarefas:</div>
-                  ${reg.tasks.map((task: any) => `
-                    <div class="task" style="padding: 8px; margin: 5px 0; border-radius: 4px; background: ${
-                      task.status === 'completed' ? '#d4edda' : 
-                      task.status === 'in_progress' ? '#d1ecf1' : '#fff3cd'
-                    };">
-                      <strong>${task.title}</strong> - 
-                      <span style="font-weight: bold; color: ${
-                        task.status === 'completed' ? '#155724' : 
-                        task.status === 'in_progress' ? '#0c5460' : '#856404'
-                      };">
-                        ${task.status === 'pending' ? 'Pendente' : task.status === 'in_progress' ? 'Em Andamento' : 'Concluída'}
-                      </span>
-                      ${task.description ? `<br><em style="color: #666;">${task.description}</em>` : ''}
-                    </div>
-                  `).join('')}
-                </div>
-              ` : '<div style="margin-top: 15px; color: #7f8c8d;"><em>Nenhuma tarefa cadastrada</em></div>'}
             </div>
           `).join('')}
         </body>
