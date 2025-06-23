@@ -237,10 +237,15 @@ export default function SistemaFinal() {
   // Export mutations
   const exportExcelMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest('/api/internal/export/excel', {
-        method: 'GET',
-        responseType: 'blob',
+      const response = await fetch('/api/internal/export/excel', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
       });
+      
+      if (!response.ok) throw new Error('Falha ao exportar Excel');
+      
+      return await response.blob();
     },
     onSuccess: (blob) => {
       const url = window.URL.createObjectURL(blob);
@@ -260,10 +265,15 @@ export default function SistemaFinal() {
 
   const exportPdfMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest('/api/internal/export/pdf', {
-        method: 'GET',
-        responseType: 'blob',
+      const response = await fetch('/api/internal/export/pdf', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
       });
+      
+      if (!response.ok) throw new Error('Falha ao exportar PDF');
+      
+      return await response.blob();
     },
     onSuccess: (blob) => {
       const url = window.URL.createObjectURL(blob);
