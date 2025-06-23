@@ -864,6 +864,20 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
     }
   });
 
+  // Update task field (observações, data lembrete, etc)
+  app.put("/api/internal/tasks/:id/field", authenticateToken, async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.id);
+      const { field, value } = req.body;
+      
+      const updatedTask = await storage.updateTaskField(taskId, field, value);
+      res.json(updatedTask);
+    } catch (error) {
+      console.error("Error updating task field:", error);
+      res.status(500).json({ message: "Erro ao atualizar campo da tarefa" });
+    }
+  });
+
   // Update task status
   app.put("/api/internal/tasks/:id/status", authenticateToken, async (req, res) => {
     try {

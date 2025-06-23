@@ -50,6 +50,7 @@ export default function SistemaFinal() {
   const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [selectedRegistration, setSelectedRegistration] = useState<BusinessRegistration | null>(null);
   const [observacao, setObservacao] = useState('');
   const [dataLembrete, setDataLembrete] = useState('');
   const [cnpjValue, setCnpjValue] = useState('');
@@ -219,6 +220,8 @@ export default function SistemaFinal() {
       });
     }
   };
+
+
 
   const handleDeleteBusiness = (registration: BusinessRegistration) => {
     if (window.confirm(`Tem certeza que deseja excluir a empresa "${registration.razaoSocial}"?\n\nEsta ação não pode ser desfeita e irá deletar todas as tarefas e arquivos associados.`)) {
