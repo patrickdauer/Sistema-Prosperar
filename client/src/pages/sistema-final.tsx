@@ -23,7 +23,7 @@ interface Task {
   order: number;
   cnpj?: string;
   observacao?: string;
-  dataLembrete?: string;
+  data_lembrete?: string;
 }
 
 interface TaskFile {
@@ -271,7 +271,7 @@ export default function SistemaFinal() {
     if (selectedTask && dataLembrete) {
       updateTaskFieldMutation.mutate({
         taskId: selectedTask.id,
-        field: 'dataLembrete',
+        field: 'data_lembrete',
         value: dataLembrete,
       });
     }
@@ -526,9 +526,9 @@ export default function SistemaFinal() {
                               {task.observacao && (
                                 <p className="text-xs text-blue-600 mt-1">Obs: {task.observacao}</p>
                               )}
-                              {task.dataLembrete && (
+                              {task.data_lembrete && (
                                 <p className="text-xs text-orange-600 mt-1">
-                                  Lembrete: {new Date(task.dataLembrete).toLocaleDateString('pt-BR')}
+                                  Lembrete: {new Date(task.data_lembrete).toLocaleDateString('pt-BR')}
                                 </p>
                               )}
                             </div>
@@ -546,7 +546,7 @@ export default function SistemaFinal() {
                                     onClick={() => {
                                       setSelectedTask(task);
                                       setObservacao(task.observacao || '');
-                                      setDataLembrete(task.dataLembrete ? task.dataLembrete.split('T')[0] : '');
+                                      setDataLembrete(task.data_lembrete ? task.data_lembrete.split('T')[0] : '');
                                       setCnpjValue(task.cnpj || '');
                                     }}
                                   >
