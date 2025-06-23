@@ -41,6 +41,33 @@ function ProtectedDashboardInterno() {
   return <DashboardInterno />;
 }
 
+function ProtectedSistemaFinal() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        background: '#0f0f23',
+        color: '#ffffff',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '24px',
+        fontWeight: 'bold'
+      }}>
+        <div>🔄 SISTEMA FINAL CARREGANDO...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Login />;
+  }
+
+  return <SistemaFinal />;
+}
+
 function ProtectedSistemaDark() {
   const { isAuthenticated, isLoading } = useAuth();
 
@@ -79,8 +106,8 @@ function App() {
               <Route path="/dashboard" component={Dashboard} />
               <Route path="/equipe" component={Login} />
               <Route path="/dashboard-interno" component={ProtectedDashboardInterno} />
-              <Route path="/novo-sistema" component={SistemaFinal} />
-              <Route path="/dark" component={SistemaFinal} />
+              <Route path="/novo-sistema" component={ProtectedSistemaFinal} />
+              <Route path="/sistema-final" component={ProtectedSistemaFinal} />
               <Route component={NotFound} />
             </Switch>
           </TooltipProvider>

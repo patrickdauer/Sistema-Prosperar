@@ -58,11 +58,11 @@ export default function SistemaFinal() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: registrations = [], isLoading } = useQuery({
+  const { data: registrations = [], isLoading } = useQuery<BusinessRegistration[]>({
     queryKey: ['/api/internal/business-registrations/with-tasks'],
   });
 
-  const { data: taskFiles = [] } = useQuery({
+  const { data: taskFiles = [] } = useQuery<TaskFile[]>({
     queryKey: ['/api/internal/tasks', selectedTask?.id, 'files'],
     enabled: !!selectedTask?.id,
   });
@@ -70,11 +70,15 @@ export default function SistemaFinal() {
   // Update task field mutation
   const updateTaskFieldMutation = useMutation({
     mutationFn: async ({ taskId, field, value }: { taskId: number; field: string; value: any }) => {
-      return apiRequest(`/api/internal/tasks/${taskId}/field`, {
+      const response = await fetch(`/api/internal/tasks/${taskId}/field`, {
         method: 'PUT',
         body: JSON.stringify({ field, value }),
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
       });
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/internal/business-registrations/with-tasks'] });
@@ -114,11 +118,15 @@ export default function SistemaFinal() {
   // Update task status mutation
   const updateTaskStatusMutation = useMutation({
     mutationFn: async ({ taskId, status }: { taskId: number; status: string }) => {
-      return apiRequest(`/api/internal/tasks/${taskId}/status`, {
+      const response = await fetch(`/api/internal/tasks/${taskId}/status`, {
         method: 'PUT',
         body: JSON.stringify({ status }),
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
       });
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/internal/business-registrations/with-tasks'] });
