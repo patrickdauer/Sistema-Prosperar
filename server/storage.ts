@@ -57,6 +57,8 @@ export interface IStorage {
   // File management
   createTaskFile(file: InsertTaskFile): Promise<TaskFile>;
   getTaskFiles(taskId: number): Promise<TaskFile[]>;
+  getTaskFileById(fileId: number): Promise<TaskFile | undefined>;
+  deleteTaskFile(fileId: number): Promise<void>;
   
   // Activity log
   createActivity(activity: InsertActivity): Promise<Activity>;
@@ -309,6 +311,10 @@ export class DatabaseStorage implements IStorage {
   async getTaskFileById(fileId: number): Promise<TaskFile | undefined> {
     const [file] = await db.select().from(taskFiles).where(eq(taskFiles.id, fileId));
     return file;
+  }
+
+  async deleteTaskFile(fileId: number): Promise<void> {
+    await db.delete(taskFiles).where(eq(taskFiles.id, fileId));
   }
 
   async getTaskById(taskId: number): Promise<Task | undefined> {

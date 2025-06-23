@@ -837,6 +837,21 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
     }
   });
 
+  // Update task status
+  app.put("/api/internal/tasks/:id/status", authenticateToken, async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.id);
+      const { status } = req.body;
+      const userId = (req as any).user.userId;
+      
+      const updatedTask = await storage.updateTaskStatus(taskId, status, userId);
+      res.json(updatedTask);
+    } catch (error) {
+      console.error("Error updating task status:", error);
+      res.status(500).json({ message: "Erro ao atualizar status da tarefa" });
+    }
+  });
+
   // Export to Excel
   app.get("/api/internal/export/excel", authenticateToken, async (req, res) => {
     try {
