@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Building2, Users, Upload, Download, Calendar, MessageSquare, LogOut, Search, Filter, Trash2, FileSpreadsheet, FileDown, Edit, Plus, Clock, CheckCircle2, AlertCircle, User } from 'lucide-react';
+import { Building2, Users, Upload, Download, Calendar, MessageSquare, LogOut, Search, Filter, Trash2, Edit, Plus, Clock, CheckCircle2, AlertCircle, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -18,30 +18,31 @@ interface Task {
   description: string;
   department: string;
   status: string;
+  dueDate?: string;
   businessRegistrationId: number;
+  order: number;
+  cnpj?: string;
   observacao?: string;
   dataLembrete?: string;
-  cnpj?: string;
 }
 
 interface TaskFile {
   id: number;
   taskId: number;
-  fileName: string;
   originalName: string;
-  uploadedAt: string;
+  filePath: string;
+  mimeType: string;
+  createdAt: string;
 }
 
 interface BusinessRegistration {
   id: number;
   razaoSocial: string;
   nomeFantasia: string;
-  cnpj?: string;
   endereco: string;
   emailEmpresa: string;
   telefoneEmpresa: string;
-  capitalSocial: string;
-  atividadePrincipal: string;
+  cnpj?: string;
   createdAt: string;
   tasks: Task[];
 }
@@ -90,32 +91,6 @@ export default function SistemaFinal() {
     },
   });
 
-  // File upload mutation
-  const uploadFileMutation = useMutation({
-    mutationFn: async ({ taskId, file }: { taskId: number; file: File }) => {
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      return fetch(`/api/internal/tasks/${taskId}/upload`, {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      }).then(res => res.json());
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/internal/tasks', selectedTask?.id, 'files'] });
-      toast({ title: "Arquivo enviado com sucesso!", variant: "default" });
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    },
-    onError: () => {
-      toast({ title: "Erro ao enviar arquivo", variant: "destructive" });
-    },
-  });
-
   // Update task status mutation
   const updateTaskStatusMutation = useMutation({
     mutationFn: async ({ taskId, status }: { taskId: number; status: string }) => {
@@ -132,6 +107,34 @@ export default function SistemaFinal() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/internal/business-registrations/with-tasks'] });
       toast({ title: "Status atualizado com sucesso!", variant: "default" });
+    },
+  });
+
+  // File upload mutation
+  const uploadFileMutation = useMutation({
+    mutationFn: async ({ taskId, file }: { taskId: number; file: File }) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('taskId', taskId.toString());
+
+      const response = await fetch('/api/internal/task/upload', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/internal/tasks', selectedTask?.id, 'files'] });
+      toast({ title: "Arquivo enviado com sucesso!", variant: "default" });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    },
+    onError: () => {
+      toast({ title: "Erro ao enviar arquivo", variant: "destructive" });
     },
   });
 
@@ -192,7 +195,7 @@ export default function SistemaFinal() {
   };
 
   const handleUpdateObservacao = () => {
-    if (selectedTask) {
+    if (selectedTask && observacao.trim()) {
       updateTaskFieldMutation.mutate({
         taskId: selectedTask.id,
         field: 'observacao',
@@ -206,7 +209,7 @@ export default function SistemaFinal() {
       updateTaskFieldMutation.mutate({
         taskId: selectedTask.id,
         field: 'dataLembrete',
-        value: new Date(dataLembrete).toISOString(),
+        value: dataLembrete,
       });
     }
   };
@@ -221,77 +224,10 @@ export default function SistemaFinal() {
     }
   };
 
-
-
   const handleDeleteBusiness = (registration: BusinessRegistration) => {
     if (window.confirm(`Tem certeza que deseja excluir a empresa "${registration.razaoSocial}"?\n\nEsta ação não pode ser desfeita e irá deletar todas as tarefas e arquivos associados.`)) {
       deleteBusinessMutation.mutate(registration.id);
     }
-  };
-
-  // Export functions
-  const exportExcelMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetch('/api/internal/export/excel', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      
-      if (!response.ok) throw new Error('Failed to export Excel');
-      
-      return response.blob();
-    },
-    onSuccess: (blob) => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `empresas_${new Date().toISOString().split('T')[0]}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-      toast({ title: "Excel exportado com sucesso!", variant: "default" });
-    },
-    onError: () => {
-      toast({ title: "Erro ao exportar Excel", variant: "destructive" });
-    },
-  });
-
-  const exportPdfMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetch('/api/internal/export/pdf', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      
-      if (!response.ok) throw new Error('Failed to export PDF');
-      
-      return response.blob();
-    },
-    onSuccess: (blob) => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `relatorio_empresas_${new Date().toISOString().split('T')[0]}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-      toast({ title: "PDF exportado com sucesso!", variant: "default" });
-    },
-    onError: () => {
-      toast({ title: "Erro ao exportar PDF", variant: "destructive" });
-    },
-  });
-
-  const handleExportExcel = () => {
-    exportExcelMutation.mutate();
-  };
-
-  const handleExportPDF = () => {
-    exportPdfMutation.mutate();
   };
 
   const getStatusColor = (status: string) => {
@@ -329,10 +265,6 @@ export default function SistemaFinal() {
     );
   };
 
-  const getTasksByDepartment = (department: string) => {
-    return getAllTasks().filter((task: any) => task.department === department);
-  };
-
   const getTaskStatistics = () => {
     const allTasks = getAllTasks();
     return {
@@ -348,7 +280,7 @@ export default function SistemaFinal() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Carregando sistema...</p>
         </div>
       </div>
@@ -358,13 +290,13 @@ export default function SistemaFinal() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-card border-b border-border">
+      <header className="border-b bg-card">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-between items-center py-6">
             <div className="flex items-center space-x-4">
               <Building2 className="h-8 w-8 text-primary" />
               <div>
-                <h1 className="text-xl font-bold text-foreground">SISTEMA PROSPERAR CONTABILIDADE</h1>
+                <h1 className="text-2xl font-bold">Sistema Interno</h1>
                 <p className="text-sm text-muted-foreground">Gestão de Tarefas e Documentos</p>
               </div>
             </div>
@@ -439,8 +371,6 @@ export default function SistemaFinal() {
               <option value="Pessoal">Pessoal</option>
             </select>
           </div>
-
-
         </div>
 
         {/* Companies and Tasks */}
@@ -483,7 +413,7 @@ export default function SistemaFinal() {
                 </div>
               </CardHeader>
               
-              <CardContent className="p-0">
+              <CardContent>
                 <Tabs defaultValue="Societário" className="w-full">
                   <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="Societário">Societário</TabsTrigger>
@@ -491,164 +421,154 @@ export default function SistemaFinal() {
                     <TabsTrigger value="Pessoal">Pessoal</TabsTrigger>
                   </TabsList>
                   
-                  {['Societário', 'Fiscal', 'Pessoal'].map(department => (
-                    <TabsContent key={department} value={department} className="p-4">
-                      <div className="space-y-3">
-                        {registration.tasks
-                          ?.filter((task: Task) => task.department === department)
-                          .map((task: Task) => (
-                            <div key={task.id} className="flex items-center justify-between p-3 border border-border rounded-lg">
-                              <div className="flex-1">
-                                <h4 className="font-medium">{task.title}</h4>
-                                <p className="text-sm text-muted-foreground">{task.description}</p>
-                                {task.observacao && (
-                                  <p className="text-xs text-blue-600 mt-1">Obs: {task.observacao}</p>
-                                )}
-                                {task.dataLembrete && (
-                                  <p className="text-xs text-orange-600 mt-1">
-                                    Lembrete: {new Date(task.dataLembrete).toLocaleDateString('pt-BR')}
-                                  </p>
-                                )}
-                              </div>
+                  {['Societário', 'Fiscal', 'Pessoal'].map((department) => (
+                    <TabsContent key={department} value={department} className="space-y-4 mt-4">
+                      {registration.tasks
+                        ?.filter((task: Task) => task.department === department)
+                        .sort((a: Task, b: Task) => a.order - b.order)
+                        .map((task: Task) => (
+                          <div key={task.id} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div className="flex-1">
+                              <h4 className="font-medium">{task.title}</h4>
+                              <p className="text-sm text-muted-foreground">{task.description}</p>
+                              {task.cnpj && (
+                                <p className="text-xs text-green-600 mt-1">CNPJ: {task.cnpj}</p>
+                              )}
+                              {task.observacao && (
+                                <p className="text-xs text-blue-600 mt-1">Obs: {task.observacao}</p>
+                              )}
+                              {task.dataLembrete && (
+                                <p className="text-xs text-orange-600 mt-1">
+                                  Lembrete: {new Date(task.dataLembrete).toLocaleDateString('pt-BR')}
+                                </p>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center space-x-2">
+                              <Badge className={`${getStatusColor(task.status)} text-white`}>
+                                {getStatusText(task.status)}
+                              </Badge>
                               
-                              <div className="flex items-center space-x-2">
-                                <Badge className={`${getStatusColor(task.status)} text-white`}>
-                                  {getStatusText(task.status)}
-                                </Badge>
-                                
-                                <Dialog>
-                                  <DialogTrigger asChild>
-                                    <Button 
-                                      size="sm" 
-                                      variant="outline"
-                                      onClick={() => {
-                                        setSelectedTask(task);
-                                        setObservacao(task.observacao || '');
-                                        setDataLembrete(task.dataLembrete ? task.dataLembrete.split('T')[0] : '');
-                                        setCnpjValue(task.cnpj || '');
-                                      }}
-                                    >
-                                      Gerenciar
-                                    </Button>
-                                  </DialogTrigger>
-                                  <DialogContent className="max-w-2xl">
-                                    <DialogHeader>
-                                      <DialogTitle>{task.title} - {registration.razaoSocial}</DialogTitle>
-                                    </DialogHeader>
-                                    
-                                    <div className="space-y-6">
-                                      {/* Status Update */}
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => {
+                                      setSelectedTask(task);
+                                      setObservacao(task.observacao || '');
+                                      setDataLembrete(task.dataLembrete ? task.dataLembrete.split('T')[0] : '');
+                                      setCnpjValue(task.cnpj || '');
+                                    }}
+                                  >
+                                    Gerenciar
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-2xl">
+                                  <DialogHeader>
+                                    <DialogTitle>{task.title} - {registration.razaoSocial}</DialogTitle>
+                                  </DialogHeader>
+                                  
+                                  <div className="space-y-6">
+                                    {/* Status Update */}
+                                    <div>
+                                      <label className="text-sm font-medium">Status da Tarefa</label>
+                                      <div className="flex gap-2 mt-2">
+                                        {['pending', 'in_progress', 'completed'].map(status => (
+                                          <Button
+                                            key={status}
+                                            size="sm"
+                                            variant={task.status === status ? "default" : "outline"}
+                                            className={task.status === status ? getStatusColor(status) : ''}
+                                            onClick={() => updateTaskStatusMutation.mutate({ taskId: task.id, status })}
+                                          >
+                                            {getStatusText(status)}
+                                          </Button>
+                                        ))}
+                                      </div>
+                                    </div>
+
+                                    {/* CNPJ Field */}
+                                    {task.title === 'CNPJ' && (
                                       <div>
-                                        <label className="text-sm font-medium">Status da Tarefa</label>
+                                        <label className="text-sm font-medium">CNPJ</label>
                                         <div className="flex gap-2 mt-2">
-                                          {['pending', 'in_progress', 'completed'].map(status => (
-                                            <Button
-                                              key={status}
-                                              size="sm"
-                                              variant={task.status === status ? "default" : "outline"}
-                                              className={task.status === status ? getStatusColor(status) : ''}
-                                              onClick={() => updateTaskStatusMutation.mutate({ taskId: task.id, status })}
-                                            >
-                                              {getStatusText(status)}
-                                            </Button>
+                                          <Input
+                                            value={cnpjValue}
+                                            onChange={(e) => setCnpjValue(e.target.value)}
+                                            placeholder="Digite o CNPJ"
+                                          />
+                                          <Button onClick={handleUpdateCnpj}>Salvar</Button>
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* Observações */}
+                                    <div>
+                                      <label className="text-sm font-medium">Observações</label>
+                                      <div className="flex gap-2 mt-2">
+                                        <Textarea
+                                          value={observacao}
+                                          onChange={(e) => setObservacao(e.target.value)}
+                                          placeholder="Digite suas observações"
+                                          rows={3}
+                                        />
+                                        <Button onClick={handleUpdateObservacao}>Salvar</Button>
+                                      </div>
+                                    </div>
+
+                                    {/* Data de Lembrete */}
+                                    <div>
+                                      <label className="text-sm font-medium">Data de Lembrete</label>
+                                      <div className="flex gap-2 mt-2">
+                                        <Input
+                                          type="date"
+                                          value={dataLembrete}
+                                          onChange={(e) => setDataLembrete(e.target.value)}
+                                        />
+                                        <Button onClick={handleUpdateDataLembrete}>Salvar</Button>
+                                      </div>
+                                    </div>
+
+                                    {/* File Upload */}
+                                    <div>
+                                      <label className="text-sm font-medium">Envio de Arquivo</label>
+                                      <div className="mt-2">
+                                        <input
+                                          ref={fileInputRef}
+                                          type="file"
+                                          onChange={handleFileUpload}
+                                          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                        />
+                                      </div>
+                                    </div>
+
+                                    {/* Files List */}
+                                    {taskFiles.length > 0 && (
+                                      <div>
+                                        <label className="text-sm font-medium">Arquivos Enviados</label>
+                                        <div className="mt-2 space-y-2">
+                                          {taskFiles.map((file) => (
+                                            <div key={file.id} className="flex items-center justify-between p-2 border rounded">
+                                              <span className="text-sm">{file.originalName}</span>
+                                              <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => handleDownloadFile(file.id)}
+                                              >
+                                                <Download className="h-4 w-4" />
+                                              </Button>
+                                            </div>
                                           ))}
                                         </div>
                                       </div>
-
-                                      {/* CNPJ Field (only for CNPJ task) */}
-                                      {task.title === 'CNPJ' && (
-                                        <div>
-                                          <label className="text-sm font-medium">Número do CNPJ</label>
-                                          <div className="flex gap-2 mt-2">
-                                            <Input
-                                              placeholder="00.000.000/0000-00"
-                                              value={cnpjValue}
-                                              onChange={(e) => setCnpjValue(e.target.value)}
-                                            />
-                                            <Button onClick={handleUpdateCnpj}>Salvar</Button>
-                                          </div>
-                                        </div>
-                                      )}
-
-                                      {/* Observations */}
-                                      <div>
-                                        <label className="text-sm font-medium">Observações</label>
-                                        <div className="flex gap-2 mt-2">
-                                          <Textarea
-                                            placeholder="Adicione observações sobre esta tarefa..."
-                                            value={observacao}
-                                            onChange={(e) => setObservacao(e.target.value)}
-                                            rows={3}
-                                          />
-                                          <Button onClick={handleUpdateObservacao}>
-                                            <MessageSquare className="h-4 w-4" />
-                                          </Button>
-                                        </div>
-                                      </div>
-
-                                      {/* Reminder Date */}
-                                      <div>
-                                        <label className="text-sm font-medium">Data de Lembrete</label>
-                                        <div className="flex gap-2 mt-2">
-                                          <Input
-                                            type="date"
-                                            value={dataLembrete}
-                                            onChange={(e) => setDataLembrete(e.target.value)}
-                                          />
-                                          <Button onClick={handleUpdateDataLembrete}>
-                                            <Calendar className="h-4 w-4" />
-                                          </Button>
-                                        </div>
-                                      </div>
-
-                                      {/* File Upload */}
-                                      <div>
-                                        <label className="text-sm font-medium">Envio de Arquivo</label>
-                                        <div className="flex gap-2 mt-2">
-                                          <Input
-                                            ref={fileInputRef}
-                                            type="file"
-                                            onChange={handleFileUpload}
-                                            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                                          />
-                                          <Button disabled={uploadFileMutation.isPending}>
-                                            <Upload className="h-4 w-4" />
-                                          </Button>
-                                        </div>
-                                      </div>
-
-                                      {/* File List */}
-                                      {taskFiles.length > 0 && (
-                                        <div>
-                                          <label className="text-sm font-medium">Arquivos Enviados</label>
-                                          <div className="space-y-2 mt-2">
-                                            {taskFiles.map((file: TaskFile) => (
-                                              <div key={file.id} className="flex items-center justify-between p-2 border border-border rounded">
-                                                <span className="text-sm">{file.originalName}</span>
-                                                <div className="flex gap-2">
-                                                  <span className="text-xs text-muted-foreground">
-                                                    {new Date(file.uploadedAt).toLocaleDateString('pt-BR')}
-                                                  </span>
-                                                  <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => handleDownloadFile(file.id)}
-                                                  >
-                                                    <Download className="h-4 w-4" />
-                                                  </Button>
-                                                </div>
-                                              </div>
-                                            ))}
-                                          </div>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </DialogContent>
-                                </Dialog>
-                              </div>
+                                    )}
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
                             </div>
-                          ))}
-                      </div>
+                          </div>
+                        ))}
                     </TabsContent>
                   ))}
                 </Tabs>
