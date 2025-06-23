@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Building2, Users, Upload, Download, Calendar, MessageSquare, LogOut, Search, Filter } from 'lucide-react';
+import { Building2, Users, Upload, Download, Calendar, MessageSquare, LogOut, Search, Filter, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -134,6 +134,26 @@ export default function SistemaFinal() {
     },
   });
 
+  // Delete business registration mutation
+  const deleteBusinessMutation = useMutation({
+    mutationFn: async (registrationId: number) => {
+      const response = await fetch(`/api/internal/business-registrations/${registrationId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/internal/business-registrations/with-tasks'] });
+      toast({ title: "Empresa deletada com sucesso!", variant: "default" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao deletar empresa", variant: "destructive" });
+    },
+  });
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     window.location.href = '/equipe';
@@ -197,6 +217,12 @@ export default function SistemaFinal() {
         field: 'cnpj',
         value: cnpjValue,
       });
+    }
+  };
+
+  const handleDeleteBusiness = (registration: BusinessRegistration) => {
+    if (window.confirm(`Tem certeza que deseja excluir a empresa "${registration.razaoSocial}"?\n\nEsta ação não pode ser desfeita e irá deletar todas as tarefas e arquivos associados.`)) {
+      deleteBusinessMutation.mutate(registration.id);
     }
   };
 
@@ -362,9 +388,20 @@ export default function SistemaFinal() {
                       <p className="text-sm text-muted-foreground">CNPJ: {registration.cnpj}</p>
                     )}
                   </div>
-                  <Badge variant="outline">
-                    {registration.tasks?.length || 0} tarefas
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">
+                      {registration.tasks?.length || 0} tarefas
+                    </Badge>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteBusiness(registration)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                      disabled={deleteBusinessMutation.isPending}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               

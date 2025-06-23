@@ -852,6 +852,33 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
     }
   });
 
+  // Delete business registration
+  app.delete("/api/internal/business-registrations/:id", authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+      const registrationId = parseInt(req.params.id);
+      
+      // Delete all tasks associated with this registration
+      const tasks = await storage.getTasksByRegistration(registrationId);
+      for (const task of tasks) {
+        // Delete all files for each task
+        const files = await storage.getTaskFiles(task.id);
+        for (const file of files) {
+          await storage.deleteTaskFile(file.id);
+        }
+        // Delete the task
+        await storage.deleteTask(task.id);
+      }
+      
+      // Delete the business registration
+      await storage.deleteBusinessRegistration(registrationId);
+      
+      res.json({ message: "Empresa deletada com sucesso" });
+    } catch (error) {
+      console.error("Error deleting business registration:", error);
+      res.status(500).json({ message: "Erro ao deletar empresa" });
+    }
+  });
+
   // Export to Excel
   app.get("/api/internal/export/excel", authenticateToken, async (req, res) => {
     try {
