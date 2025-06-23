@@ -30,6 +30,11 @@ export default function SistemaFinal() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showNewTaskModal, setShowNewTaskModal] = useState(false);
   const [newTaskDepartment, setNewTaskDepartment] = useState('');
+  const [showUserManagement, setShowUserManagement] = useState(false);
+  const [users, setUsers] = useState<any[]>([]);
+  const [showCreateUserModal, setShowCreateUserModal] = useState(false);
+  const [showEditUserModal, setShowEditUserModal] = useState(false);
+  const [editingUser, setEditingUser] = useState<any>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -62,6 +67,87 @@ export default function SistemaFinal() {
       setLoading(false);
     });
   }, []);
+
+  const fetchUsers = () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    fetch('/api/internal/users', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data) {
+        setUsers(Array.isArray(data) ? data : []);
+      }
+    })
+    .catch(error => {
+      console.error('Error loading users:', error);
+    });
+  };
+
+  const createUser = (userData: any) => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    fetch('/api/internal/users', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` 
+      },
+      body: JSON.stringify(userData),
+    })
+    .then(res => res.json())
+    .then(() => {
+      fetchUsers();
+      setShowCreateUserModal(false);
+    })
+    .catch(error => {
+      console.error('Error creating user:', error);
+    });
+  };
+
+  const updateUser = (userId: number, userData: any) => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    fetch(`/api/internal/users/${userId}`, {
+      method: 'PUT',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` 
+      },
+      body: JSON.stringify(userData),
+    })
+    .then(res => res.json())
+    .then(() => {
+      fetchUsers();
+      setShowEditUserModal(false);
+      setEditingUser(null);
+    })
+    .catch(error => {
+      console.error('Error updating user:', error);
+    });
+  };
+
+  const deleteUser = (userId: number) => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    if (confirm('Tem certeza que deseja deletar este usuário?')) {
+      fetch(`/api/internal/users/${userId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      .then(() => {
+        fetchUsers();
+      })
+      .catch(error => {
+        console.error('Error deleting user:', error);
+      });
+    }
+  };
 
   const updateTaskStatus = (taskId: number, currentStatus: string, newStatus: string) => {
     const token = localStorage.getItem('token');
@@ -202,20 +288,39 @@ export default function SistemaFinal() {
           }}>
             Sistema Dark
           </h1>
-          <button
-            onClick={() => window.location.href = '/equipe'}
-            style={{
-              background: '#222222',
-              border: '1px solid #333333',
-              color: '#ffffff',
-              padding: '10px 20px',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '14px'
-            }}
-          >
-            Sair
-          </button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button
+              onClick={() => {
+                setShowUserManagement(true);
+                fetchUsers();
+              }}
+              style={{
+                background: '#333333',
+                border: '1px solid #555555',
+                color: '#ffffff',
+                padding: '10px 20px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              Usuários
+            </button>
+            <button
+              onClick={() => window.location.href = '/equipe'}
+              style={{
+                background: '#222222',
+                border: '1px solid #333333',
+                color: '#ffffff',
+                padding: '10px 20px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              Sair
+            </button>
+          </div>
         </div>
       </div>
 
