@@ -146,14 +146,15 @@ The system uses a `business_registrations` table with:
 
 ## Recent Changes
 
-### December 20, 2025 - Complete Task Management & Full Form Editing
-- **Task Management**: Added complete CRUD operations for tasks in each department
-- **Delete Tasks**: Red "×" button to remove tasks with confirmation dialog
-- **Create Tasks**: "+ Nova" button in each department opens modal for custom task creation
-- **Full Form Editing**: Expanded edit modal to include all company fields (address, capital, activities, etc.)
-- **Real-time Updates**: All changes persist to PostgreSQL and update interface immediately
-- **Public Form Integration**: Companies from public form automatically appear in internal system with pending tasks
-- **Enhanced UX**: Organized form fields in logical groups with professional dark theme styling
+### December 20, 2025 - Complete System with User Management
+- **Task Management**: Complete CRUD operations for tasks in each department with delete and create functionality
+- **Full Company Editing**: All company fields editable including address, capital, activities, and partner data
+- **Partner Editing**: Complete partner/socio editing with all personal details (CPF, RG, address, profession, etc.)
+- **User Management**: Admin-only functionality to create, edit, delete users and change passwords
+- **Role-Based Access**: Admin users can manage all users, change roles and departments
+- **Security Features**: Password hashing, user authentication, and admin-only user management routes
+- **Complete Integration**: Public form seamlessly connects to internal system with pending tasks
+- **Professional Interface**: Dark minimalist theme with organized modals and responsive design
 
 ### December 19, 2025 - Complete System Redesign
 - **New Internal System**: Completely rebuilt the internal dashboard with modern architecture and visual design

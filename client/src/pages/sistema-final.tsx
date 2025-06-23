@@ -1714,6 +1714,695 @@ export default function SistemaFinal() {
           </div>
         </div>
       )}
+
+      {/* User Management Modal */}
+      {showUserManagement && (
+        <div style={{
+          position: 'fixed',
+          top: '0',
+          left: '0',
+          right: '0',
+          bottom: '0',
+          background: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: '#111111',
+            border: '1px solid #333333',
+            borderRadius: '8px',
+            padding: '30px',
+            maxWidth: '800px',
+            width: '90%',
+            maxHeight: '80vh',
+            overflow: 'auto'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '20px'
+            }}>
+              <h3 style={{
+                color: '#ffffff',
+                fontSize: '18px',
+                fontWeight: '600',
+                margin: 0
+              }}>
+                Gerenciar Usuários
+              </h3>
+              <button
+                onClick={() => setShowUserManagement(false)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#666666',
+                  fontSize: '20px',
+                  cursor: 'pointer'
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <button
+              onClick={() => setShowCreateUserModal(true)}
+              style={{
+                background: '#198754',
+                border: 'none',
+                color: '#ffffff',
+                padding: '10px 20px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500',
+                marginBottom: '20px'
+              }}
+            >
+              + Novo Usuário
+            </button>
+
+            <div style={{
+              background: '#0a0a0a',
+              border: '1px solid #222222',
+              borderRadius: '6px',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                background: '#222222',
+                padding: '12px 20px',
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr 1fr 1fr 120px',
+                gap: '15px',
+                fontSize: '12px',
+                fontWeight: '600',
+                color: '#cccccc',
+                textTransform: 'uppercase'
+              }}>
+                <div>Nome</div>
+                <div>Username</div>
+                <div>Email</div>
+                <div>Cargo/Depto</div>
+                <div>Ações</div>
+              </div>
+
+              {users.map((user: any) => (
+                <div key={user.id} style={{
+                  padding: '15px 20px',
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr 1fr 1fr 120px',
+                  gap: '15px',
+                  borderBottom: '1px solid #222222',
+                  alignItems: 'center'
+                }}>
+                  <div style={{ color: '#ffffff', fontSize: '14px' }}>
+                    {user.name}
+                  </div>
+                  <div style={{ color: '#cccccc', fontSize: '13px' }}>
+                    {user.username}
+                  </div>
+                  <div style={{ color: '#cccccc', fontSize: '13px' }}>
+                    {user.email || '-'}
+                  </div>
+                  <div style={{ color: '#cccccc', fontSize: '13px' }}>
+                    {user.role} {user.department && `/ ${user.department}`}
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      onClick={() => {
+                        setEditingUser(user);
+                        setShowEditUserModal(true);
+                      }}
+                      style={{
+                        background: '#333333',
+                        border: '1px solid #555555',
+                        color: '#ffffff',
+                        padding: '6px 12px',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '12px'
+                      }}
+                    >
+                      Editar
+                    </button>
+                    {user.username !== 'admin' && (
+                      <button
+                        onClick={() => deleteUser(user.id)}
+                        style={{
+                          background: '#dc3545',
+                          border: 'none',
+                          color: '#ffffff',
+                          padding: '6px 12px',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '12px'
+                        }}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create User Modal */}
+      {showCreateUserModal && (
+        <div style={{
+          position: 'fixed',
+          top: '0',
+          left: '0',
+          right: '0',
+          bottom: '0',
+          background: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1001
+        }}>
+          <div style={{
+            background: '#111111',
+            border: '1px solid #333333',
+            borderRadius: '8px',
+            padding: '30px',
+            maxWidth: '500px',
+            width: '90%'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '20px'
+            }}>
+              <h3 style={{
+                color: '#ffffff',
+                fontSize: '18px',
+                fontWeight: '600',
+                margin: 0
+              }}>
+                Criar Novo Usuário
+              </h3>
+              <button
+                onClick={() => setShowCreateUserModal(false)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#666666',
+                  fontSize: '20px',
+                  cursor: 'pointer'
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.target as HTMLFormElement);
+              const userData = {
+                username: formData.get('username') as string,
+                password: formData.get('password') as string,
+                name: formData.get('name') as string,
+                email: formData.get('email') as string,
+                role: formData.get('role') as string,
+                department: formData.get('department') as string,
+              };
+              createUser(userData);
+            }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+                <div>
+                  <label style={{
+                    display: 'block',
+                    color: '#cccccc',
+                    fontSize: '13px',
+                    marginBottom: '6px'
+                  }}>
+                    Nome Completo *
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    required
+                    style={{
+                      width: '100%',
+                      background: '#222222',
+                      border: '1px solid #444444',
+                      color: '#ffffff',
+                      padding: '10px',
+                      borderRadius: '4px',
+                      fontSize: '13px'
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{
+                    display: 'block',
+                    color: '#cccccc',
+                    fontSize: '13px',
+                    marginBottom: '6px'
+                  }}>
+                    Username *
+                  </label>
+                  <input
+                    type="text"
+                    name="username"
+                    required
+                    style={{
+                      width: '100%',
+                      background: '#222222',
+                      border: '1px solid #444444',
+                      color: '#ffffff',
+                      padding: '10px',
+                      borderRadius: '4px',
+                      fontSize: '13px'
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{
+                  display: 'block',
+                  color: '#cccccc',
+                  fontSize: '13px',
+                  marginBottom: '6px'
+                }}>
+                  Email
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  style={{
+                    width: '100%',
+                    background: '#222222',
+                    border: '1px solid #444444',
+                    color: '#ffffff',
+                    padding: '10px',
+                    borderRadius: '4px',
+                    fontSize: '13px'
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{
+                  display: 'block',
+                  color: '#cccccc',
+                  fontSize: '13px',
+                  marginBottom: '6px'
+                }}>
+                  Senha *
+                </label>
+                <input
+                  type="password"
+                  name="password"
+                  required
+                  style={{
+                    width: '100%',
+                    background: '#222222',
+                    border: '1px solid #444444',
+                    color: '#ffffff',
+                    padding: '10px',
+                    borderRadius: '4px',
+                    fontSize: '13px'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
+                <div>
+                  <label style={{
+                    display: 'block',
+                    color: '#cccccc',
+                    fontSize: '13px',
+                    marginBottom: '6px'
+                  }}>
+                    Cargo
+                  </label>
+                  <select
+                    name="role"
+                    style={{
+                      width: '100%',
+                      background: '#222222',
+                      border: '1px solid #444444',
+                      color: '#ffffff',
+                      padding: '10px',
+                      borderRadius: '4px',
+                      fontSize: '13px'
+                    }}
+                  >
+                    <option value="user">Usuário</option>
+                    <option value="admin">Administrador</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{
+                    display: 'block',
+                    color: '#cccccc',
+                    fontSize: '13px',
+                    marginBottom: '6px'
+                  }}>
+                    Departamento
+                  </label>
+                  <select
+                    name="department"
+                    style={{
+                      width: '100%',
+                      background: '#222222',
+                      border: '1px solid #444444',
+                      color: '#ffffff',
+                      padding: '10px',
+                      borderRadius: '4px',
+                      fontSize: '13px'
+                    }}
+                  >
+                    <option value="">Selecionar</option>
+                    <option value="Societário">Societário</option>
+                    <option value="Fiscal">Fiscal</option>
+                    <option value="Pessoal">Pessoal</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{
+                display: 'flex',
+                gap: '12px',
+                justifyContent: 'flex-end'
+              }}>
+                <button
+                  type="button"
+                  onClick={() => setShowCreateUserModal(false)}
+                  style={{
+                    background: '#333333',
+                    border: '1px solid #555555',
+                    color: '#ffffff',
+                    padding: '10px 20px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '14px'
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  style={{
+                    background: '#198754',
+                    border: 'none',
+                    color: '#ffffff',
+                    padding: '10px 20px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                  }}
+                >
+                  Criar Usuário
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit User Modal */}
+      {showEditUserModal && editingUser && (
+        <div style={{
+          position: 'fixed',
+          top: '0',
+          left: '0',
+          right: '0',
+          bottom: '0',
+          background: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1001
+        }}>
+          <div style={{
+            background: '#111111',
+            border: '1px solid #333333',
+            borderRadius: '8px',
+            padding: '30px',
+            maxWidth: '500px',
+            width: '90%'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '20px'
+            }}>
+              <h3 style={{
+                color: '#ffffff',
+                fontSize: '18px',
+                fontWeight: '600',
+                margin: 0
+              }}>
+                Editar Usuário
+              </h3>
+              <button
+                onClick={() => {
+                  setShowEditUserModal(false);
+                  setEditingUser(null);
+                }}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#666666',
+                  fontSize: '20px',
+                  cursor: 'pointer'
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.target as HTMLFormElement);
+              const userData: any = {
+                username: formData.get('username') as string,
+                name: formData.get('name') as string,
+                email: formData.get('email') as string,
+                role: formData.get('role') as string,
+                department: formData.get('department') as string,
+              };
+              
+              const password = formData.get('password') as string;
+              if (password) {
+                userData.password = password;
+              }
+              
+              updateUser(editingUser.id, userData);
+            }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+                <div>
+                  <label style={{
+                    display: 'block',
+                    color: '#cccccc',
+                    fontSize: '13px',
+                    marginBottom: '6px'
+                  }}>
+                    Nome Completo *
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    defaultValue={editingUser.name}
+                    required
+                    style={{
+                      width: '100%',
+                      background: '#222222',
+                      border: '1px solid #444444',
+                      color: '#ffffff',
+                      padding: '10px',
+                      borderRadius: '4px',
+                      fontSize: '13px'
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{
+                    display: 'block',
+                    color: '#cccccc',
+                    fontSize: '13px',
+                    marginBottom: '6px'
+                  }}>
+                    Username *
+                  </label>
+                  <input
+                    type="text"
+                    name="username"
+                    defaultValue={editingUser.username}
+                    required
+                    style={{
+                      width: '100%',
+                      background: '#222222',
+                      border: '1px solid #444444',
+                      color: '#ffffff',
+                      padding: '10px',
+                      borderRadius: '4px',
+                      fontSize: '13px'
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{
+                  display: 'block',
+                  color: '#cccccc',
+                  fontSize: '13px',
+                  marginBottom: '6px'
+                }}>
+                  Email
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  defaultValue={editingUser.email}
+                  style={{
+                    width: '100%',
+                    background: '#222222',
+                    border: '1px solid #444444',
+                    color: '#ffffff',
+                    padding: '10px',
+                    borderRadius: '4px',
+                    fontSize: '13px'
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{
+                  display: 'block',
+                  color: '#cccccc',
+                  fontSize: '13px',
+                  marginBottom: '6px'
+                }}>
+                  Nova Senha (deixe em branco para manter a atual)
+                </label>
+                <input
+                  type="password"
+                  name="password"
+                  style={{
+                    width: '100%',
+                    background: '#222222',
+                    border: '1px solid #444444',
+                    color: '#ffffff',
+                    padding: '10px',
+                    borderRadius: '4px',
+                    fontSize: '13px'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
+                <div>
+                  <label style={{
+                    display: 'block',
+                    color: '#cccccc',
+                    fontSize: '13px',
+                    marginBottom: '6px'
+                  }}>
+                    Cargo
+                  </label>
+                  <select
+                    name="role"
+                    defaultValue={editingUser.role}
+                    style={{
+                      width: '100%',
+                      background: '#222222',
+                      border: '1px solid #444444',
+                      color: '#ffffff',
+                      padding: '10px',
+                      borderRadius: '4px',
+                      fontSize: '13px'
+                    }}
+                  >
+                    <option value="user">Usuário</option>
+                    <option value="admin">Administrador</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{
+                    display: 'block',
+                    color: '#cccccc',
+                    fontSize: '13px',
+                    marginBottom: '6px'
+                  }}>
+                    Departamento
+                  </label>
+                  <select
+                    name="department"
+                    defaultValue={editingUser.department}
+                    style={{
+                      width: '100%',
+                      background: '#222222',
+                      border: '1px solid #444444',
+                      color: '#ffffff',
+                      padding: '10px',
+                      borderRadius: '4px',
+                      fontSize: '13px'
+                    }}
+                  >
+                    <option value="">Selecionar</option>
+                    <option value="Societário">Societário</option>
+                    <option value="Fiscal">Fiscal</option>
+                    <option value="Pessoal">Pessoal</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{
+                display: 'flex',
+                gap: '12px',
+                justifyContent: 'flex-end'
+              }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditUserModal(false);
+                    setEditingUser(null);
+                  }}
+                  style={{
+                    background: '#333333',
+                    border: '1px solid #555555',
+                    color: '#ffffff',
+                    padding: '10px 20px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '14px'
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  style={{
+                    background: '#198754',
+                    border: 'none',
+                    color: '#ffffff',
+                    padding: '10px 20px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                  }}
+                >
+                  Salvar Alterações
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

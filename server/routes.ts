@@ -648,6 +648,17 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
     }
   });
 
+  // Get all users (admin only)
+  app.get("/api/internal/users", authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Erro ao buscar usuários" });
+    }
+  });
+
   // Create new user
   app.post("/api/internal/users", authenticateToken, requireRole('admin'), async (req, res) => {
     try {
@@ -677,6 +688,37 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
     } catch (error) {
       console.error("Error creating user:", error);
       res.status(500).json({ message: "Erro ao criar usuário" });
+    }
+  });
+
+  // Update user (admin only)
+  app.put("/api/internal/users/:id", authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { username, name, email, role, department, password } = req.body;
+      
+      const updateData: any = { username, name, email, role, department };
+      if (password) {
+        updateData.password = password;
+      }
+      
+      const updatedUser = await storage.updateUser(userId, updateData);
+      res.json({ message: "Usuário atualizado com sucesso", user: updatedUser });
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ message: "Erro ao atualizar usuário" });
+    }
+  });
+
+  // Delete user (admin only)
+  app.delete("/api/internal/users/:id", authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      await storage.deleteUser(userId);
+      res.json({ message: "Usuário deletado com sucesso" });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ message: "Erro ao deletar usuário" });
     }
   });
 
