@@ -722,6 +722,155 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
     }
   });
 
+  // Export to Excel
+  app.get("/api/internal/export/excel", authenticateToken, async (req, res) => {
+    try {
+      const registrations = await storage.getAllBusinessRegistrations();
+      const XLSX = require('xlsx');
+      
+      // Prepare data for Excel
+      const excelData = registrations.map((reg: any) => ({
+        'ID': reg.id,
+        'Razão Social': reg.razaoSocial,
+        'Nome Fantasia': reg.nomeFantasia || '',
+        'Email': reg.emailEmpresa,
+        'Telefone': reg.telefoneEmpresa,
+        'Endereço': reg.endereco || '',
+        'Capital Social': reg.capitalSocial || '',
+        'Atividade Principal': reg.atividadePrincipal || '',
+        'Data Cadastro': reg.createdAt ? new Date(reg.createdAt).toLocaleDateString('pt-BR') : 'N/A',
+        'Sócios': reg.socios && Array.isArray(reg.socios) ? reg.socios.map((s: any) => s.nomeCompleto).join('; ') : '',
+        'Status Geral': 'Ativo'
+      }));
+
+      // Create workbook
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(excelData);
+
+      // Auto-width columns
+      const colWidths = [
+        {wch: 5},   // ID
+        {wch: 30},  // Razão Social
+        {wch: 25},  // Nome Fantasia
+        {wch: 30},  // Email
+        {wch: 15},  // Telefone
+        {wch: 40},  // Endereço
+        {wch: 15},  // Capital Social
+        {wch: 30},  // Atividade Principal
+        {wch: 12},  // Data Cadastro
+        {wch: 40},  // Sócios
+        {wch: 12}   // Status Geral
+      ];
+      ws['!cols'] = colWidths;
+
+      XLSX.utils.book_append_sheet(wb, ws, 'Empresas');
+
+      // Generate buffer
+      const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename="empresas-${new Date().toISOString().split('T')[0]}.xlsx"`);
+      res.send(buffer);
+    } catch (error) {
+      console.error("Error exporting to Excel:", error);
+      res.status(500).json({ message: "Erro ao exportar para Excel" });
+    }
+  });
+
+  // Export to PDF
+  app.get("/api/internal/export/pdf", authenticateToken, async (req, res) => {
+    try {
+      const registrations = await storage.getAllBusinessRegistrations();
+      const puppeteer = require('puppeteer');
+
+      const browser = await puppeteer.launch({ 
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+      });
+      const page = await browser.newPage();
+
+      // Create HTML content
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Relatório de Empresas</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { color: #333; text-align: center; margin-bottom: 30px; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .company { margin-bottom: 30px; border: 1px solid #ddd; padding: 15px; }
+            .company-title { font-size: 18px; font-weight: bold; color: #2c3e50; margin-bottom: 10px; }
+            .info-row { margin-bottom: 8px; }
+            .label { font-weight: bold; color: #34495e; }
+            .partners { margin-top: 15px; }
+            .partner { background: #f8f9fa; padding: 10px; margin: 5px 0; border-left: 3px solid #007bff; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Relatório de Empresas Cadastradas</h1>
+            <p>Data: ${new Date().toLocaleDateString('pt-BR')}</p>
+            <p>Total de empresas: ${registrations.length}</p>
+          </div>
+
+          ${registrations.map((reg: any) => `
+            <div class="company">
+              <div class="company-title">${reg.razaoSocial}</div>
+              <div class="info-row"><span class="label">ID:</span> ${reg.id}</div>
+              <div class="info-row"><span class="label">Nome Fantasia:</span> ${reg.nomeFantasia || 'N/A'}</div>
+              <div class="info-row"><span class="label">Email:</span> ${reg.emailEmpresa}</div>
+              <div class="info-row"><span class="label">Telefone:</span> ${reg.telefoneEmpresa}</div>
+              <div class="info-row"><span class="label">Endereço:</span> ${reg.endereco || 'N/A'}</div>
+              <div class="info-row"><span class="label">Capital Social:</span> ${reg.capitalSocial || 'N/A'}</div>
+              <div class="info-row"><span class="label">Atividade Principal:</span> ${reg.atividadePrincipal || 'N/A'}</div>
+              <div class="info-row"><span class="label">Data de Cadastro:</span> ${reg.createdAt ? new Date(reg.createdAt).toLocaleDateString('pt-BR') : 'N/A'}</div>
+              
+              ${reg.socios && Array.isArray(reg.socios) && reg.socios.length > 0 ? `
+                <div class="partners">
+                  <div class="label">Sócios:</div>
+                  ${reg.socios.map((socio: any) => `
+                    <div class="partner">
+                      <strong>${socio.nomeCompleto}</strong><br>
+                      CPF: ${socio.cpf || 'N/A'} | RG: ${socio.rg || 'N/A'}<br>
+                      Participação: ${socio.percentualSociedade || 'N/A'}%
+                    </div>
+                  `).join('')}
+                </div>
+              ` : ''}
+            </div>
+          `).join('')}
+        </body>
+        </html>
+      `;
+
+      await page.setContent(htmlContent);
+      
+      const pdfBuffer = await page.pdf({
+        format: 'A4',
+        margin: {
+          top: '20mm',
+          right: '15mm',
+          bottom: '20mm',
+          left: '15mm'
+        }
+      });
+
+      await browser.close();
+
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="relatorio-empresas-${new Date().toISOString().split('T')[0]}.pdf"`);
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error("Error exporting to PDF:", error);
+      res.status(500).json({ message: "Erro ao exportar para PDF" });
+    }
+  });
+
   // Change password
   app.put("/api/internal/change-password", authenticateToken, async (req, res) => {
     try {

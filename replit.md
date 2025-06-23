@@ -146,11 +146,13 @@ The system uses a `business_registrations` table with:
 
 ## Recent Changes
 
-### December 20, 2025 - Complete System with User Management
+### December 20, 2025 - Complete System with Search and Export Features
 - **Task Management**: Complete CRUD operations for tasks in each department with delete and create functionality
 - **Full Company Editing**: All company fields editable including address, capital, activities, and partner data
 - **Partner Editing**: Complete partner/socio editing with all personal details (CPF, RG, address, profession, etc.)
 - **User Management**: Admin-only functionality to create, edit, delete users and change passwords
+- **Search & Filtering**: Real-time search by company name, email with status filtering (pending, in progress, completed)
+- **Export Functionality**: Professional Excel and PDF export with complete company and partner data
 - **Role-Based Access**: Admin users can manage all users, change roles and departments
 - **Security Features**: Password hashing, user authentication, and admin-only user management routes
 - **Complete Integration**: Public form seamlessly connects to internal system with pending tasks
