@@ -37,6 +37,7 @@ export default function SistemaFinal() {
   const [editingUser, setEditingUser] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -375,16 +376,17 @@ export default function SistemaFinal() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#0a0a0a',
-      color: '#ffffff',
+      background: isDarkMode ? '#0a0a0a' : '#f8f9fa',
+      color: isDarkMode ? '#ffffff' : '#333333',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
     }}>
       
       {/* Header */}
       <div style={{
-        background: '#111111',
+        background: isDarkMode ? '#111111' : '#ffffff',
         padding: '20px',
-        borderBottom: '1px solid #222222'
+        borderBottom: isDarkMode ? '1px solid #222222' : '1px solid #dee2e6',
+        boxShadow: isDarkMode ? 'none' : '0 2px 4px rgba(0,0,0,0.1)'
       }}>
         <div style={{
           maxWidth: '1400px',
@@ -397,20 +399,52 @@ export default function SistemaFinal() {
             fontSize: '24px',
             fontWeight: '600',
             margin: '0',
-            color: '#ffffff'
+            color: isDarkMode ? '#ffffff' : '#333333'
           }}>
             SISTEMA PROSPERAR CONTABILIDADE
           </h1>
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+            {/* Theme Toggle */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '14px', color: isDarkMode ? '#ffffff' : '#000000' }}>🌙</span>
+              <button
+                onClick={() => setIsDarkMode(!isDarkMode)}
+                style={{
+                  position: 'relative',
+                  width: '50px',
+                  height: '24px',
+                  backgroundColor: isDarkMode ? '#333333' : '#2196F3',
+                  border: 'none',
+                  borderRadius: '24px',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.3s',
+                  outline: 'none'
+                }}
+              >
+                <div style={{
+                  position: 'absolute',
+                  top: '3px',
+                  left: isDarkMode ? '3px' : '26px',
+                  width: '18px',
+                  height: '18px',
+                  backgroundColor: 'white',
+                  borderRadius: '50%',
+                  transition: 'left 0.3s',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                }} />
+              </button>
+              <span style={{ fontSize: '14px', color: isDarkMode ? '#ffffff' : '#000000' }}>☀️</span>
+            </div>
+            
             <button
               onClick={() => {
                 setShowUserManagement(true);
                 fetchUsers();
               }}
               style={{
-                background: '#333333',
-                border: '1px solid #555555',
-                color: '#ffffff',
+                background: isDarkMode ? '#333333' : '#f8f9fa',
+                border: isDarkMode ? '1px solid #555555' : '1px solid #dee2e6',
+                color: isDarkMode ? '#ffffff' : '#333333',
                 padding: '10px 20px',
                 borderRadius: '4px',
                 cursor: 'pointer',
@@ -422,8 +456,8 @@ export default function SistemaFinal() {
             <button
               onClick={() => window.location.href = '/equipe'}
               style={{
-                background: '#222222',
-                border: '1px solid #333333',
+                background: '#dc3545',
+                border: 'none',
                 color: '#ffffff',
                 padding: '10px 20px',
                 borderRadius: '4px',
@@ -452,55 +486,59 @@ export default function SistemaFinal() {
           marginBottom: '40px'
         }}>
           <div style={{
-            background: '#111111',
+            background: isDarkMode ? '#111111' : '#ffffff',
             padding: '20px',
             borderRadius: '6px',
             textAlign: 'center',
-            border: '1px solid #222222'
+            border: isDarkMode ? '1px solid #222222' : '1px solid #dee2e6',
+            boxShadow: isDarkMode ? 'none' : '0 2px 4px rgba(0,0,0,0.1)'
           }}>
-            <div style={{ fontSize: '28px', fontWeight: '700', color: '#ffffff', marginBottom: '8px' }}>
+            <div style={{ fontSize: '28px', fontWeight: '700', color: isDarkMode ? '#ffffff' : '#333333', marginBottom: '8px' }}>
               {registrations.length}
             </div>
-            <div style={{ fontSize: '14px', color: '#666666' }}>Empresas</div>
+            <div style={{ fontSize: '14px', color: isDarkMode ? '#666666' : '#6c757d' }}>Empresas</div>
           </div>
           
           <div style={{
-            background: '#111111',
+            background: isDarkMode ? '#111111' : '#ffffff',
             padding: '20px',
             borderRadius: '6px',
             textAlign: 'center',
-            border: '1px solid #222222'
+            border: isDarkMode ? '1px solid #222222' : '1px solid #dee2e6',
+            boxShadow: isDarkMode ? 'none' : '0 2px 4px rgba(0,0,0,0.1)'
           }}>
-            <div style={{ fontSize: '28px', fontWeight: '700', color: '#ffffff', marginBottom: '8px' }}>
+            <div style={{ fontSize: '28px', fontWeight: '700', color: isDarkMode ? '#ffffff' : '#333333', marginBottom: '8px' }}>
               {pendingTasks}
             </div>
-            <div style={{ fontSize: '14px', color: '#666666' }}>Pendentes</div>
+            <div style={{ fontSize: '14px', color: isDarkMode ? '#666666' : '#6c757d' }}>Pendentes</div>
           </div>
 
           <div style={{
-            background: '#111111',
+            background: isDarkMode ? '#111111' : '#ffffff',
             padding: '20px',
             borderRadius: '6px',
             textAlign: 'center',
-            border: '1px solid #222222'
+            border: isDarkMode ? '1px solid #222222' : '1px solid #dee2e6',
+            boxShadow: isDarkMode ? 'none' : '0 2px 4px rgba(0,0,0,0.1)'
           }}>
-            <div style={{ fontSize: '28px', fontWeight: '700', color: '#ffffff', marginBottom: '8px' }}>
+            <div style={{ fontSize: '28px', fontWeight: '700', color: isDarkMode ? '#ffffff' : '#333333', marginBottom: '8px' }}>
               {inProgressTasks}
             </div>
-            <div style={{ fontSize: '14px', color: '#666666' }}>Em Andamento</div>
+            <div style={{ fontSize: '14px', color: isDarkMode ? '#666666' : '#6c757d' }}>Em Andamento</div>
           </div>
 
           <div style={{
-            background: '#111111',
+            background: isDarkMode ? '#111111' : '#ffffff',
             padding: '20px',
             borderRadius: '6px',
             textAlign: 'center',
-            border: '1px solid #222222'
+            border: isDarkMode ? '1px solid #222222' : '1px solid #dee2e6',
+            boxShadow: isDarkMode ? 'none' : '0 2px 4px rgba(0,0,0,0.1)'
           }}>
-            <div style={{ fontSize: '28px', fontWeight: '700', color: '#ffffff', marginBottom: '8px' }}>
+            <div style={{ fontSize: '28px', fontWeight: '700', color: isDarkMode ? '#ffffff' : '#333333', marginBottom: '8px' }}>
               {completedTasks}
             </div>
-            <div style={{ fontSize: '14px', color: '#666666' }}>Concluídas</div>
+            <div style={{ fontSize: '14px', color: isDarkMode ? '#666666' : '#6c757d' }}>Concluídas</div>
           </div>
         </div>
 
