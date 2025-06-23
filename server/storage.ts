@@ -266,8 +266,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateTaskField(taskId: number, field: string, value: any): Promise<Task> {
+    console.log(`Updating task ${taskId} field ${field} with value:`, value);
+    
     const updateData: any = {};
-    updateData[field] = value;
+    
+    // Handle date fields conversion
+    if (field === 'data_lembrete' && value) {
+      updateData[field] = new Date(value);
+    } else {
+      updateData[field] = value;
+    }
+    
+    console.log('Update data:', updateData);
     
     const [updatedTask] = await db
       .update(tasks)
@@ -275,6 +285,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(tasks.id, taskId))
       .returning();
     
+    console.log('Updated task:', updatedTask);
     return updatedTask;
   }
 
