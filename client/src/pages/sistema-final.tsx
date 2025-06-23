@@ -1,2691 +1,539 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { Building2, Users, Upload, Download, Calendar, MessageSquare, LogOut, Search, Filter } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 
 interface Task {
   id: number;
   title: string;
+  description: string;
   department: string;
   status: string;
+  businessRegistrationId: number;
+  observacao?: string;
+  dataLembrete?: string;
+  cnpj?: string;
+}
+
+interface TaskFile {
+  id: number;
+  taskId: number;
+  fileName: string;
+  originalName: string;
+  uploadedAt: string;
 }
 
 interface BusinessRegistration {
   id: number;
   razaoSocial: string;
   nomeFantasia: string;
+  cnpj?: string;
   endereco: string;
-  inscricaoImobiliaria: string;
-  metragem: number;
-  telefoneEmpresa: string;
   emailEmpresa: string;
+  telefoneEmpresa: string;
   capitalSocial: string;
   atividadePrincipal: string;
-  atividadesSecundarias: string;
-  socios: any[];
+  createdAt: string;
   tasks: Task[];
 }
 
 export default function SistemaFinal() {
-  const [registrations, setRegistrations] = useState<BusinessRegistration[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [editingCompany, setEditingCompany] = useState<BusinessRegistration | null>(null);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showNewTaskModal, setShowNewTaskModal] = useState(false);
-  const [newTaskDepartment, setNewTaskDepartment] = useState('');
-  const [showUserManagement, setShowUserManagement] = useState(false);
-  const [users, setUsers] = useState<any[]>([]);
-  const [showCreateUserModal, setShowCreateUserModal] = useState(false);
-  const [showEditUserModal, setShowEditUserModal] = useState(false);
-  const [editingUser, setEditingUser] = useState<any>(null);
+  const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [observacao, setObservacao] = useState('');
+  const [dataLembrete, setDataLembrete] = useState('');
+  const [cnpjValue, setCnpjValue] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      window.location.href = '/equipe';
-      return;
-    }
-
-    fetch('/api/internal/registrations', {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-    .then(res => {
-      if (res.status === 401) {
-        localStorage.removeItem('token');
-        window.location.href = '/equipe';
-        return;
-      }
-      return res.json();
-    })
-    .then(data => {
-      if (data) {
-        setRegistrations(Array.isArray(data) ? data : []);
-      }
-      setLoading(false);
-    })
-    .catch(error => {
-      console.error('Error loading registrations:', error);
-      setLoading(false);
-    });
-  }, []);
-
-  const fetchUsers = () => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    fetch('/api/internal/users', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data) {
-        setUsers(Array.isArray(data) ? data : []);
-      }
-    })
-    .catch(error => {
-      console.error('Error loading users:', error);
-    });
-  };
-
-  const createUser = (userData: any) => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    fetch('/api/internal/users', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}` 
-      },
-      body: JSON.stringify(userData),
-    })
-    .then(res => res.json())
-    .then(() => {
-      fetchUsers();
-      setShowCreateUserModal(false);
-    })
-    .catch(error => {
-      console.error('Error creating user:', error);
-    });
-  };
-
-  const updateUser = (userId: number, userData: any) => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    fetch(`/api/internal/users/${userId}`, {
-      method: 'PUT',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}` 
-      },
-      body: JSON.stringify(userData),
-    })
-    .then(res => res.json())
-    .then(() => {
-      fetchUsers();
-      setShowEditUserModal(false);
-      setEditingUser(null);
-    })
-    .catch(error => {
-      console.error('Error updating user:', error);
-    });
-  };
-
-  const deleteUser = (userId: number) => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    if (confirm('Tem certeza que deseja deletar este usuário?')) {
-      fetch(`/api/internal/users/${userId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      .then(() => {
-        fetchUsers();
-      })
-      .catch(error => {
-        console.error('Error deleting user:', error);
-      });
-    }
-  };
-
-  const exportToExcel = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      alert('Token de autenticação não encontrado. Faça login novamente.');
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/internal/export/excel', {
-        method: 'GET',
-        headers: { 
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        }
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Erro HTTP: ${response.status}`);
-      }
-
-      const blob = await response.blob();
-      if (blob.size === 0) {
-        throw new Error('Arquivo Excel vazio recebido');
-      }
-
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = `empresas_${new Date().toISOString().split('T')[0]}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-
-      // Mostrar mensagem de sucesso
-      const successMsg = document.createElement('div');
-      successMsg.textContent = 'Excel exportado com sucesso!';
-      successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #28a745; color: white; padding: 15px; border-radius: 5px; z-index: 1000; font-size: 14px;';
-      document.body.appendChild(successMsg);
-      setTimeout(() => document.body.removeChild(successMsg), 3000);
-    } catch (error) {
-      console.error('Error exporting to Excel:', error);
-      alert(`Erro ao exportar Excel: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
-    }
-  };
-
-  const exportToPDF = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      alert('Token de autenticação não encontrado. Faça login novamente.');
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/internal/export/pdf', {
-        method: 'GET',
-        headers: { 
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/pdf'
-        }
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Erro HTTP: ${response.status}`);
-      }
-
-      const blob = await response.blob();
-      if (blob.size === 0) {
-        throw new Error('Arquivo PDF vazio recebido');
-      }
-
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = `relatorio_empresas_${new Date().toISOString().split('T')[0]}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-
-      // Mostrar mensagem de sucesso
-      const successMsg = document.createElement('div');
-      successMsg.textContent = 'PDF exportado com sucesso!';
-      successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #dc3545; color: white; padding: 15px; border-radius: 5px; z-index: 1000; font-size: 14px;';
-      document.body.appendChild(successMsg);
-      setTimeout(() => document.body.removeChild(successMsg), 3000);
-    } catch (error) {
-      console.error('Error exporting to PDF:', error);
-      alert(`Erro ao exportar PDF: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
-    }
-  };
-
-  // Filter registrations based on search term and status
-  const filteredRegistrations = registrations.filter(registration => {
-    const matchesSearch = searchTerm === '' || 
-      registration.razaoSocial.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      registration.nomeFantasia.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      registration.emailEmpresa.toLowerCase().includes(searchTerm.toLowerCase());
-
-    if (statusFilter === 'all') {
-      return matchesSearch;
-    }
-
-    const hasStatus = registration.tasks?.some(task => task.status === statusFilter);
-    return matchesSearch && hasStatus;
+  const { data: registrations = [], isLoading } = useQuery({
+    queryKey: ['/api/internal/business-registrations/with-tasks'],
   });
 
-  const updateTaskStatus = (taskId: number, currentStatus: string, newStatus: string) => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
+  const { data: taskFiles = [] } = useQuery({
+    queryKey: ['/api/internal/tasks', selectedTask?.id, 'files'],
+    enabled: !!selectedTask?.id,
+  });
 
-    const finalStatus = currentStatus === newStatus ? 'pending' : newStatus;
-    
-    fetch(`/api/internal/task/${taskId}/status`, {
-      method: 'PUT',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ status: finalStatus }),
-    })
-    .then(res => res.json())
-    .then(() => {
-      // Update local state
-      setRegistrations(prev => 
-        prev.map(reg => ({
-          ...reg,
-          tasks: reg.tasks.map(task => 
-            task.id === taskId 
-              ? { ...task, status: finalStatus }
-              : task
-          )
-        }))
-      );
-    })
-    .catch(error => {
-      console.error('Error updating task status:', error);
-    });
-  };
+  // Update task field mutation
+  const updateTaskFieldMutation = useMutation({
+    mutationFn: async ({ taskId, field, value }: { taskId: number; field: string; value: any }) => {
+      return apiRequest(`/api/internal/tasks/${taskId}/field`, {
+        method: 'PUT',
+        body: JSON.stringify({ field, value }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/internal/business-registrations/with-tasks'] });
+      toast({ title: "Campo atualizado com sucesso!", variant: "default" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao atualizar campo", variant: "destructive" });
+    },
+  });
 
-  const deleteTask = (taskId: number) => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    if (!confirm('Tem certeza que deseja deletar esta tarefa?')) return;
-
-    fetch(`/api/internal/task/${taskId}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`
+  // File upload mutation
+  const uploadFileMutation = useMutation({
+    mutationFn: async ({ taskId, file }: { taskId: number; file: File }) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      return fetch(`/api/internal/tasks/${taskId}/upload`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      }).then(res => res.json());
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/internal/tasks', selectedTask?.id, 'files'] });
+      toast({ title: "Arquivo enviado com sucesso!", variant: "default" });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
       }
-    })
-    .then(() => {
-      // Remove task from local state
-      setRegistrations(prev =>
-        prev.map(reg => ({
-          ...reg,
-          tasks: reg.tasks.filter(task => task.id !== taskId)
-        }))
-      );
-    })
-    .catch(error => {
-      console.error('Error deleting task:', error);
-    });
+    },
+    onError: () => {
+      toast({ title: "Erro ao enviar arquivo", variant: "destructive" });
+    },
+  });
+
+  // Update task status mutation
+  const updateTaskStatusMutation = useMutation({
+    mutationFn: async ({ taskId, status }: { taskId: number; status: string }) => {
+      return apiRequest(`/api/internal/tasks/${taskId}/status`, {
+        method: 'PUT',
+        body: JSON.stringify({ status }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/internal/business-registrations/with-tasks'] });
+      toast({ title: "Status atualizado com sucesso!", variant: "default" });
+    },
+  });
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    window.location.href = '/equipe';
   };
 
-  const createNewTask = (registrationId: number, department: string, title: string, description: string) => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    fetch(`/api/internal/registration/${registrationId}/task`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ title, description, department })
-    })
-    .then(res => res.json())
-    .then(newTask => {
-      // Add new task to local state
-      setRegistrations(prev =>
-        prev.map(reg =>
-          reg.id === registrationId
-            ? { ...reg, tasks: [...reg.tasks, newTask] }
-            : reg
-        )
-      );
-      setShowNewTaskModal(false);
-    })
-    .catch(error => {
-      console.error('Error creating task:', error);
-    });
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && selectedTask) {
+      uploadFileMutation.mutate({ taskId: selectedTask.id, file });
+    }
   };
 
-  if (loading) {
+  const handleDownloadFile = async (fileId: number) => {
+    try {
+      const response = await fetch(`/api/internal/files/${fileId}/download`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'arquivo';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }
+    } catch (error) {
+      toast({ title: "Erro ao baixar arquivo", variant: "destructive" });
+    }
+  };
+
+  const handleUpdateObservacao = () => {
+    if (selectedTask) {
+      updateTaskFieldMutation.mutate({
+        taskId: selectedTask.id,
+        field: 'observacao',
+        value: observacao,
+      });
+    }
+  };
+
+  const handleUpdateDataLembrete = () => {
+    if (selectedTask && dataLembrete) {
+      updateTaskFieldMutation.mutate({
+        taskId: selectedTask.id,
+        field: 'dataLembrete',
+        value: new Date(dataLembrete).toISOString(),
+      });
+    }
+  };
+
+  const handleUpdateCnpj = () => {
+    if (selectedTask && cnpjValue) {
+      updateTaskFieldMutation.mutate({
+        taskId: selectedTask.id,
+        field: 'cnpj',
+        value: cnpjValue,
+      });
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending': return 'bg-red-500 hover:bg-red-600';
+      case 'in_progress': return 'bg-yellow-500 hover:bg-yellow-600';
+      case 'completed': return 'bg-green-500 hover:bg-green-600';
+      default: return 'bg-gray-500 hover:bg-gray-600';
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'pending': return 'Pendente';
+      case 'in_progress': return 'Em Andamento';
+      case 'completed': return 'Concluída';
+      default: return status;
+    }
+  };
+
+  const filteredRegistrations = registrations.filter((reg: BusinessRegistration) => {
+    const matchesSearch = reg.razaoSocial.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         reg.emailEmpresa.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (selectedDepartment === 'all') return matchesSearch;
+    
+    return matchesSearch && reg.tasks?.some((task: Task) => 
+      task.department === selectedDepartment
+    );
+  });
+
+  const getAllTasks = () => {
+    return registrations.flatMap((reg: BusinessRegistration) => 
+      (reg.tasks || []).map((task: Task) => ({ ...task, company: reg.razaoSocial }))
+    );
+  };
+
+  const getTasksByDepartment = (department: string) => {
+    return getAllTasks().filter((task: any) => task.department === department);
+  };
+
+  const getTaskStatistics = () => {
+    const allTasks = getAllTasks();
+    return {
+      pending: allTasks.filter((task: any) => task.status === 'pending').length,
+      inProgress: allTasks.filter((task: any) => task.status === 'in_progress').length,
+      completed: allTasks.filter((task: any) => task.status === 'completed').length,
+    };
+  };
+
+  const stats = getTaskStatistics();
+
+  if (isLoading) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        background: '#0a0a0a',
-        color: '#ffffff',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        Carregando...
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Carregando sistema...</p>
+        </div>
       </div>
     );
   }
 
-  const pendingTasks = registrations.reduce((acc, reg) => 
-    acc + reg.tasks.filter(t => t.status === 'pending').length, 0);
-  const inProgressTasks = registrations.reduce((acc, reg) => 
-    acc + reg.tasks.filter(t => t.status === 'in_progress').length, 0);
-  const completedTasks = registrations.reduce((acc, reg) => 
-    acc + reg.tasks.filter(t => t.status === 'completed').length, 0);
-
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: isDarkMode ? '#0a0a0a' : '#f8f9fa',
-      color: isDarkMode ? '#ffffff' : '#333333',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-    }}>
-      
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div style={{
-        background: isDarkMode ? '#111111' : '#ffffff',
-        padding: '20px',
-        borderBottom: isDarkMode ? '1px solid #222222' : '1px solid #dee2e6',
-        boxShadow: isDarkMode ? 'none' : '0 2px 4px rgba(0,0,0,0.1)'
-      }}>
-        <div style={{
-          maxWidth: '1400px',
-          margin: '0 auto',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
-          <h1 style={{
-            fontSize: '24px',
-            fontWeight: '600',
-            margin: '0',
-            color: isDarkMode ? '#ffffff' : '#333333'
-          }}>
-            SISTEMA PROSPERAR CONTABILIDADE
-          </h1>
-          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-            {/* Theme Toggle */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '14px', color: isDarkMode ? '#ffffff' : '#000000' }}>🌙</span>
-              <button
-                onClick={() => setIsDarkMode(!isDarkMode)}
-                style={{
-                  position: 'relative',
-                  width: '50px',
-                  height: '24px',
-                  backgroundColor: isDarkMode ? '#333333' : '#2196F3',
-                  border: 'none',
-                  borderRadius: '24px',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.3s',
-                  outline: 'none'
-                }}
-              >
-                <div style={{
-                  position: 'absolute',
-                  top: '3px',
-                  left: isDarkMode ? '3px' : '26px',
-                  width: '18px',
-                  height: '18px',
-                  backgroundColor: 'white',
-                  borderRadius: '50%',
-                  transition: 'left 0.3s',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                }} />
-              </button>
-              <span style={{ fontSize: '14px', color: isDarkMode ? '#ffffff' : '#000000' }}>☀️</span>
-            </div>
-            
-            <button
-              onClick={() => {
-                setShowUserManagement(true);
-                fetchUsers();
-              }}
-              style={{
-                background: isDarkMode ? '#333333' : '#f8f9fa',
-                border: isDarkMode ? '1px solid #555555' : '1px solid #dee2e6',
-                color: isDarkMode ? '#ffffff' : '#333333',
-                padding: '10px 20px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '14px'
-              }}
-            >
-              Usuários
-            </button>
-            <button
-              onClick={() => window.location.href = '/equipe'}
-              style={{
-                background: '#dc3545',
-                border: 'none',
-                color: '#ffffff',
-                padding: '10px 20px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '14px'
-              }}
-            >
-              Sair
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div style={{
-        maxWidth: '1400px',
-        margin: '0 auto',
-        padding: '30px 20px'
-      }}>
-        
-        {/* Stats */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '20px',
-          marginBottom: '40px'
-        }}>
-          <div style={{
-            background: isDarkMode ? '#111111' : '#ffffff',
-            padding: '20px',
-            borderRadius: '6px',
-            textAlign: 'center',
-            border: isDarkMode ? '1px solid #222222' : '1px solid #dee2e6',
-            boxShadow: isDarkMode ? 'none' : '0 2px 4px rgba(0,0,0,0.1)'
-          }}>
-            <div style={{ fontSize: '28px', fontWeight: '700', color: isDarkMode ? '#ffffff' : '#333333', marginBottom: '8px' }}>
-              {registrations.length}
-            </div>
-            <div style={{ fontSize: '14px', color: isDarkMode ? '#666666' : '#6c757d' }}>Empresas</div>
-          </div>
-          
-          <div style={{
-            background: isDarkMode ? '#111111' : '#ffffff',
-            padding: '20px',
-            borderRadius: '6px',
-            textAlign: 'center',
-            border: isDarkMode ? '1px solid #222222' : '1px solid #dee2e6',
-            boxShadow: isDarkMode ? 'none' : '0 2px 4px rgba(0,0,0,0.1)'
-          }}>
-            <div style={{ fontSize: '28px', fontWeight: '700', color: isDarkMode ? '#ffffff' : '#333333', marginBottom: '8px' }}>
-              {pendingTasks}
-            </div>
-            <div style={{ fontSize: '14px', color: isDarkMode ? '#666666' : '#6c757d' }}>Pendentes</div>
-          </div>
-
-          <div style={{
-            background: isDarkMode ? '#111111' : '#ffffff',
-            padding: '20px',
-            borderRadius: '6px',
-            textAlign: 'center',
-            border: isDarkMode ? '1px solid #222222' : '1px solid #dee2e6',
-            boxShadow: isDarkMode ? 'none' : '0 2px 4px rgba(0,0,0,0.1)'
-          }}>
-            <div style={{ fontSize: '28px', fontWeight: '700', color: isDarkMode ? '#ffffff' : '#333333', marginBottom: '8px' }}>
-              {inProgressTasks}
-            </div>
-            <div style={{ fontSize: '14px', color: isDarkMode ? '#666666' : '#6c757d' }}>Em Andamento</div>
-          </div>
-
-          <div style={{
-            background: isDarkMode ? '#111111' : '#ffffff',
-            padding: '20px',
-            borderRadius: '6px',
-            textAlign: 'center',
-            border: isDarkMode ? '1px solid #222222' : '1px solid #dee2e6',
-            boxShadow: isDarkMode ? 'none' : '0 2px 4px rgba(0,0,0,0.1)'
-          }}>
-            <div style={{ fontSize: '28px', fontWeight: '700', color: isDarkMode ? '#ffffff' : '#333333', marginBottom: '8px' }}>
-              {completedTasks}
-            </div>
-            <div style={{ fontSize: '14px', color: isDarkMode ? '#666666' : '#6c757d' }}>Concluídas</div>
-          </div>
-        </div>
-
-        {/* Filters and Export Section */}
-        <div style={{
-          background: '#111111',
-          border: '1px solid #222222',
-          borderRadius: '6px',
-          padding: '20px',
-          marginBottom: '30px'
-        }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '15px'
-          }}>
-            <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-              <div style={{ display: 'flex', gap: '5px' }}>
-                <input
-                  type="text"
-                  placeholder="Pesquisar empresas..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && setSearchTerm(searchTerm)}
-                  style={{
-                    background: '#222222',
-                    border: '1px solid #444444',
-                    color: '#ffffff',
-                    padding: '10px 15px',
-                    borderRadius: '4px',
-                    fontSize: '14px',
-                    width: '300px'
-                  }}
-                />
-                <button
-                  onClick={() => setSearchTerm(searchTerm)}
-                  style={{
-                    background: '#0d6efd',
-                    border: 'none',
-                    color: '#ffffff',
-                    padding: '10px 15px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: '500'
-                  }}
-                >
-                  Buscar
-                </button>
-                {searchTerm && (
-                  <button
-                    onClick={() => setSearchTerm('')}
-                    style={{
-                      background: '#6c757d',
-                      border: 'none',
-                      color: '#ffffff',
-                      padding: '10px 15px',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      fontWeight: '500'
-                    }}
-                  >
-                    Limpar
-                  </button>
-                )}
-              </div>
+      <header className="bg-card border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-4">
+              <Building2 className="h-8 w-8 text-primary" />
               <div>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  style={{
-                    background: '#222222',
-                    border: '1px solid #444444',
-                    color: '#ffffff',
-                    padding: '10px 15px',
-                    borderRadius: '4px',
-                    fontSize: '14px'
-                  }}
-                >
-                  <option value="all">Todas as empresas</option>
-                  <option value="pending">Com tarefas pendentes</option>
-                  <option value="in_progress">Com tarefas em andamento</option>
-                  <option value="completed">Com tarefas concluídas</option>
-                </select>
+                <h1 className="text-xl font-bold text-foreground">SISTEMA PROSPERAR CONTABILIDADE</h1>
+                <p className="text-sm text-muted-foreground">Gestão de Tarefas e Documentos</p>
               </div>
             </div>
-            
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button
-                onClick={exportToExcel}
-                style={{
-                  background: '#198754',
-                  border: 'none',
-                  color: '#ffffff',
-                  padding: '10px 20px',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '500'
-                }}
-              >
-                Exportar Excel
-              </button>
-              <button
-                onClick={exportToPDF}
-                style={{
-                  background: '#dc3545',
-                  border: 'none',
-                  color: '#ffffff',
-                  padding: '10px 20px',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '500'
-                }}
-              >
-                Exportar PDF
-              </button>
+            <div className="flex items-center space-x-4">
+              <ThemeToggle />
+              <Button variant="outline" onClick={handleLogout}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Sair
+              </Button>
             </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Tarefas Pendentes</CardTitle>
+              <Badge className="bg-red-500 text-white">{stats.pending}</Badge>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-500">{stats.pending}</div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Em Andamento</CardTitle>
+              <Badge className="bg-yellow-500 text-white">{stats.inProgress}</Badge>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-yellow-500">{stats.inProgress}</div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Concluídas</CardTitle>
+              <Badge className="bg-green-500 text-white">{stats.completed}</Badge>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-500">{stats.completed}</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Search and Filters */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder="Buscar por empresa ou email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
           </div>
           
-          {filteredRegistrations.length !== registrations.length && (
-            <div style={{
-              marginTop: '15px',
-              color: '#cccccc',
-              fontSize: '13px'
-            }}>
-              Mostrando {filteredRegistrations.length} de {registrations.length} empresas
-            </div>
-          )}
-        </div>
-
-        {/* Companies */}
-        <div style={{ display: 'grid', gap: '30px' }}>
-          {filteredRegistrations.map((registration) => (
-            <div key={registration.id} style={{
-              background: '#111111',
-              borderRadius: '6px',
-              border: '1px solid #222222',
-              overflow: 'hidden'
-            }}>
-              
-              {/* Company Header */}
-              <div style={{
-                background: '#1a1a1a',
-                padding: '20px',
-                borderBottom: '1px solid #222222',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}>
-                <div>
-                  <div style={{ fontSize: '18px', fontWeight: '600', color: '#ffffff', marginBottom: '6px' }}>
-                    {registration.razaoSocial}
-                  </div>
-                  <div style={{ fontSize: '14px', color: '#666666' }}>
-                    {registration.nomeFantasia && `${registration.nomeFantasia} • `}
-                    ID: {registration.id} • {registration.emailEmpresa}
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    setEditingCompany(registration);
-                    setShowEditModal(true);
-                  }}
-                  style={{
-                    background: '#333333',
-                    border: '1px solid #555555',
-                    color: '#ffffff',
-                    padding: '8px 16px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    fontWeight: '500'
-                  }}
-                >
-                  Editar
-                </button>
-              </div>
-
-              {/* Departments */}
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr 1fr',
-                gap: '1px',
-                background: '#222222'
-              }}>
-                
-                {/* Societário */}
-                <div style={{
-                  background: '#111111',
-                  padding: '20px'
-                }}>
-                  <div style={{
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#ffffff',
-                    marginBottom: '16px',
-                    paddingBottom: '8px',
-                    borderBottom: '1px solid #222222',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}>
-                    <span>Societário</span>
-                    <button
-                      onClick={() => {
-                        setEditingCompany(registration);
-                        setNewTaskDepartment('societario');
-                        setShowNewTaskModal(true);
-                      }}
-                      style={{
-                        background: '#333333',
-                        border: '1px solid #555555',
-                        color: '#ffffff',
-                        padding: '4px 8px',
-                        borderRadius: '3px',
-                        cursor: 'pointer',
-                        fontSize: '10px'
-                      }}
-                    >
-                      + Nova
-                    </button>
-                  </div>
-                  {registration.tasks.filter(task => task.department === 'societario').map(task => (
-                    <div key={task.id} style={{ marginBottom: '16px' }}>
-                      <div style={{
-                        fontSize: '13px',
-                        color: '#cccccc',
-                        marginBottom: '10px',
-                        lineHeight: '1.4',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                      }}>
-                        <span>{task.title}</span>
-                        <button
-                          onClick={() => deleteTask(task.id)}
-                          style={{
-                            background: '#dc3545',
-                            border: 'none',
-                            color: '#ffffff',
-                            padding: '2px 6px',
-                            borderRadius: '2px',
-                            cursor: 'pointer',
-                            fontSize: '10px'
-                          }}
-                        >
-                          ×
-                        </button>
-                      </div>
-                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                        <button
-                          onClick={() => updateTaskStatus(task.id, task.status, 'pending')}
-                          style={{
-                            background: task.status === 'pending' ? '#dc3545' : '#333333',
-                            color: '#ffffff',
-                            border: 'none',
-                            padding: '6px 12px',
-                            fontSize: '11px',
-                            borderRadius: '3px',
-                            cursor: 'pointer',
-                            fontWeight: '500'
-                          }}
-                        >
-                          Pendente
-                        </button>
-                        <button
-                          onClick={() => updateTaskStatus(task.id, task.status, 'in_progress')}
-                          style={{
-                            background: task.status === 'in_progress' ? '#fd7e14' : '#333333',
-                            color: '#ffffff',
-                            border: 'none',
-                            padding: '6px 12px',
-                            fontSize: '11px',
-                            borderRadius: '3px',
-                            cursor: 'pointer',
-                            fontWeight: '500'
-                          }}
-                        >
-                          Andamento
-                        </button>
-                        <button
-                          onClick={() => updateTaskStatus(task.id, task.status, 'completed')}
-                          style={{
-                            background: task.status === 'completed' ? '#198754' : '#333333',
-                            color: '#ffffff',
-                            border: 'none',
-                            padding: '6px 12px',
-                            fontSize: '11px',
-                            borderRadius: '3px',
-                            cursor: 'pointer',
-                            fontWeight: '500'
-                          }}
-                        >
-                          Concluído
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Fiscal */}
-                <div style={{
-                  background: '#111111',
-                  padding: '20px'
-                }}>
-                  <div style={{
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#ffffff',
-                    marginBottom: '16px',
-                    paddingBottom: '8px',
-                    borderBottom: '1px solid #222222',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}>
-                    <span>Fiscal</span>
-                    <button
-                      onClick={() => {
-                        setEditingCompany(registration);
-                        setNewTaskDepartment('fiscal');
-                        setShowNewTaskModal(true);
-                      }}
-                      style={{
-                        background: '#333333',
-                        border: '1px solid #555555',
-                        color: '#ffffff',
-                        padding: '4px 8px',
-                        borderRadius: '3px',
-                        cursor: 'pointer',
-                        fontSize: '10px'
-                      }}
-                    >
-                      + Nova
-                    </button>
-                  </div>
-                  {registration.tasks.filter(task => task.department === 'fiscal').map(task => (
-                    <div key={task.id} style={{ marginBottom: '16px' }}>
-                      <div style={{
-                        fontSize: '13px',
-                        color: '#cccccc',
-                        marginBottom: '10px',
-                        lineHeight: '1.4',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                      }}>
-                        <span>{task.title}</span>
-                        <button
-                          onClick={() => deleteTask(task.id)}
-                          style={{
-                            background: '#dc3545',
-                            border: 'none',
-                            color: '#ffffff',
-                            padding: '2px 6px',
-                            borderRadius: '2px',
-                            cursor: 'pointer',
-                            fontSize: '10px'
-                          }}
-                        >
-                          ×
-                        </button>
-                      </div>
-                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                        <button
-                          onClick={() => updateTaskStatus(task.id, task.status, 'pending')}
-                          style={{
-                            background: task.status === 'pending' ? '#dc3545' : '#333333',
-                            color: '#ffffff',
-                            border: 'none',
-                            padding: '6px 12px',
-                            fontSize: '11px',
-                            borderRadius: '3px',
-                            cursor: 'pointer',
-                            fontWeight: '500'
-                          }}
-                        >
-                          Pendente
-                        </button>
-                        <button
-                          onClick={() => updateTaskStatus(task.id, task.status, 'in_progress')}
-                          style={{
-                            background: task.status === 'in_progress' ? '#fd7e14' : '#333333',
-                            color: '#ffffff',
-                            border: 'none',
-                            padding: '6px 12px',
-                            fontSize: '11px',
-                            borderRadius: '3px',
-                            cursor: 'pointer',
-                            fontWeight: '500'
-                          }}
-                        >
-                          Andamento
-                        </button>
-                        <button
-                          onClick={() => updateTaskStatus(task.id, task.status, 'completed')}
-                          style={{
-                            background: task.status === 'completed' ? '#198754' : '#333333',
-                            color: '#ffffff',
-                            border: 'none',
-                            padding: '6px 12px',
-                            fontSize: '11px',
-                            borderRadius: '3px',
-                            cursor: 'pointer',
-                            fontWeight: '500'
-                          }}
-                        >
-                          Concluído
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Pessoal */}
-                <div style={{
-                  background: '#111111',
-                  padding: '20px'
-                }}>
-                  <div style={{
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#ffffff',
-                    marginBottom: '16px',
-                    paddingBottom: '8px',
-                    borderBottom: '1px solid #222222',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}>
-                    <span>Pessoal</span>
-                    <button
-                      onClick={() => {
-                        setEditingCompany(registration);
-                        setNewTaskDepartment('pessoal');
-                        setShowNewTaskModal(true);
-                      }}
-                      style={{
-                        background: '#333333',
-                        border: '1px solid #555555',
-                        color: '#ffffff',
-                        padding: '4px 8px',
-                        borderRadius: '3px',
-                        cursor: 'pointer',
-                        fontSize: '10px'
-                      }}
-                    >
-                      + Nova
-                    </button>
-                  </div>
-                  {registration.tasks.filter(task => task.department === 'pessoal').map(task => (
-                    <div key={task.id} style={{ marginBottom: '16px' }}>
-                      <div style={{
-                        fontSize: '13px',
-                        color: '#cccccc',
-                        marginBottom: '10px',
-                        lineHeight: '1.4',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                      }}>
-                        <span>{task.title}</span>
-                        <button
-                          onClick={() => deleteTask(task.id)}
-                          style={{
-                            background: '#dc3545',
-                            border: 'none',
-                            color: '#ffffff',
-                            padding: '2px 6px',
-                            borderRadius: '2px',
-                            cursor: 'pointer',
-                            fontSize: '10px'
-                          }}
-                        >
-                          ×
-                        </button>
-                      </div>
-                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                        <button
-                          onClick={() => updateTaskStatus(task.id, task.status, 'pending')}
-                          style={{
-                            background: task.status === 'pending' ? '#dc3545' : '#333333',
-                            color: '#ffffff',
-                            border: 'none',
-                            padding: '6px 12px',
-                            fontSize: '11px',
-                            borderRadius: '3px',
-                            cursor: 'pointer',
-                            fontWeight: '500'
-                          }}
-                        >
-                          Pendente
-                        </button>
-                        <button
-                          onClick={() => updateTaskStatus(task.id, task.status, 'in_progress')}
-                          style={{
-                            background: task.status === 'in_progress' ? '#fd7e14' : '#333333',
-                            color: '#ffffff',
-                            border: 'none',
-                            padding: '6px 12px',
-                            fontSize: '11px',
-                            borderRadius: '3px',
-                            cursor: 'pointer',
-                            fontWeight: '500'
-                          }}
-                        >
-                          Andamento
-                        </button>
-                        <button
-                          onClick={() => updateTaskStatus(task.id, task.status, 'completed')}
-                          style={{
-                            background: task.status === 'completed' ? '#198754' : '#333333',
-                            color: '#ffffff',
-                            border: 'none',
-                            padding: '6px 12px',
-                            fontSize: '11px',
-                            borderRadius: '3px',
-                            cursor: 'pointer',
-                            fontWeight: '500'
-                          }}
-                        >
-                          Concluído
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Edit Modal */}
-      {showEditModal && editingCompany && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.8)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            background: '#111111',
-            border: '1px solid #333333',
-            borderRadius: '8px',
-            padding: '30px',
-            maxWidth: '600px',
-            width: '90%',
-            maxHeight: '80vh',
-            overflow: 'auto'
-          }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '20px'
-            }}>
-              <h2 style={{
-                color: '#ffffff',
-                fontSize: '20px',
-                fontWeight: '600',
-                margin: 0
-              }}>
-                Editar Empresa
-              </h2>
-              <button
-                onClick={() => setShowEditModal(false)}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: '#666666',
-                  fontSize: '20px',
-                  cursor: 'pointer'
-                }}
-              >
-                ×
-              </button>
-            </div>
-
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.target as HTMLFormElement);
-              // Collect partners data
-              const socios = editingCompany.socios.map((socio: any, index: number) => ({
-                nomeCompleto: formData.get(`socio_${index}_nomeCompleto`) as string || socio.nomeCompleto,
-                nacionalidade: formData.get(`socio_${index}_nacionalidade`) as string || socio.nacionalidade,
-                cpf: formData.get(`socio_${index}_cpf`) as string || socio.cpf,
-                rg: formData.get(`socio_${index}_rg`) as string || socio.rg,
-                dataNascimento: formData.get(`socio_${index}_dataNascimento`) as string || socio.dataNascimento,
-                filiacao: formData.get(`socio_${index}_filiacao`) as string || socio.filiacao,
-                profissao: formData.get(`socio_${index}_profissao`) as string || socio.profissao,
-                estadoCivil: formData.get(`socio_${index}_estadoCivil`) as string || socio.estadoCivil,
-                enderecoPessoal: formData.get(`socio_${index}_enderecoPessoal`) as string || socio.enderecoPessoal,
-                telefonePessoal: formData.get(`socio_${index}_telefonePessoal`) as string || socio.telefonePessoal,
-                emailPessoal: formData.get(`socio_${index}_emailPessoal`) as string || socio.emailPessoal,
-                percentualSociedade: formData.get(`socio_${index}_percentualSociedade`) as string || socio.percentualSociedade,
-                // Keep existing file URLs
-                documentoComFotoUrl: socio.documentoComFotoUrl,
-                certidaoCasamentoUrl: socio.certidaoCasamentoUrl,
-                documentosAdicionaisUrls: socio.documentosAdicionaisUrls
-              }));
-
-              const updatedData = {
-                razaoSocial: formData.get('razaoSocial') as string,
-                nomeFantasia: formData.get('nomeFantasia') as string,
-                endereco: formData.get('endereco') as string,
-                inscricaoImobiliaria: formData.get('inscricaoImobiliaria') as string,
-                metragem: parseInt(formData.get('metragem') as string) || 0,
-                telefoneEmpresa: formData.get('telefoneEmpresa') as string,
-                emailEmpresa: formData.get('emailEmpresa') as string,
-                capitalSocial: formData.get('capitalSocial') as string,
-                atividadePrincipal: formData.get('atividadePrincipal') as string,
-                atividadesSecundarias: formData.get('atividadesSecundarias') as string,
-                socios: socios
-              };
-              
-              const token = localStorage.getItem('token');
-              if (!token) return;
-
-              fetch(`/api/internal/registration/${editingCompany.id}`, {
-                method: 'PUT',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(updatedData)
-              })
-              .then(res => res.json())
-              .then(() => {
-                // Update local state
-                setRegistrations(prev =>
-                  prev.map(reg =>
-                    reg.id === editingCompany.id
-                      ? { ...reg, ...updatedData }
-                      : reg
-                  )
-                );
-                setShowEditModal(false);
-                setEditingCompany(null);
-              })
-              .catch(error => {
-                console.error('Error updating company:', error);
-              });
-            }}>
-              
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{
-                  display: 'block',
-                  color: '#cccccc',
-                  fontSize: '14px',
-                  marginBottom: '8px'
-                }}>
-                  Razão Social
-                </label>
-                <input
-                  type="text"
-                  name="razaoSocial"
-                  defaultValue={editingCompany.razaoSocial}
-                  style={{
-                    width: '100%',
-                    background: '#222222',
-                    border: '1px solid #444444',
-                    color: '#ffffff',
-                    padding: '12px',
-                    borderRadius: '4px',
-                    fontSize: '14px'
-                  }}
-                  required
-                />
-              </div>
-
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{
-                  display: 'block',
-                  color: '#cccccc',
-                  fontSize: '14px',
-                  marginBottom: '8px'
-                }}>
-                  Nome Fantasia
-                </label>
-                <input
-                  type="text"
-                  name="nomeFantasia"
-                  defaultValue={editingCompany.nomeFantasia}
-                  style={{
-                    width: '100%',
-                    background: '#222222',
-                    border: '1px solid #444444',
-                    color: '#ffffff',
-                    padding: '12px',
-                    borderRadius: '4px',
-                    fontSize: '14px'
-                  }}
-                />
-              </div>
-
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{
-                  display: 'block',
-                  color: '#cccccc',
-                  fontSize: '14px',
-                  marginBottom: '8px'
-                }}>
-                  Endereço
-                </label>
-                <input
-                  type="text"
-                  name="endereco"
-                  defaultValue={editingCompany.endereco}
-                  style={{
-                    width: '100%',
-                    background: '#222222',
-                    border: '1px solid #444444',
-                    color: '#ffffff',
-                    padding: '12px',
-                    borderRadius: '4px',
-                    fontSize: '14px'
-                  }}
-                  required
-                />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
-                <div>
-                  <label style={{
-                    display: 'block',
-                    color: '#cccccc',
-                    fontSize: '14px',
-                    marginBottom: '8px'
-                  }}>
-                    Inscrição Imobiliária
-                  </label>
-                  <input
-                    type="text"
-                    name="inscricaoImobiliaria"
-                    defaultValue={editingCompany.inscricaoImobiliaria}
-                    style={{
-                      width: '100%',
-                      background: '#222222',
-                      border: '1px solid #444444',
-                      color: '#ffffff',
-                      padding: '12px',
-                      borderRadius: '4px',
-                      fontSize: '14px'
-                    }}
-                  />
-                </div>
-                <div>
-                  <label style={{
-                    display: 'block',
-                    color: '#cccccc',
-                    fontSize: '14px',
-                    marginBottom: '8px'
-                  }}>
-                    Metragem (m²)
-                  </label>
-                  <input
-                    type="number"
-                    name="metragem"
-                    defaultValue={editingCompany.metragem}
-                    style={{
-                      width: '100%',
-                      background: '#222222',
-                      border: '1px solid #444444',
-                      color: '#ffffff',
-                      padding: '12px',
-                      borderRadius: '4px',
-                      fontSize: '14px'
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
-                <div>
-                  <label style={{
-                    display: 'block',
-                    color: '#cccccc',
-                    fontSize: '14px',
-                    marginBottom: '8px'
-                  }}>
-                    Telefone da Empresa
-                  </label>
-                  <input
-                    type="text"
-                    name="telefoneEmpresa"
-                    defaultValue={editingCompany.telefoneEmpresa}
-                    style={{
-                      width: '100%',
-                      background: '#222222',
-                      border: '1px solid #444444',
-                      color: '#ffffff',
-                      padding: '12px',
-                      borderRadius: '4px',
-                      fontSize: '14px'
-                    }}
-                    required
-                  />
-                </div>
-                <div>
-                  <label style={{
-                    display: 'block',
-                    color: '#cccccc',
-                    fontSize: '14px',
-                    marginBottom: '8px'
-                  }}>
-                    Email da Empresa
-                  </label>
-                  <input
-                    type="email"
-                    name="emailEmpresa"
-                    defaultValue={editingCompany.emailEmpresa}
-                    style={{
-                      width: '100%',
-                      background: '#222222',
-                      border: '1px solid #444444',
-                      color: '#ffffff',
-                      padding: '12px',
-                      borderRadius: '4px',
-                      fontSize: '14px'
-                    }}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{
-                  display: 'block',
-                  color: '#cccccc',
-                  fontSize: '14px',
-                  marginBottom: '8px'
-                }}>
-                  Capital Social
-                </label>
-                <input
-                  type="text"
-                  name="capitalSocial"
-                  defaultValue={editingCompany.capitalSocial}
-                  style={{
-                    width: '100%',
-                    background: '#222222',
-                    border: '1px solid #444444',
-                    color: '#ffffff',
-                    padding: '12px',
-                    borderRadius: '4px',
-                    fontSize: '14px'
-                  }}
-                />
-              </div>
-
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{
-                  display: 'block',
-                  color: '#cccccc',
-                  fontSize: '14px',
-                  marginBottom: '8px'
-                }}>
-                  Atividade Principal
-                </label>
-                <input
-                  type="text"
-                  name="atividadePrincipal"
-                  defaultValue={editingCompany.atividadePrincipal}
-                  style={{
-                    width: '100%',
-                    background: '#222222',
-                    border: '1px solid #444444',
-                    color: '#ffffff',
-                    padding: '12px',
-                    borderRadius: '4px',
-                    fontSize: '14px'
-                  }}
-                />
-              </div>
-
-              <div style={{ marginBottom: '30px' }}>
-                <label style={{
-                  display: 'block',
-                  color: '#cccccc',
-                  fontSize: '14px',
-                  marginBottom: '8px'
-                }}>
-                  Atividades Secundárias
-                </label>
-                <textarea
-                  name="atividadesSecundarias"
-                  defaultValue={editingCompany.atividadesSecundarias}
-                  rows={3}
-                  style={{
-                    width: '100%',
-                    background: '#222222',
-                    border: '1px solid #444444',
-                    color: '#ffffff',
-                    padding: '12px',
-                    borderRadius: '4px',
-                    fontSize: '14px',
-                    resize: 'vertical'
-                  }}
-                />
-              </div>
-
-              {/* Partners Section */}
-              <div style={{
-                borderTop: '1px solid #333333',
-                paddingTop: '30px',
-                marginTop: '30px',
-                marginBottom: '30px'
-              }}>
-                <h3 style={{
-                  color: '#ffffff',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  marginBottom: '20px',
-                  margin: 0
-                }}>
-                  Dados dos Sócios
-                </h3>
-                
-                {editingCompany.socios.map((socio: any, index: number) => (
-                  <div key={index} style={{
-                    background: '#1a1a1a',
-                    border: '1px solid #333333',
-                    borderRadius: '6px',
-                    padding: '20px',
-                    marginBottom: '20px'
-                  }}>
-                    <h4 style={{
-                      color: '#cccccc',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      marginBottom: '15px',
-                      margin: '0 0 15px 0'
-                    }}>
-                      Sócio {index + 1}
-                    </h4>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-                      <div>
-                        <label style={{
-                          display: 'block',
-                          color: '#cccccc',
-                          fontSize: '13px',
-                          marginBottom: '6px'
-                        }}>
-                          Nome Completo
-                        </label>
-                        <input
-                          type="text"
-                          name={`socio_${index}_nomeCompleto`}
-                          defaultValue={socio.nomeCompleto}
-                          style={{
-                            width: '100%',
-                            background: '#222222',
-                            border: '1px solid #444444',
-                            color: '#ffffff',
-                            padding: '10px',
-                            borderRadius: '4px',
-                            fontSize: '13px'
-                          }}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label style={{
-                          display: 'block',
-                          color: '#cccccc',
-                          fontSize: '13px',
-                          marginBottom: '6px'
-                        }}>
-                          Nacionalidade
-                        </label>
-                        <input
-                          type="text"
-                          name={`socio_${index}_nacionalidade`}
-                          defaultValue={socio.nacionalidade}
-                          style={{
-                            width: '100%',
-                            background: '#222222',
-                            border: '1px solid #444444',
-                            color: '#ffffff',
-                            padding: '10px',
-                            borderRadius: '4px',
-                            fontSize: '13px'
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-                      <div>
-                        <label style={{
-                          display: 'block',
-                          color: '#cccccc',
-                          fontSize: '13px',
-                          marginBottom: '6px'
-                        }}>
-                          CPF
-                        </label>
-                        <input
-                          type="text"
-                          name={`socio_${index}_cpf`}
-                          defaultValue={socio.cpf}
-                          style={{
-                            width: '100%',
-                            background: '#222222',
-                            border: '1px solid #444444',
-                            color: '#ffffff',
-                            padding: '10px',
-                            borderRadius: '4px',
-                            fontSize: '13px'
-                          }}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label style={{
-                          display: 'block',
-                          color: '#cccccc',
-                          fontSize: '13px',
-                          marginBottom: '6px'
-                        }}>
-                          RG
-                        </label>
-                        <input
-                          type="text"
-                          name={`socio_${index}_rg`}
-                          defaultValue={socio.rg}
-                          style={{
-                            width: '100%',
-                            background: '#222222',
-                            border: '1px solid #444444',
-                            color: '#ffffff',
-                            padding: '10px',
-                            borderRadius: '4px',
-                            fontSize: '13px'
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <label style={{
-                          display: 'block',
-                          color: '#cccccc',
-                          fontSize: '13px',
-                          marginBottom: '6px'
-                        }}>
-                          Data de Nascimento
-                        </label>
-                        <input
-                          type="date"
-                          name={`socio_${index}_dataNascimento`}
-                          defaultValue={socio.dataNascimento}
-                          style={{
-                            width: '100%',
-                            background: '#222222',
-                            border: '1px solid #444444',
-                            color: '#ffffff',
-                            padding: '10px',
-                            borderRadius: '4px',
-                            fontSize: '13px'
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-                      <div>
-                        <label style={{
-                          display: 'block',
-                          color: '#cccccc',
-                          fontSize: '13px',
-                          marginBottom: '6px'
-                        }}>
-                          Filiação
-                        </label>
-                        <input
-                          type="text"
-                          name={`socio_${index}_filiacao`}
-                          defaultValue={socio.filiacao}
-                          style={{
-                            width: '100%',
-                            background: '#222222',
-                            border: '1px solid #444444',
-                            color: '#ffffff',
-                            padding: '10px',
-                            borderRadius: '4px',
-                            fontSize: '13px'
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <label style={{
-                          display: 'block',
-                          color: '#cccccc',
-                          fontSize: '13px',
-                          marginBottom: '6px'
-                        }}>
-                          Profissão
-                        </label>
-                        <input
-                          type="text"
-                          name={`socio_${index}_profissao`}
-                          defaultValue={socio.profissao}
-                          style={{
-                            width: '100%',
-                            background: '#222222',
-                            border: '1px solid #444444',
-                            color: '#ffffff',
-                            padding: '10px',
-                            borderRadius: '4px',
-                            fontSize: '13px'
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-                      <div>
-                        <label style={{
-                          display: 'block',
-                          color: '#cccccc',
-                          fontSize: '13px',
-                          marginBottom: '6px'
-                        }}>
-                          Estado Civil
-                        </label>
-                        <select
-                          name={`socio_${index}_estadoCivil`}
-                          defaultValue={socio.estadoCivil}
-                          style={{
-                            width: '100%',
-                            background: '#222222',
-                            border: '1px solid #444444',
-                            color: '#ffffff',
-                            padding: '10px',
-                            borderRadius: '4px',
-                            fontSize: '13px'
-                          }}
-                        >
-                          <option value="solteiro">Solteiro(a)</option>
-                          <option value="casado">Casado(a)</option>
-                          <option value="divorciado">Divorciado(a)</option>
-                          <option value="viuvo">Viúvo(a)</option>
-                          <option value="uniao_estavel">União Estável</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label style={{
-                          display: 'block',
-                          color: '#cccccc',
-                          fontSize: '13px',
-                          marginBottom: '6px'
-                        }}>
-                          Percentual Sociedade (%)
-                        </label>
-                        <input
-                          type="number"
-                          name={`socio_${index}_percentualSociedade`}
-                          defaultValue={socio.percentualSociedade}
-                          style={{
-                            width: '100%',
-                            background: '#222222',
-                            border: '1px solid #444444',
-                            color: '#ffffff',
-                            padding: '10px',
-                            borderRadius: '4px',
-                            fontSize: '13px'
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    <div style={{ marginBottom: '15px' }}>
-                      <label style={{
-                        display: 'block',
-                        color: '#cccccc',
-                        fontSize: '13px',
-                        marginBottom: '6px'
-                      }}>
-                        Endereço Pessoal
-                      </label>
-                      <input
-                        type="text"
-                        name={`socio_${index}_enderecoPessoal`}
-                        defaultValue={socio.enderecoPessoal}
-                        style={{
-                          width: '100%',
-                          background: '#222222',
-                          border: '1px solid #444444',
-                          color: '#ffffff',
-                          padding: '10px',
-                          borderRadius: '4px',
-                          fontSize: '13px'
-                        }}
-                      />
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                      <div>
-                        <label style={{
-                          display: 'block',
-                          color: '#cccccc',
-                          fontSize: '13px',
-                          marginBottom: '6px'
-                        }}>
-                          Telefone Pessoal
-                        </label>
-                        <input
-                          type="text"
-                          name={`socio_${index}_telefonePessoal`}
-                          defaultValue={socio.telefonePessoal}
-                          style={{
-                            width: '100%',
-                            background: '#222222',
-                            border: '1px solid #444444',
-                            color: '#ffffff',
-                            padding: '10px',
-                            borderRadius: '4px',
-                            fontSize: '13px'
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <label style={{
-                          display: 'block',
-                          color: '#cccccc',
-                          fontSize: '13px',
-                          marginBottom: '6px'
-                        }}>
-                          Email Pessoal
-                        </label>
-                        <input
-                          type="email"
-                          name={`socio_${index}_emailPessoal`}
-                          defaultValue={socio.emailPessoal}
-                          style={{
-                            width: '100%',
-                            background: '#222222',
-                            border: '1px solid #444444',
-                            color: '#ffffff',
-                            padding: '10px',
-                            borderRadius: '4px',
-                            fontSize: '13px'
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div style={{
-                display: 'flex',
-                gap: '12px',
-                justifyContent: 'flex-end'
-              }}>
-                <button
-                  type="button"
-                  onClick={() => setShowEditModal(false)}
-                  style={{
-                    background: '#333333',
-                    border: '1px solid #555555',
-                    color: '#ffffff',
-                    padding: '10px 20px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '14px'
-                  }}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  style={{
-                    background: '#198754',
-                    border: 'none',
-                    color: '#ffffff',
-                    padding: '10px 20px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: '500'
-                  }}
-                >
-                  Salvar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* New Task Modal */}
-      {showNewTaskModal && editingCompany && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.8)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            background: '#111111',
-            border: '1px solid #333333',
-            borderRadius: '8px',
-            padding: '30px',
-            maxWidth: '500px',
-            width: '90%'
-          }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '20px'
-            }}>
-              <h2 style={{
-                color: '#ffffff',
-                fontSize: '18px',
-                fontWeight: '600',
-                margin: 0
-              }}>
-                Nova Tarefa - {newTaskDepartment === 'societario' ? 'Societário' : 
-                               newTaskDepartment === 'fiscal' ? 'Fiscal' : 'Pessoal'}
-              </h2>
-              <button
-                onClick={() => setShowNewTaskModal(false)}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: '#666666',
-                  fontSize: '20px',
-                  cursor: 'pointer'
-                }}
-              >
-                ×
-              </button>
-            </div>
-
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.target as HTMLFormElement);
-              const title = formData.get('title') as string;
-              const description = formData.get('description') as string;
-              
-              if (title.trim()) {
-                createNewTask(editingCompany.id, newTaskDepartment, title, description || '');
-              }
-            }}>
-              
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{
-                  display: 'block',
-                  color: '#cccccc',
-                  fontSize: '14px',
-                  marginBottom: '8px'
-                }}>
-                  Título da Tarefa
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  style={{
-                    width: '100%',
-                    background: '#222222',
-                    border: '1px solid #444444',
-                    color: '#ffffff',
-                    padding: '12px',
-                    borderRadius: '4px',
-                    fontSize: '14px'
-                  }}
-                  required
-                  placeholder="Ex: Análise de documentos"
-                />
-              </div>
-
-              <div style={{ marginBottom: '30px' }}>
-                <label style={{
-                  display: 'block',
-                  color: '#cccccc',
-                  fontSize: '14px',
-                  marginBottom: '8px'
-                }}>
-                  Descrição (opcional)
-                </label>
-                <textarea
-                  name="description"
-                  rows={3}
-                  style={{
-                    width: '100%',
-                    background: '#222222',
-                    border: '1px solid #444444',
-                    color: '#ffffff',
-                    padding: '12px',
-                    borderRadius: '4px',
-                    fontSize: '14px',
-                    resize: 'vertical'
-                  }}
-                  placeholder="Descrição detalhada da tarefa..."
-                />
-              </div>
-
-              <div style={{
-                display: 'flex',
-                gap: '12px',
-                justifyContent: 'flex-end'
-              }}>
-                <button
-                  type="button"
-                  onClick={() => setShowNewTaskModal(false)}
-                  style={{
-                    background: '#333333',
-                    border: '1px solid #555555',
-                    color: '#ffffff',
-                    padding: '10px 20px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '14px'
-                  }}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  style={{
-                    background: '#198754',
-                    border: 'none',
-                    color: '#ffffff',
-                    padding: '10px 20px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: '500'
-                  }}
-                >
-                  Criar Tarefa
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* User Management Modal */}
-      {showUserManagement && (
-        <div style={{
-          position: 'fixed',
-          top: '0',
-          left: '0',
-          right: '0',
-          bottom: '0',
-          background: 'rgba(0, 0, 0, 0.8)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            background: '#111111',
-            border: '1px solid #333333',
-            borderRadius: '8px',
-            padding: '30px',
-            maxWidth: '800px',
-            width: '90%',
-            maxHeight: '80vh',
-            overflow: 'auto'
-          }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '20px'
-            }}>
-              <h3 style={{
-                color: '#ffffff',
-                fontSize: '18px',
-                fontWeight: '600',
-                margin: 0
-              }}>
-                Gerenciar Usuários
-              </h3>
-              <button
-                onClick={() => setShowUserManagement(false)}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: '#666666',
-                  fontSize: '20px',
-                  cursor: 'pointer'
-                }}
-              >
-                ×
-              </button>
-            </div>
-
-            <button
-              onClick={() => setShowCreateUserModal(true)}
-              style={{
-                background: '#198754',
-                border: 'none',
-                color: '#ffffff',
-                padding: '10px 20px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500',
-                marginBottom: '20px'
-              }}
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <select
+              value={selectedDepartment}
+              onChange={(e) => setSelectedDepartment(e.target.value)}
+              className="px-3 py-2 border border-input rounded-md bg-background text-foreground"
             >
-              + Novo Usuário
-            </button>
+              <option value="all">Todos os Departamentos</option>
+              <option value="Societário">Societário</option>
+              <option value="Fiscal">Fiscal</option>
+              <option value="Pessoal">Pessoal</option>
+            </select>
+          </div>
+        </div>
 
-            <div style={{
-              background: '#0a0a0a',
-              border: '1px solid #222222',
-              borderRadius: '6px',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                background: '#222222',
-                padding: '12px 20px',
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr 1fr 1fr 120px',
-                gap: '15px',
-                fontSize: '12px',
-                fontWeight: '600',
-                color: '#cccccc',
-                textTransform: 'uppercase'
-              }}>
-                <div>Nome</div>
-                <div>Username</div>
-                <div>Email</div>
-                <div>Cargo/Depto</div>
-                <div>Ações</div>
-              </div>
-
-              {users.map((user: any) => (
-                <div key={user.id} style={{
-                  padding: '15px 20px',
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr 1fr 1fr 120px',
-                  gap: '15px',
-                  borderBottom: '1px solid #222222',
-                  alignItems: 'center'
-                }}>
-                  <div style={{ color: '#ffffff', fontSize: '14px' }}>
-                    {user.name}
-                  </div>
-                  <div style={{ color: '#cccccc', fontSize: '13px' }}>
-                    {user.username}
-                  </div>
-                  <div style={{ color: '#cccccc', fontSize: '13px' }}>
-                    {user.email || '-'}
-                  </div>
-                  <div style={{ color: '#cccccc', fontSize: '13px' }}>
-                    {user.role} {user.department && `/ ${user.department}`}
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button
-                      onClick={() => {
-                        setEditingUser(user);
-                        setShowEditUserModal(true);
-                      }}
-                      style={{
-                        background: '#333333',
-                        border: '1px solid #555555',
-                        color: '#ffffff',
-                        padding: '6px 12px',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '12px'
-                      }}
-                    >
-                      Editar
-                    </button>
-                    {user.username !== 'admin' && (
-                      <button
-                        onClick={() => deleteUser(user.id)}
-                        style={{
-                          background: '#dc3545',
-                          border: 'none',
-                          color: '#ffffff',
-                          padding: '6px 12px',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '12px'
-                        }}
-                      >
-                        ×
-                      </button>
+        {/* Companies and Tasks */}
+        <div className="space-y-6">
+          {filteredRegistrations.map((registration: BusinessRegistration) => (
+            <Card key={registration.id} className="overflow-hidden">
+              <CardHeader className="bg-muted/50">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-lg">{registration.razaoSocial}</CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {registration.nomeFantasia} • {registration.emailEmpresa}
+                    </p>
+                    {registration.cnpj && (
+                      <p className="text-sm text-muted-foreground">CNPJ: {registration.cnpj}</p>
                     )}
                   </div>
+                  <Badge variant="outline">
+                    {registration.tasks?.length || 0} tarefas
+                  </Badge>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Create User Modal */}
-      {showCreateUserModal && (
-        <div style={{
-          position: 'fixed',
-          top: '0',
-          left: '0',
-          right: '0',
-          bottom: '0',
-          background: 'rgba(0, 0, 0, 0.8)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1001
-        }}>
-          <div style={{
-            background: '#111111',
-            border: '1px solid #333333',
-            borderRadius: '8px',
-            padding: '30px',
-            maxWidth: '500px',
-            width: '90%'
-          }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '20px'
-            }}>
-              <h3 style={{
-                color: '#ffffff',
-                fontSize: '18px',
-                fontWeight: '600',
-                margin: 0
-              }}>
-                Criar Novo Usuário
-              </h3>
-              <button
-                onClick={() => setShowCreateUserModal(false)}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: '#666666',
-                  fontSize: '20px',
-                  cursor: 'pointer'
-                }}
-              >
-                ×
-              </button>
-            </div>
-
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.target as HTMLFormElement);
-              const userData = {
-                username: formData.get('username') as string,
-                password: formData.get('password') as string,
-                name: formData.get('name') as string,
-                email: formData.get('email') as string,
-                role: formData.get('role') as string,
-                department: formData.get('department') as string,
-              };
-              createUser(userData);
-            }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-                <div>
-                  <label style={{
-                    display: 'block',
-                    color: '#cccccc',
-                    fontSize: '13px',
-                    marginBottom: '6px'
-                  }}>
-                    Nome Completo *
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    required
-                    style={{
-                      width: '100%',
-                      background: '#222222',
-                      border: '1px solid #444444',
-                      color: '#ffffff',
-                      padding: '10px',
-                      borderRadius: '4px',
-                      fontSize: '13px'
-                    }}
-                  />
-                </div>
-                <div>
-                  <label style={{
-                    display: 'block',
-                    color: '#cccccc',
-                    fontSize: '13px',
-                    marginBottom: '6px'
-                  }}>
-                    Username *
-                  </label>
-                  <input
-                    type="text"
-                    name="username"
-                    required
-                    style={{
-                      width: '100%',
-                      background: '#222222',
-                      border: '1px solid #444444',
-                      color: '#ffffff',
-                      padding: '10px',
-                      borderRadius: '4px',
-                      fontSize: '13px'
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div style={{ marginBottom: '15px' }}>
-                <label style={{
-                  display: 'block',
-                  color: '#cccccc',
-                  fontSize: '13px',
-                  marginBottom: '6px'
-                }}>
-                  Email
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  style={{
-                    width: '100%',
-                    background: '#222222',
-                    border: '1px solid #444444',
-                    color: '#ffffff',
-                    padding: '10px',
-                    borderRadius: '4px',
-                    fontSize: '13px'
-                  }}
-                />
-              </div>
-
-              <div style={{ marginBottom: '15px' }}>
-                <label style={{
-                  display: 'block',
-                  color: '#cccccc',
-                  fontSize: '13px',
-                  marginBottom: '6px'
-                }}>
-                  Senha *
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  required
-                  style={{
-                    width: '100%',
-                    background: '#222222',
-                    border: '1px solid #444444',
-                    color: '#ffffff',
-                    padding: '10px',
-                    borderRadius: '4px',
-                    fontSize: '13px'
-                  }}
-                />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
-                <div>
-                  <label style={{
-                    display: 'block',
-                    color: '#cccccc',
-                    fontSize: '13px',
-                    marginBottom: '6px'
-                  }}>
-                    Cargo
-                  </label>
-                  <select
-                    name="role"
-                    style={{
-                      width: '100%',
-                      background: '#222222',
-                      border: '1px solid #444444',
-                      color: '#ffffff',
-                      padding: '10px',
-                      borderRadius: '4px',
-                      fontSize: '13px'
-                    }}
-                  >
-                    <option value="user">Usuário</option>
-                    <option value="admin">Administrador</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={{
-                    display: 'block',
-                    color: '#cccccc',
-                    fontSize: '13px',
-                    marginBottom: '6px'
-                  }}>
-                    Departamento
-                  </label>
-                  <select
-                    name="department"
-                    style={{
-                      width: '100%',
-                      background: '#222222',
-                      border: '1px solid #444444',
-                      color: '#ffffff',
-                      padding: '10px',
-                      borderRadius: '4px',
-                      fontSize: '13px'
-                    }}
-                  >
-                    <option value="">Selecionar</option>
-                    <option value="Societário">Societário</option>
-                    <option value="Fiscal">Fiscal</option>
-                    <option value="Pessoal">Pessoal</option>
-                  </select>
-                </div>
-              </div>
-
-              <div style={{
-                display: 'flex',
-                gap: '12px',
-                justifyContent: 'flex-end'
-              }}>
-                <button
-                  type="button"
-                  onClick={() => setShowCreateUserModal(false)}
-                  style={{
-                    background: '#333333',
-                    border: '1px solid #555555',
-                    color: '#ffffff',
-                    padding: '10px 20px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '14px'
-                  }}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  style={{
-                    background: '#198754',
-                    border: 'none',
-                    color: '#ffffff',
-                    padding: '10px 20px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: '500'
-                  }}
-                >
-                  Criar Usuário
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Edit User Modal */}
-      {showEditUserModal && editingUser && (
-        <div style={{
-          position: 'fixed',
-          top: '0',
-          left: '0',
-          right: '0',
-          bottom: '0',
-          background: 'rgba(0, 0, 0, 0.8)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1001
-        }}>
-          <div style={{
-            background: '#111111',
-            border: '1px solid #333333',
-            borderRadius: '8px',
-            padding: '30px',
-            maxWidth: '500px',
-            width: '90%'
-          }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '20px'
-            }}>
-              <h3 style={{
-                color: '#ffffff',
-                fontSize: '18px',
-                fontWeight: '600',
-                margin: 0
-              }}>
-                Editar Usuário
-              </h3>
-              <button
-                onClick={() => {
-                  setShowEditUserModal(false);
-                  setEditingUser(null);
-                }}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: '#666666',
-                  fontSize: '20px',
-                  cursor: 'pointer'
-                }}
-              >
-                ×
-              </button>
-            </div>
-
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.target as HTMLFormElement);
-              const userData: any = {
-                username: formData.get('username') as string,
-                name: formData.get('name') as string,
-                email: formData.get('email') as string,
-                role: formData.get('role') as string,
-                department: formData.get('department') as string,
-              };
+              </CardHeader>
               
-              const password = formData.get('password') as string;
-              if (password) {
-                userData.password = password;
-              }
-              
-              updateUser(editingUser.id, userData);
-            }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-                <div>
-                  <label style={{
-                    display: 'block',
-                    color: '#cccccc',
-                    fontSize: '13px',
-                    marginBottom: '6px'
-                  }}>
-                    Nome Completo *
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    defaultValue={editingUser.name}
-                    required
-                    style={{
-                      width: '100%',
-                      background: '#222222',
-                      border: '1px solid #444444',
-                      color: '#ffffff',
-                      padding: '10px',
-                      borderRadius: '4px',
-                      fontSize: '13px'
-                    }}
-                  />
-                </div>
-                <div>
-                  <label style={{
-                    display: 'block',
-                    color: '#cccccc',
-                    fontSize: '13px',
-                    marginBottom: '6px'
-                  }}>
-                    Username *
-                  </label>
-                  <input
-                    type="text"
-                    name="username"
-                    defaultValue={editingUser.username}
-                    required
-                    style={{
-                      width: '100%',
-                      background: '#222222',
-                      border: '1px solid #444444',
-                      color: '#ffffff',
-                      padding: '10px',
-                      borderRadius: '4px',
-                      fontSize: '13px'
-                    }}
-                  />
-                </div>
-              </div>
+              <CardContent className="p-0">
+                <Tabs defaultValue="Societário" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="Societário">Societário</TabsTrigger>
+                    <TabsTrigger value="Fiscal">Fiscal</TabsTrigger>
+                    <TabsTrigger value="Pessoal">Pessoal</TabsTrigger>
+                  </TabsList>
+                  
+                  {['Societário', 'Fiscal', 'Pessoal'].map(department => (
+                    <TabsContent key={department} value={department} className="p-4">
+                      <div className="space-y-3">
+                        {registration.tasks
+                          ?.filter((task: Task) => task.department === department)
+                          .map((task: Task) => (
+                            <div key={task.id} className="flex items-center justify-between p-3 border border-border rounded-lg">
+                              <div className="flex-1">
+                                <h4 className="font-medium">{task.title}</h4>
+                                <p className="text-sm text-muted-foreground">{task.description}</p>
+                                {task.observacao && (
+                                  <p className="text-xs text-blue-600 mt-1">Obs: {task.observacao}</p>
+                                )}
+                                {task.dataLembrete && (
+                                  <p className="text-xs text-orange-600 mt-1">
+                                    Lembrete: {new Date(task.dataLembrete).toLocaleDateString('pt-BR')}
+                                  </p>
+                                )}
+                              </div>
+                              
+                              <div className="flex items-center space-x-2">
+                                <Badge className={`${getStatusColor(task.status)} text-white`}>
+                                  {getStatusText(task.status)}
+                                </Badge>
+                                
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline"
+                                      onClick={() => {
+                                        setSelectedTask(task);
+                                        setObservacao(task.observacao || '');
+                                        setDataLembrete(task.dataLembrete ? task.dataLembrete.split('T')[0] : '');
+                                        setCnpjValue(task.cnpj || '');
+                                      }}
+                                    >
+                                      Gerenciar
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent className="max-w-2xl">
+                                    <DialogHeader>
+                                      <DialogTitle>{task.title} - {registration.razaoSocial}</DialogTitle>
+                                    </DialogHeader>
+                                    
+                                    <div className="space-y-6">
+                                      {/* Status Update */}
+                                      <div>
+                                        <label className="text-sm font-medium">Status da Tarefa</label>
+                                        <div className="flex gap-2 mt-2">
+                                          {['pending', 'in_progress', 'completed'].map(status => (
+                                            <Button
+                                              key={status}
+                                              size="sm"
+                                              variant={task.status === status ? "default" : "outline"}
+                                              className={task.status === status ? getStatusColor(status) : ''}
+                                              onClick={() => updateTaskStatusMutation.mutate({ taskId: task.id, status })}
+                                            >
+                                              {getStatusText(status)}
+                                            </Button>
+                                          ))}
+                                        </div>
+                                      </div>
 
-              <div style={{ marginBottom: '15px' }}>
-                <label style={{
-                  display: 'block',
-                  color: '#cccccc',
-                  fontSize: '13px',
-                  marginBottom: '6px'
-                }}>
-                  Email
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  defaultValue={editingUser.email}
-                  style={{
-                    width: '100%',
-                    background: '#222222',
-                    border: '1px solid #444444',
-                    color: '#ffffff',
-                    padding: '10px',
-                    borderRadius: '4px',
-                    fontSize: '13px'
-                  }}
-                />
-              </div>
+                                      {/* CNPJ Field (only for CNPJ task) */}
+                                      {task.title === 'CNPJ' && (
+                                        <div>
+                                          <label className="text-sm font-medium">Número do CNPJ</label>
+                                          <div className="flex gap-2 mt-2">
+                                            <Input
+                                              placeholder="00.000.000/0000-00"
+                                              value={cnpjValue}
+                                              onChange={(e) => setCnpjValue(e.target.value)}
+                                            />
+                                            <Button onClick={handleUpdateCnpj}>Salvar</Button>
+                                          </div>
+                                        </div>
+                                      )}
 
-              <div style={{ marginBottom: '15px' }}>
-                <label style={{
-                  display: 'block',
-                  color: '#cccccc',
-                  fontSize: '13px',
-                  marginBottom: '6px'
-                }}>
-                  Nova Senha (deixe em branco para manter a atual)
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  style={{
-                    width: '100%',
-                    background: '#222222',
-                    border: '1px solid #444444',
-                    color: '#ffffff',
-                    padding: '10px',
-                    borderRadius: '4px',
-                    fontSize: '13px'
-                  }}
-                />
-              </div>
+                                      {/* Observations */}
+                                      <div>
+                                        <label className="text-sm font-medium">Observações</label>
+                                        <div className="flex gap-2 mt-2">
+                                          <Textarea
+                                            placeholder="Adicione observações sobre esta tarefa..."
+                                            value={observacao}
+                                            onChange={(e) => setObservacao(e.target.value)}
+                                            rows={3}
+                                          />
+                                          <Button onClick={handleUpdateObservacao}>
+                                            <MessageSquare className="h-4 w-4" />
+                                          </Button>
+                                        </div>
+                                      </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
-                <div>
-                  <label style={{
-                    display: 'block',
-                    color: '#cccccc',
-                    fontSize: '13px',
-                    marginBottom: '6px'
-                  }}>
-                    Cargo
-                  </label>
-                  <select
-                    name="role"
-                    defaultValue={editingUser.role}
-                    style={{
-                      width: '100%',
-                      background: '#222222',
-                      border: '1px solid #444444',
-                      color: '#ffffff',
-                      padding: '10px',
-                      borderRadius: '4px',
-                      fontSize: '13px'
-                    }}
-                  >
-                    <option value="user">Usuário</option>
-                    <option value="admin">Administrador</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={{
-                    display: 'block',
-                    color: '#cccccc',
-                    fontSize: '13px',
-                    marginBottom: '6px'
-                  }}>
-                    Departamento
-                  </label>
-                  <select
-                    name="department"
-                    defaultValue={editingUser.department}
-                    style={{
-                      width: '100%',
-                      background: '#222222',
-                      border: '1px solid #444444',
-                      color: '#ffffff',
-                      padding: '10px',
-                      borderRadius: '4px',
-                      fontSize: '13px'
-                    }}
-                  >
-                    <option value="">Selecionar</option>
-                    <option value="Societário">Societário</option>
-                    <option value="Fiscal">Fiscal</option>
-                    <option value="Pessoal">Pessoal</option>
-                  </select>
-                </div>
-              </div>
+                                      {/* Reminder Date */}
+                                      <div>
+                                        <label className="text-sm font-medium">Data de Lembrete</label>
+                                        <div className="flex gap-2 mt-2">
+                                          <Input
+                                            type="date"
+                                            value={dataLembrete}
+                                            onChange={(e) => setDataLembrete(e.target.value)}
+                                          />
+                                          <Button onClick={handleUpdateDataLembrete}>
+                                            <Calendar className="h-4 w-4" />
+                                          </Button>
+                                        </div>
+                                      </div>
 
-              <div style={{
-                display: 'flex',
-                gap: '12px',
-                justifyContent: 'flex-end'
-              }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowEditUserModal(false);
-                    setEditingUser(null);
-                  }}
-                  style={{
-                    background: '#333333',
-                    border: '1px solid #555555',
-                    color: '#ffffff',
-                    padding: '10px 20px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '14px'
-                  }}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  style={{
-                    background: '#198754',
-                    border: 'none',
-                    color: '#ffffff',
-                    padding: '10px 20px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: '500'
-                  }}
-                >
-                  Salvar Alterações
-                </button>
-              </div>
-            </form>
-          </div>
+                                      {/* File Upload */}
+                                      <div>
+                                        <label className="text-sm font-medium">Envio de Arquivo</label>
+                                        <div className="flex gap-2 mt-2">
+                                          <Input
+                                            ref={fileInputRef}
+                                            type="file"
+                                            onChange={handleFileUpload}
+                                            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                          />
+                                          <Button disabled={uploadFileMutation.isPending}>
+                                            <Upload className="h-4 w-4" />
+                                          </Button>
+                                        </div>
+                                      </div>
+
+                                      {/* File List */}
+                                      {taskFiles.length > 0 && (
+                                        <div>
+                                          <label className="text-sm font-medium">Arquivos Enviados</label>
+                                          <div className="space-y-2 mt-2">
+                                            {taskFiles.map((file: TaskFile) => (
+                                              <div key={file.id} className="flex items-center justify-between p-2 border border-border rounded">
+                                                <span className="text-sm">{file.originalName}</span>
+                                                <div className="flex gap-2">
+                                                  <span className="text-xs text-muted-foreground">
+                                                    {new Date(file.uploadedAt).toLocaleDateString('pt-BR')}
+                                                  </span>
+                                                  <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={() => handleDownloadFile(file.id)}
+                                                  >
+                                                    <Download className="h-4 w-4" />
+                                                  </Button>
+                                                </div>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </DialogContent>
+                                </Dialog>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    </TabsContent>
+                  ))}
+                </Tabs>
+              </CardContent>
+            </Card>
+          ))}
         </div>
-      )}
+      </main>
     </div>
   );
 }

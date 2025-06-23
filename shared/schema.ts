@@ -54,6 +54,7 @@ export const insertBusinessRegistrationSchema = createInsertSchema(businessRegis
   status: true,
 }).extend({
   socios: z.array(partnerSchema).min(1, "Pelo menos um sócio é obrigatório"),
+  cnpj: z.string().optional(),
 });
 
 export type InsertBusinessRegistration = z.infer<typeof insertBusinessRegistrationSchema>;

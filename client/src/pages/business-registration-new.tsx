@@ -21,6 +21,7 @@ const businessRegistrationSchema = z.object({
   // Company Data
   razaoSocial: z.string().min(1, "Razão social é obrigatória"),
   nomeFantasia: z.string().min(1, "Nome fantasia é obrigatório"),
+  cnpj: z.string().optional(),
   endereco: z.string().min(1, "Endereço é obrigatório"),
   inscricaoImobiliaria: z.string().min(1, "Inscrição imobiliária é obrigatória"),
   metragem: z.number().min(1, "Metragem deve ser maior que 0"),
@@ -67,6 +68,7 @@ export default function BusinessRegistration() {
     defaultValues: {
       razaoSocial: '',
       nomeFantasia: '',
+      cnpj: '',
       endereco: '',
       inscricaoImobiliaria: '',
       metragem: 0,
@@ -359,6 +361,23 @@ export default function BusinessRegistration() {
                       )}
                     />
                   </div>
+
+                  <FormField
+                    control={form.control}
+                    name="cnpj"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-foreground">CNPJ</FormLabel>
+                        <FormControl>
+                          <Input placeholder="00.000.000/0000-00" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        <p className="text-xs text-muted-foreground">
+                          Se já possuir CNPJ, preencha aqui
+                        </p>
+                      </FormItem>
+                    )}
+                  />
 
                   <div className="md:col-span-2">
                     <FormField
