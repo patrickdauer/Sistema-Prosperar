@@ -11,25 +11,28 @@ export async function seedTaskTemplates() {
 
     // Departamento Societário
     const societarioTasks = [
-      { department: 'societario', title: 'Emitir Alvará de Funcionamento', description: 'Solicitar e obter alvará de funcionamento junto aos órgãos competentes', order: 1, estimatedDays: 5, isRequired: true },
-      { department: 'societario', title: 'Emitir Alvará Sanitário', description: 'Solicitar alvará sanitário quando aplicável', order: 2, estimatedDays: 7, isRequired: false },
-      { department: 'societario', title: 'Registro na Junta Comercial', description: 'Protocolar documentos na Junta Comercial', order: 3, estimatedDays: 10, isRequired: true },
-      { department: 'societario', title: 'Obter CNPJ', description: 'Solicitar CNPJ junto à Receita Federal', order: 4, estimatedDays: 3, isRequired: true },
+      { department: 'Societário', title: 'CNPJ', description: 'Solicitação e obtenção do CNPJ da empresa', order: 1, estimatedDays: 5, isRequired: true },
+      { department: 'Societário', title: 'Alvará de Licença', description: 'Obtenção do alvará de licença para funcionamento', order: 2, estimatedDays: 10, isRequired: true },
+      { department: 'Societário', title: 'Alvará Sanitário', description: 'Obtenção do alvará sanitário quando necessário', order: 3, estimatedDays: 15, isRequired: false },
+      { department: 'Societário', title: 'Alvará do Bombeiro', description: 'Obtenção do alvará do corpo de bombeiros', order: 4, estimatedDays: 20, isRequired: false },
+      { department: 'Societário', title: 'Registro na Junta Comercial', description: 'Registro da empresa na Junta Comercial', order: 5, estimatedDays: 7, isRequired: true },
+      { department: 'Societário', title: 'Registro no Cartório', description: 'Registro no cartório (apenas para Igreja, Associação ou Fundação)', order: 6, estimatedDays: 10, isRequired: false },
     ];
 
     // Departamento Fiscal
     const fiscalTasks = [
-      { department: 'fiscal', title: 'Solicitar Simples Nacional', description: 'Fazer opção pelo Simples Nacional se aplicável', order: 1, estimatedDays: 2, isRequired: false },
-      { department: 'fiscal', title: 'Fazer Procuração PF', description: 'Elaborar procurações dos sócios pessoa física', order: 2, estimatedDays: 1, isRequired: true },
-      { department: 'fiscal', title: 'Inscrição Estadual', description: 'Obter inscrição estadual quando necessário', order: 3, estimatedDays: 5, isRequired: false },
-      { department: 'fiscal', title: 'Inscrição Municipal', description: 'Registrar empresa na prefeitura local', order: 4, estimatedDays: 3, isRequired: true },
+      { department: 'Fiscal', title: 'Solicitar Simples Nacional', description: 'Solicitação de enquadramento no Simples Nacional', order: 1, estimatedDays: 3, isRequired: true },
+      { department: 'Fiscal', title: 'Fazer Procuração PF', description: 'Elaboração de procuração pessoa física', order: 2, estimatedDays: 1, isRequired: true },
+      { department: 'Fiscal', title: 'Fazer Procuração PJ', description: 'Elaboração de procuração pessoa jurídica', order: 3, estimatedDays: 1, isRequired: true },
+      { department: 'Fiscal', title: 'Solicitar Certificado Digital PJ Modelo A1', description: 'Solicitação do certificado digital A1 para pessoa jurídica', order: 4, estimatedDays: 5, isRequired: true },
     ];
 
     // Departamento Pessoal
     const pessoalTasks = [
-      { department: 'pessoal', title: 'Enviar Declaração Sem Funcionário', description: 'Protocolar declaração de não possuir funcionários', order: 1, estimatedDays: 1, isRequired: true },
-      { department: 'pessoal', title: 'Cadastro no eSocial', description: 'Realizar cadastro inicial no eSocial', order: 2, estimatedDays: 2, isRequired: true },
-      { department: 'pessoal', title: 'Configurar Folha de Pagamento', description: 'Preparar estrutura inicial da folha de pagamento', order: 3, estimatedDays: 3, isRequired: false },
+      { department: 'Pessoal', title: 'Cadastrar Empresa no Sistema Domínio', description: 'Cadastro da empresa no sistema de domínio', order: 1, estimatedDays: 1, isRequired: true },
+      { department: 'Pessoal', title: 'Configurar Folha no Sistema se Houver', description: 'Configuração da folha de pagamento no sistema', order: 2, estimatedDays: 2, isRequired: false },
+      { department: 'Pessoal', title: 'Cadastro no E-social', description: 'Cadastro da empresa no eSocial', order: 3, estimatedDays: 2, isRequired: true },
+      { department: 'Pessoal', title: 'Enviar Declaração sem Funcionário', description: 'Envio da declaração para empresa sem funcionários', order: 4, estimatedDays: 1, isRequired: true },
     ];
 
     // Create all templates

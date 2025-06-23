@@ -29,6 +29,7 @@ export const businessRegistrations = pgTable("business_registrations", {
   // Company Data
   razaoSocial: text("razao_social").notNull(),
   nomeFantasia: text("nome_fantasia").notNull(),
+  cnpj: text("cnpj"), // Campo CNPJ adicionado
   endereco: text("endereco").notNull(),
   inscricaoImobiliaria: text("inscricao_imobiliaria").notNull(),
   metragem: integer("metragem").notNull(),
@@ -98,6 +99,7 @@ export const tasks = pgTable("tasks", {
   order: integer("order").notNull(),
   observacao: text("observacao"), // Campo de observação
   dataLembrete: timestamp("data_lembrete"), // Campo de data de lembrete
+  cnpj: text("cnpj") // Campo específico para tarefa de CNPJ
 });
 
 // Task files/documents
