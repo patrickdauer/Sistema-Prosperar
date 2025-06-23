@@ -269,6 +269,32 @@ export default function SistemaFinal() {
     window.location.href = '/equipe';
   };
 
+  const handleDownloadFile = async (fileId: number, fileName: string) => {
+    try {
+      const response = await fetch(`/api/internal/tasks/files/${fileId}/download`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      
+      if (!response.ok) throw new Error('Falha ao baixar arquivo');
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      
+      toast({ title: "Arquivo baixado com sucesso!", variant: "default" });
+    } catch (error) {
+      toast({ title: "Erro ao baixar arquivo", variant: "destructive" });
+    }
+  };
+
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && selectedTask) {
