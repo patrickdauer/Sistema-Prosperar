@@ -36,6 +36,7 @@ export interface IStorage {
   createBusinessRegistration(registration: InsertBusinessRegistration): Promise<BusinessRegistration>;
   getBusinessRegistration(id: number): Promise<BusinessRegistration | undefined>;
   getAllBusinessRegistrations(): Promise<BusinessRegistration[]>;
+  getAllBusinessRegistrationsWithTasks(): Promise<any[]>;
   updateBusinessRegistration(id: number, data: Partial<BusinessRegistration>): Promise<BusinessRegistration>;
   deleteBusinessRegistration(id: number): Promise<void>;
   
@@ -142,6 +143,27 @@ export class DatabaseStorage implements IStorage {
 
   async getAllBusinessRegistrations(): Promise<BusinessRegistration[]> {
     return await db.select().from(businessRegistrations).orderBy(desc(businessRegistrations.createdAt));
+  }
+
+  async getAllBusinessRegistrationsWithTasks(): Promise<any[]> {
+    const registrations = await db.select().from(businessRegistrations).orderBy(desc(businessRegistrations.createdAt));
+    
+    const registrationsWithTasks = await Promise.all(
+      registrations.map(async (registration) => {
+        const registrationTasks = await db
+          .select()
+          .from(tasks)
+          .where(eq(tasks.businessRegistrationId, registration.id))
+          .orderBy(asc(tasks.order));
+        
+        return {
+          ...registration,
+          tasks: registrationTasks
+        };
+      })
+    );
+    
+    return registrationsWithTasks;
   }
 
   async updateBusinessRegistration(id: number, data: Partial<BusinessRegistration>): Promise<BusinessRegistration> {

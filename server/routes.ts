@@ -725,7 +725,7 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
   // Export to Excel
   app.get("/api/internal/export/excel", authenticateToken, async (req, res) => {
     try {
-      const registrations = await storage.getAllBusinessRegistrations();
+      const registrations = await storage.getAllBusinessRegistrationsWithTasks();
       const XLSX = require('xlsx');
       
       // Prepare data for Excel with safe property access
@@ -733,6 +733,16 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
         const socios = reg.socios && typeof reg.socios === 'object' && Array.isArray(reg.socios) 
           ? reg.socios.map((s: any) => s.nomeCompleto || 'Nome não informado').join('; ')
           : 'Nenhum sócio cadastrado';
+
+        const tarefas = reg.tasks && Array.isArray(reg.tasks) 
+          ? reg.tasks.map((t: any) => `${t.title} (${t.status === 'pending' ? 'Pendente' : t.status === 'in_progress' ? 'Em Andamento' : 'Concluída'})`).join('; ')
+          : 'Nenhuma tarefa';
+
+        const statusGeral = reg.tasks && Array.isArray(reg.tasks) && reg.tasks.length > 0
+          ? (reg.tasks.every((t: any) => t.status === 'completed') ? 'Todas Concluídas' :
+             reg.tasks.some((t: any) => t.status === 'in_progress') ? 'Em Andamento' : 
+             reg.tasks.some((t: any) => t.status === 'pending') ? 'Pendente' : 'Sem Status')
+          : 'Sem Tarefas';
 
         return {
           'ID': reg.id || '',
@@ -745,7 +755,8 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
           'Atividade Principal': reg.atividadePrincipal || '',
           'Data Cadastro': reg.createdAt ? new Date(reg.createdAt).toLocaleDateString('pt-BR') : '',
           'Sócios': socios,
-          'Status': 'Ativo'
+          'Tarefas': tarefas,
+          'Status Geral': statusGeral
         };
       });
 
@@ -765,7 +776,8 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
         {wch: 35},  // Atividade Principal
         {wch: 15},  // Data Cadastro
         {wch: 50},  // Sócios
-        {wch: 12}   // Status
+        {wch: 60},  // Tarefas
+        {wch: 20}   // Status Geral
       ];
       ws['!cols'] = colWidths;
 
@@ -794,7 +806,7 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
   // Export to PDF
   app.get("/api/internal/export/pdf", authenticateToken, async (req, res) => {
     try {
-      const registrations = await storage.getAllBusinessRegistrations();
+      const registrations = await storage.getAllBusinessRegistrationsWithTasks();
       const puppeteer = require('puppeteer');
 
       const browser = await puppeteer.launch({ 
@@ -941,6 +953,27 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
                   `).join('')}
                 </div>
               ` : '<div style="margin-top: 15px; color: #7f8c8d;"><em>Nenhum sócio cadastrado</em></div>'}
+
+              ${reg.tasks && Array.isArray(reg.tasks) && reg.tasks.length > 0 ? `
+                <div class="tasks" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+                  <div class="label" style="margin-bottom: 10px;">Tarefas:</div>
+                  ${reg.tasks.map((task: any) => `
+                    <div class="task" style="padding: 8px; margin: 5px 0; border-radius: 4px; background: ${
+                      task.status === 'completed' ? '#d4edda' : 
+                      task.status === 'in_progress' ? '#d1ecf1' : '#fff3cd'
+                    };">
+                      <strong>${task.title}</strong> - 
+                      <span style="font-weight: bold; color: ${
+                        task.status === 'completed' ? '#155724' : 
+                        task.status === 'in_progress' ? '#0c5460' : '#856404'
+                      };">
+                        ${task.status === 'pending' ? 'Pendente' : task.status === 'in_progress' ? 'Em Andamento' : 'Concluída'}
+                      </span>
+                      ${task.description ? `<br><em style="color: #666;">${task.description}</em>` : ''}
+                    </div>
+                  `).join('')}
+                </div>
+              ` : '<div style="margin-top: 15px; color: #7f8c8d;"><em>Nenhuma tarefa cadastrada</em></div>'}
             </div>
           `).join('')}
         </body>
