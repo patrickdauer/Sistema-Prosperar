@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Building2, Users, Upload, Download, Calendar, MessageSquare, LogOut, Search, Filter, Trash2 } from 'lucide-react';
+import { Building2, Users, Upload, Download, Calendar, MessageSquare, LogOut, Search, Filter, Trash2, FileSpreadsheet, FileDown, Edit, Plus, Clock, CheckCircle2, AlertCircle, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -226,6 +226,71 @@ export default function SistemaFinal() {
     }
   };
 
+  // Export functions
+  const exportExcelMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/internal/export/excel', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      
+      if (!response.ok) throw new Error('Failed to export Excel');
+      
+      return response.blob();
+    },
+    onSuccess: (blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `empresas_${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      toast({ title: "Excel exportado com sucesso!", variant: "default" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao exportar Excel", variant: "destructive" });
+    },
+  });
+
+  const exportPdfMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/internal/export/pdf', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      
+      if (!response.ok) throw new Error('Failed to export PDF');
+      
+      return response.blob();
+    },
+    onSuccess: (blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `relatorio_empresas_${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      toast({ title: "PDF exportado com sucesso!", variant: "default" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao exportar PDF", variant: "destructive" });
+    },
+  });
+
+  const handleExportExcel = () => {
+    exportExcelMutation.mutate();
+  };
+
+  const handleExportPDF = () => {
+    exportPdfMutation.mutate();
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending': return 'bg-red-500 hover:bg-red-600';
@@ -370,6 +435,31 @@ export default function SistemaFinal() {
               <option value="Fiscal">Fiscal</option>
               <option value="Pessoal">Pessoal</option>
             </select>
+          </div>
+
+          {/* Export Buttons */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportExcel}
+              disabled={exportExcelMutation.isPending}
+              className="flex items-center gap-2"
+            >
+              <FileSpreadsheet className="h-4 w-4" />
+              {exportExcelMutation.isPending ? "Exportando..." : "Excel"}
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportPDF}
+              disabled={exportPdfMutation.isPending}
+              className="flex items-center gap-2"
+            >
+              <FileDown className="h-4 w-4" />
+              {exportPdfMutation.isPending ? "Gerando..." : "PDF"}
+            </Button>
           </div>
         </div>
 

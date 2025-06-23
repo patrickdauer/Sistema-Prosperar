@@ -158,6 +158,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // API endpoint for sistema-final.tsx - get all business registrations with tasks
+  app.get("/api/internal/business-registrations/with-tasks", authenticateToken, async (req, res) => {
+    try {
+      const registrations = await storage.getAllBusinessRegistrationsWithTasks();
+      res.json(registrations);
+    } catch (error) {
+      console.error("Error fetching registrations with tasks:", error);
+      res.status(500).json({ message: "Erro ao buscar registros com tarefas" });
+    }
+  });
+
+  // API endpoint for users management
+  app.get("/api/internal/users", authenticateToken, async (req, res) => {
+    try {
+      // Check if user is admin
+      if (req.user!.role !== 'admin') {
+        return res.status(403).json({ message: "Acesso negado. Apenas administradores podem acessar usuários." });
+      }
+      
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Erro ao buscar usuários" });
+    }
+  });
+
   app.get("/api/internal/my-tasks", authenticateToken, async (req, res) => {
     try {
       const tasks = await storage.getTasksByUser(req.user!.id);
