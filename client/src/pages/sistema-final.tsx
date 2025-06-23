@@ -399,7 +399,7 @@ export default function SistemaFinal() {
             margin: '0',
             color: '#ffffff'
           }}>
-            Sistema Dark
+            SISTEMA PROSPERAR CONTABILIDADE
           </h1>
           <div style={{ display: 'flex', gap: '10px' }}>
             <button
