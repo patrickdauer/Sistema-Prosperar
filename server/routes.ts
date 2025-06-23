@@ -347,6 +347,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Download task file
+  app.get("/api/internal/tasks/files/:id/download", authenticateToken, async (req, res) => {
+    try {
+      const fileId = parseInt(req.params.id);
+      const taskFile = await storage.getTaskFileById(fileId);
+      
+      if (!taskFile) {
+        return res.status(404).json({ message: "Arquivo não encontrado" });
+      }
+
+      // Download file from Google Drive
+      const fileBuffer = await googleDriveService.downloadFile(taskFile.filePath);
+      
+      // Set headers for download
+      res.setHeader('Content-Disposition', `attachment; filename="${taskFile.originalName}"`);
+      res.setHeader('Content-Type', taskFile.mimeType);
+      res.setHeader('Content-Length', fileBuffer.length);
+      
+      // Send file
+      res.send(fileBuffer);
+    } catch (error) {
+      console.error("Error downloading task file:", error);
+      res.status(500).json({ message: "Erro ao baixar arquivo" });
+    }
+  });
+
   app.get("/api/internal/my-tasks", authenticateToken, async (req, res) => {
     try {
       const tasks = await storage.getTasksByUser(req.user!.id);
