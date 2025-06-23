@@ -195,32 +195,56 @@ export default function SistemaFinal() {
       setTimeout(() => document.body.removeChild(successMsg), 3000);
     } catch (error) {
       console.error('Error exporting to Excel:', error);
-      alert(`Erro ao exportar Excel: ${error.message}`);
+      alert(`Erro ao exportar Excel: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     }
   };
 
-  const exportToPDF = () => {
+  const exportToPDF = async () => {
     const token = localStorage.getItem('token');
-    if (!token) return;
+    if (!token) {
+      alert('Token de autenticação não encontrado. Faça login novamente.');
+      return;
+    }
 
-    fetch('/api/internal/export/pdf', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-    .then(res => res.blob())
-    .then(blob => {
+    try {
+      const response = await fetch('/api/internal/export/pdf', {
+        method: 'GET',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/pdf'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Erro HTTP: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      if (blob.size === 0) {
+        throw new Error('Arquivo PDF vazio recebido');
+      }
+
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = url;
-      a.download = `relatorio-empresas-${new Date().toISOString().split('T')[0]}.pdf`;
+      a.download = `relatorio_empresas_${new Date().toISOString().split('T')[0]}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-    })
-    .catch(error => {
+
+      // Mostrar mensagem de sucesso
+      const successMsg = document.createElement('div');
+      successMsg.textContent = 'PDF exportado com sucesso!';
+      successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #dc3545; color: white; padding: 15px; border-radius: 5px; z-index: 1000; font-size: 14px;';
+      document.body.appendChild(successMsg);
+      setTimeout(() => document.body.removeChild(successMsg), 3000);
+    } catch (error) {
       console.error('Error exporting to PDF:', error);
-    });
+      alert(`Erro ao exportar PDF: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    }
   };
 
   // Filter registrations based on search term and status
