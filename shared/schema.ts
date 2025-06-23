@@ -96,6 +96,8 @@ export const tasks = pgTable("tasks", {
   completedAt: timestamp("completed_at"),
   createdAt: timestamp("created_at").defaultNow(),
   order: integer("order").notNull(),
+  observacao: text("observacao"), // Campo de observação
+  dataLembrete: timestamp("data_lembrete"), // Campo de data de lembrete
 });
 
 // Task files/documents
