@@ -11,6 +11,7 @@ import { generateToken, authenticateToken, requireRole } from "./auth";
 import { seedTaskTemplates, createAdminUser } from "./seedData";
 import XLSX from "xlsx";
 import puppeteer from "puppeteer";
+import bcrypt from "bcrypt";
 
 // Configure multer for file uploads
 const upload = multer({
@@ -1193,7 +1194,7 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
   app.get("/api/internal/export/excel", authenticateToken, async (req, res) => {
     try {
       const registrations = await storage.getAllBusinessRegistrationsWithTasks();
-      const XLSX = require('xlsx');
+      // XLSX already imported
       
       // Prepare data for Excel with safe property access
       const excelData = registrations.map((reg: any) => {
@@ -1274,7 +1275,7 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
   app.get("/api/internal/export/pdf", authenticateToken, async (req, res) => {
     try {
       const registrations = await storage.getAllBusinessRegistrationsWithTasks();
-      const puppeteer = require('puppeteer');
+      // puppeteer already imported
 
       const browser = await puppeteer.launch({ 
         headless: true,
@@ -1470,7 +1471,7 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
       }
       
       // Verify current password
-      const bcrypt = require('bcrypt');
+      // bcrypt already imported
       const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
       if (!isCurrentPasswordValid) {
         res.status(400).json({ message: "Senha atual incorreta" });
