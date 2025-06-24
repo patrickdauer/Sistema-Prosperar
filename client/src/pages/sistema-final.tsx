@@ -443,22 +443,17 @@ export default function SistemaFinal() {
     registrations.forEach((reg: BusinessRegistration) => {
       if (reg.tasks && Array.isArray(reg.tasks)) {
         reg.tasks.forEach((task: Task) => {
-          switch (task.status) {
-            case 'pending':
-              pending++;
-              break;
-            case 'in_progress':
-              inProgress++;
-              break;
-            case 'completed':
-              completed++;
-              break;
+          if (task.status === 'pending') {
+            pending++;
+          } else if (task.status === 'in_progress') {
+            inProgress++;
+          } else if (task.status === 'completed') {
+            completed++;
           }
         });
       }
     });
     
-    console.log('Stats calculados:', { pending, inProgress, completed });
     return { pending, inProgress, completed };
   };
 
