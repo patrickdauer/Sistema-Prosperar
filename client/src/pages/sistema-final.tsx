@@ -66,7 +66,6 @@ interface BusinessRegistration {
 }
 
 export default function SistemaFinal() {
-  console.log('SistemaFinal component mounted');
   const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -84,7 +83,6 @@ export default function SistemaFinal() {
   const [editingTaskData, setEditingTaskData] = useState<{id: number; title: string; description: string} | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -447,26 +445,12 @@ export default function SistemaFinal() {
     }
   };
 
-  const handleFileSelect = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      console.log('File select event triggered');
-      const file = event.target.files?.[0];
-      console.log('Selected file:', file?.name, file?.type, file?.size);
-      
-      // Prevent any state issues by setting in next tick
-      setTimeout(() => {
-        console.log('Setting selected file state');
-        setSelectedFile(file || null);
-      }, 0);
-      
-    } catch (error) {
-      console.error('Error in handleFileSelect:', error);
-    }
-  }, []);
+
 
   const handleFileUpload = () => {
     if (selectedFile && selectedTask) {
       uploadFileMutation.mutate({ taskId: selectedTask.id, file: selectedFile });
+      setSelectedFile(null);
     }
   };
 
@@ -1030,12 +1014,8 @@ export default function SistemaFinal() {
                                       <label className="text-sm font-medium">Envio de Arquivo</label>
                                       <div className="mt-2">
                                         <input
-                                          ref={fileInputRef}
                                           type="file"
-                                          onChange={(e) => {
-                                            console.log('Input onChange fired');
-                                            handleFileSelect(e);
-                                          }}
+                                          onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
                                           accept=".pdf,.jpg,.jpeg,.png"
                                           className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                         />
@@ -1075,13 +1055,7 @@ export default function SistemaFinal() {
                                               <Button
                                                 size="sm"
                                                 variant="outline"
-                                                onClick={() => {
-                                                  setSelectedFile(null);
-                                                  if (fileInputRef.current) {
-                                                    fileInputRef.current.value = '';
-                                                  }
-                                                }}
-                                                disabled={uploadFileMutation.isPending}
+                                                onClick={() => setSelectedFile(null)}
                                               >
                                                 Cancelar
                                               </Button>
