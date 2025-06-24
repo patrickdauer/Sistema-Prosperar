@@ -246,22 +246,26 @@ export default function SistemaFinal() {
   const exportExcelMutation = useMutation({
     mutationFn: async () => {
       const token = localStorage.getItem('token');
-      console.log('Token para exportação:', token ? 'Presente' : 'Ausente');
       
       const response = await fetch('/api/internal/export/excel', {
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         },
       });
       
-      console.log('Response status:', response.status);
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Erro na resposta:', errorText);
         throw new Error(`Falha ao exportar Excel: ${response.status} - ${errorText}`);
       }
       
-      return await response.blob();
+      const blob = await response.blob();
+      if (blob.size === 0) {
+        throw new Error('Arquivo Excel vazio recebido');
+      }
+      
+      return blob;
     },
     onSuccess: (blob) => {
       const url = window.URL.createObjectURL(blob);
@@ -282,15 +286,27 @@ export default function SistemaFinal() {
 
   const exportPdfMutation = useMutation({
     mutationFn: async () => {
+      const token = localStorage.getItem('token');
+      
       const response = await fetch('/api/internal/export/pdf', {
+        method: 'GET',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/pdf',
         },
       });
       
-      if (!response.ok) throw new Error('Falha ao exportar PDF');
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Falha ao exportar PDF: ${response.status} - ${errorText}`);
+      }
       
-      return await response.blob();
+      const blob = await response.blob();
+      if (blob.size === 0) {
+        throw new Error('Arquivo PDF vazio recebido');
+      }
+      
+      return blob;
     },
     onSuccess: (blob) => {
       const url = window.URL.createObjectURL(blob);
