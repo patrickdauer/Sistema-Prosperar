@@ -190,7 +190,8 @@ export default function SistemaFinal() {
       });
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Upload success:', data);
       queryClient.invalidateQueries({ queryKey: ['/api/internal/tasks', selectedTask?.id, 'files'] });
       refetchTaskFiles();
       toast({ title: "Arquivo enviado com sucesso!", variant: "default" });
