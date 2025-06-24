@@ -81,6 +81,8 @@ export default function SistemaFinal() {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDescription, setNewTaskDescription] = useState('');
   const [editingTaskData, setEditingTaskData] = useState<{id: number; title: string; description: string} | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { toast } = useToast();
@@ -179,8 +181,9 @@ export default function SistemaFinal() {
     mutationFn: async ({ taskId, file }: { taskId: number; file: File }) => {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('taskId', taskId.toString());
-
+      
+      setUploadProgress(10);
+      
       const response = await fetch(`/api/internal/tasks/${taskId}/upload`, {
         method: 'POST',
         body: formData,
@@ -188,16 +191,25 @@ export default function SistemaFinal() {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
       });
-      return response.json();
+      
+      setUploadProgress(90);
+      const result = await response.json();
+      setUploadProgress(100);
+      
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/internal/tasks', selectedTask?.id, 'files'] });
+      setSelectedFile(null);
+      setUploadProgress(0);
       toast({ title: "Arquivo enviado com sucesso!", variant: "default" });
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
     },
     onError: () => {
+      setSelectedFile(null);
+      setUploadProgress(0);
       toast({ title: "Erro ao enviar arquivo", variant: "destructive" });
     },
   });
@@ -434,10 +446,14 @@ export default function SistemaFinal() {
     }
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && selectedTask) {
-      uploadFileMutation.mutate({ taskId: selectedTask.id, file });
+    setSelectedFile(file || null);
+  };
+
+  const handleFileUpload = () => {
+    if (selectedFile && selectedTask) {
+      uploadFileMutation.mutate({ taskId: selectedTask.id, file: selectedFile });
     }
   };
 
@@ -988,32 +1004,114 @@ export default function SistemaFinal() {
                                         <input
                                           ref={fileInputRef}
                                           type="file"
-                                          onChange={handleFileUpload}
-                                          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                          onChange={handleFileSelect}
+                                          accept=".pdf,.jpg,.jpeg,.png"
+                                          disabled={uploadFileMutation.isPending}
+                                          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
                                         />
+                                        
+                                        {uploadFileMutation.isPending && uploadProgress > 0 && (
+                                          <div className="w-full mt-2">
+                                            <div className="flex justify-between text-sm text-gray-600 mb-1">
+                                              <span>Enviando arquivo...</span>
+                                              <span>{uploadProgress}%</span>
+                                            </div>
+                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                              <div 
+                                                className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                                                style={{ width: `${uploadProgress}%` }}
+                                              ></div>
+                                            </div>
+                                          </div>
+                                        )}
+                                        
+                                        {selectedFile && !uploadFileMutation.isPending && (
+                                          <div className="flex items-center justify-between p-3 mt-2 bg-blue-50 dark:bg-blue-950 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+                                            <div className="flex items-center space-x-3">
+                                              <FileText className="h-5 w-5 text-blue-600" />
+                                              <div>
+                                                <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                                                  {selectedFile.name}
+                                                </p>
+                                                <p className="text-xs text-blue-600 dark:text-blue-300">
+                                                  {Math.round(selectedFile.size / 1024)} KB
+                                                </p>
+                                              </div>
+                                            </div>
+                                            <div className="flex gap-2">
+                                              <Button
+                                                size="sm"
+                                                onClick={handleFileUpload}
+                                                className="bg-green-600 hover:bg-green-700 text-white"
+                                              >
+                                                <Upload className="h-4 w-4 mr-1" />
+                                                Enviar Arquivo
+                                              </Button>
+                                              <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => {
+                                                  setSelectedFile(null);
+                                                  if (fileInputRef.current) {
+                                                    fileInputRef.current.value = '';
+                                                  }
+                                                }}
+                                              >
+                                                Cancelar
+                                              </Button>
+                                            </div>
+                                          </div>
+                                        )}
                                       </div>
                                     </div>
 
                                     {/* Files List */}
-                                    {taskFiles.length > 0 && (
-                                      <div>
-                                        <label className="text-sm font-medium">Arquivos Enviados</label>
-                                        <div className="mt-2 space-y-2">
-                                          {taskFiles.map((file) => (
-                                            <div key={file.id} className="flex items-center justify-between p-2 border rounded">
-                                              <span className="text-sm">{file.originalName}</span>
+                                    <div>
+                                      <label className="text-sm font-medium">Histórico de Arquivos</label>
+                                      <div className="mt-2 space-y-2">
+                                        {taskFiles.length === 0 ? (
+                                          <div className="p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center text-sm text-gray-500">
+                                            Nenhum arquivo enviado ainda
+                                          </div>
+                                        ) : (
+                                          taskFiles.map((file) => (
+                                            <div key={file.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                              <div className="flex items-center space-x-3">
+                                                <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                                                  <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                                </div>
+                                                <div className="flex-1">
+                                                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{file.originalName}</span>
+                                                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                    {file.fileSize ? `${Math.round(file.fileSize / 1024)} KB` : ''} • 
+                                                    {file.uploadedAt ? new Date(file.uploadedAt).toLocaleDateString('pt-BR', {
+                                                      day: '2-digit',
+                                                      month: '2-digit', 
+                                                      year: 'numeric',
+                                                      hour: '2-digit',
+                                                      minute: '2-digit'
+                                                    }) : ''}
+                                                  </div>
+                                                </div>
+                                              </div>
                                               <Button
                                                 size="sm"
-                                                variant="outline"
                                                 onClick={() => handleDownloadFile(file.id, file.originalName)}
+                                                className="bg-green-600 hover:bg-green-700 text-white shadow-sm"
                                               >
-                                                <Download className="h-4 w-4" />
+                                                <Download className="h-4 w-4 mr-1" />
+                                                Baixar Arquivo
                                               </Button>
                                             </div>
-                                          ))}
-                                        </div>
+                                          ))
+                                        )}
+                                        {taskFiles.length > 0 && (
+                                          <div className="text-xs text-gray-500 mt-2">
+                                            Total de arquivos: {taskFiles.length}
+                                          </div>
+                                        )}
                                       </div>
-                                    )}
+                                    </div>
                                   </div>
                                 </DialogContent>
                               </Dialog>
