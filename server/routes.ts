@@ -213,39 +213,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const registrations = await storage.getAllBusinessRegistrationsWithTasks();
       
-      // Import xlsx at the top of the file if not already imported
       const XLSX = require('xlsx');
       
-      // Prepare data for Excel
-      const excelData = registrations.map((reg: any) => ({
+      // Prepare company data for Excel
+      const companiesData = registrations.map((reg: any) => ({
         'ID': reg.id,
-        'Razão Social': reg.razao_social || reg.razaoSocial,
-        'Nome Fantasia': reg.nome_fantasia || reg.nomeFantasia,
-        'Email': reg.email_empresa || reg.emailEmpresa,
-        'Telefone': reg.telefone_empresa || reg.telefoneEmpresa,
+        'Razão Social': reg.razaoSocial || reg.razao_social,
+        'Nome Fantasia': reg.nomeFantasia || reg.nome_fantasia,
+        'Email': reg.emailEmpresa || reg.email_empresa,
+        'Telefone': reg.telefoneEmpresa || reg.telefone_empresa,
         'Endereço': reg.endereco,
         'CNPJ': reg.cnpj || 'Não informado',
-        'Capital Social': reg.capital_social || reg.capitalSocial || 'Não informado',
-        'Atividade Principal': reg.atividade_principal || reg.atividadePrincipal || 'Não informado',
-        'Data Criação': new Date(reg.created_at || reg.createdAt).toLocaleDateString('pt-BR'),
+        'Capital Social': reg.capitalSocial || reg.capital_social || 'Não informado',
+        'Atividade Principal': reg.atividadePrincipal || reg.atividade_principal || 'Não informado',
+        'Data Criação': new Date(reg.createdAt || reg.created_at).toLocaleDateString('pt-BR'),
         'Total Tarefas': reg.tasks?.length || 0,
         'Tarefas Pendentes': reg.tasks?.filter((t: any) => t.status === 'pending').length || 0,
         'Tarefas Em Andamento': reg.tasks?.filter((t: any) => t.status === 'in_progress').length || 0,
         'Tarefas Concluídas': reg.tasks?.filter((t: any) => t.status === 'completed').length || 0,
       }));
 
-      // Create workbook and worksheet
+      // Prepare partners data for Excel
+      const partnersData: any[] = [];
+      registrations.forEach((reg: any) => {
+        const socios = reg.socios || [];
+        if (Array.isArray(socios)) {
+          socios.forEach((socio: any, index: number) => {
+            partnersData.push({
+              'ID Empresa': reg.id,
+              'Razão Social': reg.razaoSocial || reg.razao_social,
+              'Sócio #': index + 1,
+              'Nome Completo': socio.nomeCompleto || '',
+              'CPF': socio.cpf || '',
+              'RG': socio.rg || '',
+              'Data Nascimento': socio.dataNascimento || '',
+              'Estado Civil': socio.estadoCivil || '',
+              'Profissão': socio.profissao || '',
+              'Nacionalidade': socio.nacionalidade || '',
+              'Endereço Pessoal': socio.enderecoPessoal || '',
+              'Telefone Pessoal': socio.telefonePessoal || '',
+              'Email Pessoal': socio.emailPessoal || '',
+              'Filiação': socio.filiacao || ''
+            });
+          });
+        }
+      });
+
+      // Create workbook
       const workbook = XLSX.utils.book_new();
-      const worksheet = XLSX.utils.json_to_sheet(excelData);
       
-      // Add worksheet to workbook
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Empresas');
+      // Add companies worksheet
+      const companiesWorksheet = XLSX.utils.json_to_sheet(companiesData);
+      XLSX.utils.book_append_sheet(workbook, companiesWorksheet, 'Empresas');
+      
+      // Add partners worksheet if there are partners
+      if (partnersData.length > 0) {
+        const partnersWorksheet = XLSX.utils.json_to_sheet(partnersData);
+        XLSX.utils.book_append_sheet(workbook, partnersWorksheet, 'Sócios');
+      }
       
       // Generate buffer
       const excelBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
       
       // Set headers
-      res.setHeader('Content-Disposition', `attachment; filename="empresas_${new Date().toISOString().split('T')[0]}.xlsx"`);
+      res.setHeader('Content-Disposition', `attachment; filename="relatorio_completo_${new Date().toISOString().split('T')[0]}.xlsx"`);
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       
       // Send file
@@ -326,6 +357,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
               ${reg.cnpj ? `<div class="info"><strong>CNPJ:</strong> ${reg.cnpj}</div>` : ''}
               <div class="info"><strong>Data de Cadastro:</strong> ${new Date(reg.created_at || reg.createdAt).toLocaleDateString('pt-BR')}</div>
               
+              
+              ${reg.socios && Array.isArray(reg.socios) && reg.socios.length > 0 ? `
+                <h4>Sócios:</h4>
+                <table>
+                  <tr>
+                    <th>Nome</th>
+                    <th>CPF</th>
+                    <th>RG</th>
+                    <th>Profissão</th>
+                    <th>Telefone</th>
+                    <th>Email</th>
+                  </tr>
+                  ${reg.socios.map((socio: any) => `
+                    <tr>
+                      <td>${socio.nomeCompleto || ''}</td>
+                      <td>${socio.cpf || ''}</td>
+                      <td>${socio.rg || ''}</td>
+                      <td>${socio.profissao || ''}</td>
+                      <td>${socio.telefonePessoal || ''}</td>
+                      <td>${socio.emailPessoal || ''}</td>
+                    </tr>
+                  `).join('')}
+                </table>
+              ` : ''}
+
               ${reg.tasks && reg.tasks.length > 0 ? `
                 <div class="tasks">
                   <strong>Tarefas (${reg.tasks.length}):</strong>
