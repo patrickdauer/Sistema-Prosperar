@@ -12,6 +12,7 @@ import Dashboard from "@/pages/dashboard";
 import Login from "@/pages/login";
 import DashboardInterno from "@/pages/sistema-novo";
 import SistemaFinal from "@/pages/sistema-final";
+import RedirectSistema from "@/pages/redirect-sistema";
 import NotFound from "@/pages/not-found";
 
 function ProtectedDashboardInterno() {
@@ -105,8 +106,9 @@ function App() {
               <Route path="/" component={BusinessRegistration} />
               <Route path="/dashboard" component={Dashboard} />
               <Route path="/equipe" component={Login} />
-              <Route path="/dashboard-interno" component={ProtectedDashboardInterno} />
-              <Route path="/novo-sistema" component={ProtectedSistemaFinal} />
+              <Route path="/dashboard-interno" component={ProtectedSistemaFinal} />
+              <Route path="/interno" component={ProtectedSistemaFinal} />
+              <Route path="/novo-sistema" component={RedirectSistema} />
               <Route path="/sistema-final" component={ProtectedSistemaFinal} />
               <Route path="/sistema" component={ProtectedSistemaFinal} />
               <Route path="*" component={NotFound} />
