@@ -297,7 +297,7 @@ export class DatabaseStorage implements IStorage {
     // Handle date fields conversion - ensure proper format
     if (field === 'data_lembrete' && value) {
       // Convert date string to proper date format
-      updateData[field] = new Date(value + 'T00:00:00.000Z');
+      updateData['data_lembrete'] = new Date(value + 'T00:00:00.000Z');
     } else {
       updateData[field] = value;
     }

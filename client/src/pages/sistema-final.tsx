@@ -907,9 +907,10 @@ export default function SistemaFinal() {
                                     onClick={() => {
                                       setSelectedTask(task);
                                       setObservacao(task.observacao || '');
-                                      setDataLembrete(task.data_lembrete ? task.data_lembrete.split('T')[0] : '');
+                                      setDataLembrete(task.data_lembrete ? new Date(task.data_lembrete).toISOString().split('T')[0] : '');
                                       setCnpjValue(task.cnpj || '');
                                     }}
+                                    className="text-blue-600 hover:text-blue-700"
                                   >
                                     Gerenciar
                                   </Button>

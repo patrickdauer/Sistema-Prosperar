@@ -99,7 +99,7 @@ export const tasks = pgTable("tasks", {
   createdAt: timestamp("created_at").defaultNow(),
   order: integer("order").notNull(),
   observacao: text("observacao"), // Campo de observação
-  dataLembrete: timestamp("data_lembrete"), // Campo de data de lembrete
+  data_lembrete: timestamp("data_lembrete"), // Campo de data de lembrete
   cnpj: text("cnpj") // Campo específico para tarefa de CNPJ
 });
 
