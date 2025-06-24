@@ -9,6 +9,8 @@ import { sendConfirmationEmail } from "./services/email";
 import { googleDriveService } from "./services/googledrive";
 import { generateToken, authenticateToken, requireRole } from "./auth";
 import { seedTaskTemplates, createAdminUser } from "./seedData";
+import XLSX from "xlsx";
+import puppeteer from "puppeteer";
 
 // Configure multer for file uploads
 const upload = multer({
@@ -213,7 +215,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const registrations = await storage.getAllBusinessRegistrationsWithTasks();
       
-      const XLSX = require('xlsx');
+      // XLSX already imported at top
       
       // Prepare company data for Excel
       const companiesData = registrations.map((reg: any) => ({
@@ -292,7 +294,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const registrations = await storage.getAllBusinessRegistrationsWithTasks();
       
-      const puppeteer = require('puppeteer');
+      // puppeteer already imported at top
       const browser = await puppeteer.launch({
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
