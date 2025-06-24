@@ -99,6 +99,7 @@ export default function SistemaFinal() {
   // Update company mutation
   const updateCompanyMutation = useMutation({
     mutationFn: async (companyData: BusinessRegistration) => {
+      console.log('Dados sendo enviados:', companyData);
       const response = await fetch(`/api/internal/business-registrations/${companyData.id}`, {
         method: 'PUT',
         headers: {
@@ -107,8 +108,11 @@ export default function SistemaFinal() {
         },
         body: JSON.stringify(companyData),
       });
-      if (!response.ok) throw new Error('Falha ao atualizar empresa');
-      return response.json();
+      console.log('Response status:', response.status);
+      const responseData = await response.json();
+      console.log('Response data:', responseData);
+      if (!response.ok) throw new Error(responseData.message || 'Falha ao atualizar empresa');
+      return responseData;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/internal/business-registrations/with-tasks'] });
@@ -117,7 +121,8 @@ export default function SistemaFinal() {
       toast({ title: "Empresa atualizada com sucesso!", variant: "default" });
     },
     onError: (error: Error) => {
-      toast({ title: "Erro ao atualizar empresa", variant: "destructive" });
+      console.error('Erro na atualização:', error);
+      toast({ title: "Erro ao atualizar empresa", description: error.message, variant: "destructive" });
     },
   });
 

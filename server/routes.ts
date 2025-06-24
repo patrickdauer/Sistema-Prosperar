@@ -129,15 +129,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update business registration route
   app.put("/api/internal/business-registrations/:id", authenticateToken, async (req, res) => {
     try {
+      console.log('PUT request received for ID:', req.params.id);
+      console.log('Update data:', req.body);
+      
       const id = parseInt(req.params.id);
       const updateData = req.body;
       
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "ID inválido" });
+      }
+      
       const updatedRegistration = await storage.updateBusinessRegistration(id, updateData);
+      console.log('Updated registration:', updatedRegistration);
       
       res.json(updatedRegistration);
     } catch (error) {
       console.error('Error updating business registration:', error);
-      res.status(500).json({ message: "Erro ao atualizar empresa" });
+      res.status(500).json({ message: "Erro ao atualizar empresa", error: error.message });
     }
   });
 
