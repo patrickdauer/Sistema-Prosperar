@@ -1021,26 +1021,10 @@ export default function SistemaFinal() {
                                           type="file"
                                           onChange={handleFileSelect}
                                           accept=".pdf,.jpg,.jpeg,.png"
-                                          disabled={uploadFileMutation.isPending}
-                                          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
+                                          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                         />
                                         
-                                        {uploadFileMutation.isPending && uploadProgress > 0 && (
-                                          <div className="w-full mt-2">
-                                            <div className="flex justify-between text-sm text-gray-600 mb-1">
-                                              <span>Enviando arquivo...</span>
-                                              <span>{uploadProgress}%</span>
-                                            </div>
-                                            <div className="w-full bg-gray-200 rounded-full h-2">
-                                              <div 
-                                                className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
-                                                style={{ width: `${uploadProgress}%` }}
-                                              ></div>
-                                            </div>
-                                          </div>
-                                        )}
-                                        
-                                        {selectedFile && !uploadFileMutation.isPending && (
+                                        {selectedFile && (
                                           <div className="flex items-center justify-between p-3 mt-2 bg-blue-50 dark:bg-blue-950 rounded-lg border-2 border-blue-200 dark:border-blue-800">
                                             <div className="flex items-center space-x-3">
                                               <FileText className="h-5 w-5 text-blue-600" />
@@ -1057,10 +1041,20 @@ export default function SistemaFinal() {
                                               <Button
                                                 size="sm"
                                                 onClick={handleFileUpload}
+                                                disabled={uploadFileMutation.isPending}
                                                 className="bg-green-600 hover:bg-green-700 text-white"
                                               >
-                                                <Upload className="h-4 w-4 mr-1" />
-                                                Enviar Arquivo
+                                                {uploadFileMutation.isPending ? (
+                                                  <>
+                                                    <Upload className="h-4 w-4 mr-1 animate-spin" />
+                                                    Enviando...
+                                                  </>
+                                                ) : (
+                                                  <>
+                                                    <Upload className="h-4 w-4 mr-1" />
+                                                    Enviar Arquivo
+                                                  </>
+                                                )}
                                               </Button>
                                               <Button
                                                 size="sm"
@@ -1071,6 +1065,7 @@ export default function SistemaFinal() {
                                                     fileInputRef.current.value = '';
                                                   }
                                                 }}
+                                                disabled={uploadFileMutation.isPending}
                                               >
                                                 Cancelar
                                               </Button>
