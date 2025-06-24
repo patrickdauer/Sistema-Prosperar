@@ -91,10 +91,16 @@ export default function SistemaFinal() {
     queryKey: ['/api/internal/business-registrations/with-tasks'],
   });
 
-  const { data: taskFiles = [], refetch: refetchTaskFiles } = useQuery<TaskFile[]>({
+  const { data: taskFiles = [], refetch: refetchTaskFiles, isLoading: filesLoading } = useQuery<TaskFile[]>({
     queryKey: ['/api/internal/tasks', selectedTask?.id, 'files'],
     enabled: !!selectedTask?.id,
     refetchInterval: 2000, // Refetch every 2 seconds to catch new uploads
+    onSuccess: (data) => {
+      console.log('Files loaded for task:', selectedTask?.id, 'Files:', data);
+    },
+    onError: (error) => {
+      console.error('Error loading files:', error);
+    }
   });
 
   const { data: users = [] } = useQuery({
