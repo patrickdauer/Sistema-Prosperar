@@ -1079,6 +1079,8 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
       const taskId = parseInt(req.params.id);
       const file = req.file;
       
+      console.log('Upload request received for task:', taskId, 'File:', file?.originalname);
+      
       if (!file) {
         return res.status(400).json({ message: "Nenhum arquivo enviado" });
       }
@@ -1090,6 +1092,9 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
       }
 
       const registration = await storage.getBusinessRegistration(task.businessRegistrationId);
+      if (!registration) {
+        return res.status(404).json({ message: "Empresa não encontrada" });
+      }
       if (!registration) {
         return res.status(404).json({ message: "Empresa não encontrada" });
       }

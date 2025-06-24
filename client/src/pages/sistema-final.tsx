@@ -181,7 +181,7 @@ export default function SistemaFinal() {
       formData.append('file', file);
       formData.append('taskId', taskId.toString());
 
-      const response = await fetch('/api/internal/task/upload', {
+      const response = await fetch(`/api/internal/tasks/${taskId}/upload`, {
         method: 'POST',
         body: formData,
         headers: {
