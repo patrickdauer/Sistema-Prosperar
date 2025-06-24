@@ -85,6 +85,13 @@ export default function SistemaFinal() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { toast } = useToast();
+
+  // Debug effect to log files data
+  useEffect(() => {
+    if (selectedTask && taskFiles) {
+      console.log(`Files for task ${selectedTask.id}:`, taskFiles);
+    }
+  }, [selectedTask?.id, taskFiles]);
   const queryClient = useQueryClient();
 
   const { data: registrations = [], isLoading } = useQuery<BusinessRegistration[]>({
@@ -95,12 +102,6 @@ export default function SistemaFinal() {
     queryKey: ['/api/internal/tasks', selectedTask?.id, 'files'],
     enabled: !!selectedTask?.id,
     refetchInterval: 2000, // Refetch every 2 seconds to catch new uploads
-    onSuccess: (data) => {
-      console.log('Files loaded for task:', selectedTask?.id, 'Files:', data);
-    },
-    onError: (error) => {
-      console.error('Error loading files:', error);
-    }
   });
 
   const { data: users = [] } = useQuery({
@@ -1062,10 +1063,23 @@ export default function SistemaFinal() {
                                     {/* Files List */}
                                     <div>
                                       <label className="text-sm font-medium">Histórico de Arquivos</label>
-                                      {taskFiles.length > 0 ? (
-                                        <div className="mt-2 space-y-2">
-                                          {taskFiles.map((file) => (
-                                            <div key={file.id} className="flex items-center justify-between p-3 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                                      <div className="mt-2 space-y-2">
+                                        {filesLoading && (
+                                          <div className="text-center py-4 text-gray-500">
+                                            Carregando arquivos...
+                                          </div>
+                                        )}
+                                        
+                                        {!filesLoading && taskFiles.length === 0 && (
+                                          <div className="p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center text-sm text-muted-foreground">
+                                            Nenhum arquivo enviado ainda
+                                          </div>
+                                        )}
+                                        
+                                        {!filesLoading && taskFiles.length > 0 && taskFiles.map((file) => (
+                                          <div key={file.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border">
+                                            <div className="flex items-center space-x-3">
+                                              <FileText className="h-5 w-5 text-blue-600" />
                                               <div className="flex-1">
                                                 <span className="text-sm font-medium text-blue-600">{file.originalName}</span>
                                                 <div className="text-xs text-muted-foreground">
@@ -1073,25 +1087,25 @@ export default function SistemaFinal() {
                                                   {file.uploadedAt ? new Date(file.uploadedAt).toLocaleDateString('pt-BR') : ''}
                                                 </div>
                                               </div>
-                                              <div className="flex gap-2">
-                                                <Button
-                                                  size="sm"
-                                                  variant="outline"
-                                                  onClick={() => handleDownloadFile(file.id, file.originalName)}
-                                                  className="text-blue-600 hover:text-blue-700"
-                                                >
-                                                  <Download className="h-4 w-4 mr-1" />
-                                                  Baixar
-                                                </Button>
-                                              </div>
                                             </div>
-                                          ))}
-                                        </div>
-                                      ) : (
-                                        <div className="mt-2 p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center text-sm text-muted-foreground">
-                                          Nenhum arquivo enviado ainda
-                                        </div>
-                                      )}
+                                            <Button
+                                              size="sm"
+                                              variant="outline"
+                                              onClick={() => handleFileDownload(file.id)}
+                                              className="bg-green-50 hover:bg-green-100 text-green-700 border-green-300"
+                                            >
+                                              <Download className="h-4 w-4 mr-1" />
+                                              Baixar
+                                            </Button>
+                                          </div>
+                                        ))}
+                                        
+                                        {!filesLoading && taskFiles.length > 0 && (
+                                          <div className="text-xs text-gray-500 mt-2">
+                                            Total de arquivos: {taskFiles.length}
+                                          </div>
+                                        )}
+                                      </div>
                                     </div>
                                   </div>
                                 </DialogContent>
