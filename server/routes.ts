@@ -126,6 +126,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update business registration route
+  app.put("/api/internal/business-registrations/:id", authenticateToken, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updateData = req.body;
+      
+      const updatedRegistration = await storage.updateBusinessRegistration(id, updateData);
+      
+      res.json(updatedRegistration);
+    } catch (error) {
+      console.error('Error updating business registration:', error);
+      res.status(500).json({ message: "Erro ao atualizar empresa" });
+    }
+  });
+
   app.delete("/api/internal/task/:id", authenticateToken, async (req, res) => {
     try {
       const taskId = parseInt(req.params.id);
