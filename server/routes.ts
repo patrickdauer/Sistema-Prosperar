@@ -1164,8 +1164,17 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
         return res.status(404).json({ message: "Arquivo não encontrado" });
       }
 
-      // Download from Google Drive using the stored file ID
-      const fileBuffer = await googleDriveService.downloadFile(taskFile.filePath);
+      // Extract Google Drive file ID from URL or use as-is if it's already an ID
+      let driveFileId = taskFile.filePath;
+      if (taskFile.filePath.includes('drive.google.com')) {
+        const match = taskFile.filePath.match(/\/d\/([a-zA-Z0-9-_]+)/);
+        if (match) {
+          driveFileId = match[1];
+        }
+      }
+
+      // Download from Google Drive using the extracted file ID
+      const fileBuffer = await googleDriveService.downloadFile(driveFileId);
       
       res.setHeader('Content-Disposition', `attachment; filename="${taskFile.originalName}"`);
       res.setHeader('Content-Type', taskFile.mimeType || 'application/octet-stream');
