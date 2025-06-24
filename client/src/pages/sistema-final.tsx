@@ -81,27 +81,18 @@ export default function SistemaFinal() {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDescription, setNewTaskDescription] = useState('');
   const [editingTaskData, setEditingTaskData] = useState<{id: number; title: string; description: string} | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { toast } = useToast();
-
-  // Debug effect to log files data
-  useEffect(() => {
-    if (selectedTask && taskFiles) {
-      console.log(`Files for task ${selectedTask.id}:`, taskFiles);
-    }
-  }, [selectedTask?.id, taskFiles]);
   const queryClient = useQueryClient();
 
   const { data: registrations = [], isLoading } = useQuery<BusinessRegistration[]>({
     queryKey: ['/api/internal/business-registrations/with-tasks'],
   });
 
-  const { data: taskFiles = [], refetch: refetchTaskFiles, isLoading: filesLoading } = useQuery<TaskFile[]>({
+  const { data: taskFiles = [] } = useQuery<TaskFile[]>({
     queryKey: ['/api/internal/tasks', selectedTask?.id, 'files'],
     enabled: !!selectedTask?.id,
-    refetchInterval: 2000, // Refetch every 2 seconds to catch new uploads
   });
 
   const { data: users = [] } = useQuery({
@@ -199,11 +190,8 @@ export default function SistemaFinal() {
       });
       return response.json();
     },
-    onSuccess: (data) => {
-      console.log('Upload success:', data);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/internal/tasks', selectedTask?.id, 'files'] });
-      refetchTaskFiles();
-      setSelectedFile(null);
       toast({ title: "Arquivo enviado com sucesso!", variant: "default" });
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -422,7 +410,7 @@ export default function SistemaFinal() {
 
   const handleDownloadFile = async (fileId: number, fileName: string) => {
     try {
-      const response = await fetch(`/api/internal/files/${fileId}/download`, {
+      const response = await fetch(`/api/internal/tasks/files/${fileId}/download`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
@@ -442,23 +430,14 @@ export default function SistemaFinal() {
       
       toast({ title: "Arquivo baixado com sucesso!", variant: "default" });
     } catch (error) {
-      console.error('Download error:', error);
       toast({ title: "Erro ao baixar arquivo", variant: "destructive" });
     }
   };
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    setSelectedFile(file || null);
-  };
-
-  const handleFileUpload = () => {
-    if (selectedFile && selectedTask) {
-      uploadFileMutation.mutate({ taskId: selectedTask.id, file: selectedFile });
-      setSelectedFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+    if (file && selectedTask) {
+      uploadFileMutation.mutate({ taskId: selectedTask.id, file });
     }
   };
 
@@ -1005,108 +984,36 @@ export default function SistemaFinal() {
                                     {/* File Upload */}
                                     <div>
                                       <label className="text-sm font-medium">Envio de Arquivo</label>
-                                      <div className="mt-2 space-y-3">
+                                      <div className="mt-2">
                                         <input
                                           ref={fileInputRef}
                                           type="file"
-                                          onChange={handleFileSelect}
-                                          accept=".pdf,.jpg,.jpeg,.png"
+                                          onChange={handleFileUpload}
                                           className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                         />
-                                        {selectedFile && (
-                                          <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                                            <div>
-                                              <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                                                {selectedFile.name}
-                                              </p>
-                                              <p className="text-xs text-blue-600 dark:text-blue-300">
-                                                {Math.round(selectedFile.size / 1024)} KB
-                                              </p>
-                                            </div>
-                                            <div className="flex gap-2">
-                                              <Button
-                                                size="sm"
-                                                onClick={handleFileUpload}
-                                                disabled={uploadFileMutation.isPending}
-                                                className="bg-blue-600 hover:bg-blue-700"
-                                              >
-                                                {uploadFileMutation.isPending ? (
-                                                  <>
-                                                    <Upload className="h-4 w-4 mr-1 animate-spin" />
-                                                    Enviando...
-                                                  </>
-                                                ) : (
-                                                  <>
-                                                    <Upload className="h-4 w-4 mr-1" />
-                                                    Enviar
-                                                  </>
-                                                )}
-                                              </Button>
-                                              <Button
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() => {
-                                                  setSelectedFile(null);
-                                                  if (fileInputRef.current) {
-                                                    fileInputRef.current.value = '';
-                                                  }
-                                                }}
-                                              >
-                                                Cancelar
-                                              </Button>
-                                            </div>
-                                          </div>
-                                        )}
                                       </div>
                                     </div>
 
                                     {/* Files List */}
-                                    <div>
-                                      <label className="text-sm font-medium">Histórico de Arquivos</label>
-                                      <div className="mt-2 space-y-2">
-                                        {filesLoading && (
-                                          <div className="text-center py-4 text-gray-500">
-                                            Carregando arquivos...
-                                          </div>
-                                        )}
-                                        
-                                        {!filesLoading && taskFiles.length === 0 && (
-                                          <div className="p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center text-sm text-muted-foreground">
-                                            Nenhum arquivo enviado ainda
-                                          </div>
-                                        )}
-                                        
-                                        {!filesLoading && taskFiles.length > 0 && taskFiles.map((file) => (
-                                          <div key={file.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border">
-                                            <div className="flex items-center space-x-3">
-                                              <FileText className="h-5 w-5 text-blue-600" />
-                                              <div className="flex-1">
-                                                <span className="text-sm font-medium text-blue-600">{file.originalName}</span>
-                                                <div className="text-xs text-muted-foreground">
-                                                  {file.fileSize ? `${Math.round(file.fileSize / 1024)} KB` : ''} • 
-                                                  {file.uploadedAt ? new Date(file.uploadedAt).toLocaleDateString('pt-BR') : ''}
-                                                </div>
-                                              </div>
+                                    {taskFiles.length > 0 && (
+                                      <div>
+                                        <label className="text-sm font-medium">Arquivos Enviados</label>
+                                        <div className="mt-2 space-y-2">
+                                          {taskFiles.map((file) => (
+                                            <div key={file.id} className="flex items-center justify-between p-2 border rounded">
+                                              <span className="text-sm">{file.originalName}</span>
+                                              <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => handleDownloadFile(file.id, file.originalName)}
+                                              >
+                                                <Download className="h-4 w-4" />
+                                              </Button>
                                             </div>
-                                            <Button
-                                              size="sm"
-                                              variant="outline"
-                                              onClick={() => handleFileDownload(file.id)}
-                                              className="bg-green-50 hover:bg-green-100 text-green-700 border-green-300"
-                                            >
-                                              <Download className="h-4 w-4 mr-1" />
-                                              Baixar
-                                            </Button>
-                                          </div>
-                                        ))}
-                                        
-                                        {!filesLoading && taskFiles.length > 0 && (
-                                          <div className="text-xs text-gray-500 mt-2">
-                                            Total de arquivos: {taskFiles.length}
-                                          </div>
-                                        )}
+                                          ))}
+                                        </div>
                                       </div>
-                                    </div>
+                                    )}
                                   </div>
                                 </DialogContent>
                               </Dialog>

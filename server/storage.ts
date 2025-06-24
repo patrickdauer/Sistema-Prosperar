@@ -342,17 +342,12 @@ export class DatabaseStorage implements IStorage {
 
   // File management
   async createTaskFile(file: InsertTaskFile): Promise<TaskFile> {
-    console.log('Creating task file:', file);
     const [created] = await db.insert(taskFiles).values(file).returning();
-    console.log('Task file created:', created);
     return created;
   }
 
   async getTaskFiles(taskId: number): Promise<TaskFile[]> {
-    console.log(`Getting files for task ${taskId}`);
-    const files = await db.select().from(taskFiles).where(eq(taskFiles.taskId, taskId));
-    console.log(`Found ${files.length} files for task ${taskId}:`, files);
-    return files;
+    return await db.select().from(taskFiles).where(eq(taskFiles.taskId, taskId));
   }
 
   async getTaskFileById(fileId: number): Promise<TaskFile | undefined> {

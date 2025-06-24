@@ -1128,13 +1128,10 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
         filePath: driveFileId,
         fileSize: file.size,
         mimeType: file.mimetype,
-        uploadedBy: req.user!.id
+        uploadedBy: (req as any).user.userId
       });
 
-      console.log('File saved to database:', taskFile);
-
       res.json({
-        success: true,
         message: "Arquivo enviado com sucesso",
         file: taskFile,
         driveFileId: driveFileId
@@ -1149,9 +1146,7 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
   app.get("/api/internal/tasks/:id/files", authenticateToken, async (req, res) => {
     try {
       const taskId = parseInt(req.params.id);
-      console.log('Getting files for task:', taskId);
       const files = await storage.getTaskFiles(taskId);
-      console.log('Found files:', files);
       res.json(files);
     } catch (error) {
       console.error("Error getting task files:", error);
