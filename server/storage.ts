@@ -170,30 +170,24 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateBusinessRegistration(id: number, data: Partial<BusinessRegistration>): Promise<BusinessRegistration> {
-    // Filter out fields that don't exist in the database schema
-    const allowedFields = {
-      razaoSocial: data.razaoSocial,
-      nomeFantasia: data.nomeFantasia,
-      cnpj: data.cnpj,
-      endereco: data.endereco,
-      emailEmpresa: data.emailEmpresa,
-      telefoneEmpresa: data.telefoneEmpresa,
-      capitalSocial: data.capitalSocial,
-      atividadePrincipal: data.atividadePrincipal,
-      socios: data.socios,
-      updatedAt: new Date()
-    };
+    // Map frontend field names to database field names
+    const allowedFields: any = {};
+    
+    if (data.razaoSocial !== undefined) allowedFields.razaoSocial = data.razaoSocial;
+    if (data.nomeFantasia !== undefined) allowedFields.nomeFantasia = data.nomeFantasia;
+    if (data.cnpj !== undefined) allowedFields.cnpj = data.cnpj;
+    if (data.endereco !== undefined) allowedFields.endereco = data.endereco;
+    if (data.emailEmpresa !== undefined) allowedFields.emailEmpresa = data.emailEmpresa;
+    if (data.telefoneEmpresa !== undefined) allowedFields.telefoneEmpresa = data.telefoneEmpresa;
+    if (data.capitalSocial !== undefined) allowedFields.capitalSocial = data.capitalSocial;
+    if (data.atividadePrincipal !== undefined) allowedFields.atividadePrincipal = data.atividadePrincipal;
+    if (data.socios !== undefined) allowedFields.socios = data.socios;
 
-    // Remove undefined values
-    const cleanData = Object.fromEntries(
-      Object.entries(allowedFields).filter(([_, value]) => value !== undefined)
-    );
-
-    console.log('Updating with clean data:', cleanData);
+    console.log('Updating with mapped data:', allowedFields);
 
     const [updatedRegistration] = await db
       .update(businessRegistrations)
-      .set(cleanData)
+      .set(allowedFields)
       .where(eq(businessRegistrations.id, id))
       .returning();
     
