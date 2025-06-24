@@ -1095,9 +1095,6 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
       if (!registration) {
         return res.status(404).json({ message: "Empresa não encontrada" });
       }
-      if (!registration) {
-        return res.status(404).json({ message: "Empresa não encontrada" });
-      }
 
       // Create subfolder based on task title
       const subfolderName = task.title.toUpperCase().replace(/[^A-Z0-9]/g, '_');

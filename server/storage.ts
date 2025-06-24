@@ -287,11 +287,17 @@ export class DatabaseStorage implements IStorage {
   async updateTaskField(taskId: number, field: string, value: any): Promise<Task> {
     console.log(`Updating task ${taskId} field ${field} with value:`, value);
     
+    const validFields = ['status', 'observacao', 'data_lembrete', 'cnpj', 'title', 'description'];
+    if (!validFields.includes(field)) {
+      throw new Error(`Campo inválido: ${field}`);
+    }
+    
     const updateData: any = {};
     
-    // Handle date fields conversion
+    // Handle date fields conversion - ensure proper format
     if (field === 'data_lembrete' && value) {
-      updateData[field] = new Date(value);
+      // Convert date string to proper date format
+      updateData[field] = new Date(value + 'T00:00:00.000Z');
     } else {
       updateData[field] = value;
     }
@@ -303,6 +309,10 @@ export class DatabaseStorage implements IStorage {
       .set(updateData)
       .where(eq(tasks.id, taskId))
       .returning();
+    
+    if (!updatedTask) {
+      throw new Error('Tarefa não encontrada');
+    }
     
     console.log('Updated task:', updatedTask);
     return updatedTask;
