@@ -108,7 +108,8 @@ function App() {
               <Route path="/dashboard-interno" component={ProtectedDashboardInterno} />
               <Route path="/novo-sistema" component={ProtectedSistemaFinal} />
               <Route path="/sistema-final" component={ProtectedSistemaFinal} />
-              <Route component={NotFound} />
+              <Route path="/sistema" component={ProtectedSistemaFinal} />
+              <Route path="*" component={NotFound} />
             </Switch>
           </TooltipProvider>
         </AuthProvider>

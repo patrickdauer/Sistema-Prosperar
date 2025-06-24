@@ -54,6 +54,13 @@ app.use((req, res, next) => {
     await setupVite(app, server);
   } else {
     serveStatic(app);
+    
+    // SPA fallback for production - serve index.html for non-API routes
+    app.get('*', (req, res) => {
+      if (!req.path.startsWith('/api/')) {
+        res.sendFile('index.html', { root: 'dist/public' });
+      }
+    });
   }
 
   // ALWAYS serve the app on port 5000
