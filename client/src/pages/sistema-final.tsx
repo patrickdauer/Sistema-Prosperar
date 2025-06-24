@@ -115,7 +115,10 @@ export default function SistemaFinal() {
       return responseData;
     },
     onSuccess: () => {
+      // Force refresh all related queries
       queryClient.invalidateQueries({ queryKey: ['/api/internal/business-registrations/with-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/internal/business-registrations'] });
+      queryClient.refetchQueries({ queryKey: ['/api/internal/business-registrations/with-tasks'] });
       setShowCompanyEdit(false);
       setEditingCompanyData(null);
       toast({ title: "Empresa atualizada com sucesso!", variant: "default" });
