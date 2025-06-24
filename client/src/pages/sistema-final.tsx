@@ -93,6 +93,7 @@ export default function SistemaFinal() {
   const { data: taskFiles = [], refetch: refetchTaskFiles } = useQuery<TaskFile[]>({
     queryKey: ['/api/internal/tasks', selectedTask?.id, 'files'],
     enabled: !!selectedTask?.id,
+    refetchInterval: 2000, // Refetch every 2 seconds to catch new uploads
   });
 
   const { data: users = [] } = useQuery({
