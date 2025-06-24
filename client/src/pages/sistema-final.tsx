@@ -434,12 +434,32 @@ export default function SistemaFinal() {
   };
 
   const getTaskStatistics = () => {
-    const allTasks = getAllTasks();
-    return {
-      pending: allTasks.filter((task: any) => task.status === 'pending').length,
-      inProgress: allTasks.filter((task: any) => task.status === 'in_progress').length,
-      completed: allTasks.filter((task: any) => task.status === 'completed').length,
-    };
+    if (!registrations || !Array.isArray(registrations)) {
+      return { pending: 0, inProgress: 0, completed: 0 };
+    }
+    
+    let pending = 0, inProgress = 0, completed = 0;
+    
+    registrations.forEach((reg: BusinessRegistration) => {
+      if (reg.tasks && Array.isArray(reg.tasks)) {
+        reg.tasks.forEach((task: Task) => {
+          switch (task.status) {
+            case 'pending':
+              pending++;
+              break;
+            case 'in_progress':
+              inProgress++;
+              break;
+            case 'completed':
+              completed++;
+              break;
+          }
+        });
+      }
+    });
+    
+    console.log('Stats calculados:', { pending, inProgress, completed });
+    return { pending, inProgress, completed };
   };
 
   const stats = getTaskStatistics();
