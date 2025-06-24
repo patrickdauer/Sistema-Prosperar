@@ -465,18 +465,33 @@ export default function SistemaFinal() {
         },
       });
       
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'arquivo';
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
+      if (!response.ok) {
+        throw new Error('Falha ao baixar arquivo');
       }
+      
+      const blob = await response.blob();
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let fileName = 'arquivo';
+      
+      if (contentDisposition) {
+        const matches = contentDisposition.match(/filename="(.+)"/);
+        if (matches) {
+          fileName = matches[1];
+        }
+      }
+      
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      
+      toast({ title: "Arquivo baixado com sucesso!", variant: "default" });
     } catch (error) {
+      console.error('Download error:', error);
       toast({ title: "Erro ao baixar arquivo", variant: "destructive" });
     }
   };
@@ -1096,7 +1111,7 @@ export default function SistemaFinal() {
                                               </div>
                                               <Button
                                                 size="sm"
-                                                onClick={() => handleDownloadFile(file.id, file.originalName)}
+                                                onClick={() => handleFileDownload(file.id)}
                                                 className="bg-green-600 hover:bg-green-700 text-white shadow-sm"
                                               >
                                                 <Download className="h-4 w-4 mr-1" />
