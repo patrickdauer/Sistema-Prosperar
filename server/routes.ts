@@ -566,7 +566,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/internal/task/:id/upload", authenticateToken, taskUpload.single('file'), async (req, res) => {
+  app.post("/api/internal/tasks/:id/upload", authenticateToken, taskUpload.single('file'), async (req, res) => {
     try {
       const taskId = parseInt(req.params.id);
       const file = req.file;
