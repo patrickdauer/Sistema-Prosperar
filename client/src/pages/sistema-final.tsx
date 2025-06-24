@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Building2, Users, Upload, Download, Calendar, MessageSquare, LogOut, Search, Filter, Trash2, Edit, Plus, Clock, CheckCircle2, AlertCircle, User, FileSpreadsheet, FileDown, UserPlus, Settings } from 'lucide-react';
+import { Building2, Users, Upload, Download, Calendar, MessageSquare, LogOut, Search, Filter, Trash2, Edit, Plus, Clock, CheckCircle2, AlertCircle, User, FileSpreadsheet, FileDown, UserPlus, Settings, FileText } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -66,6 +66,7 @@ interface BusinessRegistration {
 }
 
 export default function SistemaFinal() {
+  console.log('SistemaFinal component mounted');
   const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -446,10 +447,22 @@ export default function SistemaFinal() {
     }
   };
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    setSelectedFile(file || null);
-  };
+  const handleFileSelect = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      console.log('File select event triggered');
+      const file = event.target.files?.[0];
+      console.log('Selected file:', file?.name, file?.type, file?.size);
+      
+      // Prevent any state issues by setting in next tick
+      setTimeout(() => {
+        console.log('Setting selected file state');
+        setSelectedFile(file || null);
+      }, 0);
+      
+    } catch (error) {
+      console.error('Error in handleFileSelect:', error);
+    }
+  }, []);
 
   const handleFileUpload = () => {
     if (selectedFile && selectedTask) {
@@ -596,10 +609,10 @@ export default function SistemaFinal() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Carregando sistema...</p>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-300">Carregando sistema...</p>
         </div>
       </div>
     );
@@ -1019,7 +1032,10 @@ export default function SistemaFinal() {
                                         <input
                                           ref={fileInputRef}
                                           type="file"
-                                          onChange={handleFileSelect}
+                                          onChange={(e) => {
+                                            console.log('Input onChange fired');
+                                            handleFileSelect(e);
+                                          }}
                                           accept=".pdf,.jpg,.jpeg,.png"
                                           className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                         />
