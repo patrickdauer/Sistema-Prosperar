@@ -170,11 +170,36 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateBusinessRegistration(id: number, data: Partial<BusinessRegistration>): Promise<BusinessRegistration> {
+    // Filter out fields that don't exist in the database schema
+    const allowedFields = {
+      razaoSocial: data.razaoSocial,
+      nomeFantasia: data.nomeFantasia,
+      cnpj: data.cnpj,
+      endereco: data.endereco,
+      emailEmpresa: data.emailEmpresa,
+      telefoneEmpresa: data.telefoneEmpresa,
+      capitalSocial: data.capitalSocial,
+      atividadePrincipal: data.atividadePrincipal,
+      socios: data.socios,
+      updatedAt: new Date()
+    };
+
+    // Remove undefined values
+    const cleanData = Object.fromEntries(
+      Object.entries(allowedFields).filter(([_, value]) => value !== undefined)
+    );
+
+    console.log('Updating with clean data:', cleanData);
+
     const [updatedRegistration] = await db
       .update(businessRegistrations)
-      .set(data)
+      .set(cleanData)
       .where(eq(businessRegistrations.id, id))
       .returning();
+    
+    if (!updatedRegistration) {
+      throw new Error('Empresa não encontrada');
+    }
     
     return updatedRegistration;
   }
