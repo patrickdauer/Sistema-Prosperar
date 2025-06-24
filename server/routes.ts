@@ -152,7 +152,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/internal/task/:id", authenticateToken, async (req, res) => {
+  app.delete("/api/internal/tasks/:id", authenticateToken, async (req, res) => {
     try {
       const taskId = parseInt(req.params.id);
       await storage.deleteTask(taskId);
@@ -163,6 +163,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create new task route
+  app.post("/api/internal/tasks", authenticateToken, async (req, res) => {
+    try {
+      const { businessRegistrationId, title, description, department, status, order } = req.body;
+      
+      const newTask = await storage.createTask({
+        businessRegistrationId,
+        title,
+        description,
+        department,
+        status: status || 'pending',
+        order: order || 99
+      });
+      
+      res.json(newTask);
+    } catch (error) {
+      console.error('Error creating task:', error);
+      res.status(500).json({ message: "Erro ao criar tarefa" });
+    }
+  });
+
+  // Legacy route for backward compatibility
   app.post("/api/internal/registration/:id/task", authenticateToken, async (req, res) => {
     try {
       const registrationId = parseInt(req.params.id);

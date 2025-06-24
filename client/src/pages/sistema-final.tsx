@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Building2, Users, Upload, Download, Calendar, MessageSquare, LogOut, Search, Filter, Trash2, Edit, Plus, Clock, CheckCircle2, AlertCircle, User, FileSpreadsheet, FileDown, UserPlus, Settings } from 'lucide-react';
 import { Label } from '@/components/ui/label';
@@ -77,6 +77,9 @@ export default function SistemaFinal() {
   const [showUserManagement, setShowUserManagement] = useState(false);
   const [showCompanyEdit, setShowCompanyEdit] = useState(false);
   const [editingCompanyData, setEditingCompanyData] = useState<BusinessRegistration | null>(null);
+  const [newTaskDepartment, setNewTaskDepartment] = useState('');
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [newTaskDescription, setNewTaskDescription] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { toast } = useToast();
@@ -322,6 +325,53 @@ export default function SistemaFinal() {
     onError: (error: Error) => {
       console.error('Erro ao exportar PDF:', error);
       toast({ title: "Erro ao exportar PDF", description: error.message, variant: "destructive" });
+    },
+  });
+
+  // Create task mutation
+  const createTaskMutation = useMutation({
+    mutationFn: async (taskData: any) => {
+      const response = await fetch('/api/internal/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(taskData),
+      });
+      if (!response.ok) throw new Error('Erro ao criar tarefa');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/internal/business-registrations/with-tasks'] });
+      setNewTaskTitle('');
+      setNewTaskDescription('');
+      setNewTaskDepartment('');
+      toast({ title: "Tarefa criada com sucesso!", variant: "default" });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Erro ao criar tarefa", description: error.message, variant: "destructive" });
+    },
+  });
+
+  // Delete task mutation
+  const deleteTaskMutation = useMutation({
+    mutationFn: async (taskId: number) => {
+      const response = await fetch(`/api/internal/tasks/${taskId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      if (!response.ok) throw new Error('Erro ao deletar tarefa');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/internal/business-registrations/with-tasks'] });
+      toast({ title: "Tarefa deletada com sucesso!", variant: "default" });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Erro ao deletar tarefa", description: error.message, variant: "destructive" });
     },
   });
 
@@ -668,6 +718,66 @@ export default function SistemaFinal() {
 
                     return (
                       <TabsContent key={department} value={department} className="space-y-4 mt-4">
+                        <div className="flex justify-between items-center mb-4">
+                          <h3 className="text-lg font-semibold">{department}</h3>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button size="sm" onClick={() => setNewTaskDepartment(department)}>
+                                <Plus className="h-4 w-4 mr-2" />
+                                Nova Tarefa
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Nova Tarefa - {department}</DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-4">
+                                <div>
+                                  <Label>Título da Tarefa</Label>
+                                  <Input
+                                    value={newTaskTitle}
+                                    onChange={(e) => setNewTaskTitle(e.target.value)}
+                                    placeholder="Digite o título da tarefa"
+                                  />
+                                </div>
+                                <div>
+                                  <Label>Descrição</Label>
+                                  <Input
+                                    value={newTaskDescription}
+                                    onChange={(e) => setNewTaskDescription(e.target.value)}
+                                    placeholder="Digite a descrição da tarefa"
+                                  />
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button 
+                                    onClick={() => {
+                                      createTaskMutation.mutate({
+                                        businessRegistrationId: registration.id,
+                                        title: newTaskTitle,
+                                        description: newTaskDescription,
+                                        department: department,
+                                        status: 'pending',
+                                        order: (departmentTasks?.length || 0) + 1
+                                      });
+                                      setNewTaskTitle('');
+                                      setNewTaskDescription('');
+                                    }}
+                                    disabled={!newTaskTitle.trim()}
+                                  >
+                                    Criar Tarefa
+                                  </Button>
+                                  <DialogClose asChild>
+                                    <Button variant="outline" onClick={() => {
+                                      setNewTaskTitle('');
+                                      setNewTaskDescription('');
+                                    }}>Cancelar</Button>
+                                  </DialogClose>
+                                </div>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+                        
                         {shouldShowDepartment && departmentTasks?.map((task: Task) => (
                           <div key={task.id} className="flex items-center justify-between p-4 border rounded-lg">
                             <div className="flex-1">
@@ -690,6 +800,15 @@ export default function SistemaFinal() {
                               <Badge className={`${getStatusColor(task.status)} text-white`}>
                                 {getStatusText(task.status)}
                               </Badge>
+                              
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => deleteTaskMutation.mutate(task.id)}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
                               
                               <Dialog>
                                 <DialogTrigger asChild>
