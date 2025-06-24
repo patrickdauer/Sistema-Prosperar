@@ -81,6 +81,7 @@ export default function SistemaFinal() {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDescription, setNewTaskDescription] = useState('');
   const [editingTaskData, setEditingTaskData] = useState<{id: number; title: string; description: string} | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { toast } = useToast();
@@ -195,6 +196,7 @@ export default function SistemaFinal() {
       console.log('Upload success:', data);
       queryClient.invalidateQueries({ queryKey: ['/api/internal/tasks', selectedTask?.id, 'files'] });
       refetchTaskFiles();
+      setSelectedFile(null);
       toast({ title: "Arquivo enviado com sucesso!", variant: "default" });
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -438,10 +440,18 @@ export default function SistemaFinal() {
     }
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && selectedTask) {
-      uploadFileMutation.mutate({ taskId: selectedTask.id, file });
+    setSelectedFile(file || null);
+  };
+
+  const handleFileUpload = () => {
+    if (selectedFile && selectedTask) {
+      uploadFileMutation.mutate({ taskId: selectedTask.id, file: selectedFile });
+      setSelectedFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -988,13 +998,58 @@ export default function SistemaFinal() {
                                     {/* File Upload */}
                                     <div>
                                       <label className="text-sm font-medium">Envio de Arquivo</label>
-                                      <div className="mt-2">
+                                      <div className="mt-2 space-y-3">
                                         <input
                                           ref={fileInputRef}
                                           type="file"
-                                          onChange={handleFileUpload}
+                                          onChange={handleFileSelect}
+                                          accept=".pdf,.jpg,.jpeg,.png"
                                           className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                         />
+                                        {selectedFile && (
+                                          <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                                            <div>
+                                              <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                                                {selectedFile.name}
+                                              </p>
+                                              <p className="text-xs text-blue-600 dark:text-blue-300">
+                                                {Math.round(selectedFile.size / 1024)} KB
+                                              </p>
+                                            </div>
+                                            <div className="flex gap-2">
+                                              <Button
+                                                size="sm"
+                                                onClick={handleFileUpload}
+                                                disabled={uploadFileMutation.isPending}
+                                                className="bg-blue-600 hover:bg-blue-700"
+                                              >
+                                                {uploadFileMutation.isPending ? (
+                                                  <>
+                                                    <Upload className="h-4 w-4 mr-1 animate-spin" />
+                                                    Enviando...
+                                                  </>
+                                                ) : (
+                                                  <>
+                                                    <Upload className="h-4 w-4 mr-1" />
+                                                    Enviar
+                                                  </>
+                                                )}
+                                              </Button>
+                                              <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => {
+                                                  setSelectedFile(null);
+                                                  if (fileInputRef.current) {
+                                                    fileInputRef.current.value = '';
+                                                  }
+                                                }}
+                                              >
+                                                Cancelar
+                                              </Button>
+                                            </div>
+                                          </div>
+                                        )}
                                       </div>
                                     </div>
 
