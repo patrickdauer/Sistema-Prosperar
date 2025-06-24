@@ -245,13 +245,21 @@ export default function SistemaFinal() {
   // Export mutations
   const exportExcelMutation = useMutation({
     mutationFn: async () => {
+      const token = localStorage.getItem('token');
+      console.log('Token para exportação:', token ? 'Presente' : 'Ausente');
+      
       const response = await fetch('/api/internal/export/excel', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${token}`,
         },
       });
       
-      if (!response.ok) throw new Error('Falha ao exportar Excel');
+      console.log('Response status:', response.status);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Erro na resposta:', errorText);
+        throw new Error(`Falha ao exportar Excel: ${response.status} - ${errorText}`);
+      }
       
       return await response.blob();
     },
@@ -266,8 +274,9 @@ export default function SistemaFinal() {
       window.URL.revokeObjectURL(url);
       toast({ title: "Excel exportado com sucesso!", variant: "default" });
     },
-    onError: () => {
-      toast({ title: "Erro ao exportar Excel", variant: "destructive" });
+    onError: (error: Error) => {
+      console.error('Erro ao exportar Excel:', error);
+      toast({ title: "Erro ao exportar Excel", description: error.message, variant: "destructive" });
     },
   });
 
@@ -294,8 +303,9 @@ export default function SistemaFinal() {
       window.URL.revokeObjectURL(url);
       toast({ title: "PDF exportado com sucesso!", variant: "default" });
     },
-    onError: () => {
-      toast({ title: "Erro ao exportar PDF", variant: "destructive" });
+    onError: (error: Error) => {
+      console.error('Erro ao exportar PDF:', error);
+      toast({ title: "Erro ao exportar PDF", description: error.message, variant: "destructive" });
     },
   });
 
