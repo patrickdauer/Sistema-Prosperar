@@ -576,7 +576,7 @@ export default function SistemaFinal() {
                   <div>
                     <CardTitle className="text-lg">{registration.razaoSocial}</CardTitle>
                     <p className="text-sm text-muted-foreground mt-1">
-                      {registration.nomeFantasia} • {registration.emailEmpresa} • {registration.telefoneEmpresa}
+                      {registration.nomeFantasia} • {registration.emailEmpresa}{registration.telefoneEmpresa ? ` • ${registration.telefoneEmpresa}` : ''}
                     </p>
                     {registration.cnpj && (
                       <p className="text-sm text-muted-foreground">CNPJ: {registration.cnpj}</p>
