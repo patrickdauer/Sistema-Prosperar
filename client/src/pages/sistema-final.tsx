@@ -80,6 +80,7 @@ export default function SistemaFinal() {
   const [newTaskDepartment, setNewTaskDepartment] = useState('');
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDescription, setNewTaskDescription] = useState('');
+  const [editingTaskData, setEditingTaskData] = useState<{id: number; title: string; description: string} | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { toast } = useToast();
@@ -372,6 +373,33 @@ export default function SistemaFinal() {
     },
     onError: (error: Error) => {
       toast({ title: "Erro ao deletar tarefa", description: error.message, variant: "destructive" });
+    },
+  });
+
+  // Edit task mutation
+  const editTaskMutation = useMutation({
+    mutationFn: async (taskData: {id: number; title: string; description: string}) => {
+      const response = await fetch(`/api/internal/tasks/${taskData.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({
+          title: taskData.title,
+          description: taskData.description
+        }),
+      });
+      if (!response.ok) throw new Error('Erro ao editar tarefa');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/internal/business-registrations/with-tasks'] });
+      setEditingTaskData(null);
+      toast({ title: "Tarefa editada com sucesso!", variant: "default" });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Erro ao editar tarefa", description: error.message, variant: "destructive" });
     },
   });
 
@@ -809,6 +837,67 @@ export default function SistemaFinal() {
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
+
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => setEditingTaskData({
+                                      id: task.id,
+                                      title: task.title,
+                                      description: task.description
+                                    })}
+                                    className="text-blue-600 hover:text-blue-700"
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>Editar Tarefa</DialogTitle>
+                                  </DialogHeader>
+                                  <div className="space-y-4">
+                                    <div>
+                                      <Label>Título da Tarefa</Label>
+                                      <Input
+                                        value={editingTaskData?.title || ''}
+                                        onChange={(e) => setEditingTaskData(prev => 
+                                          prev ? {...prev, title: e.target.value} : null
+                                        )}
+                                        placeholder="Digite o título da tarefa"
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label>Descrição</Label>
+                                      <Input
+                                        value={editingTaskData?.description || ''}
+                                        onChange={(e) => setEditingTaskData(prev => 
+                                          prev ? {...prev, description: e.target.value} : null
+                                        )}
+                                        placeholder="Digite a descrição da tarefa"
+                                      />
+                                    </div>
+                                    <div className="flex gap-2">
+                                      <Button 
+                                        onClick={() => {
+                                          if (editingTaskData) {
+                                            editTaskMutation.mutate(editingTaskData);
+                                          }
+                                        }}
+                                        disabled={!editingTaskData?.title.trim()}
+                                      >
+                                        Salvar Alterações
+                                      </Button>
+                                      <DialogClose asChild>
+                                        <Button variant="outline" onClick={() => setEditingTaskData(null)}>
+                                          Cancelar
+                                        </Button>
+                                      </DialogClose>
+                                    </div>
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
                               
                               <Dialog>
                                 <DialogTrigger asChild>

@@ -152,6 +152,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete task route
   app.delete("/api/internal/tasks/:id", authenticateToken, async (req, res) => {
     try {
       const taskId = parseInt(req.params.id);
@@ -160,6 +161,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error deleting task:', error);
       res.status(500).json({ message: "Erro ao deletar tarefa" });
+    }
+  });
+
+  // Edit task route
+  app.put("/api/internal/tasks/:id", authenticateToken, async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.id);
+      const { title, description } = req.body;
+      
+      // Update task title and description
+      const updatedTask = await storage.updateTaskField(taskId, 'title', title);
+      await storage.updateTaskField(taskId, 'description', description);
+      
+      res.json({ success: true, task: updatedTask });
+    } catch (error) {
+      console.error('Error editing task:', error);
+      res.status(500).json({ message: "Erro ao editar tarefa" });
     }
   });
 
