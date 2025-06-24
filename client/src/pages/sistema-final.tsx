@@ -90,7 +90,7 @@ export default function SistemaFinal() {
     queryKey: ['/api/internal/business-registrations/with-tasks'],
   });
 
-  const { data: taskFiles = [] } = useQuery<TaskFile[]>({
+  const { data: taskFiles = [], refetch: refetchTaskFiles } = useQuery<TaskFile[]>({
     queryKey: ['/api/internal/tasks', selectedTask?.id, 'files'],
     enabled: !!selectedTask?.id,
   });
@@ -192,6 +192,7 @@ export default function SistemaFinal() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/internal/tasks', selectedTask?.id, 'files'] });
+      refetchTaskFiles();
       toast({ title: "Arquivo enviado com sucesso!", variant: "default" });
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -410,7 +411,7 @@ export default function SistemaFinal() {
 
   const handleDownloadFile = async (fileId: number, fileName: string) => {
     try {
-      const response = await fetch(`/api/internal/tasks/files/${fileId}/download`, {
+      const response = await fetch(`/api/internal/files/${fileId}/download`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
@@ -430,6 +431,7 @@ export default function SistemaFinal() {
       
       toast({ title: "Arquivo baixado com sucesso!", variant: "default" });
     } catch (error) {
+      console.error('Download error:', error);
       toast({ title: "Erro ao baixar arquivo", variant: "destructive" });
     }
   };
@@ -995,25 +997,39 @@ export default function SistemaFinal() {
                                     </div>
 
                                     {/* Files List */}
-                                    {taskFiles.length > 0 && (
-                                      <div>
-                                        <label className="text-sm font-medium">Arquivos Enviados</label>
+                                    <div>
+                                      <label className="text-sm font-medium">Histórico de Arquivos</label>
+                                      {taskFiles.length > 0 ? (
                                         <div className="mt-2 space-y-2">
                                           {taskFiles.map((file) => (
-                                            <div key={file.id} className="flex items-center justify-between p-2 border rounded">
-                                              <span className="text-sm">{file.originalName}</span>
-                                              <Button
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() => handleDownloadFile(file.id, file.originalName)}
-                                              >
-                                                <Download className="h-4 w-4" />
-                                              </Button>
+                                            <div key={file.id} className="flex items-center justify-between p-3 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                                              <div className="flex-1">
+                                                <span className="text-sm font-medium text-blue-600">{file.originalName}</span>
+                                                <div className="text-xs text-muted-foreground">
+                                                  {file.fileSize ? `${Math.round(file.fileSize / 1024)} KB` : ''} • 
+                                                  {file.uploadedAt ? new Date(file.uploadedAt).toLocaleDateString('pt-BR') : ''}
+                                                </div>
+                                              </div>
+                                              <div className="flex gap-2">
+                                                <Button
+                                                  size="sm"
+                                                  variant="outline"
+                                                  onClick={() => handleDownloadFile(file.id, file.originalName)}
+                                                  className="text-blue-600 hover:text-blue-700"
+                                                >
+                                                  <Download className="h-4 w-4 mr-1" />
+                                                  Baixar
+                                                </Button>
+                                              </div>
                                             </div>
                                           ))}
                                         </div>
-                                      </div>
-                                    )}
+                                      ) : (
+                                        <div className="mt-2 p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center text-sm text-muted-foreground">
+                                          Nenhum arquivo enviado ainda
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
                                 </DialogContent>
                               </Dialog>
