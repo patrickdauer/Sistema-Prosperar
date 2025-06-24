@@ -11,12 +11,10 @@ export async function seedTaskTemplates() {
 
     // Departamento Societário
     const societarioTasks = [
-      { department: 'Societário', title: 'CNPJ', description: 'Solicitação e obtenção do CNPJ da empresa', order: 1, estimatedDays: 5, isRequired: true },
-      { department: 'Societário', title: 'Alvará de Licença', description: 'Obtenção do alvará de licença para funcionamento', order: 2, estimatedDays: 10, isRequired: true },
-      { department: 'Societário', title: 'Alvará Sanitário', description: 'Obtenção do alvará sanitário quando necessário', order: 3, estimatedDays: 15, isRequired: false },
-      { department: 'Societário', title: 'Alvará do Bombeiro', description: 'Obtenção do alvará do corpo de bombeiros', order: 4, estimatedDays: 20, isRequired: false },
-      { department: 'Societário', title: 'Registro na Junta Comercial', description: 'Registro da empresa na Junta Comercial', order: 5, estimatedDays: 7, isRequired: true },
-      { department: 'Societário', title: 'Registro no Cartório', description: 'Registro no cartório (apenas para Igreja, Associação ou Fundação)', order: 6, estimatedDays: 10, isRequired: false },
+      { department: 'Societário', title: 'Homologação da Junta Comercial', description: 'Homologação do registro da empresa na Junta Comercial', order: 1, estimatedDays: 7, isRequired: true },
+      { department: 'Societário', title: 'Solicitar Inscrição Municipal', description: 'Solicitação de inscrição municipal junto à prefeitura', order: 2, estimatedDays: 10, isRequired: true },
+      { department: 'Societário', title: 'Solicitar Inscrição Estadual', description: 'Solicitação de inscrição estadual junto à Sefaz', order: 3, estimatedDays: 15, isRequired: true },
+      { department: 'Societário', title: 'Solicitar Credenciamento NF', description: 'Solicitação de credenciamento para emissão de nota fiscal', order: 4, estimatedDays: 20, isRequired: true },
     ];
 
     // Departamento Fiscal
