@@ -1188,7 +1188,15 @@ export default function SistemaFinal() {
               {/* Action Buttons */}
               <div className="flex gap-2 pt-4 border-t">
                 <Button 
-                  onClick={() => updateCompanyMutation.mutate(editingCompanyData)}
+                  onClick={() => {
+                    console.log('Botão clicado!');
+                    console.log('editingCompanyData:', editingCompanyData);
+                    if (editingCompanyData) {
+                      updateCompanyMutation.mutate(editingCompanyData);
+                    } else {
+                      console.error('editingCompanyData é null/undefined');
+                    }
+                  }}
                   disabled={updateCompanyMutation.isPending}
                   className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
