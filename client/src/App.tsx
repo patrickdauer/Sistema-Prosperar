@@ -12,6 +12,7 @@ import Dashboard from "@/pages/dashboard";
 import Login from "@/pages/login";
 import DashboardInterno from "@/pages/sistema-novo";
 import SistemaFinal from "@/pages/sistema-final";
+import ContratacaoFuncionarios from "@/pages/contratacao-funcionarios";
 import NotFound from "@/pages/not-found";
 
 function ProtectedDashboardInterno() {

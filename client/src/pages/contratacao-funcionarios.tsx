@@ -160,6 +160,7 @@ export default function ContratacaoFuncionarios() {
                 <div>
                   <Label htmlFor="razaoSocial" className="text-gray-200">Razão Social *</Label>
                   <Input
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="razaoSocial"
                     {...form.register("razaoSocial")}
                     placeholder="Digite a razão social da empresa"
@@ -175,6 +176,7 @@ export default function ContratacaoFuncionarios() {
                 <div>
                   <Label htmlFor="cnpj" className="text-gray-200">CNPJ *</Label>
                   <Input
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="cnpj"
                     {...form.register("cnpj")}
                     placeholder="00.000.000/0000-00"
@@ -188,57 +190,62 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <Label htmlFor="endereco">Endereço Completo *</Label>
+                  <Label htmlFor="endereco" className="text-gray-200">Endereço Completo *</Label>
                   <Input
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="endereco"
                     {...form.register("endereco")}
                     placeholder="Rua, número, bairro, cidade, CEP"
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                   />
                   {form.formState.errors.endereco && (
-                    <p className="text-sm text-red-600 mt-1">
+                    <p className="text-sm text-red-400 mt-1">
                       {form.formState.errors.endereco.message}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <Label htmlFor="telefone">Telefone *</Label>
+                  <Label htmlFor="telefone" className="text-gray-200">Telefone *</Label>
                   <Input
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="telefone"
                     {...form.register("telefone")}
                     placeholder="(00) 00000-0000"
                   />
                   {form.formState.errors.telefone && (
-                    <p className="text-sm text-red-600 mt-1">
+                    <p className="text-sm text-red-400 mt-1">
                       {form.formState.errors.telefone.message}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <Label htmlFor="email">Email *</Label>
+                  <Label htmlFor="email" className="text-gray-200">Email *</Label>
                   <Input
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="email"
                     type="email"
                     {...form.register("email")}
                     placeholder="empresa@email.com"
                   />
                   {form.formState.errors.email && (
-                    <p className="text-sm text-red-600 mt-1">
+                    <p className="text-sm text-red-400 mt-1">
                       {form.formState.errors.email.message}
                     </p>
                   )}
                 </div>
 
                 <div className="md:col-span-2">
-                  <Label htmlFor="responsavel">Responsável pela Solicitação *</Label>
+                  <Label htmlFor="responsavel" className="text-gray-200">Responsável pela Solicitação *</Label>
                   <Input
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="responsavel"
                     {...form.register("responsavel")}
                     placeholder="Nome completo do responsável"
                   />
                   {form.formState.errors.responsavel && (
-                    <p className="text-sm text-red-600 mt-1">
+                    <p className="text-sm text-red-400 mt-1">
                       {form.formState.errors.responsavel.message}
                     </p>
                   )}
@@ -258,56 +265,60 @@ export default function ContratacaoFuncionarios() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="nomeFuncionario">Nome Completo *</Label>
+                  <Label htmlFor="nomeFuncionario" className="text-gray-200">Nome Completo *</Label>
                   <Input
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="nomeFuncionario"
                     {...form.register("nomeFuncionario")}
                     placeholder="Nome completo do funcionário"
                   />
                   {form.formState.errors.nomeFuncionario && (
-                    <p className="text-sm text-red-600 mt-1">
+                    <p className="text-sm text-red-400 mt-1">
                       {form.formState.errors.nomeFuncionario.message}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <Label htmlFor="cpfFuncionario">CPF *</Label>
+                  <Label htmlFor="cpfFuncionario" className="text-gray-200">CPF *</Label>
                   <Input
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="cpfFuncionario"
                     {...form.register("cpfFuncionario")}
                     placeholder="000.000.000-00"
                   />
                   {form.formState.errors.cpfFuncionario && (
-                    <p className="text-sm text-red-600 mt-1">
+                    <p className="text-sm text-red-400 mt-1">
                       {form.formState.errors.cpfFuncionario.message}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <Label htmlFor="rgFuncionario">RG *</Label>
+                  <Label htmlFor="rgFuncionario" className="text-gray-200">RG *</Label>
                   <Input
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="rgFuncionario"
                     {...form.register("rgFuncionario")}
                     placeholder="0.000.000"
                   />
                   {form.formState.errors.rgFuncionario && (
-                    <p className="text-sm text-red-600 mt-1">
+                    <p className="text-sm text-red-400 mt-1">
                       {form.formState.errors.rgFuncionario.message}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <Label htmlFor="dataNascimento">Data de Nascimento *</Label>
+                  <Label htmlFor="dataNascimento" className="text-gray-200">Data de Nascimento *</Label>
                   <Input
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="dataNascimento"
                     type="date"
                     {...form.register("dataNascimento")}
                   />
                   {form.formState.errors.dataNascimento && (
-                    <p className="text-sm text-red-600 mt-1">
+                    <p className="text-sm text-red-400 mt-1">
                       {form.formState.errors.dataNascimento.message}
                     </p>
                   )}
@@ -328,7 +339,7 @@ export default function ContratacaoFuncionarios() {
                     </SelectContent>
                   </Select>
                   {form.formState.errors.estadoCivil && (
-                    <p className="text-sm text-red-600 mt-1">
+                    <p className="text-sm text-red-400 mt-1">
                       {form.formState.errors.estadoCivil.message}
                     </p>
                   )}
@@ -350,50 +361,53 @@ export default function ContratacaoFuncionarios() {
                     </SelectContent>
                   </Select>
                   {form.formState.errors.escolaridade && (
-                    <p className="text-sm text-red-600 mt-1">
+                    <p className="text-sm text-red-400 mt-1">
                       {form.formState.errors.escolaridade.message}
                     </p>
                   )}
                 </div>
 
                 <div className="md:col-span-2">
-                  <Label htmlFor="endereco_funcionario">Endereço Completo *</Label>
+                  <Label htmlFor="endereco_funcionario" className="text-gray-200">Endereço Completo *</Label>
                   <Input
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="endereco_funcionario"
                     {...form.register("endereco_funcionario")}
                     placeholder="Rua, número, bairro, cidade, CEP"
                   />
                   {form.formState.errors.endereco_funcionario && (
-                    <p className="text-sm text-red-600 mt-1">
+                    <p className="text-sm text-red-400 mt-1">
                       {form.formState.errors.endereco_funcionario.message}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <Label htmlFor="telefone_funcionario">Telefone *</Label>
+                  <Label htmlFor="telefone_funcionario" className="text-gray-200">Telefone *</Label>
                   <Input
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="telefone_funcionario"
                     {...form.register("telefone_funcionario")}
                     placeholder="(00) 00000-0000"
                   />
                   {form.formState.errors.telefone_funcionario && (
-                    <p className="text-sm text-red-600 mt-1">
+                    <p className="text-sm text-red-400 mt-1">
                       {form.formState.errors.telefone_funcionario.message}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <Label htmlFor="email_funcionario">Email *</Label>
+                  <Label htmlFor="email_funcionario" className="text-gray-200">Email *</Label>
                   <Input
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="email_funcionario"
                     type="email"
                     {...form.register("email_funcionario")}
                     placeholder="funcionario@email.com"
                   />
                   {form.formState.errors.email_funcionario && (
-                    <p className="text-sm text-red-600 mt-1">
+                    <p className="text-sm text-red-400 mt-1">
                       {form.formState.errors.email_funcionario.message}
                     </p>
                   )}
@@ -413,42 +427,45 @@ export default function ContratacaoFuncionarios() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="cargo">Cargo *</Label>
+                  <Label htmlFor="cargo" className="text-gray-200">Cargo *</Label>
                   <Input
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="cargo"
                     {...form.register("cargo")}
                     placeholder="Ex: Analista, Assistente, Gerente"
                   />
                   {form.formState.errors.cargo && (
-                    <p className="text-sm text-red-600 mt-1">
+                    <p className="text-sm text-red-400 mt-1">
                       {form.formState.errors.cargo.message}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <Label htmlFor="setor">Setor *</Label>
+                  <Label htmlFor="setor" className="text-gray-200">Setor *</Label>
                   <Input
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="setor"
                     {...form.register("setor")}
                     placeholder="Ex: Administrativo, Vendas, Produção"
                   />
                   {form.formState.errors.setor && (
-                    <p className="text-sm text-red-600 mt-1">
+                    <p className="text-sm text-red-400 mt-1">
                       {form.formState.errors.setor.message}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <Label htmlFor="salario">Salário *</Label>
+                  <Label htmlFor="salario" className="text-gray-200">Salário *</Label>
                   <Input
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="salario"
                     {...form.register("salario")}
                     placeholder="R$ 0,00"
                   />
                   {form.formState.errors.salario && (
-                    <p className="text-sm text-red-600 mt-1">
+                    <p className="text-sm text-red-400 mt-1">
                       {form.formState.errors.salario.message}
                     </p>
                   )}
@@ -468,7 +485,7 @@ export default function ContratacaoFuncionarios() {
                     </SelectContent>
                   </Select>
                   {form.formState.errors.cargaHoraria && (
-                    <p className="text-sm text-red-600 mt-1">
+                    <p className="text-sm text-red-400 mt-1">
                       {form.formState.errors.cargaHoraria.message}
                     </p>
                   )}
@@ -489,21 +506,22 @@ export default function ContratacaoFuncionarios() {
                     </SelectContent>
                   </Select>
                   {form.formState.errors.tipoContrato && (
-                    <p className="text-sm text-red-600 mt-1">
+                    <p className="text-sm text-red-400 mt-1">
                       {form.formState.errors.tipoContrato.message}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <Label htmlFor="dataAdmissao">Data de Admissão *</Label>
+                  <Label htmlFor="dataAdmissao" className="text-gray-200">Data de Admissão *</Label>
                   <Input
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="dataAdmissao"
                     type="date"
                     {...form.register("dataAdmissao")}
                   />
                   {form.formState.errors.dataAdmissao && (
-                    <p className="text-sm text-red-600 mt-1">
+                    <p className="text-sm text-red-400 mt-1">
                       {form.formState.errors.dataAdmissao.message}
                     </p>
                   )}
@@ -548,42 +566,45 @@ export default function ContratacaoFuncionarios() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="banco">Banco *</Label>
+                  <Label htmlFor="banco" className="text-gray-200">Banco *</Label>
                   <Input
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="banco"
                     {...form.register("banco")}
                     placeholder="Nome do banco"
                   />
                   {form.formState.errors.banco && (
-                    <p className="text-sm text-red-600 mt-1">
+                    <p className="text-sm text-red-400 mt-1">
                       {form.formState.errors.banco.message}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <Label htmlFor="agencia">Agência *</Label>
+                  <Label htmlFor="agencia" className="text-gray-200">Agência *</Label>
                   <Input
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="agencia"
                     {...form.register("agencia")}
                     placeholder="0000"
                   />
                   {form.formState.errors.agencia && (
-                    <p className="text-sm text-red-600 mt-1">
+                    <p className="text-sm text-red-400 mt-1">
                       {form.formState.errors.agencia.message}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <Label htmlFor="conta">Conta *</Label>
+                  <Label htmlFor="conta" className="text-gray-200">Conta *</Label>
                   <Input
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="conta"
                     {...form.register("conta")}
                     placeholder="00000-0"
                   />
                   {form.formState.errors.conta && (
-                    <p className="text-sm text-red-600 mt-1">
+                    <p className="text-sm text-red-400 mt-1">
                       {form.formState.errors.conta.message}
                     </p>
                   )}
@@ -597,15 +618,15 @@ export default function ContratacaoFuncionarios() {
                   >
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="corrente" id="corrente" />
-                      <Label htmlFor="corrente">Conta Corrente</Label>
+                      <Label htmlFor="corrente" className="text-gray-200">Conta Corrente</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="poupanca" id="poupanca" />
-                      <Label htmlFor="poupanca">Poupança</Label>
+                      <Label htmlFor="poupanca" className="text-gray-200">Poupança</Label>
                     </div>
                   </RadioGroup>
                   {form.formState.errors.tipoConta && (
-                    <p className="text-sm text-red-600 mt-1">
+                    <p className="text-sm text-red-400 mt-1">
                       {form.formState.errors.tipoConta.message}
                     </p>
                   )}
@@ -628,23 +649,24 @@ export default function ContratacaoFuncionarios() {
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="sim" id="sim" />
-                    <Label htmlFor="sim">Sim</Label>
+                    <Label htmlFor="sim" className="text-gray-200">Sim</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="nao" id="nao" />
-                    <Label htmlFor="nao">Não</Label>
+                    <Label htmlFor="nao" className="text-gray-200">Não</Label>
                   </div>
                 </RadioGroup>
                 {form.formState.errors.possuiCarteira && (
-                  <p className="text-sm text-red-600 mt-1">
+                  <p className="text-sm text-red-400 mt-1">
                     {form.formState.errors.possuiCarteira.message}
                   </p>
                 )}
               </div>
 
               <div>
-                <Label htmlFor="numeroPis">Número do PIS</Label>
+                <Label htmlFor="numeroPis" className="text-gray-200">Número do PIS</Label>
                 <Input
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                   id="numeroPis"
                   {...form.register("numeroPis")}
                   placeholder="000.00000.00-0"
@@ -652,7 +674,7 @@ export default function ContratacaoFuncionarios() {
               </div>
 
               <div>
-                <Label htmlFor="observacoes">Observações</Label>
+                <Label htmlFor="observacoes" className="text-gray-200">Observações</Label>
                 <Textarea
                   id="observacoes"
                   {...form.register("observacoes")}
