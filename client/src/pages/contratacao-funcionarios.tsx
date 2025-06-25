@@ -11,8 +11,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { FileUpload } from '@/components/file-upload';
 import { useToast } from '@/hooks/use-toast';
-import { Building2, UserPlus, FileText, ArrowLeft } from 'lucide-react';
+import { Building2, UserPlus, FileText, ArrowLeft, Upload } from 'lucide-react';
 import { Link } from 'wouter';
 
 // Schema de validação
@@ -69,6 +70,7 @@ type ContratacaoForm = z.infer<typeof contratacaoSchema>;
 export default function ContratacaoFuncionarios() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [documentos, setDocumentos] = useState<File[]>([]);
 
   const form = useForm<ContratacaoForm>({
     resolver: zodResolver(contratacaoSchema),
@@ -84,12 +86,24 @@ export default function ContratacaoFuncionarios() {
 
   const submitMutation = useMutation({
     mutationFn: async (data: ContratacaoForm) => {
+      const formData = new FormData();
+      
+      // Adicionar dados do formulário
+      Object.keys(data).forEach(key => {
+        const value = data[key as keyof ContratacaoForm];
+        if (value !== undefined && value !== null) {
+          formData.append(key, value.toString());
+        }
+      });
+      
+      // Adicionar documentos
+      documentos.forEach((file, index) => {
+        formData.append(`documento_${index}`, file);
+      });
+
       const response = await fetch('/api/contratacao-funcionarios', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+        body: formData,
       });
 
       if (!response.ok) {
@@ -104,6 +118,7 @@ export default function ContratacaoFuncionarios() {
         description: "Entraremos em contato em breve para finalizar o processo.",
       });
       form.reset();
+      setDocumentos([]);
     },
     onError: (error: Error) => {
       toast({
@@ -631,6 +646,36 @@ export default function ContratacaoFuncionarios() {
                     </p>
                   )}
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Documentos */}
+          <Card className="bg-gray-800 border-gray-700">
+            <CardHeader>
+              <CardTitle className="flex items-center text-white">
+                <Upload className="h-5 w-5 mr-2 text-blue-500" />
+                Documentos do Funcionário
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-4">
+                <p className="text-sm text-gray-300">
+                  Envie os documentos necessários para a contratação (CPF, RG, Carteira de Trabalho, Comprovante de Residência, etc.)
+                </p>
+                <FileUpload
+                  onFilesChange={setDocumentos}
+                  accept={{
+                    'image/jpeg': ['.jpg', '.jpeg'],
+                    'image/png': ['.png'],
+                    'application/pdf': ['.pdf']
+                  }}
+                  maxFiles={10}
+                  maxSize={10 * 1024 * 1024} // 10MB
+                  label="Documentos do Funcionário"
+                  description="Envie até 10 arquivos (PDF, JPG, PNG). Máximo 10MB por arquivo."
+                  className="bg-gray-700 border-gray-600"
+                />
               </div>
             </CardContent>
           </Card>

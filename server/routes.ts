@@ -1540,9 +1540,10 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
   });
 
   // Contratação de Funcionários
-  app.post("/api/contratacao-funcionarios", async (req, res) => {
+  app.post("/api/contratacao-funcionarios", upload.array('documentos', 10), async (req, res) => {
     try {
       console.log('Recebendo solicitação de contratação:', req.body);
+      console.log('Arquivos recebidos:', req.files?.length || 0);
       
       // Validar dados básicos
       const requiredFields = ['razaoSocial', 'cnpj', 'nomeFuncionario', 'cpfFuncionario'];
@@ -1552,10 +1553,40 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
         }
       }
 
+      // Criar pasta no Google Drive
+      const folderName = `Contratação - ${req.body.nomeFuncionario} - ${Date.now()}`;
+      let folderId;
+      let documentUrls: string[] = [];
+
+      try {
+        folderId = await googleDriveService.createFolder(folderName);
+        console.log('Pasta criada no Google Drive:', folderId);
+
+        // Upload dos documentos
+        if (req.files && Array.isArray(req.files)) {
+          for (const file of req.files) {
+            const fileName = `${file.originalname}`;
+            const fileId = await googleDriveService.uploadFile(
+              fileName,
+              file.buffer,
+              file.mimetype,
+              folderId
+            );
+            const fileUrl = `https://drive.google.com/file/d/${fileId}/view`;
+            documentUrls.push(fileUrl);
+            console.log('Arquivo enviado:', fileName, fileId);
+          }
+        }
+      } catch (error) {
+        console.error('Erro no Google Drive:', error);
+      }
+
       // Simular salvamento (adicionar ao banco quando necessário)
       const contratacao = {
         id: Date.now(),
         ...req.body,
+        documentUrls,
+        folderId,
         createdAt: new Date().toISOString(),
         status: 'pending'
       };
@@ -1564,7 +1595,8 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
 
       res.json({ 
         message: "Solicitação de contratação recebida com sucesso!",
-        id: contratacao.id 
+        id: contratacao.id,
+        folderUrl: folderId ? `https://drive.google.com/drive/folders/${folderId}` : null
       });
     } catch (error) {
       console.error("Erro ao processar contratação:", error);
