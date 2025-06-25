@@ -13,6 +13,7 @@ import Login from "@/pages/login";
 import DashboardInterno from "@/pages/sistema-novo";
 import SistemaFinal from "@/pages/sistema-final";
 import ContratacaoFuncionarios from "@/pages/contratacao-funcionarios";
+import SimuladorCusto from "@/pages/simulador-custo";
 import NotFound from "@/pages/not-found";
 
 function ProtectedDashboardInterno() {
@@ -110,6 +111,7 @@ function App() {
               <Route path="/novo-sistema" component={ProtectedSistemaFinal} />
               <Route path="/sistema-final" component={ProtectedSistemaFinal} />
               <Route path="/contratacao-funcionarios" component={ContratacaoFuncionarios} />
+              <Route path="/simulador-custo" component={SimuladorCusto} />
               <Route component={NotFound} />
             </Switch>
           </TooltipProvider>
