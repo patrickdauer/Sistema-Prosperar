@@ -1539,6 +1539,39 @@ Todos os arquivos foram enviados para o Google Drive na pasta: ${registration.ra
     }
   });
 
+  // Contratação de Funcionários
+  app.post("/api/contratacao-funcionarios", async (req, res) => {
+    try {
+      console.log('Recebendo solicitação de contratação:', req.body);
+      
+      // Validar dados básicos
+      const requiredFields = ['razaoSocial', 'cnpj', 'nomeFuncionario', 'cpfFuncionario'];
+      for (const field of requiredFields) {
+        if (!req.body[field]) {
+          return res.status(400).json({ message: `Campo obrigatório: ${field}` });
+        }
+      }
+
+      // Simular salvamento (adicionar ao banco quando necessário)
+      const contratacao = {
+        id: Date.now(),
+        ...req.body,
+        createdAt: new Date().toISOString(),
+        status: 'pending'
+      };
+
+      console.log('Contratação salva:', contratacao.id);
+
+      res.json({ 
+        message: "Solicitação de contratação recebida com sucesso!",
+        id: contratacao.id 
+      });
+    } catch (error) {
+      console.error("Erro ao processar contratação:", error);
+      res.status(500).json({ message: "Erro interno do servidor" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

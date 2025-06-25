@@ -159,7 +159,7 @@ export default function ContratacaoFuncionarios() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="razaoSocial" className="text-gray-200">Razão Social *</Label>
-                  <Input
+                  <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="razaoSocial"
                     {...form.register("razaoSocial")}
@@ -175,7 +175,7 @@ export default function ContratacaoFuncionarios() {
 
                 <div>
                   <Label htmlFor="cnpj" className="text-gray-200">CNPJ *</Label>
-                  <Input
+                  <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="cnpj"
                     {...form.register("cnpj")}
@@ -191,7 +191,7 @@ export default function ContratacaoFuncionarios() {
 
                 <div className="md:col-span-2">
                   <Label htmlFor="endereco" className="text-gray-200">Endereço Completo *</Label>
-                  <Input
+                  <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="endereco"
                     {...form.register("endereco")}
@@ -207,7 +207,7 @@ export default function ContratacaoFuncionarios() {
 
                 <div>
                   <Label htmlFor="telefone" className="text-gray-200">Telefone *</Label>
-                  <Input
+                  <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="telefone"
                     {...form.register("telefone")}
@@ -222,7 +222,7 @@ export default function ContratacaoFuncionarios() {
 
                 <div>
                   <Label htmlFor="email" className="text-gray-200">Email *</Label>
-                  <Input
+                  <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="email"
                     type="email"
@@ -238,7 +238,7 @@ export default function ContratacaoFuncionarios() {
 
                 <div className="md:col-span-2">
                   <Label htmlFor="responsavel" className="text-gray-200">Responsável pela Solicitação *</Label>
-                  <Input
+                  <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="responsavel"
                     {...form.register("responsavel")}
@@ -266,7 +266,7 @@ export default function ContratacaoFuncionarios() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="nomeFuncionario" className="text-gray-200">Nome Completo *</Label>
-                  <Input
+                  <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="nomeFuncionario"
                     {...form.register("nomeFuncionario")}
@@ -281,7 +281,7 @@ export default function ContratacaoFuncionarios() {
 
                 <div>
                   <Label htmlFor="cpfFuncionario" className="text-gray-200">CPF *</Label>
-                  <Input
+                  <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="cpfFuncionario"
                     {...form.register("cpfFuncionario")}
@@ -296,7 +296,7 @@ export default function ContratacaoFuncionarios() {
 
                 <div>
                   <Label htmlFor="rgFuncionario" className="text-gray-200">RG *</Label>
-                  <Input
+                  <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="rgFuncionario"
                     {...form.register("rgFuncionario")}
@@ -311,7 +311,7 @@ export default function ContratacaoFuncionarios() {
 
                 <div>
                   <Label htmlFor="dataNascimento" className="text-gray-200">Data de Nascimento *</Label>
-                  <Input
+                  <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="dataNascimento"
                     type="date"
@@ -325,10 +325,10 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div>
-                  <Label>Estado Civil *</Label>
+                  <Label className="text-gray-200">Estado Civil *</Label>
                   <Select onValueChange={(value) => form.setValue("estadoCivil", value as any)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o estado civil" />
+                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                      <SelectValue placeholder="Selecione o estado civil" className="placeholder-gray-400" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="solteiro">Solteiro(a)</SelectItem>
@@ -346,10 +346,10 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div>
-                  <Label>Escolaridade *</Label>
+                  <Label className="text-gray-200">Escolaridade *</Label>
                   <Select onValueChange={(value) => form.setValue("escolaridade", value as any)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione a escolaridade" />
+                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                      <SelectValue placeholder="Selecione a escolaridade" className="placeholder-gray-400" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="fundamental">Ensino Fundamental</SelectItem>
@@ -369,7 +369,7 @@ export default function ContratacaoFuncionarios() {
 
                 <div className="md:col-span-2">
                   <Label htmlFor="endereco_funcionario" className="text-gray-200">Endereço Completo *</Label>
-                  <Input
+                  <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="endereco_funcionario"
                     {...form.register("endereco_funcionario")}
@@ -384,7 +384,7 @@ export default function ContratacaoFuncionarios() {
 
                 <div>
                   <Label htmlFor="telefone_funcionario" className="text-gray-200">Telefone *</Label>
-                  <Input
+                  <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="telefone_funcionario"
                     {...form.register("telefone_funcionario")}
@@ -399,7 +399,7 @@ export default function ContratacaoFuncionarios() {
 
                 <div>
                   <Label htmlFor="email_funcionario" className="text-gray-200">Email *</Label>
-                  <Input
+                  <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="email_funcionario"
                     type="email"
@@ -428,7 +428,7 @@ export default function ContratacaoFuncionarios() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="cargo" className="text-gray-200">Cargo *</Label>
-                  <Input
+                  <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="cargo"
                     {...form.register("cargo")}
@@ -443,7 +443,7 @@ export default function ContratacaoFuncionarios() {
 
                 <div>
                   <Label htmlFor="setor" className="text-gray-200">Setor *</Label>
-                  <Input
+                  <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="setor"
                     {...form.register("setor")}
@@ -458,7 +458,7 @@ export default function ContratacaoFuncionarios() {
 
                 <div>
                   <Label htmlFor="salario" className="text-gray-200">Salário *</Label>
-                  <Input
+                  <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="salario"
                     {...form.register("salario")}
@@ -472,10 +472,10 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div>
-                  <Label>Carga Horária *</Label>
+                  <Label className="text-gray-200">Carga Horária *</Label>
                   <Select onValueChange={(value) => form.setValue("cargaHoraria", value as any)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione a carga horária" />
+                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                      <SelectValue placeholder="Selecione a carga horária" className="placeholder-gray-400" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="20h">20 horas semanais</SelectItem>
@@ -492,10 +492,10 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div>
-                  <Label>Tipo de Contrato *</Label>
+                  <Label className="text-gray-200">Tipo de Contrato *</Label>
                   <Select onValueChange={(value) => form.setValue("tipoContrato", value as any)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o tipo de contrato" />
+                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                      <SelectValue placeholder="Selecione o tipo de contrato" className="placeholder-gray-400" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="clt">CLT</SelectItem>
@@ -514,7 +514,7 @@ export default function ContratacaoFuncionarios() {
 
                 <div>
                   <Label htmlFor="dataAdmissao" className="text-gray-200">Data de Admissão *</Label>
-                  <Input
+                  <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="dataAdmissao"
                     type="date"
@@ -567,7 +567,7 @@ export default function ContratacaoFuncionarios() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="banco" className="text-gray-200">Banco *</Label>
-                  <Input
+                  <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="banco"
                     {...form.register("banco")}
@@ -582,7 +582,7 @@ export default function ContratacaoFuncionarios() {
 
                 <div>
                   <Label htmlFor="agencia" className="text-gray-200">Agência *</Label>
-                  <Input
+                  <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="agencia"
                     {...form.register("agencia")}
@@ -597,7 +597,7 @@ export default function ContratacaoFuncionarios() {
 
                 <div>
                   <Label htmlFor="conta" className="text-gray-200">Conta *</Label>
-                  <Input
+                  <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="conta"
                     {...form.register("conta")}
@@ -665,7 +665,7 @@ export default function ContratacaoFuncionarios() {
 
               <div>
                 <Label htmlFor="numeroPis" className="text-gray-200">Número do PIS</Label>
-                <Input
+                <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                   id="numeroPis"
                   {...form.register("numeroPis")}
