@@ -109,6 +109,7 @@ function App() {
               <Route path="/dashboard-interno" component={ProtectedDashboardInterno} />
               <Route path="/novo-sistema" component={ProtectedSistemaFinal} />
               <Route path="/sistema-final" component={ProtectedSistemaFinal} />
+              <Route path="/contratacao-funcionarios" component={ContratacaoFuncionarios} />
               <Route component={NotFound} />
             </Switch>
           </TooltipProvider>
