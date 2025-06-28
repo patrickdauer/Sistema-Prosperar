@@ -146,13 +146,20 @@ The system uses a `business_registrations` table with:
 
 ## Recent Changes
 
+### December 28, 2025 - Sistema de Navegação com Abas e Botões de Retorno
+- **Navegação em Novas Abas**: Todos os links da página home agora abrem em nova janela (_blank)
+- **Botão "Voltar ao Menu"**: Implementado componente BackToHomeButton com detecção inteligente
+- **Páginas Públicas**: Cadastro Empresarial e Contratação retornam para landing page (/)
+- **Páginas Internas**: Sistema administrativo retorna para /home
+- **Navegação Inteligente**: Detecta se foi aberto em nova janela e age adequadamente
+- **Design Consistente**: Mantido tema escuro com verde principal e texto branco
+
 ### December 28, 2025 - Conversão para Autenticação Tradicional
 - **Sistema de Autenticação**: Completamente convertido do Replit Auth para autenticação tradicional usuário/senha
 - **Página de Login**: Criada nova página de login em português com design moderno (tema escuro, verde, texto branco)
 - **Banco de Dados**: Atualizada estrutura da tabela users para usar IDs numéricos e campos username/password
 - **Tokens JWT**: Implementado sistema de tokens JWT armazenados no localStorage
 - **Usuário Admin**: Criado usuário padrão admin/admin123 para acesso ao sistema
-- **Navegação Interna**: Corrigido redirecionamento do Simulador de Custos para usar navegação interna
 - **Credenciais**: Sistema funciona com usuário "admin" e senha "admin123"
 
 ### December 28, 2025 - Replit Auth Integration

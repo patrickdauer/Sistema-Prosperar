@@ -298,7 +298,7 @@ export default function BusinessRegistration() {
 
   return (
     <div className="min-h-screen bg-background dark:bg-background">
-      <BackToHomeButton />
+      <BackToHomeButton isPublicPage={true} />
       {/* Header */}
       <header className="bg-card dark:bg-card shadow-sm border-b border-border">
         <div className="max-w-4xl mx-auto px-4 py-6">

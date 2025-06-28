@@ -138,7 +138,7 @@ export default function ContratacaoFuncionarios() {
 
   return (
     <div className="min-h-screen bg-gray-900">
-      <BackToHomeButton />
+      <BackToHomeButton isPublicPage={true} />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">

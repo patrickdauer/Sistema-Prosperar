@@ -1,7 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Home } from "lucide-react";
 
-export function BackToHomeButton() {
+interface BackToHomeButtonProps {
+  isPublicPage?: boolean;
+}
+
+export function BackToHomeButton({ isPublicPage = false }: BackToHomeButtonProps) {
   const handleBackToHome = () => {
     // Verifica se foi aberto em nova janela/aba
     if (window.opener && !window.opener.closed) {
@@ -10,7 +14,9 @@ export function BackToHomeButton() {
       window.close();
     } else {
       // Se não tem janela pai, navega normalmente
-      window.location.href = '/home';
+      // Páginas públicas vão para a landing page, páginas internas vão para home
+      const targetUrl = isPublicPage ? '/' : '/home';
+      window.location.href = targetUrl;
     }
   };
 
