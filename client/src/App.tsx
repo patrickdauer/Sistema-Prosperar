@@ -4,7 +4,7 @@ import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
-import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 
 // Pages
 import BusinessRegistration from "@/pages/business-registration-new";
@@ -15,6 +15,8 @@ import SistemaFinal from "@/pages/sistema-final";
 import ContratacaoFuncionarios from "@/pages/contratacao-funcionarios";
 import SimuladorCusto from "@/pages/simulador-custo";
 import NotFound from "@/pages/not-found";
+import Landing from "@/pages/landing";
+import Home from "@/pages/home";
 
 function ProtectedDashboardInterno() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -96,26 +98,44 @@ function ProtectedSistemaDark() {
   return <SistemaFinal />;
 }
 
+function Router() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  return (
+    <Switch>
+      {isLoading || !isAuthenticated ? (
+        <>
+          <Route path="/" component={Landing} />
+          <Route path="/business-registration" component={BusinessRegistration} />
+          <Route path="/contratacao-funcionarios" component={ContratacaoFuncionarios} />
+          <Route path="/simulador-custo" component={SimuladorCusto} />
+        </>
+      ) : (
+        <>
+          <Route path="/" component={Home} />
+          <Route path="/dashboard" component={Dashboard} />
+          <Route path="/business-registration" component={BusinessRegistration} />
+          <Route path="/contratacao-funcionarios" component={ContratacaoFuncionarios} />
+          <Route path="/simulador-custo" component={SimuladorCusto} />
+          <Route path="/equipe" component={Login} />
+          <Route path="/dashboard-interno" component={ProtectedDashboardInterno} />
+          <Route path="/novo-sistema" component={ProtectedSistemaFinal} />
+          <Route path="/sistema-final" component={ProtectedSistemaFinal} />
+        </>
+      )}
+      <Route component={NotFound} />
+    </Switch>
+  );
+}
+
 function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="business-form-theme">
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Switch>
-              <Route path="/" component={BusinessRegistration} />
-              <Route path="/dashboard" component={Dashboard} />
-              <Route path="/equipe" component={Login} />
-              <Route path="/dashboard-interno" component={ProtectedDashboardInterno} />
-              <Route path="/novo-sistema" component={ProtectedSistemaFinal} />
-              <Route path="/sistema-final" component={ProtectedSistemaFinal} />
-              <Route path="/contratacao-funcionarios" component={ContratacaoFuncionarios} />
-              <Route path="/simulador-custo" component={SimuladorCusto} />
-              <Route component={NotFound} />
-            </Switch>
-          </TooltipProvider>
-        </AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );
