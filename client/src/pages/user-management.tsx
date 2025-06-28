@@ -152,16 +152,17 @@ export default function UserManagement() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div 
-        className="min-h-screen flex items-center justify-center"
-        style={{ background: '#0a0a0a' }}
-      >
-        <div className="text-white">Carregando...</div>
-      </div>
-    );
-  }
+  // Loading state - mostrar a página mesmo se estiver carregando
+  // if (isLoading) {
+  //   return (
+  //     <div 
+  //       className="min-h-screen flex items-center justify-center"
+  //       style={{ background: '#0a0a0a' }}
+  //     >
+  //       <div className="text-white">Carregando...</div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="min-h-screen" style={{ background: '#0a0a0a' }}>
@@ -172,7 +173,14 @@ export default function UserManagement() {
             Gestão de Usuários
           </h1>
           <div className="flex items-center gap-4">
-            <BackToHomeButton />
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.href = '/home'}
+              style={{ borderColor: '#22c55e', color: '#22c55e' }}
+            >
+              <Home className="h-4 w-4 mr-2" />
+              Voltar ao Menu
+            </Button>
             <Button variant="outline" onClick={logout}>
               <LogOut className="h-4 w-4 mr-2" />
               Sair
@@ -287,12 +295,17 @@ export default function UserManagement() {
         </div>
 
         {/* Users Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {users?.map((user) => (
-            <Card 
-              key={user.id}
-              style={{ background: '#1a1a1a', border: '1px solid #333' }}
-            >
+        {isLoading ? (
+          <div className="text-center py-8">
+            <div className="text-white">Carregando usuários...</div>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {users?.map((user) => (
+              <Card 
+                key={user.id}
+                style={{ background: '#1a1a1a', border: '1px solid #333' }}
+              >
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -345,8 +358,9 @@ export default function UserManagement() {
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );
