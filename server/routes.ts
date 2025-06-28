@@ -177,6 +177,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Change user password route
+  app.patch('/api/users/:id/password', authenticateToken, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { password } = req.body;
+
+      // Verificar se o usuário atual é admin
+      if (req.user?.role !== 'admin') {
+        return res.status(403).json({ message: 'Apenas administradores podem alterar senhas' });
+      }
+
+      if (!password || password.length < 6) {
+        return res.status(400).json({ message: 'Senha deve ter pelo menos 6 caracteres' });
+      }
+
+      // Hash da nova senha
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Atualizar a senha no banco
+      const updatedUser = await storage.updateUser(userId, {
+        password: hashedPassword
+      });
+
+      res.json({ message: 'Senha alterada com sucesso' });
+    } catch (error) {
+      console.error("Error changing password:", error);
+      res.status(500).json({ message: "Erro ao alterar senha" });
+    }
+  });
+
   // Business registration route (public)
   app.post("/api/business-registration", upload.fields([
     { name: 'documentoComFoto_0', maxCount: 1 },

@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Users, UserPlus, Edit, Trash2, LogOut, Home, Settings } from 'lucide-react';
+import { Users, UserPlus, Edit, Trash2, LogOut, Home, Settings, Key } from 'lucide-react';
 import { BackToHomeButton } from '@/components/back-to-home-button';
 
 interface User {
@@ -33,11 +33,16 @@ export default function UserManagement() {
   const queryClient = useQueryClient();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [changingPasswordUser, setChangingPasswordUser] = useState<User | null>(null);
   const [editUserData, setEditUserData] = useState({
     name: '',
     email: '',
     role: 'user',
     department: ''
+  });
+  const [passwordData, setPasswordData] = useState({
+    newPassword: '',
+    confirmPassword: ''
   });
   const [newUserData, setNewUserData] = useState({
     username: '',
@@ -178,6 +183,35 @@ export default function UserManagement() {
     }
   });
 
+  // Alterar senha do usuário
+  const changePasswordMutation = useMutation({
+    mutationFn: async (data: { userId: number; newPassword: string }) => {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/users/${data.userId}/password`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ password: data.newPassword })
+      });
+      if (!response.ok) throw new Error('Erro ao alterar senha');
+      return response.json();
+    },
+    onSuccess: () => {
+      setChangingPasswordUser(null);
+      setPasswordData({ newPassword: '', confirmPassword: '' });
+      toast({ title: "Senha alterada com sucesso!" });
+    },
+    onError: (error) => {
+      toast({ 
+        title: "Erro ao alterar senha", 
+        description: error.message,
+        variant: "destructive" 
+      });
+    }
+  });
+
   const handleCreateUser = () => {
     createUserMutation.mutate(newUserData);
   };
@@ -201,6 +235,38 @@ export default function UserManagement() {
   const handleDeleteUser = (userId: number) => {
     if (confirm('Tem certeza que deseja deletar este usuário?')) {
       deleteUserMutation.mutate(userId);
+    }
+  };
+
+  const handleChangePassword = (user: User) => {
+    setChangingPasswordUser(user);
+    setPasswordData({ newPassword: '', confirmPassword: '' });
+  };
+
+  const handleSavePassword = () => {
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast({ 
+        title: "Erro", 
+        description: "As senhas não coincidem",
+        variant: "destructive" 
+      });
+      return;
+    }
+    
+    if (passwordData.newPassword.length < 6) {
+      toast({ 
+        title: "Erro", 
+        description: "A senha deve ter pelo menos 6 caracteres",
+        variant: "destructive" 
+      });
+      return;
+    }
+
+    if (changingPasswordUser) {
+      changePasswordMutation.mutate({ 
+        userId: changingPasswordUser.id, 
+        newPassword: passwordData.newPassword 
+      });
     }
   };
 
@@ -414,6 +480,51 @@ export default function UserManagement() {
           </DialogContent>
         </Dialog>
 
+        {/* Change Password Dialog */}
+        <Dialog open={!!changingPasswordUser} onOpenChange={(open) => !open && setChangingPasswordUser(null)}>
+          <DialogContent style={{ background: '#1a1a1a', border: '1px solid #333' }}>
+            <DialogHeader>
+              <DialogTitle style={{ color: '#22c55e' }}>
+                Alterar Senha - {changingPasswordUser?.name}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label className="text-white">Nova Senha</Label>
+                <Input
+                  type="password"
+                  value={passwordData.newPassword}
+                  onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                  style={{ background: '#333', border: '1px solid #555', color: 'white' }}
+                  placeholder="Digite a nova senha (mínimo 6 caracteres)"
+                />
+              </div>
+              <div>
+                <Label className="text-white">Confirmar Nova Senha</Label>
+                <Input
+                  type="password"
+                  value={passwordData.confirmPassword}
+                  onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                  style={{ background: '#333', border: '1px solid #555', color: 'white' }}
+                  placeholder="Digite novamente a nova senha"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setChangingPasswordUser(null)}>
+                  Cancelar
+                </Button>
+                <Button 
+                  onClick={handleSavePassword}
+                  disabled={changePasswordMutation.isPending}
+                  style={{ backgroundColor: '#22c55e', color: 'white' }}
+                >
+                  {changePasswordMutation.isPending ? 'Alterando...' : 'Alterar Senha'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         {/* Users Grid */}
         {isLoading ? (
           <div className="text-center py-8">
@@ -437,8 +548,18 @@ export default function UserManagement() {
                       size="sm" 
                       variant="ghost"
                       onClick={() => handleEditUser(user)}
+                      title="Editar usuário"
                     >
                       <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="ghost"
+                      onClick={() => handleChangePassword(user)}
+                      title="Alterar senha"
+                      style={{ color: '#ff8c42' }}
+                    >
+                      <Key className="h-4 w-4" />
                     </Button>
                     {user.id !== currentUser?.id && (
                       <Button 
@@ -446,6 +567,7 @@ export default function UserManagement() {
                         variant="ghost"
                         onClick={() => handleDeleteUser(user.id)}
                         disabled={deleteUserMutation.isPending}
+                        title="Deletar usuário"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
