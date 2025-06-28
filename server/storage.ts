@@ -8,7 +8,7 @@ import {
   type BusinessRegistration,
   type InsertBusinessRegistration,
   type User,
-  type UpsertUser,
+
   type InsertUser,
   type Task,
   type InsertTask,
@@ -23,12 +23,13 @@ import { eq, and, desc, asc } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
 export interface IStorage {
-  // User management - Updated for Replit Auth
-  getUser(id: string): Promise<User | undefined>;
-  upsertUser(user: UpsertUser): Promise<User>;
+  // User management - Traditional auth
+  getUser(id: number): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
   getAllUsers(): Promise<User[]>;
-  updateUser(id: string, data: Partial<User>): Promise<User>;
-  deleteUser(id: string): Promise<void>;
+  updateUser(id: number, data: Partial<User>): Promise<User>;
+  deleteUser(id: number): Promise<void>;
   
   // Business registration
   createBusinessRegistration(registration: InsertBusinessRegistration): Promise<BusinessRegistration>;

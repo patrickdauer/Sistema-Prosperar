@@ -71,13 +71,13 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// Users table for Replit Auth
+// Users table for username/password auth
 export const users = pgTable("users", {
-  id: varchar("id").primaryKey().notNull(),
+  id: serial("id").primaryKey(),
+  username: varchar("username", { length: 50 }).unique().notNull(),
+  password: text("password").notNull(),
+  name: varchar("name", { length: 100 }).notNull(),
   email: varchar("email").unique(),
-  firstName: varchar("first_name"),
-  lastName: varchar("last_name"),
-  profileImageUrl: varchar("profile_image_url"),
   role: text("role").notNull().default("employee"), // admin, manager, employee
   department: text("department"), // societario, fiscal, pessoal
   isActive: boolean("is_active").default(true),
@@ -219,7 +219,6 @@ export const insertActivitySchema = createInsertSchema(activities).omit({
 
 // Types
 export type User = typeof users.$inferSelect;
-export type UpsertUser = typeof users.$inferInsert;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Task = typeof tasks.$inferSelect;
 export type InsertTask = z.infer<typeof insertTaskSchema>;
