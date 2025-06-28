@@ -1,4 +1,4 @@
-import puppeteer from 'puppeteer';
+import htmlPdf from 'html-pdf-node';
 import type { BusinessRegistration } from '@shared/schema';
 
 export async function generateBusinessRegistrationPDF(registration: BusinessRegistration): Promise<Buffer> {
@@ -226,36 +226,18 @@ export async function generateBusinessRegistrationPDF(registration: BusinessRegi
     </html>
   `;
 
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-gpu',
-      '--disable-web-security',
-      '--disable-features=VizDisplayCompositor'
-    ],
-    executablePath: '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium'
-  });
+  const options = {
+    format: 'A4',
+    border: {
+      top: '20px',
+      right: '20px',
+      bottom: '20px',
+      left: '20px'
+    }
+  };
 
-  try {
-    const page = await browser.newPage();
-    await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-    
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      margin: {
-        top: '20px',
-        right: '20px',
-        bottom: '20px',
-        left: '20px'
-      }
-    });
-
-    return Buffer.from(pdfBuffer);
-  } finally {
-    await browser.close();
-  }
+  const file = { content: htmlContent };
+  const pdfBuffer = await htmlPdf.generatePdf(file, options);
+  
+  return pdfBuffer;
 }
