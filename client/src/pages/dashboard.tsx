@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { BackToHomeButton } from '@/components/back-to-home-button';
 import type { BusinessRegistration } from '@shared/schema';
 
 export default function Dashboard() {
@@ -99,7 +100,10 @@ export default function Dashboard() {
                 <p className="text-sm" style={{ color: '#888' }}>Prosperar Contabilidade</p>
               </div>
             </div>
-            <ThemeToggle />
+            <div className="flex items-center gap-3">
+              <BackToHomeButton />
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </header>
