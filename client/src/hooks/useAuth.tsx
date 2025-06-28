@@ -45,9 +45,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const queryClient = useQueryClient();
 
   const { data: userData, isLoading } = useQuery({
-    queryKey: ['/api/auth/me'],
+    queryKey: ['/api/user'],
     queryFn: async () => {
-      const response = await fetch('/api/auth/me', {
+      const response = await fetch('/api/user', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -63,7 +63,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const loginMutation = useMutation({
     mutationFn: async ({ username, password }: { username: string; password: string }) => {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch('/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -81,7 +81,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     onSuccess: (data) => {
       setToken(data.token);
       localStorage.setItem('token', data.token);
-      queryClient.setQueryData(['/api/auth/me'], data);
+      queryClient.setQueryData(['/api/user'], data.user);
     },
   });
 
@@ -112,7 +112,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [token]);
 
-  const user = userData?.user || null;
+  const user = userData || null;
   const isAuthenticated = !!user && !!token;
 
   const authValue: AuthContextType = {
