@@ -11,20 +11,29 @@ interface User {
 }
 
 export function useAuth() {
-  const { data: user, isLoading } = useQuery({
+  const token = localStorage.getItem('token');
+  
+  const { data: user, isLoading } = useQuery<User>({
     queryKey: ["/api/user"],
+    enabled: !!token,
     retry: false,
-    onError: (error: Error) => {
-      // Clear invalid token if user endpoint fails
-      if (error.message.includes('401')) {
+    queryFn: async () => {
+      const response = await fetch('/api/user', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) {
         localStorage.removeItem('token');
+        throw new Error('Authentication failed');
       }
+      return response.json();
     }
   });
 
   return {
     user: user || null,
     isLoading,
-    isAuthenticated: !!user,
+    isAuthenticated: !!user && !!token,
   };
 }
