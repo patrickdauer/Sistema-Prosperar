@@ -150,7 +150,8 @@ The system uses a `business_registrations` table with:
 - **Tema Escuro**: Implementado tema escuro completo na página home do sistema interno
 - **Esquema de Cores**: Títulos em verde (#22c55e), ícones em laranja (#ff8c42), textos em branco
 - **Cards Modernos**: Fundo escuro (#1a1a1a) com bordas sutis (#333) e efeitos hover
-- **Correção de Navegação**: Dashboard Geral agora direciona corretamente para /sistema-final
+- **Navegação Corrigida**: Dashboard Geral direciona para /dashboard com estatísticas
+- **Link Externo**: Simulador de Custos direciona para https://dark-simulador-patrickdauer.replit.app/
 - **Visual Profissional**: Layout limpo e moderno mantendo a funcionalidade completa
 
 ### December 28, 2025 - Sistema de Navegação com Abas e Botões de Retorno
