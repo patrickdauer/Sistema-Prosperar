@@ -162,6 +162,14 @@ The system uses a `business_registrations` table with:
 - **Navegação Inteligente**: Detecta se foi aberto em nova janela e age adequadamente
 - **Design Consistente**: Mantido tema escuro com verde principal e texto branco
 
+### December 28, 2025 - Sistema de Gestão de Usuários Completo
+- **Gestão de Senhas**: Implementada funcionalidade completa para alterar senhas dos usuários
+- **Interface de Usuários**: Botão com ícone de chave (laranja) para alterar senha em cada card de usuário
+- **Validação de Senhas**: Verificação de senha mínima de 6 caracteres e confirmação
+- **Correção de Hash**: Corrigido problema de hash duplo que impedia login de novos usuários
+- **Rota Backend**: Criada rota PATCH /api/users/:id/password para alteração de senhas
+- **Navegação Corrigida**: Página de gestão de usuários agora abre na mesma janela
+
 ### December 28, 2025 - Conversão para Autenticação Tradicional
 - **Sistema de Autenticação**: Completamente convertido do Replit Auth para autenticação tradicional usuário/senha
 - **Página de Login**: Criada nova página de login em português com design moderno (tema escuro, verde, texto branco)
