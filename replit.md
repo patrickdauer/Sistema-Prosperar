@@ -146,6 +146,15 @@ The system uses a `business_registrations` table with:
 
 ## Recent Changes
 
+### December 28, 2025 - Conversão para Autenticação Tradicional
+- **Sistema de Autenticação**: Completamente convertido do Replit Auth para autenticação tradicional usuário/senha
+- **Página de Login**: Criada nova página de login em português com design moderno (tema escuro, verde, texto branco)
+- **Banco de Dados**: Atualizada estrutura da tabela users para usar IDs numéricos e campos username/password
+- **Tokens JWT**: Implementado sistema de tokens JWT armazenados no localStorage
+- **Usuário Admin**: Criado usuário padrão admin/admin123 para acesso ao sistema
+- **Navegação Interna**: Corrigido redirecionamento do Simulador de Custos para usar navegação interna
+- **Credenciais**: Sistema funciona com usuário "admin" e senha "admin123"
+
 ### December 28, 2025 - Replit Auth Integration
 - **Authentication System**: Completely replaced custom JWT authentication with Replit Auth
 - **Landing Page**: Created new landing page with "Sistema de Gestão Prosperar Contabilidade" branding

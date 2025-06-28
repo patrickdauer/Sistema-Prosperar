@@ -3,12 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, Users, FileText, Settings, LogOut } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useLocation } from "wouter";
 
 export default function Home() {
   const { user } = useAuth();
+  const [, setLocation] = useLocation();
 
   const handleLogout = () => {
-    window.location.href = '/api/logout';
+    localStorage.removeItem('token');
+    window.location.href = '/login';
   };
 
   return (
@@ -134,7 +137,7 @@ export default function Home() {
           </Card>
 
           <Card className="hover:shadow-lg transition-shadow cursor-pointer" 
-                onClick={() => window.open('/simulador-custo', '_self')}>
+                onClick={() => setLocation('/simulador-custo')}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Settings className="h-5 w-5" />
