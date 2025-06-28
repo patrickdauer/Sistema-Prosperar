@@ -29,6 +29,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { BackToHomeButton } from '@/components/back-to-home-button';
+import { EditRegistrationForm, CreateRegistrationForm } from '@/components/business-forms';
 import type { BusinessRegistration } from '@shared/schema';
 
 export default function Dashboard() {
