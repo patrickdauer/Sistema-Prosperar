@@ -84,6 +84,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ message: "This is a protected route", userId });
   });
 
+  // User management routes
+  app.get('/api/users', authenticateToken, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      const usersResponse = users.map(user => ({ ...user, password: undefined }));
+      res.json(usersResponse);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Erro ao buscar usuários" });
+    }
+  });
+
+  app.post('/api/users', authenticateToken, async (req, res) => {
+    try {
+      const { username, password, name, email, role, department } = req.body;
+      
+      if (!username || !password || !name) {
+        return res.status(400).json({ message: 'Nome de usuário, senha e nome são obrigatórios' });
+      }
+
+      // Verificar se o usuário atual é admin
+      if (req.user?.role !== 'admin') {
+        return res.status(403).json({ message: 'Apenas administradores podem criar usuários' });
+      }
+
+      // Hash da senha
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const newUser = await storage.createUser({
+        username,
+        password: hashedPassword,
+        name,
+        email: email || null,
+        role: role || 'user',
+        department: department || null,
+        isActive: true
+      });
+
+      const userResponse = { ...newUser, password: undefined };
+      res.json(userResponse);
+    } catch (error) {
+      console.error("Error creating user:", error);
+      res.status(500).json({ message: "Erro ao criar usuário" });
+    }
+  });
+
+  app.patch('/api/users/:id', authenticateToken, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { name, email, role, department } = req.body;
+
+      // Verificar se o usuário atual é admin
+      if (req.user?.role !== 'admin') {
+        return res.status(403).json({ message: 'Apenas administradores podem editar usuários' });
+      }
+
+      const updatedUser = await storage.updateUser(userId, {
+        name,
+        email,
+        role,
+        department
+      });
+
+      const userResponse = { ...updatedUser, password: undefined };
+      res.json(userResponse);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ message: "Erro ao atualizar usuário" });
+    }
+  });
+
+  app.delete('/api/users/:id', authenticateToken, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+
+      // Verificar se o usuário atual é admin
+      if (req.user?.role !== 'admin') {
+        return res.status(403).json({ message: 'Apenas administradores podem deletar usuários' });
+      }
+
+      // Não permitir que o admin delete a si mesmo
+      if (req.user?.id === userId) {
+        return res.status(400).json({ message: 'Não é possível deletar seu próprio usuário' });
+      }
+
+      await storage.deleteUser(userId);
+      res.json({ message: 'Usuário deletado com sucesso' });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ message: "Erro ao deletar usuário" });
+    }
+  });
+
   // Business registration route (public)
   app.post("/api/business-registration", upload.fields([
     { name: 'documentoComFoto_0', maxCount: 1 },
