@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { FileUpload } from '@/components/file-upload';
+import { BackToHomeButton } from '@/components/back-to-home-button';
 import { useToast } from '@/hooks/use-toast';
 import { Building2, UserPlus, FileText, ArrowLeft, Upload, Calculator } from 'lucide-react';
 import { Link } from 'wouter';
@@ -137,15 +138,10 @@ export default function ContratacaoFuncionarios() {
 
   return (
     <div className="min-h-screen bg-gray-900">
+      <BackToHomeButton />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <Link href="/">
-            <Button variant="ghost" className="mb-4 text-gray-300 hover:text-white">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar ao início
-            </Button>
-          </Link>
           <div className="text-center">
             <div className="flex justify-center items-center mb-6">
               <div className="bg-blue-600 p-4 rounded-lg mb-4">

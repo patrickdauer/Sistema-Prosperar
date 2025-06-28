@@ -13,6 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { FileUpload } from '@/components/file-upload';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { BackToHomeButton } from '@/components/back-to-home-button';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { insertBusinessRegistrationSchema, type Partner } from '@shared/schema';
@@ -297,6 +298,7 @@ export default function BusinessRegistration() {
 
   return (
     <div className="min-h-screen bg-background dark:bg-background">
+      <BackToHomeButton />
       {/* Header */}
       <header className="bg-card dark:bg-card shadow-sm border-b border-border">
         <div className="max-w-4xl mx-auto px-4 py-6">
