@@ -127,7 +127,7 @@ function Router() {
       <Route path="/dashboard-interno" component={ProtectedDashboardInterno} />
       <Route path="/novo-sistema" component={ProtectedSistemaFinal} />
       <Route path="/sistema-final" component={ProtectedSistemaFinal} />
-      <Route component={Home} />
+      <Route component={DashboardInterno} />
     </Switch>
   );
 }
