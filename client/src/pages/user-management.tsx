@@ -33,6 +33,12 @@ export default function UserManagement() {
   const queryClient = useQueryClient();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editUserData, setEditUserData] = useState({
+    name: '',
+    email: '',
+    role: 'user',
+    department: ''
+  });
   const [newUserData, setNewUserData] = useState({
     username: '',
     password: '',
@@ -119,6 +125,36 @@ export default function UserManagement() {
     }
   });
 
+  // Editar usuário
+  const editUserMutation = useMutation({
+    mutationFn: async (userData: { id: number; data: typeof editUserData }) => {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/users/${userData.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(userData.data)
+      });
+      if (!response.ok) throw new Error('Erro ao editar usuário');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      setEditingUser(null);
+      setEditUserData({ name: '', email: '', role: 'user', department: '' });
+      toast({ title: "Usuário editado com sucesso!" });
+    },
+    onError: (error) => {
+      toast({ 
+        title: "Erro ao editar usuário", 
+        description: error.message,
+        variant: "destructive" 
+      });
+    }
+  });
+
   // Deletar usuário
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: number) => {
@@ -144,6 +180,22 @@ export default function UserManagement() {
 
   const handleCreateUser = () => {
     createUserMutation.mutate(newUserData);
+  };
+
+  const handleEditUser = (user: User) => {
+    setEditingUser(user);
+    setEditUserData({
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      department: user.department
+    });
+  };
+
+  const handleSaveEditUser = () => {
+    if (editingUser) {
+      editUserMutation.mutate({ id: editingUser.id, data: editUserData });
+    }
   };
 
   const handleDeleteUser = (userId: number) => {
@@ -294,6 +346,74 @@ export default function UserManagement() {
           </Dialog>
         </div>
 
+        {/* Edit User Dialog */}
+        <Dialog open={!!editingUser} onOpenChange={(open) => !open && setEditingUser(null)}>
+          <DialogContent style={{ background: '#1a1a1a', border: '1px solid #333' }}>
+            <DialogHeader>
+              <DialogTitle style={{ color: '#22c55e' }}>Editar Usuário</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label className="text-white">Nome completo</Label>
+                <Input
+                  value={editUserData.name}
+                  onChange={(e) => setEditUserData({...editUserData, name: e.target.value})}
+                  style={{ background: '#333', border: '1px solid #555', color: 'white' }}
+                />
+              </div>
+              <div>
+                <Label className="text-white">Email</Label>
+                <Input
+                  type="email"
+                  value={editUserData.email}
+                  onChange={(e) => setEditUserData({...editUserData, email: e.target.value})}
+                  style={{ background: '#333', border: '1px solid #555', color: 'white' }}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-white">Perfil</Label>
+                  <Select value={editUserData.role} onValueChange={(value) => setEditUserData({...editUserData, role: value})}>
+                    <SelectTrigger style={{ background: '#333', border: '1px solid #555', color: 'white' }}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent style={{ background: '#333', border: '1px solid #555' }}>
+                      <SelectItem value="user" style={{ color: 'white' }}>Usuário</SelectItem>
+                      <SelectItem value="admin" style={{ color: 'white' }}>Administrador</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-white">Departamento</Label>
+                  <Select value={editUserData.department} onValueChange={(value) => setEditUserData({...editUserData, department: value})}>
+                    <SelectTrigger style={{ background: '#333', border: '1px solid #555', color: 'white' }}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent style={{ background: '#333', border: '1px solid #555' }}>
+                      <SelectItem value="contabilidade" style={{ color: 'white' }}>Contabilidade</SelectItem>
+                      <SelectItem value="fiscal" style={{ color: 'white' }}>Fiscal</SelectItem>
+                      <SelectItem value="rh" style={{ color: 'white' }}>RH</SelectItem>
+                      <SelectItem value="societario" style={{ color: 'white' }}>Societário</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setEditingUser(null)}>
+                  Cancelar
+                </Button>
+                <Button 
+                  onClick={handleSaveEditUser}
+                  disabled={editUserMutation.isPending}
+                  style={{ backgroundColor: '#22c55e', color: 'white' }}
+                >
+                  {editUserMutation.isPending ? 'Salvando...' : 'Salvar Alterações'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         {/* Users Grid */}
         {isLoading ? (
           <div className="text-center py-8">
@@ -316,7 +436,7 @@ export default function UserManagement() {
                     <Button 
                       size="sm" 
                       variant="ghost"
-                      onClick={() => setEditingUser(user)}
+                      onClick={() => handleEditUser(user)}
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
