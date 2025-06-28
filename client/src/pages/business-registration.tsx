@@ -252,9 +252,17 @@ export default function BusinessRegistration() {
                       name="razaoSocial"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nome da Razão Social *</FormLabel>
+                          <FormLabel style={{ color: '#d1d5db' }}>Nome da Razão Social *</FormLabel>
                           <FormControl>
-                            <Input placeholder="Digite a razão social da empresa" {...field} />
+                            <Input 
+                              placeholder="Digite a razão social da empresa" 
+                              {...field}
+                              style={{ 
+                                backgroundColor: '#374151', 
+                                border: '1px solid #4b5563', 
+                                color: '#ffffff' 
+                              }}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -268,9 +276,17 @@ export default function BusinessRegistration() {
                       name="nomeFantasia"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nome Fantasia *</FormLabel>
+                          <FormLabel style={{ color: '#d1d5db' }}>Nome Fantasia *</FormLabel>
                           <FormControl>
-                            <Input placeholder="Digite o nome fantasia" {...field} />
+                            <Input 
+                              placeholder="Digite o nome fantasia" 
+                              {...field}
+                              style={{ 
+                                backgroundColor: '#374151', 
+                                border: '1px solid #4b5563', 
+                                color: '#ffffff' 
+                              }}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -284,12 +300,17 @@ export default function BusinessRegistration() {
                       name="endereco"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Endereço da Empresa *</FormLabel>
+                          <FormLabel style={{ color: '#d1d5db' }}>Endereço da Empresa *</FormLabel>
                           <FormControl>
                             <Textarea 
                               placeholder="Digite o endereço completo da empresa" 
                               rows={3}
-                              {...field} 
+                              {...field}
+                              style={{ 
+                                backgroundColor: '#374151', 
+                                border: '1px solid #4b5563', 
+                                color: '#ffffff' 
+                              }}
                             />
                           </FormControl>
                           <FormMessage />
@@ -303,9 +324,17 @@ export default function BusinessRegistration() {
                     name="inscricaoImobiliaria"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Inscrição Imobiliária *</FormLabel>
+                        <FormLabel style={{ color: '#d1d5db' }}>Inscrição Imobiliária *</FormLabel>
                         <FormControl>
-                          <Input placeholder="000.000.000-0" {...field} />
+                          <Input 
+                            placeholder="000.000.000-0" 
+                            {...field}
+                            style={{ 
+                              backgroundColor: '#374151', 
+                              border: '1px solid #4b5563', 
+                              color: '#ffffff' 
+                            }}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
