@@ -109,7 +109,7 @@ export default function Home() {
                 border: '1px solid #333',
                 borderRadius: '8px'
               }}
-              onClick={() => window.open('/user-management', '_blank')}>
+              onClick={() => window.location.href = '/user-management'}>
               <CardHeader style={{ borderBottom: '1px solid #333' }}>
                 <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
                   <Users className="h-5 w-5" style={{ color: '#ff8c42' }} />
