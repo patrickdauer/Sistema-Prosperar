@@ -14,11 +14,11 @@ export default function Landing() {
             tarefas departamentais e workflows internos.
           </p>
           <Button 
-            onClick={() => window.location.href = '/api/login'}
+            onClick={() => window.location.href = '/login'}
             size="lg"
             className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 text-lg"
           >
-            Entrar com Replit
+            Entrar no Sistema
           </Button>
         </div>
 
@@ -59,7 +59,7 @@ export default function Landing() {
               Segurança
             </h3>
             <p className="text-gray-400">
-              Autenticação segura com Replit Auth
+              Autenticação segura com controle de acesso
             </p>
           </div>
         </div>
