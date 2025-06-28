@@ -146,6 +146,15 @@ The system uses a `business_registrations` table with:
 
 ## Recent Changes
 
+### December 28, 2025 - Sistema de Auto-Edição de Perfil do Usuário
+- **Página de Perfil**: Criada página `/profile` onde cada usuário pode editar seus próprios dados
+- **Auto-Edição**: Usuários podem alterar nome, email, departamentos e senha sem precisar de admin
+- **Seleção Múltipla**: Sistema de checkboxes para seleção de múltiplos departamentos por usuário
+- **Validação de Senha**: Alteração de senha requer senha atual para segurança
+- **Navegação**: Botão "Meu Perfil" no header da home para acesso fácil
+- **Backend Seguro**: Rotas modificadas para permitir auto-edição mantendo segurança
+- **Correção Crítica**: Resolvido problema de hash duplo de senhas que impedia login após alteração
+
 ### December 28, 2025 - Interface Visual com Tema Escuro Personalizado
 - **Tema Escuro**: Implementado tema escuro completo na página home do sistema interno
 - **Esquema de Cores**: Títulos em verde (#22c55e), ícones em laranja (#ff8c42), textos em branco

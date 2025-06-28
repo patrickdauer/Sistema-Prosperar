@@ -48,11 +48,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: 'Credenciais inválidas' });
       }
 
-      console.log('Login attempt:', { username, passwordLength: password.length });
-      console.log('User found:', { id: user.id, username: user.username, passwordHash: user.password?.substring(0, 10) + '...' });
-      
       const isValidPassword = await bcrypt.compare(password, user.password);
-      console.log('Password validation result:', isValidPassword);
       
       if (!isValidPassword) {
         return res.status(401).json({ message: 'Credenciais inválidas' });
@@ -227,14 +223,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Hash da nova senha
         const hashedPassword = await bcrypt.hash(newPassword, 10);
-        console.log('Changing password for user:', userId);
-        console.log('New password hash:', hashedPassword.substring(0, 10) + '...');
         
         const updatedUser = await storage.updateUser(userId, {
           password: hashedPassword
         });
         
-        console.log('Password updated successfully for user:', updatedUser.username);
         return res.json({ message: 'Senha alterada com sucesso' });
       }
 

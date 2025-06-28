@@ -94,10 +94,8 @@ export class DatabaseStorage implements IStorage {
       updatedAt: new Date(),
     };
     
-    // Hash password if it's being updated
-    if (data.password) {
-      updateData.password = await bcrypt.hash(data.password, 10);
-    }
+    // Don't hash password here - it should be hashed in routes before calling this function
+    // This prevents double hashing
 
     const [updatedUser] = await db
       .update(users)
