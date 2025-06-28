@@ -128,69 +128,69 @@ export async function generateBusinessRegistrationPDF(registration: BusinessRegi
           doc.addPage();
         }
 
-        doc.fontSize(12).fillColor('#ff8c42').text(`Sócio ${index + 1}: ${socio.nomeCompleto}`);
+        doc.fontSize(12).fillColor('#ff8c42').text(`Socio ${index + 1}: ${cleanText(socio.nomeCompleto)}`);
         doc.moveDown(0.5);
 
         doc.fontSize(10).fillColor('#333');
         
         // Nome Completo
         doc.text('Nome Completo:', 50, doc.y);
-        doc.text(socio.nomeCompleto, 150, doc.y);
+        doc.text(cleanText(socio.nomeCompleto), 150, doc.y);
         doc.moveDown(0.7);
         
         // CPF
         doc.text('CPF:', 50, doc.y);
-        doc.text(socio.cpf, 150, doc.y);
+        doc.text(cleanText(socio.cpf), 150, doc.y);
         doc.moveDown(0.7);
         
         // RG
         doc.text('RG:', 50, doc.y);
-        doc.text(socio.rg, 150, doc.y);
+        doc.text(cleanText(socio.rg), 150, doc.y);
         doc.moveDown(0.7);
         
         // Data de Nascimento
         doc.text('Data de Nascimento:', 50, doc.y);
-        doc.text(socio.dataNascimento, 150, doc.y);
+        doc.text(cleanText(socio.dataNascimento), 150, doc.y);
         doc.moveDown(0.7);
         
         // Estado Civil
         doc.text('Estado Civil:', 50, doc.y);
-        doc.text(socio.estadoCivil, 150, doc.y);
+        doc.text(cleanText(socio.estadoCivil), 150, doc.y);
         doc.moveDown(0.7);
         
         // Nacionalidade
         doc.text('Nacionalidade:', 50, doc.y);
-        doc.text(socio.nacionalidade, 150, doc.y);
+        doc.text(cleanText(socio.nacionalidade), 150, doc.y);
         doc.moveDown(0.7);
         
-        // Profissão
-        doc.text('Profissão:', 50, doc.y);
-        doc.text(socio.profissao, 150, doc.y);
+        // Profissao
+        doc.text('Profissao:', 50, doc.y);
+        doc.text(cleanText(socio.profissao), 150, doc.y);
         doc.moveDown(0.7);
         
         // Telefone
         doc.text('Telefone:', 50, doc.y);
-        doc.text(socio.telefonePessoal, 150, doc.y);
+        doc.text(cleanText(socio.telefonePessoal), 150, doc.y);
         doc.moveDown(0.7);
         
         // E-mail
         doc.text('E-mail:', 50, doc.y);
-        doc.text(socio.emailPessoal, 150, doc.y);
+        doc.text(cleanText(socio.emailPessoal), 150, doc.y);
         doc.moveDown(0.7);
         
-        // Participação
-        doc.text('Participação:', 50, doc.y);
+        // Participacao
+        doc.text('Participacao:', 50, doc.y);
         doc.text(`${socio.participacao}%`, 150, doc.y);
         doc.moveDown(0.7);
         
-        // Tipo de Participação
-        doc.text('Tipo de Participação:', 50, doc.y);
-        doc.text(socio.tipoParticipacao, 150, doc.y);
+        // Tipo de Participacao
+        doc.text('Tipo de Participacao:', 50, doc.y);
+        doc.text(cleanText(socio.tipoParticipacao), 150, doc.y);
         doc.moveDown(0.7);
         
-        // Endereço
-        doc.text('Endereço:', 50, doc.y);
-        doc.text(socio.endereco, 150, doc.y, { width: 395 });
+        // Endereco
+        doc.text('Endereco:', 50, doc.y);
+        doc.text(cleanText(socio.endereco), 150, doc.y, { width: 395 });
         doc.moveDown(1.5);
       });
 
