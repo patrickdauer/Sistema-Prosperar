@@ -16,7 +16,8 @@ import {
   Filter,
   CheckCircle,
   Clock,
-  ArrowRight
+  ArrowRight,
+  AlertCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -270,10 +271,26 @@ export default function Dashboard() {
                             </span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          {/* Status change buttons - only show for pending items */}
-                          {(registration.status === 'pending' || !registration.status) && (
-                            <>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {/* Status change buttons */}
+                          <div className="flex items-center gap-1">
+                            {/* Pendente button - show for processing and completed */}
+                            {(registration.status === 'processing' || registration.status === 'completed') && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => updateStatus(registration.id, 'pending')}
+                                disabled={updateStatusMutation.isPending}
+                                style={{ background: '#dc2626', border: '1px solid #dc2626', color: '#ffffff' }}
+                                title="Marcar como Pendente"
+                              >
+                                <AlertCircle className="h-4 w-4 mr-1" />
+                                Pendente
+                              </Button>
+                            )}
+                            
+                            {/* Em Processamento button - show for pending and completed */}
+                            {(registration.status === 'pending' || !registration.status || registration.status === 'completed') && (
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -285,6 +302,10 @@ export default function Dashboard() {
                                 <Clock className="h-4 w-4 mr-1" />
                                 Em Processamento
                               </Button>
+                            )}
+                            
+                            {/* Concluída button - show for pending and processing */}
+                            {(registration.status === 'pending' || !registration.status || registration.status === 'processing') && (
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -296,42 +317,29 @@ export default function Dashboard() {
                                 <CheckCircle className="h-4 w-4 mr-1" />
                                 Concluída
                               </Button>
-                            </>
-                          )}
-                          
-                          {/* Status change for processing items */}
-                          {registration.status === 'processing' && (
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2">
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => updateStatus(registration.id, 'completed')}
-                              disabled={updateStatusMutation.isPending}
-                              style={{ background: '#16a34a', border: '1px solid #16a34a', color: '#ffffff' }}
-                              title="Marcar como Concluída"
+                              onClick={() => setSelectedRegistration(registration)}
+                              style={{ background: '#22c55e', border: '1px solid #22c55e', color: '#ffffff' }}
                             >
-                              <CheckCircle className="h-4 w-4 mr-1" />
-                              Concluída
+                              <Eye className="h-4 w-4 mr-1" />
+                              Ver Detalhes
                             </Button>
-                          )}
-
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setSelectedRegistration(registration)}
-                            style={{ background: '#22c55e', border: '1px solid #22c55e', color: '#ffffff' }}
-                          >
-                            <Eye className="h-4 w-4 mr-1" />
-                            Ver Detalhes
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => downloadPDF(registration.id)}
-                            style={{ background: '#ff8c42', border: '1px solid #ff8c42', color: '#ffffff' }}
-                          >
-                            <Download className="h-4 w-4 mr-1" />
-                            PDF
-                          </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => downloadPDF(registration.id)}
+                              style={{ background: '#ff8c42', border: '1px solid #ff8c42', color: '#ffffff' }}
+                            >
+                              <Download className="h-4 w-4 mr-1" />
+                              PDF
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>

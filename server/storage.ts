@@ -166,6 +166,7 @@ export class DatabaseStorage implements IStorage {
     if (data.capitalSocial !== undefined) allowedFields.capitalSocial = data.capitalSocial;
     if (data.atividadePrincipal !== undefined) allowedFields.atividadePrincipal = data.atividadePrincipal;
     if (data.socios !== undefined) allowedFields.socios = data.socios;
+    if (data.status !== undefined) allowedFields.status = data.status;
 
     console.log('Updating with mapped data:', allowedFields);
 
