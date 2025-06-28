@@ -135,7 +135,7 @@ export default function Home() {
           </Card>
 
           <Card className="hover:shadow-lg transition-shadow cursor-pointer" 
-                onClick={() => window.location.href = '/simulador-custo'}>
+                onClick={() => window.open('https://dark-simulador-patrickdauer.replit.app/', '_blank')}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Settings className="h-5 w-5" />
