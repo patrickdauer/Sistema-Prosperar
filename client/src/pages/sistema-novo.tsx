@@ -26,9 +26,19 @@ interface BusinessRegistration {
 }
 
 export default function SistemaNovo() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    queryClient.clear();
+    window.location.href = '/login';
+  };
+
+  const handleBack = () => {
+    window.history.back();
+  };
 
   // Fetch registrations
   const { data: registrations, isLoading } = useQuery({
@@ -104,21 +114,41 @@ export default function SistemaNovo() {
           justifyContent: 'space-between',
           alignItems: 'center'
         }}>
-          <div>
-            <div style={{ 
-              fontSize: '28px', 
-              fontWeight: '600',
-              color: '#ffffff',
-              marginBottom: '4px'
-            }}>
-              Sistema de Gestão Interno
-            </div>
-            <div style={{ fontSize: '14px', color: '#a0a0a0' }}>
-              {user?.name} • {user?.role} • Sistema Ativo
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <button
+              onClick={handleBack}
+              style={{
+                background: '#404040',
+                border: '1px solid #606060',
+                color: '#ffffff',
+                padding: '10px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              title="Voltar"
+            >
+              ←
+            </button>
+            <div>
+              <div style={{ 
+                fontSize: '28px', 
+                fontWeight: '600',
+                color: '#ffffff',
+                marginBottom: '4px'
+              }}>
+                Sistema de Gestão Interno
+              </div>
+              <div style={{ fontSize: '14px', color: '#a0a0a0' }}>
+                {user?.name} • {user?.role} • Sistema Ativo
+              </div>
             </div>
           </div>
           <button
-            onClick={logout}
+            onClick={handleLogout}
             style={{
               background: '#404040',
               border: '1px solid #606060',
