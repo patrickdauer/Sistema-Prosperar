@@ -1,140 +1,134 @@
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Building, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { ThemeToggle } from '@/components/theme-toggle';
-import { useLocation } from 'wouter';
-
-const loginSchema = z.object({
-  username: z.string().min(1, 'Username é obrigatório'),
-  password: z.string().min(1, 'Senha é obrigatória'),
-});
-
-type LoginForm = z.infer<typeof loginSchema>;
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
+import { useLocation } from "wouter";
+import { Building2, User, Lock } from "lucide-react";
 
 export default function Login() {
-  const { login } = useAuth();
-  const { toast } = useToast();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const { login, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
 
-  const form = useForm<LoginForm>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      username: '',
-      password: '',
-    },
-  });
+  // Redirect if already authenticated
+  if (isAuthenticated) {
+    setLocation("/");
+    return null;
+  }
 
-  const onSubmit = async (data: LoginForm) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsLoading(true);
+    setError("");
+
     try {
-      await login(data.username, data.password);
-      toast({
-        title: "Login realizado com sucesso",
-        description: "Redirecionando para o sistema interno...",
-      });
-      // Redirect to internal system after successful login
-      setTimeout(() => {
-        setLocation('/interno');
-      }, 1000);
-    } catch (error: any) {
-      toast({
-        title: "Erro no login",
-        description: error.message || "Credenciais inválidas",
-        variant: "destructive",
-      });
+      await login(username, password);
+      setLocation("/");
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Erro ao fazer login");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/20 via-background to-secondary/20 flex items-center justify-center p-4">
-      <div className="absolute top-4 right-4">
-        <ThemeToggle />
-      </div>
-      
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-primary rounded-lg flex items-center justify-center mb-4">
-            <Building className="text-primary-foreground text-xl" />
-          </div>
-          <CardTitle className="text-2xl">Sistema Interno</CardTitle>
-          <p className="text-muted-foreground">Prosperar Contabilidade</p>
-        </CardHeader>
-        
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Usuário</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Digite seu usuário"
-                        {...field}
-                        disabled={isLoading}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <Building2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
+          <h1 className="text-3xl font-bold text-white mb-2">
+            Sistema de Gestão <span className="text-green-500">Prosperar</span>
+          </h1>
+          <p className="text-gray-400">Acesso restrito para equipe interna</p>
+        </div>
+
+        <Card className="bg-gray-800 border-gray-700">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl text-center text-white">Entrar no Sistema</CardTitle>
+            <CardDescription className="text-center text-gray-400">
+              Digite suas credenciais para acessar o sistema
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="username" className="text-gray-200 flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Usuário
+                </Label>
+                <Input
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                  placeholder="Digite seu usuário"
+                  required
+                />
+              </div>
               
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Senha</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Digite sua senha"
-                        {...field}
-                        disabled={isLoading}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <Button 
-                type="submit" 
-                className="w-full" 
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-gray-200 flex items-center gap-2">
+                  <Lock className="h-4 w-4" />
+                  Senha
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                  placeholder="Digite sua senha"
+                  required
+                />
+              </div>
+
+              {error && (
+                <div className="bg-red-900/30 border border-red-600 text-red-400 px-4 py-3 rounded">
+                  {error}
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
                 disabled={isLoading}
               >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Entrando...
-                  </>
-                ) : (
-                  'Entrar'
-                )}
+                {isLoading ? "Entrando..." : "Entrar"}
               </Button>
             </form>
-          </Form>
-          
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            <p>Credenciais padrão:</p>
-            <p>Usuário: <code className="bg-muted px-1 py-0.5 rounded">admin</code></p>
-            <p>Senha: <code className="bg-muted px-1 py-0.5 rounded">admin123</code></p>
-          </div>
-        </CardContent>
-      </Card>
+
+            <div className="mt-6 pt-6 border-t border-gray-700">
+              <p className="text-sm text-gray-400 text-center">
+                Acesso público disponível em:
+              </p>
+              <div className="flex gap-2 mt-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setLocation("/business-registration")}
+                  className="flex-1 border-orange-500 text-orange-400 hover:bg-orange-500/10"
+                >
+                  Cadastro Empresarial
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setLocation("/contratacao-funcionarios")}
+                  className="flex-1 border-green-500 text-green-400 hover:bg-green-500/10"
+                >
+                  Contratação
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

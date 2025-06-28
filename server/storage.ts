@@ -65,42 +65,54 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  // User management - Updated for Replit Auth
-  async getUser(id: string): Promise<User | undefined> {
+  // User management - Traditional auth
+  async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
   }
 
-  async upsertUser(userData: UpsertUser): Promise<User> {
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async createUser(userData: InsertUser): Promise<User> {
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
     const [user] = await db
       .insert(users)
-      .values(userData)
-      .onConflictDoUpdate({
-        target: users.id,
-        set: {
-          ...userData,
-          updatedAt: new Date(),
-        },
+      .values({
+        ...userData,
+        password: hashedPassword,
       })
       .returning();
     return user;
   }
 
   async getAllUsers(): Promise<User[]> {
-    return await db.select().from(users).orderBy(asc(users.firstName));
+    return await db.select().from(users).orderBy(asc(users.name));
   }
 
-  async updateUser(id: string, data: Partial<User>): Promise<User> {
+  async updateUser(id: number, data: Partial<User>): Promise<User> {
+    const updateData: any = {
+      ...data,
+      updatedAt: new Date(),
+    };
+    
+    // Hash password if it's being updated
+    if (data.password) {
+      updateData.password = await bcrypt.hash(data.password, 10);
+    }
+
     const [updatedUser] = await db
       .update(users)
-      .set({ ...data, updatedAt: new Date() })
+      .set(updateData)
       .where(eq(users.id, id))
       .returning();
     
     return updatedUser;
   }
 
-  async deleteUser(id: string): Promise<void> {
+  async deleteUser(id: number): Promise<void> {
     await db.delete(users).where(eq(users.id, id));
   }
 

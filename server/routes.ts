@@ -7,7 +7,8 @@ import { z } from "zod";
 import { generateBusinessRegistrationPDF } from "./services/pdf";
 import { sendConfirmationEmail } from "./services/email";
 import { googleDriveService } from "./services/googledrive";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { authenticateToken, generateToken } from "./auth";
+import bcrypt from "bcrypt";
 import { seedTaskTemplates, createAdminUser } from "./seedData";
 import XLSX from "xlsx";
 import puppeteer from "puppeteer";
@@ -33,15 +34,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await seedTaskTemplates();
   await createAdminUser();
 
-  // Setup Replit Auth
-  await setupAuth(app);
-
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  // Traditional Auth routes
+  app.post('/api/login', async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
+      const { username, password } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ message: 'Username e senha são obrigatórios' });
+      }
+
+      const user = await storage.getUserByUsername(username);
+      if (!user) {
+        return res.status(401).json({ message: 'Credenciais inválidas' });
+      }
+
+      const isValidPassword = await bcrypt.compare(password, user.password);
+      if (!isValidPassword) {
+        return res.status(401).json({ message: 'Credenciais inválidas' });
+      }
+
+      if (!user.isActive) {
+        return res.status(401).json({ message: 'Usuário inativo' });
+      }
+
+      const token = generateToken(user);
+      const userResponse = { ...user, password: undefined };
+      
+      res.json({ user: userResponse, token });
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ message: 'Erro interno do servidor' });
+    }
+  });
+
+  app.get('/api/user', authenticateToken, async (req, res) => {
+    try {
+      const user = req.user;
+      const userResponse = { ...user, password: undefined };
+      res.json(userResponse);
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
@@ -49,8 +79,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Protected route example
-  app.get("/api/protected", isAuthenticated, async (req: any, res) => {
-    const userId = req.user?.claims?.sub;
+  app.get("/api/protected", authenticateToken, async (req, res) => {
+    const userId = req.user?.id;
     res.json({ message: "This is a protected route", userId });
   });
 
@@ -208,7 +238,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Internal management routes (protected)
-  app.get("/api/internal/registrations", isAuthenticated, async (req, res) => {
+  app.get("/api/internal/registrations", authenticateToken, async (req, res) => {
     try {
       const registrations = await storage.getAllBusinessRegistrationsWithTasks();
       res.json(registrations);
