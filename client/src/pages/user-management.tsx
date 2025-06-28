@@ -780,19 +780,31 @@ export default function UserManagement() {
                   <p className="text-white">
                     <span className="text-gray-400">Email:</span> {user.email}
                   </p>
-                  <div className="flex gap-2">
-                    <Badge 
-                      variant={user.role === 'admin' ? 'default' : 'secondary'}
-                      style={{ 
-                        backgroundColor: user.role === 'admin' ? '#ff8c42' : '#666',
-                        color: 'white'
-                      }}
-                    >
-                      {user.role === 'admin' ? 'Admin' : 'Usuário'}
-                    </Badge>
-                    <Badge variant="outline" style={{ borderColor: '#22c55e', color: '#22c55e' }}>
-                      {user.department}
-                    </Badge>
+                  <div className="space-y-2">
+                    <div>
+                      <Badge 
+                        variant={user.role === 'admin' ? 'default' : 'secondary'}
+                        style={{ 
+                          backgroundColor: user.role === 'admin' ? '#ff8c42' : '#666',
+                          color: 'white'
+                        }}
+                      >
+                        {user.role === 'admin' ? 'Admin' : 'Usuário'}
+                      </Badge>
+                    </div>
+                    {user.department && (
+                      <div className="flex flex-wrap gap-1">
+                        {user.department.split(', ').filter(dept => dept.trim()).map((dept, index) => (
+                          <Badge 
+                            key={index}
+                            variant="outline" 
+                            style={{ borderColor: '#22c55e', color: '#22c55e', fontSize: '10px' }}
+                          >
+                            {DEPARTMENTS.find(d => d.value === dept.trim())?.label || dept.trim()}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
