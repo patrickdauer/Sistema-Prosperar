@@ -29,7 +29,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { BackToHomeButton } from '@/components/back-to-home-button';
-import { EditRegistrationForm, CreateRegistrationForm } from '@/components/business-forms';
+import { EditRegistrationForm } from '@/components/business-forms';
 import type { BusinessRegistration } from '@shared/schema';
 
 export default function Dashboard() {
@@ -37,7 +37,7 @@ export default function Dashboard() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedRegistration, setSelectedRegistration] = useState<BusinessRegistration | null>(null);
   const [editingRegistration, setEditingRegistration] = useState<BusinessRegistration | null>(null);
-  const [showCreateForm, setShowCreateForm] = useState(false);
+
   const queryClient = useQueryClient();
 
   const { data: registrations, isLoading } = useQuery({
@@ -223,16 +223,7 @@ export default function Dashboard() {
     />;
   }
 
-  if (showCreateForm) {
-    return <CreateRegistrationForm 
-      onSave={(data) => {
-        // Redirecionar para o formulário público de cadastro
-        window.open('/', '_blank');
-        setShowCreateForm(false);
-      }}
-      onCancel={() => setShowCreateForm(false)}
-    />;
-  }
+
 
   return (
     <div className="min-h-screen" style={{ background: '#0a0a0a' }}>
@@ -251,8 +242,9 @@ export default function Dashboard() {
             </div>
             <div className="flex items-center gap-3">
               <Button
-                onClick={() => setShowCreateForm(true)}
+                onClick={() => window.open('/', '_blank')}
                 style={{ background: '#22c55e', border: '1px solid #22c55e', color: '#ffffff' }}
+                title="Abrir formulário público de cadastro de empresa"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Criar Nova Empresa
