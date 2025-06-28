@@ -60,7 +60,7 @@ export default function Home() {
               border: '1px solid #333',
               borderRadius: '8px'
             }}
-            onClick={() => window.open('/sistema-final', '_blank')}>
+            onClick={() => window.open('/dashboard', '_blank')}>
             <CardHeader style={{ borderBottom: '1px solid #333' }}>
               <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
                 <Building2 className="h-5 w-5" style={{ color: '#ff8c42' }} />
