@@ -30,7 +30,6 @@ export default function Home() {
           </div>
         </div>
       </header>
-
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h2 className="text-3xl font-bold mb-2">
@@ -141,9 +140,7 @@ export default function Home() {
                 <Settings className="h-5 w-5" />
                 Simulador de Custos
               </CardTitle>
-              <CardDescription>
-                Ferramenta de cálculo de custos
-              </CardDescription>
+              <CardDescription>Ferramenta de cálculo de custos de Funcionário e comparativo CLT x PJ</CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
