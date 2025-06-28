@@ -4,19 +4,43 @@ import type { BusinessRegistration } from '@shared/schema';
 export async function generateBusinessRegistrationPDF(registration: BusinessRegistration): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     try {
-      const doc = new PDFDocument({ margin: 50 });
+      const doc = new PDFDocument({ 
+        margin: 50,
+        bufferPages: true
+      });
       const chunks: Buffer[] = [];
 
       doc.on('data', chunk => chunks.push(chunk));
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
+      // Função para limpar caracteres especiais
+      const cleanText = (text: string | null | undefined): string => {
+        if (!text) return 'Nao informado';
+        return text
+          .replace(/[àáâãäå]/g, 'a')
+          .replace(/[èéêë]/g, 'e')
+          .replace(/[ìíîï]/g, 'i')
+          .replace(/[òóôõö]/g, 'o')
+          .replace(/[ùúûü]/g, 'u')
+          .replace(/[ç]/g, 'c')
+          .replace(/[ñ]/g, 'n')
+          .replace(/[ÀÁÂÃÄÅ]/g, 'A')
+          .replace(/[ÈÉÊË]/g, 'E')
+          .replace(/[ÌÍÎÏ]/g, 'I')
+          .replace(/[ÒÓÔÕÖ]/g, 'O')
+          .replace(/[ÙÚÛÜ]/g, 'U')
+          .replace(/[Ç]/g, 'C')
+          .replace(/[Ñ]/g, 'N')
+          .replace(/[^\x00-\x7F]/g, ''); // Remove caracteres não-ASCII
+      };
+
       const socios = registration.socios as any[];
 
       // Header
       doc.fontSize(20).fillColor('#22c55e').text('REGISTRO EMPRESARIAL', { align: 'center' });
       doc.moveDown(0.5);
-      doc.fontSize(16).fillColor('#333').text(registration.razaoSocial, { align: 'center' });
+      doc.fontSize(16).fillColor('#333').text(cleanText(registration.razaoSocial), { align: 'center' });
       doc.moveDown(0.3);
       doc.fontSize(10).fillColor('#666').text(`Documento gerado em ${new Date().toLocaleDateString('pt-BR')}`, { align: 'center' });
       doc.moveDown(1);
@@ -26,24 +50,24 @@ export async function generateBusinessRegistrationPDF(registration: BusinessRegi
       doc.moveDown(1);
 
       // Company Information Section
-      doc.fontSize(14).fillColor('#22c55e').text('📊 INFORMAÇÕES GERAIS');
+      doc.fontSize(14).fillColor('#22c55e').text('INFORMACOES GERAIS');
       doc.moveDown(0.5);
 
       doc.fontSize(10).fillColor('#333');
       
       // Razão Social
-      doc.text('Razão Social:', 50, doc.y);
-      doc.text(registration.razaoSocial, 150, doc.y);
+      doc.text('Razao Social:', 50, doc.y);
+      doc.text(cleanText(registration.razaoSocial), 150, doc.y);
       doc.moveDown(0.8);
       
       // Nome Fantasia
       doc.text('Nome Fantasia:', 50, doc.y);
-      doc.text(registration.nomeFantasia, 150, doc.y);
+      doc.text(cleanText(registration.nomeFantasia), 150, doc.y);
       doc.moveDown(0.8);
       
       // CNPJ
       doc.text('CNPJ:', 50, doc.y);
-      doc.text(registration.cnpj || 'Não informado', 150, doc.y);
+      doc.text(cleanText(registration.cnpj), 150, doc.y);
       doc.moveDown(0.8);
       
       // Capital Social
@@ -53,50 +77,50 @@ export async function generateBusinessRegistrationPDF(registration: BusinessRegi
       
       // Telefone
       doc.text('Telefone:', 50, doc.y);
-      doc.text(registration.telefoneEmpresa, 150, doc.y);
+      doc.text(cleanText(registration.telefoneEmpresa), 150, doc.y);
       doc.moveDown(0.8);
       
       // E-mail
       doc.text('E-mail:', 50, doc.y);
-      doc.text(registration.emailEmpresa, 150, doc.y);
+      doc.text(cleanText(registration.emailEmpresa), 150, doc.y);
       doc.moveDown(0.8);
       
       // Metragem
       doc.text('Metragem:', 50, doc.y);
-      doc.text(`${registration.metragem}m²`, 150, doc.y);
+      doc.text(`${registration.metragem}m2`, 150, doc.y);
       doc.moveDown(0.8);
       
-      // Inscrição Imobiliária
-      doc.text('Inscrição Imobiliária:', 50, doc.y);
-      doc.text(registration.inscricaoImobiliaria, 150, doc.y);
+      // Inscricao Imobiliaria
+      doc.text('Inscricao Imobiliaria:', 50, doc.y);
+      doc.text(cleanText(registration.inscricaoImobiliaria), 150, doc.y);
       doc.moveDown(1);
 
       // Address Section
-      doc.fontSize(14).fillColor('#22c55e').text('📍 ENDEREÇO');
+      doc.fontSize(14).fillColor('#22c55e').text('ENDERECO');
       doc.moveDown(0.5);
-      doc.fontSize(10).fillColor('#333').text(registration.endereco);
+      doc.fontSize(10).fillColor('#333').text(cleanText(registration.endereco));
       doc.moveDown(1);
 
       // Activities Section
-      doc.fontSize(14).fillColor('#22c55e').text('🏢 ATIVIDADES');
+      doc.fontSize(14).fillColor('#22c55e').text('ATIVIDADES');
       doc.moveDown(0.5);
       
       doc.fontSize(10).fillColor('#333');
       
       // Atividade Principal
       doc.text('Atividade Principal:', 50, doc.y);
-      doc.text(registration.atividadePrincipal, 150, doc.y, { width: 395 });
+      doc.text(cleanText(registration.atividadePrincipal), 150, doc.y, { width: 395 });
       doc.moveDown(1);
       
       // Atividades Secundárias (se existir)
       if (registration.atividadesSecundarias) {
-        doc.text('Atividades Secundárias:', 50, doc.y);
-        doc.text(registration.atividadesSecundarias, 150, doc.y, { width: 395 });
+        doc.text('Atividades Secundarias:', 50, doc.y);
+        doc.text(cleanText(registration.atividadesSecundarias), 150, doc.y, { width: 395 });
         doc.moveDown(1);
       }
 
       // Partners Section
-      doc.fontSize(14).fillColor('#22c55e').text('👥 SÓCIOS');
+      doc.fontSize(14).fillColor('#22c55e').text('SOCIOS');
       doc.moveDown(0.5);
 
       socios.forEach((socio, index) => {
@@ -178,8 +202,8 @@ export async function generateBusinessRegistrationPDF(registration: BusinessRegi
       doc.strokeColor('#22c55e').lineWidth(1).moveTo(50, doc.y + 20).lineTo(545, doc.y + 20).stroke();
       doc.moveDown(1.5);
       doc.fontSize(12).fillColor('#22c55e').text('Prosperar Contabilidade', { align: 'center' });
-      doc.fontSize(10).fillColor('#666').text('📧 contato@prosperarcontabilidade.com.br', { align: 'center' });
-      doc.text(`Documento gerado automaticamente em ${new Date().toLocaleString('pt-BR')}`, { align: 'center' });
+      doc.fontSize(10).fillColor('#666').text('Email: contato@prosperarcontabilidade.com.br', { align: 'center' });
+      doc.text(`Documento gerado automaticamente em ${new Date().toLocaleDateString('pt-BR')}`, { align: 'center' });
 
       doc.end();
     } catch (error) {
