@@ -144,8 +144,7 @@ export default function UserManagement() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
-      setEditingUser(null);
-      setEditUserData({ name: '', email: '', role: 'user', department: '' });
+      resetEditForm();
       toast({ title: "Usuário editado com sucesso!" });
     },
     onError: (error) => {
@@ -553,7 +552,7 @@ export default function UserManagement() {
                 </div>
               </div>
               <div className="flex justify-end gap-2 pt-4">
-                <Button variant="outline" onClick={() => setEditingUser(null)}>
+                <Button variant="outline" onClick={() => resetEditForm()}>
                   Cancelar
                 </Button>
                 <Button 
