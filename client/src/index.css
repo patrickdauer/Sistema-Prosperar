@@ -2,93 +2,155 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Business Registration Dark Theme - Force Complete Override */
-
-/* Remove all blue colors and force dark theme */
-.business-registration-form * {
-  border-color: #4b5563 !important;
+/* Business Registration Dark Theme - Complete Override */
+[data-page="business-registration"] {
+  background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #111827 100%) !important;
 }
 
-.business-registration-form label,
-.business-registration-form .form-label,
-.business-registration-form span:not([class*="green"]):not([class*="orange"]) {
+[data-page="business-registration"] *,
+[data-page="business-registration"] label,
+[data-page="business-registration"] span {
   color: #ffffff !important;
 }
 
-.business-registration-form input,
-.business-registration-form textarea,
-.business-registration-form select,
-.business-registration-form [role="combobox"],
-.business-registration-form button[role="combobox"],
-.business-registration-form [data-radix-select-trigger] {
+[data-page="business-registration"] input,
+[data-page="business-registration"] textarea,
+[data-page="business-registration"] select,
+[data-page="business-registration"] [role="combobox"] {
   background-color: #374151 !important;
   border: 1px solid #4b5563 !important;
   color: #ffffff !important;
 }
 
-.business-registration-form input::placeholder,
-.business-registration-form textarea::placeholder {
+[data-page="business-registration"] input::placeholder,
+[data-page="business-registration"] textarea::placeholder {
   color: #9ca3af !important;
 }
 
-/* Focus states - Green accent */
-.business-registration-form input:focus,
-.business-registration-form textarea:focus,
-.business-registration-form select:focus,
-.business-registration-form [role="combobox"]:focus,
-.business-registration-form [data-radix-select-trigger]:focus {
+[data-page="business-registration"] input:focus,
+[data-page="business-registration"] textarea:focus {
   border-color: #22c55e !important;
   box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2) !important;
   outline: none !important;
 }
 
-/* Remove any blue/default button styles */
-.business-registration-form button:not([class*="bg-green"]):not([class*="green"]) {
+[data-page="business-registration"] button {
+  background-color: #6b7280 !important;
+  color: #ffffff !important;
+  border: 1px solid #4b5563 !important;
+}
+
+[data-page="business-registration"] button:hover {
+  background-color: #4b5563 !important;
+}
+
+[data-page="business-registration"] .bg-green-600,
+[data-page="business-registration"] .bg-green-700 {
+  background-color: #22c55e !important;
+  border-color: #22c55e !important;
+  color: #ffffff !important;
+}
+
+[data-page="business-registration"] .bg-green-600:hover,
+[data-page="business-registration"] .bg-green-700:hover {
+  background-color: #16a34a !important;
+}
+
+/* Force remove all blue colors */
+[data-page="business-registration"] .bg-blue-700,
+[data-page="business-registration"] .bg-blue-600,
+[data-page="business-registration"] .text-blue-700,
+[data-page="business-registration"] .text-blue-600 {
+  background-color: #22c55e !important;
+  color: #ffffff !important;
+  border-color: #22c55e !important;
+}
+
+[data-page="business-registration"] .text-blue-700,
+[data-page="business-registration"] .text-blue-600 {
+  color: #22c55e !important;
+}
+
+/* Business Registration Page - Complete Dark Theme Override */
+
+/* Force dark theme on the entire page when it contains business-registration-form */
+.business-registration-form,
+.business-registration-form * {
+  color: #ffffff !important;
+  border-color: #4b5563 !important;
+}
+
+/* All form inputs and text areas */
+.business-registration-form input,
+.business-registration-form textarea,
+.business-registration-form select,
+.business-registration-form [role="combobox"],
+.business-registration-form button[role="combobox"] {
+  background-color: #374151 !important;
+  border: 1px solid #4b5563 !important;
+  color: #ffffff !important;
+}
+
+/* Placeholder text */
+.business-registration-form input::placeholder,
+.business-registration-form textarea::placeholder {
+  color: #9ca3af !important;
+}
+
+/* Focus states with green accent */
+.business-registration-form input:focus,
+.business-registration-form textarea:focus {
+  border-color: #22c55e !important;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2) !important;
+  outline: none !important;
+}
+
+/* Override any existing blue button styles */
+.business-registration-form button {
   background-color: #6b7280 !important;
   border: 1px solid #4b5563 !important;
   color: #ffffff !important;
 }
 
-.business-registration-form button:not([class*="bg-green"]):not([class*="green"]):hover {
+.business-registration-form button:hover {
   background-color: #4b5563 !important;
 }
 
-/* Force remove all blue/primary colors */
+/* Green buttons */
+.business-registration-form .bg-green-600,
+.business-registration-form .bg-green-700 {
+  background-color: #22c55e !important;
+  border-color: #22c55e !important;
+  color: #ffffff !important;
+}
+
+.business-registration-form .bg-green-600:hover,
+.business-registration-form .bg-green-700:hover {
+  background-color: #16a34a !important;
+}
+
+/* Force override any blue styles */
 .business-registration-form .bg-blue-700,
 .business-registration-form .bg-blue-600,
 .business-registration-form .text-blue-700,
 .business-registration-form .text-blue-600 {
   background-color: #22c55e !important;
   color: #ffffff !important;
-}
-
-/* Select dropdown styling */
-[data-radix-select-content] {
-  background-color: #374151 !important;
-  border: 1px solid #4b5563 !important;
-  color: #ffffff !important;
-}
-
-[data-radix-select-item] {
-  color: #ffffff !important;
-  background-color: transparent !important;
-}
-
-[data-radix-select-item]:hover,
-[data-radix-select-item][data-highlighted] {
-  background-color: #22c55e !important;
-  color: #ffffff !important;
-}
-
-/* Checkbox styling */
-.business-registration-form [data-radix-checkbox-root] {
-  background-color: #374151 !important;
-  border: 1px solid #4b5563 !important;
-}
-
-.business-registration-form [data-radix-checkbox-root][data-state="checked"] {
-  background-color: #22c55e !important;
   border-color: #22c55e !important;
+}
+
+/* Global override for business registration page */
+[data-route="/business-registration"] * {
+  color: #ffffff !important;
+  border-color: #4b5563 !important;
+}
+
+[data-route="/business-registration"] input,
+[data-route="/business-registration"] textarea,
+[data-route="/business-registration"] select {
+  background-color: #374151 !important;
+  border: 1px solid #4b5563 !important;
+  color: #ffffff !important;
 }
 
 :root {
