@@ -16,7 +16,7 @@ export default function Landing() {
           <Button 
             onClick={() => window.location.href = '/api/login'}
             size="lg"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg"
+            className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 text-lg"
           >
             Entrar com Replit
           </Button>
@@ -24,7 +24,7 @@ export default function Landing() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
           <div className="bg-gray-800 p-6 rounded-lg text-center">
-            <Building2 className="h-12 w-12 text-blue-500 mx-auto mb-4" />
+            <Building2 className="h-12 w-12 text-green-500 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-white mb-2">
               Cadastro Empresarial
             </h3>
@@ -44,7 +44,7 @@ export default function Landing() {
           </div>
 
           <div className="bg-gray-800 p-6 rounded-lg text-center">
-            <FileText className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+            <FileText className="h-12 w-12 text-orange-500 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-white mb-2">
               Workflow de Tarefas
             </h3>
@@ -54,7 +54,7 @@ export default function Landing() {
           </div>
 
           <div className="bg-gray-800 p-6 rounded-lg text-center">
-            <Shield className="h-12 w-12 text-purple-500 mx-auto mb-4" />
+            <Shield className="h-12 w-12 text-green-500 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-white mb-2">
               Segurança
             </h3>
@@ -72,14 +72,14 @@ export default function Landing() {
             <Button 
               variant="outline" 
               onClick={() => window.location.href = '/business-registration'}
-              className="border-gray-600 text-gray-300 hover:bg-gray-700"
+              className="border-orange-500 text-orange-400 hover:bg-orange-500/10 hover:text-orange-300"
             >
               Cadastro de Empresa
             </Button>
             <Button 
               variant="outline" 
               onClick={() => window.location.href = '/contratacao-funcionarios'}
-              className="border-gray-600 text-gray-300 hover:bg-gray-700"
+              className="border-green-500 text-green-400 hover:bg-green-500/10 hover:text-green-300"
             >
               Contratação de Funcionários
             </Button>
