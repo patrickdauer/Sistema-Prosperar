@@ -42,6 +42,48 @@ button {
   color: #ffffff !important;
 }
 
+/* FORCE ALL ICONS GREEN ON BUSINESS REGISTRATION PAGE */
+[data-page="business-registration"] svg,
+[data-page="business-registration"] .lucide,
+[data-page="business-registration"] .icon,
+[data-page="business-registration"] svg path,
+[data-page="business-registration"] svg circle,
+[data-page="business-registration"] svg rect,
+[data-page="business-registration"] svg line {
+  color: #22c55e !important;
+  fill: #22c55e !important;
+  stroke: #22c55e !important;
+}
+
+/* Nuclear override for all icon colors */
+[data-page="business-registration"] .text-blue-500,
+[data-page="business-registration"] .text-blue-600,
+[data-page="business-registration"] .text-blue-700,
+[data-page="business-registration"] .text-gray-400,
+[data-page="business-registration"] .text-gray-500,
+[data-page="business-registration"] .text-gray-600,
+[data-page="business-registration"] .text-gray-700,
+[data-page="business-registration"] .text-slate-400,
+[data-page="business-registration"] .text-slate-500,
+[data-page="business-registration"] .text-slate-600 {
+  color: #22c55e !important;
+}
+
+/* Force lucide icons specifically */
+[data-page="business-registration"] .lucide-building,
+[data-page="business-registration"] .lucide-plus,
+[data-page="business-registration"] .lucide-user,
+[data-page="business-registration"] .lucide-users,
+[data-page="business-registration"] .lucide-trash-2,
+[data-page="business-registration"] .lucide-user-plus,
+[data-page="business-registration"] .lucide-map-pin,
+[data-page="business-registration"] .lucide-phone,
+[data-page="business-registration"] .lucide-mail,
+[data-page="business-registration"] .lucide-file-text {
+  color: #22c55e !important;
+  stroke: #22c55e !important;
+}
+
 /* FORCE Business Registration Dark Theme - Nuclear Override */
 
 /* Kill all blue colors globally for this page */
