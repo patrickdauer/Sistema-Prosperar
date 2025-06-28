@@ -466,6 +466,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update complete business registration
+  app.put("/api/business-registration/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updateData = req.body;
+
+      const registration = await storage.getBusinessRegistration(id);
+      if (!registration) {
+        return res.status(404).json({ message: "Cadastro não encontrado" });
+      }
+
+      const updatedRegistration = await storage.updateBusinessRegistration(id, updateData);
+      res.json(updatedRegistration);
+    } catch (error) {
+      console.error("Error updating registration:", error);
+      res.status(500).json({ message: "Erro ao atualizar cadastro" });
+    }
+  });
+
+  // Delete business registration
+  app.delete("/api/business-registration/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+
+      const registration = await storage.getBusinessRegistration(id);
+      if (!registration) {
+        return res.status(404).json({ message: "Cadastro não encontrado" });
+      }
+
+      await storage.deleteBusinessRegistration(id);
+      res.json({ message: "Cadastro deletado com sucesso" });
+    } catch (error) {
+      console.error("Error deleting registration:", error);
+      res.status(500).json({ message: "Erro ao deletar cadastro" });
+    }
+  });
+
   // Generate and download PDF
   app.get("/api/business-registration/:id/pdf", async (req, res) => {
     try {

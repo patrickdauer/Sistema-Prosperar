@@ -17,7 +17,10 @@ import {
   CheckCircle,
   Clock,
   ArrowRight,
-  AlertCircle
+  AlertCircle,
+  Edit,
+  Trash2,
+  Plus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,6 +35,8 @@ export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedRegistration, setSelectedRegistration] = useState<BusinessRegistration | null>(null);
+  const [editingRegistration, setEditingRegistration] = useState<BusinessRegistration | null>(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: registrations, isLoading } = useQuery({
@@ -57,6 +62,37 @@ export default function Dashboard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/business-registrations'] });
+    },
+  });
+
+  const deleteRegistrationMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/business-registration/${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Failed to delete registration');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/business-registrations'] });
+    },
+  });
+
+  const updateRegistrationMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: Partial<BusinessRegistration> }) => {
+      const response = await fetch(`/api/business-registration/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Failed to update registration');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/business-registrations'] });
+      setEditingRegistration(null);
     },
   });
 
@@ -88,6 +124,16 @@ export default function Dashboard() {
 
   const updateStatus = (id: number, status: string) => {
     updateStatusMutation.mutate({ id, status });
+  };
+
+  const deleteRegistration = (id: number) => {
+    if (window.confirm('Tem certeza que deseja deletar esta empresa? Esta ação não pode ser desfeita.')) {
+      deleteRegistrationMutation.mutate(id);
+    }
+  };
+
+  const updateRegistration = (id: number, data: Partial<BusinessRegistration>) => {
+    updateRegistrationMutation.mutate({ id, data });
   };
 
   const getStatusBadge = (status: string | null) => {
@@ -167,6 +213,26 @@ export default function Dashboard() {
     />;
   }
 
+  if (editingRegistration) {
+    return <EditRegistrationForm 
+      registration={editingRegistration}
+      onSave={updateRegistration}
+      onCancel={() => setEditingRegistration(null)}
+      isLoading={updateRegistrationMutation.isPending}
+    />;
+  }
+
+  if (showCreateForm) {
+    return <CreateRegistrationForm 
+      onSave={(data) => {
+        // Redirecionar para o formulário público de cadastro
+        window.open('/', '_blank');
+        setShowCreateForm(false);
+      }}
+      onCancel={() => setShowCreateForm(false)}
+    />;
+  }
+
   return (
     <div className="min-h-screen" style={{ background: '#0a0a0a' }}>
       {/* Header */}
@@ -183,6 +249,13 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <Button
+                onClick={() => setShowCreateForm(true)}
+                style={{ background: '#22c55e', border: '1px solid #22c55e', color: '#ffffff' }}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Criar Nova Empresa
+              </Button>
               <BackToHomeButton />
               <ThemeToggle />
             </div>
@@ -398,6 +471,27 @@ export default function Dashboard() {
                           </div>
 
                           <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setEditingRegistration(registration)}
+                              style={{ background: '#3b82f6', border: '1px solid #3b82f6', color: '#ffffff' }}
+                              title="Editar Empresa"
+                            >
+                              <Edit className="h-4 w-4 mr-1" />
+                              Editar
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => deleteRegistration(registration.id)}
+                              disabled={deleteRegistrationMutation.isPending}
+                              style={{ background: '#ef4444', border: '1px solid #ef4444', color: '#ffffff' }}
+                              title="Deletar Empresa"
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Deletar
+                            </Button>
                             <Button
                               variant="outline"
                               size="sm"
