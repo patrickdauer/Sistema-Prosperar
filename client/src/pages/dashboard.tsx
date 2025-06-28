@@ -351,9 +351,46 @@ function RegistrationDetails({
                 <label className="text-sm font-medium" style={{ color: '#888' }}>Metragem</label>
                 <p style={{ color: '#ffffff' }}>{registration.metragem}m²</p>
               </div>
+              <div>
+                <label className="text-sm font-medium" style={{ color: '#888' }}>CNPJ</label>
+                <p style={{ color: '#ffffff' }}>{registration.cnpj || 'Não informado'}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium" style={{ color: '#888' }}>Inscrição Imobiliária</label>
+                <p style={{ color: '#ffffff' }}>{registration.inscricaoImobiliaria || 'Não informado'}</p>
+              </div>
               <div className="md:col-span-2">
                 <label className="text-sm font-medium" style={{ color: '#888' }}>Atividade Principal</label>
                 <p style={{ color: '#ffffff' }}>{registration.atividadePrincipal}</p>
+              </div>
+              {registration.atividadesSecundarias && (
+                <div className="md:col-span-2">
+                  <label className="text-sm font-medium" style={{ color: '#888' }}>Atividades Secundárias</label>
+                  <p style={{ color: '#ffffff' }}>{registration.atividadesSecundarias}</p>
+                </div>
+              )}
+              <div>
+                <label className="text-sm font-medium" style={{ color: '#888' }}>Data de Cadastro</label>
+                <p style={{ color: '#ffffff' }}>
+                  {registration.createdAt ? format(new Date(registration.createdAt), 'dd/MM/yyyy HH:mm', { locale: ptBR }) : 'N/A'}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium" style={{ color: '#888' }}>Status</label>
+                <div style={{ marginTop: '4px' }}>
+                  {(() => {
+                    switch (registration.status) {
+                      case 'pending':
+                        return <Badge variant="secondary" style={{ background: '#fbbf24', color: '#000' }}>Pendente</Badge>;
+                      case 'processing':
+                        return <Badge variant="default" style={{ background: '#3b82f6', color: '#fff' }}>Em Processamento</Badge>;
+                      case 'completed':
+                        return <Badge variant="destructive" style={{ background: '#10b981', color: '#fff' }}>Concluído</Badge>;
+                      default:
+                        return <Badge variant="outline" style={{ background: '#6b7280', color: '#fff' }}>Pendente</Badge>;
+                    }
+                  })()}
+                </div>
               </div>
             </div>
           </CardContent>
@@ -385,20 +422,78 @@ function RegistrationDetails({
                     <p style={{ color: '#ffffff' }}>{socio.rg}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">Estado Civil</label>
-                    <p className="text-foreground">{socio.estadoCivil}</p>
+                    <label className="text-sm font-medium" style={{ color: '#888' }}>Data de Nascimento</label>
+                    <p style={{ color: '#ffffff' }}>{socio.dataNascimento}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">Telefone</label>
-                    <p className="text-foreground">{socio.telefonePessoal}</p>
+                    <label className="text-sm font-medium" style={{ color: '#888' }}>Estado Civil</label>
+                    <p style={{ color: '#ffffff' }}>{socio.estadoCivil}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">E-mail</label>
-                    <p className="text-foreground">{socio.emailPessoal}</p>
+                    <label className="text-sm font-medium" style={{ color: '#888' }}>Nacionalidade</label>
+                    <p style={{ color: '#ffffff' }}>{socio.nacionalidade}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium" style={{ color: '#888' }}>Profissão</label>
+                    <p style={{ color: '#ffffff' }}>{socio.profissao}</p>
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="text-sm font-medium" style={{ color: '#888' }}>Endereço Completo</label>
+                    <p style={{ color: '#ffffff' }}>{socio.endereco}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium" style={{ color: '#888' }}>Telefone</label>
+                    <p style={{ color: '#ffffff' }}>{socio.telefonePessoal}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium" style={{ color: '#888' }}>E-mail</label>
+                    <p style={{ color: '#ffffff' }}>{socio.emailPessoal}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium" style={{ color: '#888' }}>Participação (%)</label>
+                    <p style={{ color: '#ffffff' }}>{socio.participacao}%</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium" style={{ color: '#888' }}>Tipo de Participação</label>
+                    <p style={{ color: '#ffffff' }}>{socio.tipoParticipacao}</p>
                   </div>
                 </div>
               </div>
             ))}
+          </CardContent>
+        </Card>
+
+        {/* Contact Information Summary */}
+        <Card style={{ background: '#1a1a1a', border: '1px solid #333' }}>
+          <CardHeader style={{ borderBottom: '1px solid #333' }}>
+            <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
+              <Phone className="h-5 w-5" style={{ color: '#ff8c42' }} />
+              Resumo de Contatos
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium" style={{ color: '#888' }}>Empresa</label>
+                <div className="space-y-1">
+                  <p style={{ color: '#ffffff' }}>📧 {registration.emailEmpresa}</p>
+                  <p style={{ color: '#ffffff' }}>📞 {registration.telefoneEmpresa}</p>
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium" style={{ color: '#888' }}>Sócios</label>
+                <div className="space-y-1">
+                  {socios.map((socio, index) => (
+                    <div key={index} style={{ color: '#ffffff' }}>
+                      <p className="text-sm">{socio.nomeCompleto}</p>
+                      <p className="text-xs" style={{ color: '#888' }}>
+                        📧 {socio.emailPessoal} | 📞 {socio.telefonePessoal}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </main>
