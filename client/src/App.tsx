@@ -17,6 +17,7 @@ import SimuladorCusto from "@/pages/simulador-custo";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import Home from "@/pages/home";
+import UserManagement from "@/pages/user-management";
 
 function ProtectedDashboardInterno() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -127,6 +128,7 @@ function Router() {
       <Route path="/dashboard-interno" component={ProtectedDashboardInterno} />
       <Route path="/novo-sistema" component={ProtectedSistemaFinal} />
       <Route path="/sistema-final" component={ProtectedSistemaFinal} />
+      <Route path="/user-management" component={UserManagement} />
       <Route component={Home} />
     </Switch>
   );

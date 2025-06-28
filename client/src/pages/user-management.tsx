@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth.tsx';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,7 +23,12 @@ interface User {
 }
 
 export default function UserManagement() {
-  const { user: currentUser, logout } = useAuth();
+  const { user: currentUser } = useAuth();
+  
+  const logout = () => {
+    localStorage.removeItem('token');
+    window.location.href = '/equipe';
+  };
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
