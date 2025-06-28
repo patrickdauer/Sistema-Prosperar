@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Users, FileText, Settings, LogOut } from "lucide-react";
+import { Building2, Users, FileText, Settings, LogOut, User } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useLocation } from "wouter";
 
@@ -26,6 +26,18 @@ export default function Home() {
             <span className="text-sm text-white">
               {user?.name || user?.username || 'Usuário'}
             </span>
+            <Button 
+              onClick={() => setLocation('/profile')}
+              style={{ 
+                backgroundColor: '#22c55e', 
+                color: 'white',
+                border: '1px solid #22c55e'
+              }}
+              className="hover:bg-green-600"
+            >
+              <User className="h-4 w-4 mr-2" />
+              Meu Perfil
+            </Button>
             <ThemeToggle />
             <Button 
               onClick={handleLogout}
