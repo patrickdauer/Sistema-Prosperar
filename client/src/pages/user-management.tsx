@@ -52,6 +52,10 @@ export default function UserManagement() {
     role: 'user',
     department: ''
   });
+  const [customDepartment, setCustomDepartment] = useState('');
+  const [showCustomDepartment, setShowCustomDepartment] = useState(false);
+  const [editCustomDepartment, setEditCustomDepartment] = useState('');
+  const [showEditCustomDepartment, setShowEditCustomDepartment] = useState(false);
 
   // Debug - vamos ver os dados do usuário
   console.log('Current user data:', currentUser);
@@ -111,14 +115,7 @@ export default function UserManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       setIsCreateDialogOpen(false);
-      setNewUserData({
-        username: '',
-        password: '',
-        name: '',
-        email: '',
-        role: 'user',
-        department: ''
-      });
+      resetCreateForm();
       toast({ title: "Usuário criado com sucesso!" });
     },
     onError: (error) => {
@@ -216,6 +213,19 @@ export default function UserManagement() {
     createUserMutation.mutate(newUserData);
   };
 
+  const resetCreateForm = () => {
+    setNewUserData({
+      username: '',
+      password: '',
+      name: '',
+      email: '',
+      role: 'user',
+      department: ''
+    });
+    setCustomDepartment('');
+    setShowCustomDepartment(false);
+  };
+
   const handleEditUser = (user: User) => {
     setEditingUser(user);
     setEditUserData({
@@ -224,6 +234,15 @@ export default function UserManagement() {
       role: user.role,
       department: user.department
     });
+    setEditCustomDepartment('');
+    setShowEditCustomDepartment(false);
+  };
+
+  const resetEditForm = () => {
+    setEditingUser(null);
+    setEditUserData({ name: '', email: '', role: 'user', department: '' });
+    setEditCustomDepartment('');
+    setShowEditCustomDepartment(false);
   };
 
   const handleSaveEditUser = () => {
@@ -382,21 +401,57 @@ export default function UserManagement() {
                   </div>
                   <div>
                     <Label className="text-white">Departamento</Label>
-                    <Select value={newUserData.department} onValueChange={(value) => setNewUserData({...newUserData, department: value})}>
+                    <Select 
+                      value={showCustomDepartment ? 'custom' : newUserData.department} 
+                      onValueChange={(value) => {
+                        if (value === 'custom') {
+                          setShowCustomDepartment(true);
+                          setNewUserData({...newUserData, department: ''});
+                        } else {
+                          setShowCustomDepartment(false);
+                          setNewUserData({...newUserData, department: value});
+                          setCustomDepartment('');
+                        }
+                      }}
+                    >
                       <SelectTrigger style={{ background: '#333', border: '1px solid #555', color: 'white' }}>
-                        <SelectValue />
+                        <SelectValue placeholder="Selecione um departamento" />
                       </SelectTrigger>
                       <SelectContent style={{ background: '#333', border: '1px solid #555' }}>
                         <SelectItem value="contabilidade" style={{ color: 'white' }}>Contabilidade</SelectItem>
                         <SelectItem value="fiscal" style={{ color: 'white' }}>Fiscal</SelectItem>
-                        <SelectItem value="rh" style={{ color: 'white' }}>RH</SelectItem>
+                        <SelectItem value="rh" style={{ color: 'white' }}>Recursos Humanos</SelectItem>
                         <SelectItem value="societario" style={{ color: 'white' }}>Societário</SelectItem>
+                        <SelectItem value="financeiro" style={{ color: 'white' }}>Financeiro</SelectItem>
+                        <SelectItem value="juridico" style={{ color: 'white' }}>Jurídico</SelectItem>
+                        <SelectItem value="auditoria" style={{ color: 'white' }}>Auditoria</SelectItem>
+                        <SelectItem value="consultoria" style={{ color: 'white' }}>Consultoria</SelectItem>
+                        <SelectItem value="ti" style={{ color: 'white' }}>Tecnologia da Informação</SelectItem>
+                        <SelectItem value="marketing" style={{ color: 'white' }}>Marketing</SelectItem>
+                        <SelectItem value="comercial" style={{ color: 'white' }}>Comercial</SelectItem>
+                        <SelectItem value="custom" style={{ color: '#22c55e', fontWeight: 'bold' }}>+ Criar Novo Departamento</SelectItem>
                       </SelectContent>
                     </Select>
+                    {showCustomDepartment && (
+                      <div className="mt-2">
+                        <Input
+                          placeholder="Digite o nome do novo departamento"
+                          value={customDepartment}
+                          onChange={(e) => {
+                            setCustomDepartment(e.target.value);
+                            setNewUserData({...newUserData, department: e.target.value});
+                          }}
+                          style={{ background: '#333', border: '1px solid #555', color: 'white' }}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="flex justify-end gap-2 pt-4">
-                  <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                  <Button variant="outline" onClick={() => {
+                    setIsCreateDialogOpen(false);
+                    resetCreateForm();
+                  }}>
                     Cancelar
                   </Button>
                   <Button 
@@ -451,17 +506,50 @@ export default function UserManagement() {
                 </div>
                 <div>
                   <Label className="text-white">Departamento</Label>
-                  <Select value={editUserData.department} onValueChange={(value) => setEditUserData({...editUserData, department: value})}>
+                  <Select 
+                    value={showEditCustomDepartment ? 'custom' : editUserData.department} 
+                    onValueChange={(value) => {
+                      if (value === 'custom') {
+                        setShowEditCustomDepartment(true);
+                        setEditUserData({...editUserData, department: ''});
+                      } else {
+                        setShowEditCustomDepartment(false);
+                        setEditUserData({...editUserData, department: value});
+                        setEditCustomDepartment('');
+                      }
+                    }}
+                  >
                     <SelectTrigger style={{ background: '#333', border: '1px solid #555', color: 'white' }}>
-                      <SelectValue />
+                      <SelectValue placeholder="Selecione um departamento" />
                     </SelectTrigger>
                     <SelectContent style={{ background: '#333', border: '1px solid #555' }}>
                       <SelectItem value="contabilidade" style={{ color: 'white' }}>Contabilidade</SelectItem>
                       <SelectItem value="fiscal" style={{ color: 'white' }}>Fiscal</SelectItem>
-                      <SelectItem value="rh" style={{ color: 'white' }}>RH</SelectItem>
+                      <SelectItem value="rh" style={{ color: 'white' }}>Recursos Humanos</SelectItem>
                       <SelectItem value="societario" style={{ color: 'white' }}>Societário</SelectItem>
+                      <SelectItem value="financeiro" style={{ color: 'white' }}>Financeiro</SelectItem>
+                      <SelectItem value="juridico" style={{ color: 'white' }}>Jurídico</SelectItem>
+                      <SelectItem value="auditoria" style={{ color: 'white' }}>Auditoria</SelectItem>
+                      <SelectItem value="consultoria" style={{ color: 'white' }}>Consultoria</SelectItem>
+                      <SelectItem value="ti" style={{ color: 'white' }}>Tecnologia da Informação</SelectItem>
+                      <SelectItem value="marketing" style={{ color: 'white' }}>Marketing</SelectItem>
+                      <SelectItem value="comercial" style={{ color: 'white' }}>Comercial</SelectItem>
+                      <SelectItem value="custom" style={{ color: '#22c55e', fontWeight: 'bold' }}>+ Criar Novo Departamento</SelectItem>
                     </SelectContent>
                   </Select>
+                  {showEditCustomDepartment && (
+                    <div className="mt-2">
+                      <Input
+                        placeholder="Digite o nome do novo departamento"
+                        value={editCustomDepartment}
+                        onChange={(e) => {
+                          setEditCustomDepartment(e.target.value);
+                          setEditUserData({...editUserData, department: e.target.value});
+                        }}
+                        style={{ background: '#333', border: '1px solid #555', color: 'white' }}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="flex justify-end gap-2 pt-4">
