@@ -118,7 +118,7 @@ function Router() {
   // Show authenticated routes
   return (
     <Switch>
-      <Route path="/" component={DashboardInterno} />
+      <Route path="/" component={Dashboard} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/business-registration" component={BusinessRegistration} />
       <Route path="/contratacao-funcionarios" component={ContratacaoFuncionarios} />
