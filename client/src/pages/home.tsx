@@ -15,28 +15,26 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #1a5f3f 0%, #0f3027 100%)' }}>
+    <div className="min-h-screen" style={{ background: '#0a0a0a' }}>
       <header style={{ 
-        background: 'rgba(26, 95, 63, 0.95)', 
-        borderBottom: '2px solid #ff8c42',
-        backdropFilter: 'blur(10px)'
+        background: '#1a1a1a', 
+        borderBottom: '1px solid #333'
       }}>
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-white">Sistema Interno</h1>
+          <h1 className="text-2xl font-bold" style={{ color: '#22c55e' }}>Sistema Interno</h1>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-orange-200">
+            <span className="text-sm text-white">
               {user?.name || user?.username || 'Usuário'}
             </span>
             <ThemeToggle />
             <Button 
               onClick={handleLogout}
               style={{ 
-                backgroundColor: '#ff8c42', 
+                backgroundColor: '#333', 
                 color: 'white',
-                border: 'none',
-                transition: 'all 0.3s ease'
+                border: '1px solid #555'
               }}
-              className="hover:opacity-90"
+              className="hover:bg-gray-600"
             >
               <LogOut className="h-4 w-4 mr-2" />
               Sair
@@ -46,10 +44,10 @@ export default function Home() {
       </header>
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8 text-center">
-          <h2 className="text-4xl font-bold mb-4 text-white">
+          <h2 className="text-4xl font-bold mb-4" style={{ color: '#22c55e' }}>
             Bem-vindo ao Sistema de Gestão
           </h2>
-          <p className="text-xl text-orange-200">
+          <p className="text-xl text-white">
             Acesse as funcionalidades do sistema através das opções abaixo.
           </p>
         </div>
@@ -58,22 +56,22 @@ export default function Home() {
           <Card 
             className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl" 
             style={{ 
-              background: 'rgba(255, 255, 255, 0.95)', 
-              border: '2px solid #ff8c42',
-              borderRadius: '12px'
+              background: '#1a1a1a', 
+              border: '1px solid #333',
+              borderRadius: '8px'
             }}
             onClick={() => window.open('/dashboard', '_blank')}>
-            <CardHeader style={{ borderBottom: '1px solid #ff8c42' }}>
-              <CardTitle className="flex items-center gap-2" style={{ color: '#1a5f3f' }}>
+            <CardHeader style={{ borderBottom: '1px solid #333' }}>
+              <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
                 <Building2 className="h-5 w-5" style={{ color: '#ff8c42' }} />
                 Dashboard Geral
               </CardTitle>
-              <CardDescription style={{ color: '#2d7a4f' }}>
+              <CardDescription style={{ color: '#888' }}>
                 Visão geral dos cadastros e estatísticas
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm" style={{ color: '#1a5f3f' }}>
+              <p className="text-sm text-white">
                 Acompanhe todos os registros empresariais e seus status
               </p>
             </CardContent>
@@ -82,22 +80,22 @@ export default function Home() {
           <Card 
             className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl" 
             style={{ 
-              background: 'rgba(255, 255, 255, 0.95)', 
-              border: '2px solid #ff8c42',
-              borderRadius: '12px'
+              background: '#1a1a1a', 
+              border: '1px solid #333',
+              borderRadius: '8px'
             }}
             onClick={() => window.open('/sistema-final', '_blank')}>
-            <CardHeader style={{ borderBottom: '1px solid #ff8c42' }}>
-              <CardTitle className="flex items-center gap-2" style={{ color: '#1a5f3f' }}>
+            <CardHeader style={{ borderBottom: '1px solid #333' }}>
+              <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
                 <FileText className="h-5 w-5" style={{ color: '#ff8c42' }} />
                 Sistema de Tarefas
               </CardTitle>
-              <CardDescription style={{ color: '#2d7a4f' }}>
+              <CardDescription style={{ color: '#888' }}>
                 Gerenciamento completo de workflows
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm" style={{ color: '#1a5f3f' }}>
+              <p className="text-sm text-white">
                 Controle de tarefas por departamento e status
               </p>
             </CardContent>
@@ -107,22 +105,22 @@ export default function Home() {
             <Card 
               className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl" 
               style={{ 
-                background: 'rgba(255, 255, 255, 0.95)', 
-                border: '2px solid #ff8c42',
-                borderRadius: '12px'
+                background: '#1a1a1a', 
+                border: '1px solid #333',
+                borderRadius: '8px'
               }}
               onClick={() => window.open('/dashboard-interno', '_blank')}>
-              <CardHeader style={{ borderBottom: '1px solid #ff8c42' }}>
-                <CardTitle className="flex items-center gap-2" style={{ color: '#1a5f3f' }}>
+              <CardHeader style={{ borderBottom: '1px solid #333' }}>
+                <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
                   <Users className="h-5 w-5" style={{ color: '#ff8c42' }} />
                   Gestão de Usuários
                 </CardTitle>
-                <CardDescription style={{ color: '#2d7a4f' }}>
+                <CardDescription style={{ color: '#888' }}>
                   Administração de equipe (Admin)
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm" style={{ color: '#1a5f3f' }}>
+                <p className="text-sm text-white">
                   Criar, editar e gerenciar usuários do sistema
                 </p>
               </CardContent>
@@ -132,22 +130,22 @@ export default function Home() {
           <Card 
             className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl" 
             style={{ 
-              background: 'rgba(255, 255, 255, 0.95)', 
-              border: '2px solid #ff8c42',
-              borderRadius: '12px'
+              background: '#1a1a1a', 
+              border: '1px solid #333',
+              borderRadius: '8px'
             }}
             onClick={() => window.open('/business-registration', '_blank')}>
-            <CardHeader style={{ borderBottom: '1px solid #ff8c42' }}>
-              <CardTitle className="flex items-center gap-2" style={{ color: '#1a5f3f' }}>
+            <CardHeader style={{ borderBottom: '1px solid #333' }}>
+              <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
                 <Building2 className="h-5 w-5" style={{ color: '#ff8c42' }} />
                 Cadastro Empresarial
               </CardTitle>
-              <CardDescription style={{ color: '#2d7a4f' }}>
+              <CardDescription style={{ color: '#888' }}>
                 Formulário público de registro
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm" style={{ color: '#1a5f3f' }}>
+              <p className="text-sm text-white">
                 Acesso ao formulário de cadastro de empresas
               </p>
             </CardContent>
@@ -156,22 +154,22 @@ export default function Home() {
           <Card 
             className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl" 
             style={{ 
-              background: 'rgba(255, 255, 255, 0.95)', 
-              border: '2px solid #ff8c42',
-              borderRadius: '12px'
+              background: '#1a1a1a', 
+              border: '1px solid #333',
+              borderRadius: '8px'
             }}
             onClick={() => window.open('/contratacao-funcionarios', '_blank')}>
-            <CardHeader style={{ borderBottom: '1px solid #ff8c42' }}>
-              <CardTitle className="flex items-center gap-2" style={{ color: '#1a5f3f' }}>
+            <CardHeader style={{ borderBottom: '1px solid #333' }}>
+              <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
                 <Users className="h-5 w-5" style={{ color: '#ff8c42' }} />
                 Contratação
               </CardTitle>
-              <CardDescription style={{ color: '#2d7a4f' }}>
+              <CardDescription style={{ color: '#888' }}>
                 Formulário de contratação de funcionários
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm" style={{ color: '#1a5f3f' }}>
+              <p className="text-sm text-white">
                 Cadastro de novos colaboradores
               </p>
             </CardContent>
@@ -180,20 +178,20 @@ export default function Home() {
           <Card 
             className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl" 
             style={{ 
-              background: 'rgba(255, 255, 255, 0.95)', 
-              border: '2px solid #ff8c42',
-              borderRadius: '12px'
+              background: '#1a1a1a', 
+              border: '1px solid #333',
+              borderRadius: '8px'
             }}
             onClick={() => window.open('/simulador-custo', '_blank')}>
-            <CardHeader style={{ borderBottom: '1px solid #ff8c42' }}>
-              <CardTitle className="flex items-center gap-2" style={{ color: '#1a5f3f' }}>
+            <CardHeader style={{ borderBottom: '1px solid #333' }}>
+              <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
                 <Settings className="h-5 w-5" style={{ color: '#ff8c42' }} />
                 Simulador de Custos
               </CardTitle>
-              <CardDescription style={{ color: '#2d7a4f' }}>Ferramenta de cálculo de custos de Funcionário e comparativo CLT x PJ</CardDescription>
+              <CardDescription style={{ color: '#888' }}>Ferramenta de cálculo de custos de Funcionário e comparativo CLT x PJ</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm" style={{ color: '#1a5f3f' }}>
+              <p className="text-sm text-white">
                 Simule custos de contratação e benefícios
               </p>
             </CardContent>
@@ -203,19 +201,19 @@ export default function Home() {
         <div 
           className="mt-12 p-6 rounded-lg"
           style={{ 
-            background: 'rgba(255, 255, 255, 0.9)', 
-            border: '2px solid #ff8c42',
-            borderRadius: '12px'
+            background: '#1a1a1a', 
+            border: '1px solid #333',
+            borderRadius: '8px'
           }}>
-          <h3 className="text-lg font-semibold mb-4" style={{ color: '#1a5f3f' }}>Status do Sistema</h3>
+          <h3 className="text-lg font-semibold mb-4" style={{ color: '#22c55e' }}>Status do Sistema</h3>
           <div className="grid md:grid-cols-3 gap-4 text-sm">
-            <div style={{ color: '#1a5f3f' }}>
+            <div className="text-white">
               <span className="font-medium" style={{ color: '#ff8c42' }}>Usuário:</span> {user?.name || user?.username || 'N/A'}
             </div>
-            <div style={{ color: '#1a5f3f' }}>
+            <div className="text-white">
               <span className="font-medium" style={{ color: '#ff8c42' }}>Perfil:</span> {user?.role || 'employee'}
             </div>
-            <div style={{ color: '#1a5f3f' }}>
+            <div className="text-white">
               <span className="font-medium" style={{ color: '#ff8c42' }}>Departamento:</span> {user?.department || 'Geral'}
             </div>
           </div>
