@@ -38,159 +38,157 @@ export async function generateBusinessRegistrationPDF(registration: BusinessRegi
       const socios = registration.socios as any[];
 
       // Header
-      doc.fontSize(20).fillColor('#22c55e').text('REGISTRO EMPRESARIAL', { align: 'center' });
+      doc.fontSize(20).fillColor('#1a7a3a').font('Helvetica-Bold').text('REGISTRO EMPRESARIAL', { align: 'center' });
       doc.moveDown(0.5);
-      doc.fontSize(16).fillColor('#333').text(cleanText(registration.razaoSocial), { align: 'center' });
+      doc.fontSize(16).fillColor('#333').font('Helvetica-Bold').text(cleanText(registration.razaoSocial), { align: 'center' });
       doc.moveDown(0.3);
-      doc.fontSize(10).fillColor('#666').text(`Documento gerado em ${new Date().toLocaleDateString('pt-BR')}`, { align: 'center' });
-      doc.moveDown(1);
-
-      // Line separator
-      doc.strokeColor('#22c55e').lineWidth(2).moveTo(50, doc.y).lineTo(545, doc.y).stroke();
-      doc.moveDown(1);
+      doc.fontSize(10).fillColor('#666').font('Helvetica').text(`Documento gerado em ${new Date().toLocaleDateString('pt-BR')}`, { align: 'center' });
+      doc.moveDown(1.5);
 
       // Company Information Section
-      doc.fontSize(14).fillColor('#22c55e').text('INFORMACOES GERAIS');
-      doc.moveDown(0.5);
+      doc.fontSize(14).fillColor('#1a7a3a').font('Helvetica-Bold').text('INFORMACOES GERAIS', { align: 'center' });
+      doc.moveDown(1);
 
       doc.fontSize(10).fillColor('#333');
       
       // Razão Social
-      doc.text('Razao Social:', 50, doc.y);
-      doc.text(cleanText(registration.razaoSocial), 150, doc.y);
+      doc.font('Helvetica-Bold').text('Razao Social:', 50, doc.y);
+      doc.font('Helvetica').text(cleanText(registration.razaoSocial), 150, doc.y);
       doc.moveDown(0.8);
       
       // Nome Fantasia
-      doc.text('Nome Fantasia:', 50, doc.y);
-      doc.text(cleanText(registration.nomeFantasia), 150, doc.y);
+      doc.font('Helvetica-Bold').text('Nome Fantasia:', 50, doc.y);
+      doc.font('Helvetica').text(cleanText(registration.nomeFantasia), 150, doc.y);
       doc.moveDown(0.8);
       
       // CNPJ
-      doc.text('CNPJ:', 50, doc.y);
-      doc.text(cleanText(registration.cnpj), 150, doc.y);
+      doc.font('Helvetica-Bold').text('CNPJ:', 50, doc.y);
+      doc.font('Helvetica').text(cleanText(registration.cnpj), 150, doc.y);
       doc.moveDown(0.8);
       
       // Capital Social
-      doc.text('Capital Social:', 50, doc.y);
-      doc.text(`R$ ${registration.capitalSocial}`, 150, doc.y);
+      doc.font('Helvetica-Bold').text('Capital Social:', 50, doc.y);
+      doc.font('Helvetica').text(`R$ ${registration.capitalSocial}`, 150, doc.y);
       doc.moveDown(0.8);
       
       // Telefone
-      doc.text('Telefone:', 50, doc.y);
-      doc.text(cleanText(registration.telefoneEmpresa), 150, doc.y);
+      doc.font('Helvetica-Bold').text('Telefone:', 50, doc.y);
+      doc.font('Helvetica').text(cleanText(registration.telefoneEmpresa), 150, doc.y);
       doc.moveDown(0.8);
       
       // E-mail
-      doc.text('E-mail:', 50, doc.y);
-      doc.text(cleanText(registration.emailEmpresa), 150, doc.y);
+      doc.font('Helvetica-Bold').text('E-mail:', 50, doc.y);
+      doc.font('Helvetica').text(cleanText(registration.emailEmpresa), 150, doc.y);
       doc.moveDown(0.8);
       
       // Metragem
-      doc.text('Metragem:', 50, doc.y);
-      doc.text(`${registration.metragem}m2`, 150, doc.y);
+      doc.font('Helvetica-Bold').text('Metragem:', 50, doc.y);
+      doc.font('Helvetica').text(`${registration.metragem}m2`, 150, doc.y);
       doc.moveDown(0.8);
       
       // Inscricao Imobiliaria
-      doc.text('Inscricao Imobiliaria:', 50, doc.y);
-      doc.text(cleanText(registration.inscricaoImobiliaria), 150, doc.y);
+      doc.font('Helvetica-Bold').text('Inscricao Imobiliaria:', 50, doc.y);
+      doc.font('Helvetica').text(cleanText(registration.inscricaoImobiliaria), 150, doc.y);
       doc.moveDown(1);
 
       // Address Section
-      doc.fontSize(14).fillColor('#22c55e').text('ENDERECO');
-      doc.moveDown(0.5);
-      doc.fontSize(10).fillColor('#333').text(cleanText(registration.endereco));
+      doc.fontSize(14).fillColor('#1a7a3a').font('Helvetica-Bold').text('ENDERECO', { align: 'center' });
       doc.moveDown(1);
+      doc.fontSize(10).fillColor('#333').font('Helvetica-Bold').text('Endereco:', 50, doc.y);
+      doc.font('Helvetica').text(cleanText(registration.endereco), 150, doc.y, { width: 395 });
+      doc.moveDown(1.5);
 
       // Activities Section
-      doc.fontSize(14).fillColor('#22c55e').text('ATIVIDADES');
-      doc.moveDown(0.5);
+      doc.fontSize(14).fillColor('#1a7a3a').font('Helvetica-Bold').text('ATIVIDADES', { align: 'center' });
+      doc.moveDown(1);
       
       doc.fontSize(10).fillColor('#333');
       
       // Atividade Principal
-      doc.text('Atividade Principal:', 50, doc.y);
-      doc.text(cleanText(registration.atividadePrincipal), 150, doc.y, { width: 395 });
+      doc.font('Helvetica-Bold').text('Atividade Principal:', 50, doc.y);
+      doc.font('Helvetica').text(cleanText(registration.atividadePrincipal), 150, doc.y, { width: 395 });
       doc.moveDown(1);
       
       // Atividades Secundárias (se existir)
       if (registration.atividadesSecundarias) {
-        doc.text('Atividades Secundarias:', 50, doc.y);
-        doc.text(cleanText(registration.atividadesSecundarias), 150, doc.y, { width: 395 });
+        doc.font('Helvetica-Bold').text('Atividades Secundarias:', 50, doc.y);
+        doc.font('Helvetica').text(cleanText(registration.atividadesSecundarias), 150, doc.y, { width: 395 });
         doc.moveDown(1);
       }
+      doc.moveDown(0.5);
 
       // Partners Section
-      doc.fontSize(14).fillColor('#22c55e').text('SOCIOS');
-      doc.moveDown(0.5);
+      doc.fontSize(14).fillColor('#1a7a3a').font('Helvetica-Bold').text('SOCIOS', { align: 'center' });
+      doc.moveDown(1);
 
       socios.forEach((socio, index) => {
         if (doc.y > 650) {
           doc.addPage();
         }
 
-        doc.fontSize(12).fillColor('#ff8c42').text(`Socio ${index + 1}: ${cleanText(socio.nomeCompleto)}`);
+        doc.fontSize(12).fillColor('#1a7a3a').font('Helvetica-Bold').text(`Socio ${index + 1}: ${cleanText(socio.nomeCompleto)}`);
         doc.moveDown(0.5);
 
         doc.fontSize(10).fillColor('#333');
         
         // Nome Completo
-        doc.text('Nome Completo:', 50, doc.y);
-        doc.text(cleanText(socio.nomeCompleto), 150, doc.y);
+        doc.font('Helvetica-Bold').text('Nome Completo:', 50, doc.y);
+        doc.font('Helvetica').text(cleanText(socio.nomeCompleto), 150, doc.y);
         doc.moveDown(0.7);
         
         // CPF
-        doc.text('CPF:', 50, doc.y);
-        doc.text(cleanText(socio.cpf), 150, doc.y);
+        doc.font('Helvetica-Bold').text('CPF:', 50, doc.y);
+        doc.font('Helvetica').text(cleanText(socio.cpf), 150, doc.y);
         doc.moveDown(0.7);
         
         // RG
-        doc.text('RG:', 50, doc.y);
-        doc.text(cleanText(socio.rg), 150, doc.y);
+        doc.font('Helvetica-Bold').text('RG:', 50, doc.y);
+        doc.font('Helvetica').text(cleanText(socio.rg), 150, doc.y);
         doc.moveDown(0.7);
         
         // Data de Nascimento
-        doc.text('Data de Nascimento:', 50, doc.y);
-        doc.text(cleanText(socio.dataNascimento), 150, doc.y);
+        doc.font('Helvetica-Bold').text('Data de Nascimento:', 50, doc.y);
+        doc.font('Helvetica').text(cleanText(socio.dataNascimento), 150, doc.y);
         doc.moveDown(0.7);
         
         // Estado Civil
-        doc.text('Estado Civil:', 50, doc.y);
-        doc.text(cleanText(socio.estadoCivil), 150, doc.y);
+        doc.font('Helvetica-Bold').text('Estado Civil:', 50, doc.y);
+        doc.font('Helvetica').text(cleanText(socio.estadoCivil), 150, doc.y);
         doc.moveDown(0.7);
         
         // Nacionalidade
-        doc.text('Nacionalidade:', 50, doc.y);
-        doc.text(cleanText(socio.nacionalidade), 150, doc.y);
+        doc.font('Helvetica-Bold').text('Nacionalidade:', 50, doc.y);
+        doc.font('Helvetica').text(cleanText(socio.nacionalidade), 150, doc.y);
         doc.moveDown(0.7);
         
         // Profissao
-        doc.text('Profissao:', 50, doc.y);
-        doc.text(cleanText(socio.profissao), 150, doc.y);
+        doc.font('Helvetica-Bold').text('Profissao:', 50, doc.y);
+        doc.font('Helvetica').text(cleanText(socio.profissao), 150, doc.y);
         doc.moveDown(0.7);
         
         // Telefone
-        doc.text('Telefone:', 50, doc.y);
-        doc.text(cleanText(socio.telefonePessoal), 150, doc.y);
+        doc.font('Helvetica-Bold').text('Telefone:', 50, doc.y);
+        doc.font('Helvetica').text(cleanText(socio.telefonePessoal), 150, doc.y);
         doc.moveDown(0.7);
         
         // E-mail
-        doc.text('E-mail:', 50, doc.y);
-        doc.text(cleanText(socio.emailPessoal), 150, doc.y);
+        doc.font('Helvetica-Bold').text('E-mail:', 50, doc.y);
+        doc.font('Helvetica').text(cleanText(socio.emailPessoal), 150, doc.y);
         doc.moveDown(0.7);
         
         // Participacao
-        doc.text('Participacao:', 50, doc.y);
-        doc.text(`${socio.participacao}%`, 150, doc.y);
+        doc.font('Helvetica-Bold').text('Participacao:', 50, doc.y);
+        doc.font('Helvetica').text(`${socio.participacao}%`, 150, doc.y);
         doc.moveDown(0.7);
         
         // Tipo de Participacao
-        doc.text('Tipo de Participacao:', 50, doc.y);
-        doc.text(cleanText(socio.tipoParticipacao), 150, doc.y);
+        doc.font('Helvetica-Bold').text('Tipo de Participacao:', 50, doc.y);
+        doc.font('Helvetica').text(cleanText(socio.tipoParticipacao), 150, doc.y);
         doc.moveDown(0.7);
         
         // Endereco
-        doc.text('Endereco:', 50, doc.y);
-        doc.text(cleanText(socio.endereco), 150, doc.y, { width: 395 });
+        doc.font('Helvetica-Bold').text('Endereco:', 50, doc.y);
+        doc.font('Helvetica').text(cleanText(socio.endereco), 150, doc.y, { width: 395 });
         doc.moveDown(1.5);
       });
 
@@ -199,10 +197,9 @@ export async function generateBusinessRegistrationPDF(registration: BusinessRegi
         doc.addPage();
       }
       
-      doc.strokeColor('#22c55e').lineWidth(1).moveTo(50, doc.y + 20).lineTo(545, doc.y + 20).stroke();
-      doc.moveDown(1.5);
-      doc.fontSize(12).fillColor('#22c55e').text('Prosperar Contabilidade', { align: 'center' });
-      doc.fontSize(10).fillColor('#666').text('Email: contato@prosperarcontabilidade.com.br', { align: 'center' });
+      doc.moveDown(2);
+      doc.fontSize(12).fillColor('#1a7a3a').font('Helvetica-Bold').text('Prosperar Contabilidade', { align: 'center' });
+      doc.fontSize(10).fillColor('#666').font('Helvetica').text('Email: contato@prosperarcontabilidade.com.br', { align: 'center' });
       doc.text(`Documento gerado automaticamente em ${new Date().toLocaleDateString('pt-BR')}`, { align: 'center' });
 
       doc.end();
