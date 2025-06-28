@@ -1,243 +1,134 @@
-import htmlPdf from 'html-pdf-node';
+import PDFDocument from 'pdfkit';
 import type { BusinessRegistration } from '@shared/schema';
 
 export async function generateBusinessRegistrationPDF(registration: BusinessRegistration): Promise<Buffer> {
-  const socios = registration.socios as any[];
-  
-  const htmlContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Dados para Abertura de Empresa - ${registration.razaoSocial}</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                line-height: 1.6;
-                margin: 40px;
-                color: #333;
-            }
-            .header {
-                text-align: center;
-                border-bottom: 3px solid #007bff;
-                padding-bottom: 20px;
-                margin-bottom: 30px;
-            }
-            .company-name {
-                font-size: 24px;
-                font-weight: bold;
-                color: #007bff;
-                margin-bottom: 10px;
-            }
-            .section {
-                margin-bottom: 25px;
-                page-break-inside: avoid;
-            }
-            .section-title {
-                font-size: 18px;
-                font-weight: bold;
-                color: #007bff;
-                border-bottom: 2px solid #e9ecef;
-                padding-bottom: 5px;
-                margin-bottom: 15px;
-            }
-            .info-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 15px;
-                margin-bottom: 15px;
-            }
-            .info-item {
-                margin-bottom: 10px;
-            }
-            .label {
-                font-weight: bold;
-                color: #495057;
-            }
-            .value {
-                margin-left: 10px;
-            }
-            .full-width {
-                grid-column: span 2;
-            }
-            .partner-section {
-                border: 1px solid #dee2e6;
-                border-radius: 5px;
-                padding: 15px;
-                margin-bottom: 20px;
-                background-color: #f8f9fa;
-            }
-            .partner-title {
-                font-size: 16px;
-                font-weight: bold;
-                color: #28a745;
-                margin-bottom: 10px;
-            }
-            .footer {
-                margin-top: 40px;
-                text-align: center;
-                font-size: 12px;
-                color: #6c757d;
-                border-top: 1px solid #e9ecef;
-                padding-top: 15px;
-            }
-            .activities-list {
-                list-style-type: disc;
-                margin-left: 20px;
-            }
-            @media print {
-                body { margin: 20px; }
-                .section { page-break-inside: avoid; }
-            }
-        </style>
-    </head>
-    <body>
-        <div class="header">
-            <div class="company-name">PROSPERAR CONTABILIDADE</div>
-            <h1>DADOS PARA ABERTURA DE EMPRESA</h1>
-            <p>Solicitação ID: ${registration.id} | Data: ${registration.createdAt?.toLocaleDateString('pt-BR')}</p>
-        </div>
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({ margin: 50 });
+      const chunks: Buffer[] = [];
 
-        <div class="section">
-            <div class="section-title">📋 DADOS DA EMPRESA</div>
-            <div class="info-grid">
-                <div class="info-item">
-                    <span class="label">Razão Social:</span>
-                    <span class="value">${registration.razaoSocial}</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">Nome Fantasia:</span>
-                    <span class="value">${registration.nomeFantasia}</span>
-                </div>
-                <div class="info-item full-width">
-                    <span class="label">Endereço:</span>
-                    <span class="value">${registration.endereco}</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">Inscrição Imobiliária:</span>
-                    <span class="value">${registration.inscricaoImobiliaria}</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">Metragem Ocupada:</span>
-                    <span class="value">${registration.metragem}m²</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">Telefone:</span>
-                    <span class="value">${registration.telefoneEmpresa}</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">E-mail:</span>
-                    <span class="value">${registration.emailEmpresa}</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">Capital Social:</span>
-                    <span class="value">R$ ${registration.capitalSocial}</span>
-                </div>
-                <div class="info-item full-width">
-                    <span class="label">Atividade Principal:</span>
-                    <span class="value">${registration.atividadePrincipal}</span>
-                </div>
-                ${registration.atividadesSecundarias ? `
-                <div class="info-item full-width">
-                    <span class="label">Atividades Secundárias:</span>
-                    <span class="value">${registration.atividadesSecundarias}</span>
-                </div>
-                ` : ''}
-                ${registration.atividadesSugeridas && registration.atividadesSugeridas.length > 0 ? `
-                <div class="info-item full-width">
-                    <span class="label">Atividades Sugeridas Selecionadas:</span>
-                    <ul class="activities-list">
-                        ${registration.atividadesSugeridas.map(atividade => `<li>${atividade}</li>`).join('')}
-                    </ul>
-                </div>
-                ` : ''}
-            </div>
-        </div>
+      doc.on('data', chunk => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
 
-        <div class="section">
-            <div class="section-title">👥 DADOS DOS SÓCIOS (${socios.length})</div>
-            ${socios.map((socio, index) => `
-                <div class="partner-section">
-                    <div class="partner-title">Sócio ${index + 1}</div>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="label">Nome Completo:</span>
-                            <span class="value">${socio.nomeCompleto}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">Nacionalidade:</span>
-                            <span class="value">${socio.nacionalidade}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">CPF:</span>
-                            <span class="value">${socio.cpf}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">RG:</span>
-                            <span class="value">${socio.rg}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">Data de Nascimento:</span>
-                            <span class="value">${socio.dataNascimento}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">Estado Civil:</span>
-                            <span class="value">${socio.estadoCivil}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">Profissão:</span>
-                            <span class="value">${socio.profissao}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">Telefone Pessoal:</span>
-                            <span class="value">${socio.telefonePessoal}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">E-mail Pessoal:</span>
-                            <span class="value">${socio.emailPessoal}</span>
-                        </div>
-                        <div class="info-item full-width">
-                            <span class="label">Filiação:</span>
-                            <span class="value">${socio.filiacao}</span>
-                        </div>
-                        <div class="info-item full-width">
-                            <span class="label">Endereço Pessoal:</span>
-                            <span class="value">${socio.enderecoPessoal}</span>
-                        </div>
-                        <div class="info-item full-width">
-                            <span class="label">Documentos Enviados:</span>
-                            <span class="value">
-                                ${socio.documentoComFotoUrl ? '✓ Documento com foto' : '✗ Documento com foto'} | 
-                                ${socio.certidaoCasamentoUrl ? '✓ Certidão de casamento' : '✗ Certidão de casamento'} | 
-                                ${socio.documentosAdicionaisUrls?.length ? `✓ ${socio.documentosAdicionaisUrls.length} documento(s) adicional(is)` : '✗ Documentos adicionais'}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            `).join('')}
-        </div>
+      const socios = registration.socios as any[];
 
-        <div class="footer">
-            <p><strong>Prosperar Contabilidade</strong></p>
-            <p>📧 contato@prosperarcontabilidade.com.br</p>
-            <p>Documento gerado automaticamente em ${new Date().toLocaleString('pt-BR')}</p>
-        </div>
-    </body>
-    </html>
-  `;
+      // Header
+      doc.fontSize(20).fillColor('#22c55e').text('REGISTRO EMPRESARIAL', { align: 'center' });
+      doc.moveDown(0.5);
+      doc.fontSize(16).fillColor('#333').text(registration.razaoSocial, { align: 'center' });
+      doc.moveDown(0.3);
+      doc.fontSize(10).fillColor('#666').text(`Documento gerado em ${new Date().toLocaleDateString('pt-BR')}`, { align: 'center' });
+      doc.moveDown(1);
 
-  const options = {
-    format: 'A4',
-    border: {
-      top: '20px',
-      right: '20px',
-      bottom: '20px',
-      left: '20px'
+      // Line separator
+      doc.strokeColor('#22c55e').lineWidth(2).moveTo(50, doc.y).lineTo(545, doc.y).stroke();
+      doc.moveDown(1);
+
+      // Company Information Section
+      doc.fontSize(14).fillColor('#22c55e').text('📊 INFORMAÇÕES GERAIS');
+      doc.moveDown(0.5);
+
+      const startY = doc.y;
+      // Left column
+      doc.fontSize(10).fillColor('#333');
+      doc.text('Razão Social:', 50, doc.y);
+      doc.text(registration.razaoSocial, 50, doc.y + 15);
+      doc.text('Nome Fantasia:', 50, doc.y + 35);
+      doc.text(registration.nomeFantasia, 50, doc.y + 50);
+      doc.text('CNPJ:', 50, doc.y + 70);
+      doc.text(registration.cnpj || 'Não informado', 50, doc.y + 85);
+      doc.text('Capital Social:', 50, doc.y + 105);
+      doc.text(`R$ ${registration.capitalSocial}`, 50, doc.y + 120);
+
+      // Right column
+      doc.text('Telefone:', 300, startY);
+      doc.text(registration.telefoneEmpresa, 300, startY + 15);
+      doc.text('E-mail:', 300, startY + 35);
+      doc.text(registration.emailEmpresa, 300, startY + 50);
+      doc.text('Metragem:', 300, startY + 70);
+      doc.text(`${registration.metragem}m²`, 300, startY + 85);
+      doc.text('Inscrição Imobiliária:', 300, startY + 105);
+      doc.text(registration.inscricaoImobiliaria, 300, startY + 120);
+
+      doc.y = startY + 140;
+      doc.moveDown(1);
+
+      // Address Section
+      doc.fontSize(14).fillColor('#22c55e').text('📍 ENDEREÇO');
+      doc.moveDown(0.5);
+      doc.fontSize(10).fillColor('#333').text(registration.endereco);
+      doc.moveDown(1);
+
+      // Activities Section
+      doc.fontSize(14).fillColor('#22c55e').text('🏢 ATIVIDADES');
+      doc.moveDown(0.5);
+      doc.fontSize(10).fillColor('#333');
+      doc.text('Atividade Principal:');
+      doc.text(registration.atividadePrincipal, { indent: 20 });
+      
+      if (registration.atividadesSecundarias) {
+        doc.moveDown(0.5);
+        doc.text('Atividades Secundárias:');
+        doc.text(registration.atividadesSecundarias, { indent: 20 });
+      }
+      doc.moveDown(1);
+
+      // Partners Section
+      doc.fontSize(14).fillColor('#22c55e').text('👥 SÓCIOS');
+      doc.moveDown(0.5);
+
+      socios.forEach((socio, index) => {
+        if (doc.y > 700) {
+          doc.addPage();
+        }
+
+        doc.fontSize(12).fillColor('#ff8c42').text(`Sócio ${index + 1}: ${socio.nomeCompleto}`);
+        doc.moveDown(0.3);
+
+        const socioStartY = doc.y;
+        // Left column
+        doc.fontSize(9).fillColor('#333');
+        doc.text('CPF:', 50, doc.y);
+        doc.text(socio.cpf, 50, doc.y + 12);
+        doc.text('RG:', 50, doc.y + 26);
+        doc.text(socio.rg, 50, doc.y + 38);
+        doc.text('Data Nascimento:', 50, doc.y + 52);
+        doc.text(socio.dataNascimento, 50, doc.y + 64);
+        doc.text('Estado Civil:', 50, doc.y + 78);
+        doc.text(socio.estadoCivil, 50, doc.y + 90);
+
+        // Right column
+        doc.text('Profissão:', 300, socioStartY);
+        doc.text(socio.profissao, 300, socioStartY + 12);
+        doc.text('Telefone:', 300, socioStartY + 26);
+        doc.text(socio.telefonePessoal, 300, socioStartY + 38);
+        doc.text('E-mail:', 300, socioStartY + 52);
+        doc.text(socio.emailPessoal, 300, socioStartY + 64);
+        doc.text('Participação:', 300, socioStartY + 78);
+        doc.text(`${socio.participacao}% - ${socio.tipoParticipacao}`, 300, socioStartY + 90);
+
+        doc.y = socioStartY + 110;
+        doc.text('Endereço:', 50, doc.y);
+        doc.text(socio.endereco, 50, doc.y + 12, { width: 495 });
+
+        doc.moveDown(1);
+      });
+
+      // Footer
+      if (doc.y > 650) {
+        doc.addPage();
+      }
+      
+      doc.strokeColor('#22c55e').lineWidth(1).moveTo(50, doc.y + 20).lineTo(545, doc.y + 20).stroke();
+      doc.moveDown(1.5);
+      doc.fontSize(12).fillColor('#22c55e').text('Prosperar Contabilidade', { align: 'center' });
+      doc.fontSize(10).fillColor('#666').text('📧 contato@prosperarcontabilidade.com.br', { align: 'center' });
+      doc.text(`Documento gerado automaticamente em ${new Date().toLocaleString('pt-BR')}`, { align: 'center' });
+
+      doc.end();
+    } catch (error) {
+      reject(error);
     }
-  };
-
-  const file = { content: htmlContent };
-  const pdfBuffer = await htmlPdf.generatePdf(file, options);
-  
-  return pdfBuffer;
+  });
 }
