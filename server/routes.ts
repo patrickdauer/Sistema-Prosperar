@@ -443,6 +443,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update business registration status
+  app.patch("/api/business-registration/:id/status", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { status } = req.body;
+      
+      if (!status || !['pending', 'processing', 'completed'].includes(status)) {
+        return res.status(400).json({ message: "Status inválido" });
+      }
+
+      const registration = await storage.getBusinessRegistration(id);
+      if (!registration) {
+        return res.status(404).json({ message: "Cadastro não encontrado" });
+      }
+
+      const updatedRegistration = await storage.updateBusinessRegistration(id, { status });
+      res.json(updatedRegistration);
+    } catch (error) {
+      console.error("Error updating status:", error);
+      res.status(500).json({ message: "Erro ao atualizar status" });
+    }
+  });
+
   // Generate and download PDF
   app.get("/api/business-registration/:id/pdf", async (req, res) => {
     try {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { 
@@ -13,7 +13,10 @@ import {
   Download,
   Eye,
   Search,
-  Filter
+  Filter,
+  CheckCircle,
+  Clock,
+  ArrowRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,6 +31,7 @@ export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedRegistration, setSelectedRegistration] = useState<BusinessRegistration | null>(null);
+  const queryClient = useQueryClient();
 
   const { data: registrations, isLoading } = useQuery({
     queryKey: ['/api/business-registrations'],
@@ -36,6 +40,23 @@ export default function Dashboard() {
       if (!response.ok) throw new Error('Failed to fetch registrations');
       return response.json() as Promise<BusinessRegistration[]>;
     }
+  });
+
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: number; status: string }) => {
+      const response = await fetch(`/api/business-registration/${id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status }),
+      });
+      if (!response.ok) throw new Error('Failed to update status');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/business-registrations'] });
+    },
   });
 
   const filteredRegistrations = registrations?.filter(reg => {
@@ -62,6 +83,10 @@ export default function Dashboard() {
     } catch (error) {
       console.error('Error downloading PDF:', error);
     }
+  };
+
+  const updateStatus = (id: number, status: string) => {
+    updateStatusMutation.mutate({ id, status });
   };
 
   const getStatusBadge = (status: string | null) => {
@@ -246,6 +271,49 @@ export default function Dashboard() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
+                          {/* Status change buttons - only show for pending items */}
+                          {(registration.status === 'pending' || !registration.status) && (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => updateStatus(registration.id, 'processing')}
+                                disabled={updateStatusMutation.isPending}
+                                style={{ background: '#ca8a04', border: '1px solid #ca8a04', color: '#ffffff' }}
+                                title="Marcar como Em Processamento"
+                              >
+                                <Clock className="h-4 w-4 mr-1" />
+                                Em Processamento
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => updateStatus(registration.id, 'completed')}
+                                disabled={updateStatusMutation.isPending}
+                                style={{ background: '#16a34a', border: '1px solid #16a34a', color: '#ffffff' }}
+                                title="Marcar como Concluída"
+                              >
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                Concluída
+                              </Button>
+                            </>
+                          )}
+                          
+                          {/* Status change for processing items */}
+                          {registration.status === 'processing' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => updateStatus(registration.id, 'completed')}
+                              disabled={updateStatusMutation.isPending}
+                              style={{ background: '#16a34a', border: '1px solid #16a34a', color: '#ffffff' }}
+                              title="Marcar como Concluída"
+                            >
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              Concluída
+                            </Button>
+                          )}
+
                           <Button
                             variant="outline"
                             size="sm"
