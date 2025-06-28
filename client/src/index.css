@@ -2,6 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Business Registration Dark Theme */
+.business-registration-form .form-label,
+.business-registration-form label {
+  color: #d1d5db !important;
+}
+
+.business-registration-form input,
+.business-registration-form textarea,
+.business-registration-form select {
+  background-color: #374151 !important;
+  border: 1px solid #4b5563 !important;
+  color: #ffffff !important;
+}
+
+.business-registration-form input::placeholder,
+.business-registration-form textarea::placeholder {
+  color: #9ca3af !important;
+}
+
+.business-registration-form input:focus,
+.business-registration-form textarea:focus,
+.business-registration-form select:focus {
+  border-color: #22c55e !important;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2) !important;
+}
+
+.business-registration-form .card {
+  background-color: #1f2937 !important;
+  border: 1px solid #374151 !important;
+}
+
 :root {
   --background: hsl(0, 0%, 100%);
   --foreground: hsl(20, 14.3%, 4.1%);

@@ -182,27 +182,26 @@ export default function BusinessRegistration() {
 
   if (showSuccess) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
+        <Card style={{ background: '#1f2937', border: '1px solid #374151' }} className="w-full max-w-md">
           <CardContent className="pt-6 text-center">
             <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <Send className="h-8 w-8 text-white" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            <h3 className="text-xl font-semibold text-white mb-2">
               Dados enviados com sucesso!
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-300 mb-6">
               Recebemos suas informações e documentos. Em breve entraremos em contato.
             </p>
             <Button 
               onClick={() => {
                 setShowSuccess(false);
                 form.reset();
-                setDocumentoComFoto([]);
-                setCertidaoCasamento([]);
-                setDocumentosAdicionais([]);
+                setPartners([]);
+                setPartnerFiles(new Map());
               }}
-              className="w-full"
+              className="w-full bg-green-600 hover:bg-green-700 text-white"
             >
               Novo Formulário
             </Button>
@@ -213,31 +212,37 @@ export default function BusinessRegistration() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header style={{ background: '#1f2937', borderBottom: '1px solid #374151' }}>
         <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-center flex-col space-y-4">
-            <div className="w-32 h-16 bg-blue-700 rounded-lg flex items-center justify-center">
-              <Building className="text-white text-2xl" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
+                <Building className="text-white text-xl" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white">
+                  DADOS PARA ABERTURA DE EMPRESA
+                </h1>
+                <p className="text-gray-300 text-sm">Prosperar Contabilidade</p>
+              </div>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 text-center">
-              DADOS PARA ABERTURA DE EMPRESA
-            </h1>
+            <ThemeToggle />
           </div>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-8">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 business-registration-form">
             
             {/* Company Data Section */}
-            <Card>
+            <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
               <CardContent className="p-6">
                 <div className="flex items-center mb-6">
-                  <Building className="text-blue-700 mr-3" />
-                  <h2 className="text-xl font-semibold text-gray-900">Dados da Empresa</h2>
+                  <Building className="text-green-500 mr-3" />
+                  <h2 className="text-xl font-semibold text-white">Dados da Empresa</h2>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -426,7 +431,7 @@ export default function BusinessRegistration() {
                                     }
                                   }}
                                 />
-                                <Label htmlFor={activity.value} className="text-sm text-gray-700">
+                                <Label htmlFor={activity.value} className="text-sm text-gray-300">
                                   {activity.label}
                                 </Label>
                               </div>
@@ -442,12 +447,77 @@ export default function BusinessRegistration() {
             </Card>
 
             {/* Partner Data Section */}
-            <Card>
+            <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
               <CardContent className="p-6">
-                <div className="flex items-center mb-6">
-                  <User className="text-blue-700 mr-3" />
-                  <h2 className="text-xl font-semibold text-gray-900">Dados do Sócio(a)</h2>
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <Users className="text-green-500 mr-3" />
+                    <h2 className="text-xl font-semibold text-white">Sócios da Empresa</h2>
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={() => setShowPartnerForm(true)}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Adicionar Sócio
+                  </Button>
                 </div>
+
+                {/* Display existing partners */}
+                {partners.length > 0 && (
+                  <div className="space-y-4 mb-6">
+                    {partners.map((partner, index) => (
+                      <Card key={index} style={{ background: '#374151', border: '1px solid #4b5563' }}>
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h3 className="font-medium text-white">{partner.nomeCompleto}</h3>
+                              <p className="text-sm text-gray-300">
+                                {partner.participacao}% - {partner.tipoParticipacao}
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setEditingPartnerIndex(index);
+                                  setShowPartnerForm(true);
+                                }}
+                                className="border-gray-600 text-gray-300 hover:bg-gray-600"
+                              >
+                                Editar
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  const newPartners = partners.filter((_, i) => i !== index);
+                                  setPartners(newPartners);
+                                  form.setValue('socios', newPartners);
+                                }}
+                                className="border-red-600 text-red-400 hover:bg-red-600 hover:text-white"
+                              >
+                                Remover
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+
+                {partners.length === 0 && (
+                  <div className="text-center py-8">
+                    <Users className="h-12 w-12 text-gray-500 mx-auto mb-4" />
+                    <p className="text-gray-400">Nenhum sócio adicionado ainda</p>
+                    <p className="text-sm text-gray-500">Clique em "Adicionar Sócio" para começar</p>
+                  </div>
+                )}
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="md:col-span-2">
