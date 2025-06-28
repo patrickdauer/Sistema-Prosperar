@@ -95,12 +95,14 @@ export default function Dashboard() {
       case 'pending':
         return (
           <Badge 
-            className="px-4 py-2 text-lg font-bold"
             style={{ 
               background: '#dc2626', 
               color: '#ffffff',
-              fontSize: '16px',
-              padding: '8px 16px'
+              fontSize: '11px',
+              padding: '4px 8px',
+              height: '28px',
+              display: 'inline-flex',
+              alignItems: 'center'
             }}
           >
             PENDENTE
@@ -109,12 +111,14 @@ export default function Dashboard() {
       case 'processing':
         return (
           <Badge 
-            className="px-4 py-2 text-lg font-bold"
             style={{ 
               background: '#ca8a04', 
               color: '#ffffff',
-              fontSize: '16px',
-              padding: '8px 16px'
+              fontSize: '11px',
+              padding: '4px 8px',
+              height: '28px',
+              display: 'inline-flex',
+              alignItems: 'center'
             }}
           >
             EM PROCESSAMENTO
@@ -123,12 +127,14 @@ export default function Dashboard() {
       case 'completed':
         return (
           <Badge 
-            className="px-4 py-2 text-lg font-bold"
             style={{ 
               background: '#16a34a', 
               color: '#ffffff',
-              fontSize: '16px',
-              padding: '8px 16px'
+              fontSize: '11px',
+              padding: '4px 8px',
+              height: '28px',
+              display: 'inline-flex',
+              alignItems: 'center'
             }}
           >
             CONCLUÍDO
@@ -137,12 +143,14 @@ export default function Dashboard() {
       default:
         return (
           <Badge 
-            className="px-4 py-2 text-lg font-bold"
             style={{ 
               background: '#dc2626', 
               color: '#ffffff',
-              fontSize: '16px',
-              padding: '8px 16px'
+              fontSize: '11px',
+              padding: '4px 8px',
+              height: '28px',
+              display: 'inline-flex',
+              alignItems: 'center'
             }}
           >
             PENDENTE
