@@ -101,29 +101,32 @@ function ProtectedSistemaDark() {
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
+  // Show landing page when loading or not authenticated
+  if (isLoading || !isAuthenticated) {
+    return (
+      <Switch>
+        <Route path="/" component={Landing} />
+        <Route path="/business-registration" component={BusinessRegistration} />
+        <Route path="/contratacao-funcionarios" component={ContratacaoFuncionarios} />
+        <Route path="/simulador-custo" component={SimuladorCusto} />
+        <Route component={Landing} />
+      </Switch>
+    );
+  }
+
+  // Show authenticated routes
   return (
     <Switch>
-      {isLoading || !isAuthenticated ? (
-        <>
-          <Route path="/" component={Landing} />
-          <Route path="/business-registration" component={BusinessRegistration} />
-          <Route path="/contratacao-funcionarios" component={ContratacaoFuncionarios} />
-          <Route path="/simulador-custo" component={SimuladorCusto} />
-        </>
-      ) : (
-        <>
-          <Route path="/" component={Home} />
-          <Route path="/dashboard" component={Dashboard} />
-          <Route path="/business-registration" component={BusinessRegistration} />
-          <Route path="/contratacao-funcionarios" component={ContratacaoFuncionarios} />
-          <Route path="/simulador-custo" component={SimuladorCusto} />
-          <Route path="/equipe" component={Login} />
-          <Route path="/dashboard-interno" component={ProtectedDashboardInterno} />
-          <Route path="/novo-sistema" component={ProtectedSistemaFinal} />
-          <Route path="/sistema-final" component={ProtectedSistemaFinal} />
-        </>
-      )}
-      <Route component={NotFound} />
+      <Route path="/" component={Home} />
+      <Route path="/dashboard" component={Dashboard} />
+      <Route path="/business-registration" component={BusinessRegistration} />
+      <Route path="/contratacao-funcionarios" component={ContratacaoFuncionarios} />
+      <Route path="/simulador-custo" component={SimuladorCusto} />
+      <Route path="/equipe" component={Login} />
+      <Route path="/dashboard-interno" component={ProtectedDashboardInterno} />
+      <Route path="/novo-sistema" component={ProtectedSistemaFinal} />
+      <Route path="/sistema-final" component={ProtectedSistemaFinal} />
+      <Route component={Home} />
     </Switch>
   );
 }

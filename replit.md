@@ -146,6 +146,15 @@ The system uses a `business_registrations` table with:
 
 ## Recent Changes
 
+### December 28, 2025 - Replit Auth Integration
+- **Authentication System**: Completely replaced custom JWT authentication with Replit Auth
+- **Landing Page**: Created new landing page with "Sistema de Gestão Prosperar Contabilidade" branding
+- **Color Scheme**: Updated to dark theme with green primary color, white text, and orange accents
+- **Database Schema**: Modified users table for Replit Auth compatibility (string IDs, OAuth fields)
+- **Session Management**: Implemented PostgreSQL session storage for secure authentication
+- **Protected Routes**: Set up authentication middleware for internal system access
+- **Public Access**: Maintained public access to business registration and employee hiring forms
+
 ### December 20, 2025 - Complete System with Search and Export Features
 - **Task Management**: Complete CRUD operations for tasks in each department with delete and create functionality
 - **Full Company Editing**: All company fields editable including address, capital, activities, and partner data
