@@ -93,13 +93,61 @@ export default function Dashboard() {
   const getStatusBadge = (status: string | null) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="secondary">Pendente</Badge>;
+        return (
+          <Badge 
+            className="px-4 py-2 text-lg font-bold"
+            style={{ 
+              background: '#dc2626', 
+              color: '#ffffff',
+              fontSize: '16px',
+              padding: '8px 16px'
+            }}
+          >
+            PENDENTE
+          </Badge>
+        );
       case 'processing':
-        return <Badge variant="default">Em Processamento</Badge>;
+        return (
+          <Badge 
+            className="px-4 py-2 text-lg font-bold"
+            style={{ 
+              background: '#ca8a04', 
+              color: '#ffffff',
+              fontSize: '16px',
+              padding: '8px 16px'
+            }}
+          >
+            EM PROCESSAMENTO
+          </Badge>
+        );
       case 'completed':
-        return <Badge variant="destructive">Concluído</Badge>;
+        return (
+          <Badge 
+            className="px-4 py-2 text-lg font-bold"
+            style={{ 
+              background: '#16a34a', 
+              color: '#ffffff',
+              fontSize: '16px',
+              padding: '8px 16px'
+            }}
+          >
+            CONCLUÍDO
+          </Badge>
+        );
       default:
-        return <Badge variant="outline">Pendente</Badge>;
+        return (
+          <Badge 
+            className="px-4 py-2 text-lg font-bold"
+            style={{ 
+              background: '#dc2626', 
+              color: '#ffffff',
+              fontSize: '16px',
+              padding: '8px 16px'
+            }}
+          >
+            PENDENTE
+          </Badge>
+        );
     }
   };
 
@@ -281,10 +329,17 @@ export default function Dashboard() {
                                 size="sm"
                                 onClick={() => updateStatus(registration.id, 'pending')}
                                 disabled={updateStatusMutation.isPending}
-                                style={{ background: '#dc2626', border: '1px solid #dc2626', color: '#ffffff' }}
+                                style={{ 
+                                  background: '#dc2626', 
+                                  border: '1px solid #dc2626', 
+                                  color: '#ffffff',
+                                  fontSize: '11px',
+                                  padding: '4px 8px',
+                                  height: '28px'
+                                }}
                                 title="Marcar como Pendente"
                               >
-                                <AlertCircle className="h-4 w-4 mr-1" />
+                                <AlertCircle className="h-3 w-3 mr-1" />
                                 Pendente
                               </Button>
                             )}
@@ -296,11 +351,18 @@ export default function Dashboard() {
                                 size="sm"
                                 onClick={() => updateStatus(registration.id, 'processing')}
                                 disabled={updateStatusMutation.isPending}
-                                style={{ background: '#ca8a04', border: '1px solid #ca8a04', color: '#ffffff' }}
+                                style={{ 
+                                  background: '#ca8a04', 
+                                  border: '1px solid #ca8a04', 
+                                  color: '#ffffff',
+                                  fontSize: '11px',
+                                  padding: '4px 8px',
+                                  height: '28px'
+                                }}
                                 title="Marcar como Em Processamento"
                               >
-                                <Clock className="h-4 w-4 mr-1" />
-                                Em Processamento
+                                <Clock className="h-3 w-3 mr-1" />
+                                Processamento
                               </Button>
                             )}
                             
@@ -311,10 +373,17 @@ export default function Dashboard() {
                                 size="sm"
                                 onClick={() => updateStatus(registration.id, 'completed')}
                                 disabled={updateStatusMutation.isPending}
-                                style={{ background: '#16a34a', border: '1px solid #16a34a', color: '#ffffff' }}
+                                style={{ 
+                                  background: '#16a34a', 
+                                  border: '1px solid #16a34a', 
+                                  color: '#ffffff',
+                                  fontSize: '11px',
+                                  padding: '4px 8px',
+                                  height: '28px'
+                                }}
                                 title="Marcar como Concluída"
                               >
-                                <CheckCircle className="h-4 w-4 mr-1" />
+                                <CheckCircle className="h-3 w-3 mr-1" />
                                 Concluída
                               </Button>
                             )}

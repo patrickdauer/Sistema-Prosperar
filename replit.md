@@ -146,6 +146,17 @@ The system uses a `business_registrations` table with:
 
 ## Recent Changes
 
+### December 28, 2025 - Sistema de Mudança de Status no Dashboard Geral
+- **Funcionalidade de Status**: Implementado sistema completo para alterar status das empresas no dashboard geral
+- **Botões de Ação**: Botões pequenos e discretos para mudança de status com cores específicas:
+  - Pendente: Vermelho (#dc2626) com ícone AlertCircle
+  - Em Processamento: Amarelo (#ca8a04) com ícone Clock
+  - Concluída: Verde (#16a34a) com ícone CheckCircle
+- **Badges Grandes**: Status atual exibido em badges grandes e visíveis (16px, maiúsculas, coloridos)
+- **Lógica Contextual**: Botões aparecem baseados no status atual (ex: empresa pendente mostra botões para processamento e concluída)
+- **Backend Robusto**: Rota PATCH /api/business-registration/:id/status para atualização de status
+- **Correção Técnica**: Resolvido mapeamento do campo status na função updateBusinessRegistration
+
 ### December 28, 2025 - Correção Completa do Sistema PDF
 - **Geração de PDF Funcional**: Substituído Puppeteer por PDFKit nativa para compatibilidade total com Replit
 - **Layout Organizado**: Corrigida formatação com campos alinhados e espaçamento adequado
