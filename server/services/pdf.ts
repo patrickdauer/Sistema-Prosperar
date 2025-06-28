@@ -29,29 +29,46 @@ export async function generateBusinessRegistrationPDF(registration: BusinessRegi
       doc.fontSize(14).fillColor('#22c55e').text('📊 INFORMAÇÕES GERAIS');
       doc.moveDown(0.5);
 
-      const startY = doc.y;
-      // Left column
       doc.fontSize(10).fillColor('#333');
+      
+      // Razão Social
       doc.text('Razão Social:', 50, doc.y);
-      doc.text(registration.razaoSocial, 50, doc.y + 15);
-      doc.text('Nome Fantasia:', 50, doc.y + 35);
-      doc.text(registration.nomeFantasia, 50, doc.y + 50);
-      doc.text('CNPJ:', 50, doc.y + 70);
-      doc.text(registration.cnpj || 'Não informado', 50, doc.y + 85);
-      doc.text('Capital Social:', 50, doc.y + 105);
-      doc.text(`R$ ${registration.capitalSocial}`, 50, doc.y + 120);
-
-      // Right column
-      doc.text('Telefone:', 300, startY);
-      doc.text(registration.telefoneEmpresa, 300, startY + 15);
-      doc.text('E-mail:', 300, startY + 35);
-      doc.text(registration.emailEmpresa, 300, startY + 50);
-      doc.text('Metragem:', 300, startY + 70);
-      doc.text(`${registration.metragem}m²`, 300, startY + 85);
-      doc.text('Inscrição Imobiliária:', 300, startY + 105);
-      doc.text(registration.inscricaoImobiliaria, 300, startY + 120);
-
-      doc.y = startY + 140;
+      doc.text(registration.razaoSocial, 150, doc.y);
+      doc.moveDown(0.8);
+      
+      // Nome Fantasia
+      doc.text('Nome Fantasia:', 50, doc.y);
+      doc.text(registration.nomeFantasia, 150, doc.y);
+      doc.moveDown(0.8);
+      
+      // CNPJ
+      doc.text('CNPJ:', 50, doc.y);
+      doc.text(registration.cnpj || 'Não informado', 150, doc.y);
+      doc.moveDown(0.8);
+      
+      // Capital Social
+      doc.text('Capital Social:', 50, doc.y);
+      doc.text(`R$ ${registration.capitalSocial}`, 150, doc.y);
+      doc.moveDown(0.8);
+      
+      // Telefone
+      doc.text('Telefone:', 50, doc.y);
+      doc.text(registration.telefoneEmpresa, 150, doc.y);
+      doc.moveDown(0.8);
+      
+      // E-mail
+      doc.text('E-mail:', 50, doc.y);
+      doc.text(registration.emailEmpresa, 150, doc.y);
+      doc.moveDown(0.8);
+      
+      // Metragem
+      doc.text('Metragem:', 50, doc.y);
+      doc.text(`${registration.metragem}m²`, 150, doc.y);
+      doc.moveDown(0.8);
+      
+      // Inscrição Imobiliária
+      doc.text('Inscrição Imobiliária:', 50, doc.y);
+      doc.text(registration.inscricaoImobiliaria, 150, doc.y);
       doc.moveDown(1);
 
       // Address Section
@@ -63,56 +80,94 @@ export async function generateBusinessRegistrationPDF(registration: BusinessRegi
       // Activities Section
       doc.fontSize(14).fillColor('#22c55e').text('🏢 ATIVIDADES');
       doc.moveDown(0.5);
-      doc.fontSize(10).fillColor('#333');
-      doc.text('Atividade Principal:');
-      doc.text(registration.atividadePrincipal, { indent: 20 });
       
-      if (registration.atividadesSecundarias) {
-        doc.moveDown(0.5);
-        doc.text('Atividades Secundárias:');
-        doc.text(registration.atividadesSecundarias, { indent: 20 });
-      }
+      doc.fontSize(10).fillColor('#333');
+      
+      // Atividade Principal
+      doc.text('Atividade Principal:', 50, doc.y);
+      doc.text(registration.atividadePrincipal, 150, doc.y, { width: 395 });
       doc.moveDown(1);
+      
+      // Atividades Secundárias (se existir)
+      if (registration.atividadesSecundarias) {
+        doc.text('Atividades Secundárias:', 50, doc.y);
+        doc.text(registration.atividadesSecundarias, 150, doc.y, { width: 395 });
+        doc.moveDown(1);
+      }
 
       // Partners Section
       doc.fontSize(14).fillColor('#22c55e').text('👥 SÓCIOS');
       doc.moveDown(0.5);
 
       socios.forEach((socio, index) => {
-        if (doc.y > 700) {
+        if (doc.y > 650) {
           doc.addPage();
         }
 
         doc.fontSize(12).fillColor('#ff8c42').text(`Sócio ${index + 1}: ${socio.nomeCompleto}`);
-        doc.moveDown(0.3);
+        doc.moveDown(0.5);
 
-        const socioStartY = doc.y;
-        // Left column
-        doc.fontSize(9).fillColor('#333');
+        doc.fontSize(10).fillColor('#333');
+        
+        // Nome Completo
+        doc.text('Nome Completo:', 50, doc.y);
+        doc.text(socio.nomeCompleto, 150, doc.y);
+        doc.moveDown(0.7);
+        
+        // CPF
         doc.text('CPF:', 50, doc.y);
-        doc.text(socio.cpf, 50, doc.y + 12);
-        doc.text('RG:', 50, doc.y + 26);
-        doc.text(socio.rg, 50, doc.y + 38);
-        doc.text('Data Nascimento:', 50, doc.y + 52);
-        doc.text(socio.dataNascimento, 50, doc.y + 64);
-        doc.text('Estado Civil:', 50, doc.y + 78);
-        doc.text(socio.estadoCivil, 50, doc.y + 90);
-
-        // Right column
-        doc.text('Profissão:', 300, socioStartY);
-        doc.text(socio.profissao, 300, socioStartY + 12);
-        doc.text('Telefone:', 300, socioStartY + 26);
-        doc.text(socio.telefonePessoal, 300, socioStartY + 38);
-        doc.text('E-mail:', 300, socioStartY + 52);
-        doc.text(socio.emailPessoal, 300, socioStartY + 64);
-        doc.text('Participação:', 300, socioStartY + 78);
-        doc.text(`${socio.participacao}% - ${socio.tipoParticipacao}`, 300, socioStartY + 90);
-
-        doc.y = socioStartY + 110;
+        doc.text(socio.cpf, 150, doc.y);
+        doc.moveDown(0.7);
+        
+        // RG
+        doc.text('RG:', 50, doc.y);
+        doc.text(socio.rg, 150, doc.y);
+        doc.moveDown(0.7);
+        
+        // Data de Nascimento
+        doc.text('Data de Nascimento:', 50, doc.y);
+        doc.text(socio.dataNascimento, 150, doc.y);
+        doc.moveDown(0.7);
+        
+        // Estado Civil
+        doc.text('Estado Civil:', 50, doc.y);
+        doc.text(socio.estadoCivil, 150, doc.y);
+        doc.moveDown(0.7);
+        
+        // Nacionalidade
+        doc.text('Nacionalidade:', 50, doc.y);
+        doc.text(socio.nacionalidade, 150, doc.y);
+        doc.moveDown(0.7);
+        
+        // Profissão
+        doc.text('Profissão:', 50, doc.y);
+        doc.text(socio.profissao, 150, doc.y);
+        doc.moveDown(0.7);
+        
+        // Telefone
+        doc.text('Telefone:', 50, doc.y);
+        doc.text(socio.telefonePessoal, 150, doc.y);
+        doc.moveDown(0.7);
+        
+        // E-mail
+        doc.text('E-mail:', 50, doc.y);
+        doc.text(socio.emailPessoal, 150, doc.y);
+        doc.moveDown(0.7);
+        
+        // Participação
+        doc.text('Participação:', 50, doc.y);
+        doc.text(`${socio.participacao}%`, 150, doc.y);
+        doc.moveDown(0.7);
+        
+        // Tipo de Participação
+        doc.text('Tipo de Participação:', 50, doc.y);
+        doc.text(socio.tipoParticipacao, 150, doc.y);
+        doc.moveDown(0.7);
+        
+        // Endereço
         doc.text('Endereço:', 50, doc.y);
-        doc.text(socio.endereco, 50, doc.y + 12, { width: 495 });
-
-        doc.moveDown(1);
+        doc.text(socio.endereco, 150, doc.y, { width: 395 });
+        doc.moveDown(1.5);
       });
 
       // Footer

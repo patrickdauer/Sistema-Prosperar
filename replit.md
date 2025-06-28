@@ -146,6 +146,21 @@ The system uses a `business_registrations` table with:
 
 ## Recent Changes
 
+### December 28, 2025 - Correção Completa do Sistema PDF
+- **Geração de PDF Funcional**: Substituído Puppeteer por PDFKit nativa para compatibilidade total com Replit
+- **Layout Organizado**: Corrigida formatação com campos alinhados e espaçamento adequado
+- **Estrutura Profissional**: PDF com seções bem definidas (Informações Gerais, Endereço, Atividades, Sócios)
+- **Dados Completos**: Todos os campos do formulário incluídos (CNPJ, participação, endereços)
+- **Download Funcional**: Botão "Baixar PDF" no Dashboard Geral totalmente operacional
+- **Performance Otimizada**: Geração rápida sem dependências de navegador
+
+### December 28, 2025 - Dashboard Geral Completo
+- **Página de Detalhes**: Visualização completa de empresas com todos os campos organizados
+- **Tema Escuro Consistente**: Aplicado esquema de cores (#0a0a0a, #1a1a1a, #22c55e, #ff8c42) em toda interface
+- **Informações dos Sócios**: Detalhes completos incluindo endereço, participação e profissão
+- **Seção de Contatos**: Resumo organizado com informações da empresa e sócios
+- **Navegação Melhorada**: Botão "Voltar ao Menu" e estrutura intuitiva
+
 ### December 28, 2025 - Sistema de Auto-Edição de Perfil do Usuário
 - **Página de Perfil**: Criada página `/profile` onde cada usuário pode editar seus próprios dados
 - **Auto-Edição**: Usuários podem alterar nome, email, departamentos e senha sem precisar de admin
