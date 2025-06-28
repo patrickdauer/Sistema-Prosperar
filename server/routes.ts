@@ -135,18 +135,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = parseInt(req.params.id);
       const { name, email, role, department } = req.body;
 
-      // Verificar se o usuário atual é admin
-      if (req.user?.role !== 'admin') {
-        return res.status(403).json({ message: 'Apenas administradores podem editar usuários' });
+      // Verificar se o usuário pode editar este perfil
+      const isAdmin = req.user?.role === 'admin';
+      const isOwnProfile = req.user?.id === userId;
+      
+      if (!isAdmin && !isOwnProfile) {
+        return res.status(403).json({ message: 'Você só pode editar seu próprio perfil ou ser administrador' });
       }
 
-      const updatedUser = await storage.updateUser(userId, {
-        name,
-        email,
-        role,
-        department
-      });
+      const updateData: any = {};
+      if (name !== undefined) updateData.name = name;
+      if (email !== undefined) updateData.email = email;
+      if (department !== undefined) updateData.department = department;
+      
+      // Apenas admins podem alterar role
+      if (role !== undefined && isAdmin) {
+        updateData.role = role;
+      }
 
+      const updatedUser = await storage.updateUser(userId, updateData);
       const userResponse = { ...updatedUser, password: undefined };
       res.json(userResponse);
     } catch (error) {
@@ -181,26 +188,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch('/api/users/:id/password', authenticateToken, async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
-      const { password } = req.body;
+      const { password, currentPassword, newPassword } = req.body;
 
-      // Verificar se o usuário atual é admin
-      if (req.user?.role !== 'admin') {
-        return res.status(403).json({ message: 'Apenas administradores podem alterar senhas' });
+      // Verificar se o usuário pode alterar esta senha
+      const isAdmin = req.user?.role === 'admin';
+      const isOwnProfile = req.user?.id === userId;
+      
+      if (!isAdmin && !isOwnProfile) {
+        return res.status(403).json({ message: 'Você só pode alterar sua própria senha ou ser administrador' });
       }
 
-      if (!password || password.length < 6) {
-        return res.status(400).json({ message: 'Senha deve ter pelo menos 6 caracteres' });
+      // Para usuários alterando sua própria senha, verificar senha atual
+      if (isOwnProfile && !isAdmin) {
+        if (!currentPassword || !newPassword) {
+          return res.status(400).json({ message: 'Senha atual e nova senha são obrigatórias' });
+        }
+
+        // Buscar usuário atual para verificar senha
+        const currentUser = await storage.getUser(userId);
+        if (!currentUser) {
+          return res.status(404).json({ message: 'Usuário não encontrado' });
+        }
+
+        // Verificar senha atual
+        const isCurrentPasswordValid = await bcrypt.compare(currentPassword, currentUser.password);
+        if (!isCurrentPasswordValid) {
+          return res.status(400).json({ message: 'Senha atual incorreta' });
+        }
+
+        if (newPassword.length < 6) {
+          return res.status(400).json({ message: 'Nova senha deve ter pelo menos 6 caracteres' });
+        }
+
+        // Hash da nova senha
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        const updatedUser = await storage.updateUser(userId, {
+          password: hashedPassword
+        });
+
+        return res.json({ message: 'Senha alterada com sucesso' });
       }
 
-      // Hash da nova senha
-      const hashedPassword = await bcrypt.hash(password, 10);
+      // Para admins alterando senha de outros usuários
+      if (isAdmin) {
+        const adminPassword = password || newPassword;
+        if (!adminPassword || adminPassword.length < 6) {
+          return res.status(400).json({ message: 'Senha deve ter pelo menos 6 caracteres' });
+        }
 
-      // Atualizar a senha no banco
-      const updatedUser = await storage.updateUser(userId, {
-        password: hashedPassword
-      });
+        // Hash da nova senha
+        const hashedPassword = await bcrypt.hash(adminPassword, 10);
+        const updatedUser = await storage.updateUser(userId, {
+          password: hashedPassword
+        });
 
-      res.json({ message: 'Senha alterada com sucesso' });
+        return res.json({ message: 'Senha alterada com sucesso' });
+      }
+
     } catch (error) {
       console.error("Error changing password:", error);
       res.status(500).json({ message: "Erro ao alterar senha" });
