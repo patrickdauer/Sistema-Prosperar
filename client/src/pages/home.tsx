@@ -45,7 +45,7 @@ export default function Home() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card className="hover:shadow-lg transition-shadow cursor-pointer" 
-                onClick={() => window.location.href = '/dashboard'}>
+                onClick={() => window.open('/dashboard', '_blank')}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Building2 className="h-5 w-5" />
@@ -63,7 +63,7 @@ export default function Home() {
           </Card>
 
           <Card className="hover:shadow-lg transition-shadow cursor-pointer" 
-                onClick={() => window.location.href = '/sistema-final'}>
+                onClick={() => window.open('/sistema-final', '_blank')}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
@@ -82,7 +82,7 @@ export default function Home() {
 
           {user?.role === 'admin' && (
             <Card className="hover:shadow-lg transition-shadow cursor-pointer" 
-                  onClick={() => window.location.href = '/dashboard-interno'}>
+                  onClick={() => window.open('/dashboard-interno', '_blank')}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="h-5 w-5" />
@@ -101,7 +101,7 @@ export default function Home() {
           )}
 
           <Card className="hover:shadow-lg transition-shadow cursor-pointer" 
-                onClick={() => window.location.href = '/business-registration'}>
+                onClick={() => window.open('/business-registration', '_blank')}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Building2 className="h-5 w-5" />
@@ -119,7 +119,7 @@ export default function Home() {
           </Card>
 
           <Card className="hover:shadow-lg transition-shadow cursor-pointer" 
-                onClick={() => window.location.href = '/contratacao-funcionarios'}>
+                onClick={() => window.open('/contratacao-funcionarios', '_blank')}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
@@ -137,7 +137,7 @@ export default function Home() {
           </Card>
 
           <Card className="hover:shadow-lg transition-shadow cursor-pointer" 
-                onClick={() => setLocation('/simulador-custo')}>
+                onClick={() => window.open('/simulador-custo', '_blank')}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Settings className="h-5 w-5" />
