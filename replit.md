@@ -158,6 +158,12 @@ The system uses a `business_registrations` table with:
   - Interface organizada em seções com validação
 - **Layout Otimizado**: Botões organizados em grupos lógicos com espaçamento adequado
 - **Criação de Empresas**: Botão redireciona para página /business-registration
+- **Padronização Visual**: Página business-registration aplicada com tema escuro consistente
+  - Gradiente de fundo cinza escuro como página inicial
+  - Cards com fundo #1f2937 e bordas #374151
+  - Ícones verdes (#22c55e) para destaques
+  - Texto branco e campos com fundo escuro
+  - Botões com cores padronizadas (verde para ações principais)
 - **Backend Completo**: Rotas implementadas (GET, POST, PUT, PATCH, DELETE)
 - **Funcionalidade de Deleção**: Confirmação antes de excluir com feedback visual
 

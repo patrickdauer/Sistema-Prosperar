@@ -713,11 +713,11 @@ export default function BusinessRegistration() {
             </Card>
 
             {/* Documents Section */}
-            <Card>
+            <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
               <CardContent className="p-6">
                 <div className="flex items-center mb-6">
-                  <FileUp className="text-blue-700 mr-3" />
-                  <h2 className="text-xl font-semibold text-gray-900">Documentos do Sócio</h2>
+                  <FileUp className="text-green-500 mr-3" />
+                  <h2 className="text-xl font-semibold text-white">Documentos</h2>
                 </div>
                 
                 <div className="space-y-6">
@@ -748,16 +748,20 @@ export default function BusinessRegistration() {
             </Card>
 
             {/* Submission Section */}
-            <Card>
+            <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
               <CardContent className="p-6">
                 <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Shield className="text-green-600 mr-2" size={16} />
+                  <div className="flex items-center text-sm text-gray-300">
+                    <Shield className="text-green-500 mr-2" size={16} />
                     <span>Seus dados estão protegidos e serão enviados de forma segura</span>
                   </div>
                   
                   <div className="flex gap-3">
-                    <Button type="button" variant="outline">
+                    <Button 
+                      type="button" 
+                      variant="outline"
+                      className="border-gray-600 text-gray-300 hover:bg-gray-600 hover:text-white"
+                    >
                       <Save className="mr-2" size={16} />
                       Salvar Rascunho
                     </Button>
@@ -765,7 +769,7 @@ export default function BusinessRegistration() {
                     <Button 
                       type="submit" 
                       disabled={submitMutation.isPending}
-                      className="bg-blue-700 hover:bg-blue-800"
+                      className="bg-green-600 hover:bg-green-700 text-white"
                     >
                       {submitMutation.isPending ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -781,6 +785,37 @@ export default function BusinessRegistration() {
 
           </form>
         </Form>
+
+        {/* Partner Form Modal */}
+        {showPartnerForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <PartnerForm
+                partner={editingPartnerIndex !== null ? partners[editingPartnerIndex] : undefined}
+                partnerIndex={editingPartnerIndex || partners.length}
+                onSave={(partner) => {
+                  if (editingPartnerIndex !== null) {
+                    const newPartners = [...partners];
+                    newPartners[editingPartnerIndex] = partner;
+                    setPartners(newPartners);
+                  } else {
+                    setPartners([...partners, partner]);
+                  }
+                  form.setValue('socios', editingPartnerIndex !== null ? 
+                    partners.map((p, i) => i === editingPartnerIndex ? partner : p) : 
+                    [...partners, partner]
+                  );
+                  setShowPartnerForm(false);
+                  setEditingPartnerIndex(null);
+                }}
+                onCancel={() => {
+                  setShowPartnerForm(false);
+                  setEditingPartnerIndex(null);
+                }}
+              />
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
