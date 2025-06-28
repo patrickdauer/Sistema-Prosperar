@@ -401,116 +401,157 @@ export default function Dashboard() {
                             </span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {/* Status change buttons */}
-                          <div className="flex items-center gap-1">
-                            {/* Pendente button - show for processing and completed */}
-                            {(registration.status === 'processing' || registration.status === 'completed') && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => updateStatus(registration.id, 'pending')}
-                                disabled={updateStatusMutation.isPending}
-                                style={{ 
-                                  background: '#dc2626', 
-                                  border: '1px solid #dc2626', 
-                                  color: '#ffffff',
-                                  fontSize: '11px',
-                                  padding: '4px 8px',
-                                  height: '28px'
-                                }}
-                                title="Marcar como Pendente"
-                              >
-                                <AlertCircle className="h-3 w-3 mr-1" />
-                                Pendente
-                              </Button>
-                            )}
-                            
-                            {/* Em Processamento button - show for pending and completed */}
-                            {(registration.status === 'pending' || !registration.status || registration.status === 'completed') && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => updateStatus(registration.id, 'processing')}
-                                disabled={updateStatusMutation.isPending}
-                                style={{ 
-                                  background: '#ca8a04', 
-                                  border: '1px solid #ca8a04', 
-                                  color: '#ffffff',
-                                  fontSize: '11px',
-                                  padding: '4px 8px',
-                                  height: '28px'
-                                }}
-                                title="Marcar como Em Processamento"
-                              >
-                                <Clock className="h-3 w-3 mr-1" />
-                                Processamento
-                              </Button>
-                            )}
-                            
-                            {/* Concluída button - show for pending and processing */}
-                            {(registration.status === 'pending' || !registration.status || registration.status === 'processing') && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => updateStatus(registration.id, 'completed')}
-                                disabled={updateStatusMutation.isPending}
-                                style={{ 
-                                  background: '#16a34a', 
-                                  border: '1px solid #16a34a', 
-                                  color: '#ffffff',
-                                  fontSize: '11px',
-                                  padding: '4px 8px',
-                                  height: '28px'
-                                }}
-                                title="Marcar como Concluída"
-                              >
-                                <CheckCircle className="h-3 w-3 mr-1" />
-                                Concluída
-                              </Button>
-                            )}
+                        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+                          {/* Status change buttons - organized in a row */}
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium" style={{ color: '#888' }}>Alterar Status:</span>
+                            <div className="flex items-center gap-1">
+                              {/* Pendente button - show for processing and completed */}
+                              {(registration.status === 'processing' || registration.status === 'completed') && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => updateStatus(registration.id, 'pending')}
+                                  disabled={updateStatusMutation.isPending}
+                                  style={{ 
+                                    background: '#dc2626', 
+                                    border: '1px solid #dc2626', 
+                                    color: '#ffffff',
+                                    fontSize: '10px',
+                                    padding: '4px 6px',
+                                    height: '24px'
+                                  }}
+                                  title="Marcar como Pendente"
+                                >
+                                  <AlertCircle className="h-3 w-3 mr-1" />
+                                  Pendente
+                                </Button>
+                              )}
+                              
+                              {/* Em Processamento button - show for pending and completed */}
+                              {(registration.status === 'pending' || !registration.status || registration.status === 'completed') && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => updateStatus(registration.id, 'processing')}
+                                  disabled={updateStatusMutation.isPending}
+                                  style={{ 
+                                    background: '#ca8a04', 
+                                    border: '1px solid #ca8a04', 
+                                    color: '#ffffff',
+                                    fontSize: '10px',
+                                    padding: '4px 6px',
+                                    height: '24px'
+                                  }}
+                                  title="Marcar como Em Processamento"
+                                >
+                                  <Clock className="h-3 w-3 mr-1" />
+                                  Processamento
+                                </Button>
+                              )}
+                              
+                              {/* Concluída button - show for pending and processing */}
+                              {(registration.status === 'pending' || !registration.status || registration.status === 'processing') && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => updateStatus(registration.id, 'completed')}
+                                  disabled={updateStatusMutation.isPending}
+                                  style={{ 
+                                    background: '#16a34a', 
+                                    border: '1px solid #16a34a', 
+                                    color: '#ffffff',
+                                    fontSize: '10px',
+                                    padding: '4px 6px',
+                                    height: '24px'
+                                  }}
+                                  title="Marcar como Concluída"
+                                >
+                                  <CheckCircle className="h-3 w-3 mr-1" />
+                                  Concluída
+                                </Button>
+                              )}
+                            </div>
                           </div>
 
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setEditingRegistration(registration)}
-                              style={{ background: '#3b82f6', border: '1px solid #3b82f6', color: '#ffffff' }}
-                              title="Editar Empresa"
-                            >
-                              <Edit className="h-4 w-4 mr-1" />
-                              Editar
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => deleteRegistration(registration.id)}
-                              disabled={deleteRegistrationMutation.isPending}
-                              style={{ background: '#ef4444', border: '1px solid #ef4444', color: '#ffffff' }}
-                              title="Deletar Empresa"
-                            >
-                              <Trash2 className="h-4 w-4 mr-1" />
-                              Deletar
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setSelectedRegistration(registration)}
-                              style={{ background: '#22c55e', border: '1px solid #22c55e', color: '#ffffff' }}
-                            >
-                              <Eye className="h-4 w-4 mr-1" />
-                              Ver Detalhes
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => downloadPDF(registration.id)}
-                              style={{ background: '#ff8c42', border: '1px solid #ff8c42', color: '#ffffff' }}
-                            >
-                              <Download className="h-4 w-4 mr-1" />
-                              PDF
-                            </Button>
+                          {/* Action buttons - organized in two rows for better space */}
+                          <div className="flex flex-col gap-2">
+                            {/* First row: Edit and Delete */}
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEditingRegistration(registration)}
+                                style={{ 
+                                  background: '#3b82f6', 
+                                  border: '1px solid #3b82f6', 
+                                  color: '#ffffff',
+                                  fontSize: '11px',
+                                  padding: '4px 8px',
+                                  height: '28px'
+                                }}
+                                title="Editar Empresa"
+                              >
+                                <Edit className="h-3 w-3 mr-1" />
+                                Editar
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => deleteRegistration(registration.id)}
+                                disabled={deleteRegistrationMutation.isPending}
+                                style={{ 
+                                  background: '#ef4444', 
+                                  border: '1px solid #ef4444', 
+                                  color: '#ffffff',
+                                  fontSize: '11px',
+                                  padding: '4px 8px',
+                                  height: '28px'
+                                }}
+                                title="Deletar Empresa"
+                              >
+                                <Trash2 className="h-3 w-3 mr-1" />
+                                Deletar
+                              </Button>
+                            </div>
+                            
+                            {/* Second row: View and PDF */}
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSelectedRegistration(registration)}
+                                style={{ 
+                                  background: '#22c55e', 
+                                  border: '1px solid #22c55e', 
+                                  color: '#ffffff',
+                                  fontSize: '11px',
+                                  padding: '4px 8px',
+                                  height: '28px'
+                                }}
+                                title="Ver Detalhes"
+                              >
+                                <Eye className="h-3 w-3 mr-1" />
+                                Ver Detalhes
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => downloadPDF(registration.id)}
+                                style={{ 
+                                  background: '#ff8c42', 
+                                  border: '1px solid #ff8c42', 
+                                  color: '#ffffff',
+                                  fontSize: '11px',
+                                  padding: '4px 8px',
+                                  height: '28px'
+                                }}
+                                title="Baixar PDF"
+                              >
+                                <Download className="h-3 w-3 mr-1" />
+                                PDF
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </div>
