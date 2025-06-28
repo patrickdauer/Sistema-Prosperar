@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Users, UserPlus, Edit, Trash2, LogOut, Home, Settings, Key } from 'lucide-react';
+import { Users, UserPlus, Edit, Trash2, LogOut, Home, Settings, Key, X } from 'lucide-react';
 import { BackToHomeButton } from '@/components/back-to-home-button';
 
 interface User {
@@ -21,6 +21,20 @@ interface User {
   department: string;
   isActive: boolean;
 }
+
+const DEPARTMENTS = [
+  { value: 'contabilidade', label: 'Contabilidade' },
+  { value: 'fiscal', label: 'Fiscal' },
+  { value: 'rh', label: 'Recursos Humanos' },
+  { value: 'societario', label: 'Societário' },
+  { value: 'financeiro', label: 'Financeiro' },
+  { value: 'juridico', label: 'Jurídico' },
+  { value: 'auditoria', label: 'Auditoria' },
+  { value: 'consultoria', label: 'Consultoria' },
+  { value: 'ti', label: 'Tecnologia da Informação' },
+  { value: 'marketing', label: 'Marketing' },
+  { value: 'comercial', label: 'Comercial' }
+];
 
 export default function UserManagement() {
   const { user: currentUser } = useAuth();
@@ -52,6 +66,8 @@ export default function UserManagement() {
     role: 'user',
     department: ''
   });
+  const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
+  const [editSelectedDepartments, setEditSelectedDepartments] = useState<string[]>([]);
   const [customDepartment, setCustomDepartment] = useState('');
   const [showCustomDepartment, setShowCustomDepartment] = useState(false);
   const [editCustomDepartment, setEditCustomDepartment] = useState('');
@@ -223,6 +239,40 @@ export default function UserManagement() {
     });
     setCustomDepartment('');
     setShowCustomDepartment(false);
+    setSelectedDepartments([]);
+  };
+
+  const handleDepartmentToggle = (department: string, isCreating: boolean = true) => {
+    if (isCreating) {
+      setSelectedDepartments(prev => {
+        const newDepts = prev.includes(department) 
+          ? prev.filter(d => d !== department)
+          : [...prev, department];
+        setNewUserData({...newUserData, department: newDepts.join(', ')});
+        return newDepts;
+      });
+    } else {
+      setEditSelectedDepartments(prev => {
+        const newDepts = prev.includes(department) 
+          ? prev.filter(d => d !== department)
+          : [...prev, department];
+        setEditUserData({...editUserData, department: newDepts.join(', ')});
+        return newDepts;
+      });
+    }
+  };
+
+  const addCustomDepartment = (customDept: string, isCreating: boolean = true) => {
+    if (customDept.trim()) {
+      handleDepartmentToggle(customDept.trim(), isCreating);
+      if (isCreating) {
+        setCustomDepartment('');
+        setShowCustomDepartment(false);
+      } else {
+        setEditCustomDepartment('');
+        setShowEditCustomDepartment(false);
+      }
+    }
   };
 
   const handleEditUser = (user: User) => {
@@ -233,6 +283,9 @@ export default function UserManagement() {
       role: user.role,
       department: user.department
     });
+    // Parse existing departments
+    const existingDepts = user.department ? user.department.split(', ').filter(d => d.trim()) : [];
+    setEditSelectedDepartments(existingDepts);
     setEditCustomDepartment('');
     setShowEditCustomDepartment(false);
   };
@@ -242,6 +295,7 @@ export default function UserManagement() {
     setEditUserData({ name: '', email: '', role: 'user', department: '' });
     setEditCustomDepartment('');
     setShowEditCustomDepartment(false);
+    setEditSelectedDepartments([]);
   };
 
   const handleSaveEditUser = () => {
@@ -399,49 +453,77 @@ export default function UserManagement() {
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-white">Departamento</Label>
-                    <Select 
-                      value={showCustomDepartment ? 'custom' : newUserData.department} 
-                      onValueChange={(value) => {
-                        if (value === 'custom') {
-                          setShowCustomDepartment(true);
-                          setNewUserData({...newUserData, department: ''});
-                        } else {
-                          setShowCustomDepartment(false);
-                          setNewUserData({...newUserData, department: value});
-                          setCustomDepartment('');
-                        }
-                      }}
-                    >
-                      <SelectTrigger style={{ background: '#333', border: '1px solid #555', color: 'white' }}>
-                        <SelectValue placeholder="Selecione um departamento" />
-                      </SelectTrigger>
-                      <SelectContent style={{ background: '#333', border: '1px solid #555' }}>
-                        <SelectItem value="contabilidade" style={{ color: 'white' }}>Contabilidade</SelectItem>
-                        <SelectItem value="fiscal" style={{ color: 'white' }}>Fiscal</SelectItem>
-                        <SelectItem value="rh" style={{ color: 'white' }}>Recursos Humanos</SelectItem>
-                        <SelectItem value="societario" style={{ color: 'white' }}>Societário</SelectItem>
-                        <SelectItem value="financeiro" style={{ color: 'white' }}>Financeiro</SelectItem>
-                        <SelectItem value="juridico" style={{ color: 'white' }}>Jurídico</SelectItem>
-                        <SelectItem value="auditoria" style={{ color: 'white' }}>Auditoria</SelectItem>
-                        <SelectItem value="consultoria" style={{ color: 'white' }}>Consultoria</SelectItem>
-                        <SelectItem value="ti" style={{ color: 'white' }}>Tecnologia da Informação</SelectItem>
-                        <SelectItem value="marketing" style={{ color: 'white' }}>Marketing</SelectItem>
-                        <SelectItem value="comercial" style={{ color: 'white' }}>Comercial</SelectItem>
-                        <SelectItem value="custom" style={{ color: '#22c55e', fontWeight: 'bold' }}>+ Criar Novo Departamento</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {showCustomDepartment && (
+                    <Label className="text-white">Departamentos</Label>
+                    <div style={{ background: '#333', border: '1px solid #555', borderRadius: '6px', padding: '12px', minHeight: '120px', maxHeight: '200px', overflowY: 'auto' }}>
+                      <div className="space-y-2">
+                        {DEPARTMENTS.map((dept) => (
+                          <div key={dept.value} className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id={`dept-${dept.value}`}
+                              checked={selectedDepartments.includes(dept.value)}
+                              onChange={() => handleDepartmentToggle(dept.value, true)}
+                              style={{ accentColor: '#22c55e' }}
+                            />
+                            <label htmlFor={`dept-${dept.value}`} className="text-white text-sm cursor-pointer">
+                              {dept.label}
+                            </label>
+                          </div>
+                        ))}
+                        <div className="border-t border-gray-600 pt-2 mt-2">
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setShowCustomDepartment(!showCustomDepartment)}
+                              style={{ borderColor: '#22c55e', color: '#22c55e', fontSize: '12px' }}
+                            >
+                              + Adicionar Departamento
+                            </Button>
+                          </div>
+                          {showCustomDepartment && (
+                            <div className="mt-2 flex gap-2">
+                              <Input
+                                placeholder="Nome do departamento"
+                                value={customDepartment}
+                                onChange={(e) => setCustomDepartment(e.target.value)}
+                                style={{ background: '#222', border: '1px solid #555', color: 'white', fontSize: '12px' }}
+                                onKeyPress={(e) => {
+                                  if (e.key === 'Enter') {
+                                    addCustomDepartment(customDepartment, true);
+                                  }
+                                }}
+                              />
+                              <Button
+                                size="sm"
+                                onClick={() => addCustomDepartment(customDepartment, true)}
+                                style={{ backgroundColor: '#22c55e', color: 'white', fontSize: '12px' }}
+                              >
+                                Add
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    {selectedDepartments.length > 0 && (
                       <div className="mt-2">
-                        <Input
-                          placeholder="Digite o nome do novo departamento"
-                          value={customDepartment}
-                          onChange={(e) => {
-                            setCustomDepartment(e.target.value);
-                            setNewUserData({...newUserData, department: e.target.value});
-                          }}
-                          style={{ background: '#333', border: '1px solid #555', color: 'white' }}
-                        />
+                        <div className="flex flex-wrap gap-1">
+                          {selectedDepartments.map((dept) => (
+                            <Badge 
+                              key={dept} 
+                              variant="outline" 
+                              style={{ borderColor: '#22c55e', color: '#22c55e', fontSize: '11px' }}
+                              className="flex items-center gap-1"
+                            >
+                              {DEPARTMENTS.find(d => d.value === dept)?.label || dept}
+                              <X 
+                                className="h-3 w-3 cursor-pointer" 
+                                onClick={() => handleDepartmentToggle(dept, true)}
+                              />
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -504,49 +586,77 @@ export default function UserManagement() {
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-white">Departamento</Label>
-                  <Select 
-                    value={showEditCustomDepartment ? 'custom' : editUserData.department} 
-                    onValueChange={(value) => {
-                      if (value === 'custom') {
-                        setShowEditCustomDepartment(true);
-                        setEditUserData({...editUserData, department: ''});
-                      } else {
-                        setShowEditCustomDepartment(false);
-                        setEditUserData({...editUserData, department: value});
-                        setEditCustomDepartment('');
-                      }
-                    }}
-                  >
-                    <SelectTrigger style={{ background: '#333', border: '1px solid #555', color: 'white' }}>
-                      <SelectValue placeholder="Selecione um departamento" />
-                    </SelectTrigger>
-                    <SelectContent style={{ background: '#333', border: '1px solid #555' }}>
-                      <SelectItem value="contabilidade" style={{ color: 'white' }}>Contabilidade</SelectItem>
-                      <SelectItem value="fiscal" style={{ color: 'white' }}>Fiscal</SelectItem>
-                      <SelectItem value="rh" style={{ color: 'white' }}>Recursos Humanos</SelectItem>
-                      <SelectItem value="societario" style={{ color: 'white' }}>Societário</SelectItem>
-                      <SelectItem value="financeiro" style={{ color: 'white' }}>Financeiro</SelectItem>
-                      <SelectItem value="juridico" style={{ color: 'white' }}>Jurídico</SelectItem>
-                      <SelectItem value="auditoria" style={{ color: 'white' }}>Auditoria</SelectItem>
-                      <SelectItem value="consultoria" style={{ color: 'white' }}>Consultoria</SelectItem>
-                      <SelectItem value="ti" style={{ color: 'white' }}>Tecnologia da Informação</SelectItem>
-                      <SelectItem value="marketing" style={{ color: 'white' }}>Marketing</SelectItem>
-                      <SelectItem value="comercial" style={{ color: 'white' }}>Comercial</SelectItem>
-                      <SelectItem value="custom" style={{ color: '#22c55e', fontWeight: 'bold' }}>+ Criar Novo Departamento</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {showEditCustomDepartment && (
+                  <Label className="text-white">Departamentos</Label>
+                  <div style={{ background: '#333', border: '1px solid #555', borderRadius: '6px', padding: '12px', minHeight: '120px', maxHeight: '200px', overflowY: 'auto' }}>
+                    <div className="space-y-2">
+                      {DEPARTMENTS.map((dept) => (
+                        <div key={dept.value} className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id={`edit-dept-${dept.value}`}
+                            checked={editSelectedDepartments.includes(dept.value)}
+                            onChange={() => handleDepartmentToggle(dept.value, false)}
+                            style={{ accentColor: '#22c55e' }}
+                          />
+                          <label htmlFor={`edit-dept-${dept.value}`} className="text-white text-sm cursor-pointer">
+                            {dept.label}
+                          </label>
+                        </div>
+                      ))}
+                      <div className="border-t border-gray-600 pt-2 mt-2">
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowEditCustomDepartment(!showEditCustomDepartment)}
+                            style={{ borderColor: '#22c55e', color: '#22c55e', fontSize: '12px' }}
+                          >
+                            + Adicionar Departamento
+                          </Button>
+                        </div>
+                        {showEditCustomDepartment && (
+                          <div className="mt-2 flex gap-2">
+                            <Input
+                              placeholder="Nome do departamento"
+                              value={editCustomDepartment}
+                              onChange={(e) => setEditCustomDepartment(e.target.value)}
+                              style={{ background: '#222', border: '1px solid #555', color: 'white', fontSize: '12px' }}
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter') {
+                                  addCustomDepartment(editCustomDepartment, false);
+                                }
+                              }}
+                            />
+                            <Button
+                              size="sm"
+                              onClick={() => addCustomDepartment(editCustomDepartment, false)}
+                              style={{ backgroundColor: '#22c55e', color: 'white', fontSize: '12px' }}
+                            >
+                              Add
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  {editSelectedDepartments.length > 0 && (
                     <div className="mt-2">
-                      <Input
-                        placeholder="Digite o nome do novo departamento"
-                        value={editCustomDepartment}
-                        onChange={(e) => {
-                          setEditCustomDepartment(e.target.value);
-                          setEditUserData({...editUserData, department: e.target.value});
-                        }}
-                        style={{ background: '#333', border: '1px solid #555', color: 'white' }}
-                      />
+                      <div className="flex flex-wrap gap-1">
+                        {editSelectedDepartments.map((dept) => (
+                          <Badge 
+                            key={dept} 
+                            variant="outline" 
+                            style={{ borderColor: '#22c55e', color: '#22c55e', fontSize: '11px' }}
+                            className="flex items-center gap-1"
+                          >
+                            {DEPARTMENTS.find(d => d.value === dept)?.label || dept}
+                            <X 
+                              className="h-3 w-3 cursor-pointer" 
+                              onClick={() => handleDepartmentToggle(dept, false)}
+                            />
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
