@@ -157,7 +157,7 @@ The system uses a `business_registrations` table with:
   - Gestão completa de sócios (adicionar, remover, editar todos os campos)
   - Interface organizada em seções com validação
 - **Layout Otimizado**: Botões organizados em grupos lógicos com espaçamento adequado
-- **Criação de Empresas**: Botão redireciona para formulário público de cadastro
+- **Criação de Empresas**: Botão redireciona para página /business-registration
 - **Backend Completo**: Rotas implementadas (GET, POST, PUT, PATCH, DELETE)
 - **Funcionalidade de Deleção**: Confirmação antes de excluir com feedback visual
 

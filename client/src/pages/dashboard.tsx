@@ -242,9 +242,9 @@ export default function Dashboard() {
             </div>
             <div className="flex items-center gap-3">
               <Button
-                onClick={() => window.open('/', '_blank')}
+                onClick={() => window.open('/business-registration', '_blank')}
                 style={{ background: '#22c55e', border: '1px solid #22c55e', color: '#ffffff' }}
-                title="Abrir formulário público de cadastro de empresa"
+                title="Abrir formulário de cadastro de empresa"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Criar Nova Empresa
