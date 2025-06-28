@@ -2,38 +2,107 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Business Registration Dark Theme - Complete Override */
-[data-page="business-registration"] {
-  background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #111827 100%) !important;
+/* GLOBAL NUCLEAR OVERRIDE FOR BUSINESS REGISTRATION */
+body {
+  background: #0a0a0a !important;
 }
 
-[data-page="business-registration"] *,
-[data-page="business-registration"] label,
-[data-page="business-registration"] span {
+/* Target the specific route */
+[data-page="business-registration"] * {
   color: #ffffff !important;
 }
 
-[data-page="business-registration"] input,
-[data-page="business-registration"] textarea,
-[data-page="business-registration"] select,
-[data-page="business-registration"] [role="combobox"] {
+/* Nuclear override for all blue classes */
+.bg-blue-50, .bg-blue-100, .bg-blue-200, .bg-blue-300, .bg-blue-400, .bg-blue-500, .bg-blue-600, .bg-blue-700, .bg-blue-800, .bg-blue-900,
+.text-blue-50, .text-blue-100, .text-blue-200, .text-blue-300, .text-blue-400, .text-blue-500, .text-blue-600, .text-blue-700, .text-blue-800, .text-blue-900,
+.border-blue-50, .border-blue-100, .border-blue-200, .border-blue-300, .border-blue-400, .border-blue-500, .border-blue-600, .border-blue-700, .border-blue-800, .border-blue-900 {
+  background-color: #22c55e !important;
+  color: #ffffff !important;
+  border-color: #22c55e !important;
+}
+
+/* Force all inputs to dark theme */
+input, textarea, select, [role="combobox"] {
   background-color: #374151 !important;
   border: 1px solid #4b5563 !important;
   color: #ffffff !important;
 }
 
+/* Force all buttons to dark theme */
+button {
+  background-color: #6b7280 !important;
+  color: #ffffff !important;
+  border: 1px solid #4b5563 !important;
+}
+
+/* Green buttons specifically */
+.bg-green-600, .bg-green-700 {
+  background-color: #22c55e !important;
+  border-color: #22c55e !important;
+  color: #ffffff !important;
+}
+
+/* FORCE Business Registration Dark Theme - Nuclear Override */
+
+/* Kill all blue colors globally for this page */
+[data-page="business-registration"] .bg-blue-700,
+[data-page="business-registration"] .bg-blue-800,
+[data-page="business-registration"] .bg-blue-600,
+[data-page="business-registration"] .bg-blue-500,
+[data-page="business-registration"] .text-blue-700,
+[data-page="business-registration"] .text-blue-600,
+[data-page="business-registration"] .text-blue-500,
+[data-page="business-registration"] .border-blue-700,
+[data-page="business-registration"] .border-blue-600 {
+  background-color: #22c55e !important;
+  color: #ffffff !important;
+  border-color: #22c55e !important;
+}
+
+/* Force dark background */
+[data-page="business-registration"] {
+  background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #111827 100%) !important;
+}
+
+/* Force white text on everything */
+[data-page="business-registration"] *,
+[data-page="business-registration"] label,
+[data-page="business-registration"] span,
+[data-page="business-registration"] p,
+[data-page="business-registration"] h1,
+[data-page="business-registration"] h2,
+[data-page="business-registration"] h3,
+[data-page="business-registration"] div {
+  color: #ffffff !important;
+}
+
+/* Force dark form fields */
+[data-page="business-registration"] input,
+[data-page="business-registration"] textarea,
+[data-page="business-registration"] select,
+[data-page="business-registration"] [role="combobox"],
+[data-page="business-registration"] button[role="combobox"] {
+  background-color: #374151 !important;
+  border: 1px solid #4b5563 !important;
+  color: #ffffff !important;
+}
+
+/* Placeholder styling */
 [data-page="business-registration"] input::placeholder,
 [data-page="business-registration"] textarea::placeholder {
   color: #9ca3af !important;
 }
 
+/* Focus states with green */
 [data-page="business-registration"] input:focus,
-[data-page="business-registration"] textarea:focus {
+[data-page="business-registration"] textarea:focus,
+[data-page="business-registration"] select:focus {
   border-color: #22c55e !important;
   box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2) !important;
   outline: none !important;
 }
 
+/* Force button styles */
 [data-page="business-registration"] button {
   background-color: #6b7280 !important;
   color: #ffffff !important;
@@ -44,31 +113,36 @@
   background-color: #4b5563 !important;
 }
 
+/* Green buttons */
 [data-page="business-registration"] .bg-green-600,
-[data-page="business-registration"] .bg-green-700 {
+[data-page="business-registration"] .bg-green-700,
+[data-page="business-registration"] button.bg-green-600,
+[data-page="business-registration"] button.bg-green-700 {
   background-color: #22c55e !important;
   border-color: #22c55e !important;
   color: #ffffff !important;
 }
 
-[data-page="business-registration"] .bg-green-600:hover,
-[data-page="business-registration"] .bg-green-700:hover {
-  background-color: #16a34a !important;
+/* Super specific overrides for stubborn elements */
+[data-page="business-registration"] .bg-white {
+  background-color: #1f2937 !important;
 }
 
-/* Force remove all blue colors */
-[data-page="business-registration"] .bg-blue-700,
-[data-page="business-registration"] .bg-blue-600,
-[data-page="business-registration"] .text-blue-700,
-[data-page="business-registration"] .text-blue-600 {
-  background-color: #22c55e !important;
+[data-page="business-registration"] .text-gray-900 {
   color: #ffffff !important;
-  border-color: #22c55e !important;
 }
 
-[data-page="business-registration"] .text-blue-700,
-[data-page="business-registration"] .text-blue-600 {
-  color: #22c55e !important;
+[data-page="business-registration"] .text-gray-600,
+[data-page="business-registration"] .text-gray-700 {
+  color: #d1d5db !important;
+}
+
+[data-page="business-registration"] .border-gray-200 {
+  border-color: #4b5563 !important;
+}
+
+[data-page="business-registration"] .shadow-sm {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.5) !important;
 }
 
 /* Business Registration Page - Complete Dark Theme Override */
