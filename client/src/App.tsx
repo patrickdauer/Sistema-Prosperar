@@ -13,10 +13,10 @@ import Login from "@/pages/login";
 import DashboardInterno from "@/pages/sistema-novo";
 import SistemaFinal from "@/pages/sistema-final";
 import ContratacaoFuncionarios from "@/pages/contratacao-funcionarios";
-
+import SimuladorCusto from "@/pages/simulador-custo";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
-// import Home from "@/pages/home";
+import Home from "@/pages/home";
 
 function ProtectedDashboardInterno() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -109,7 +109,7 @@ function Router() {
         <Route path="/login" component={Login} />
         <Route path="/business-registration" component={BusinessRegistration} />
         <Route path="/contratacao-funcionarios" component={ContratacaoFuncionarios} />
-
+        <Route path="/simulador-custo" component={SimuladorCusto} />
         <Route component={Landing} />
       </Switch>
     );
@@ -118,16 +118,16 @@ function Router() {
   // Show authenticated routes
   return (
     <Switch>
-      <Route path="/" component={DashboardInterno} />
+      <Route path="/" component={Home} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/business-registration" component={BusinessRegistration} />
       <Route path="/contratacao-funcionarios" component={ContratacaoFuncionarios} />
-
+      <Route path="/simulador-custo" component={SimuladorCusto} />
       <Route path="/equipe" component={Login} />
       <Route path="/dashboard-interno" component={ProtectedDashboardInterno} />
       <Route path="/novo-sistema" component={ProtectedSistemaFinal} />
       <Route path="/sistema-final" component={ProtectedSistemaFinal} />
-      <Route component={DashboardInterno} />
+      <Route component={Home} />
     </Switch>
   );
 }
