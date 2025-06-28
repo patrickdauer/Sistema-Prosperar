@@ -346,13 +346,18 @@ export default function BusinessRegistration() {
                     name="metragem"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Metragem Ocupada (m²) *</FormLabel>
+                        <FormLabel style={{ color: '#ffffff' }}>Metragem Ocupada (m²) *</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
                             placeholder="0" 
                             {...field}
                             onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                            style={{ 
+                              backgroundColor: '#374151', 
+                              border: '1px solid #4b5563', 
+                              color: '#ffffff' 
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
@@ -365,9 +370,17 @@ export default function BusinessRegistration() {
                     name="telefoneEmpresa"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Telefone da Empresa *</FormLabel>
+                        <FormLabel style={{ color: '#ffffff' }}>Telefone da Empresa *</FormLabel>
                         <FormControl>
-                          <Input placeholder="(11) 99999-9999" {...field} />
+                          <Input 
+                            placeholder="(11) 99999-9999" 
+                            {...field}
+                            style={{ 
+                              backgroundColor: '#374151', 
+                              border: '1px solid #4b5563', 
+                              color: '#ffffff' 
+                            }}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -379,9 +392,18 @@ export default function BusinessRegistration() {
                     name="emailEmpresa"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>E-mail da Empresa *</FormLabel>
+                        <FormLabel style={{ color: '#ffffff' }}>E-mail da Empresa *</FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder="empresa@exemplo.com" {...field} />
+                          <Input 
+                            type="email" 
+                            placeholder="empresa@exemplo.com" 
+                            {...field}
+                            style={{ 
+                              backgroundColor: '#374151', 
+                              border: '1px solid #4b5563', 
+                              color: '#ffffff' 
+                            }}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -393,9 +415,17 @@ export default function BusinessRegistration() {
                     name="capitalSocial"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Capital Social (R$) *</FormLabel>
+                        <FormLabel style={{ color: '#ffffff' }}>Capital Social (R$) *</FormLabel>
                         <FormControl>
-                          <Input placeholder="0,00" {...field} />
+                          <Input 
+                            placeholder="0,00" 
+                            {...field}
+                            style={{ 
+                              backgroundColor: '#374151', 
+                              border: '1px solid #4b5563', 
+                              color: '#ffffff' 
+                            }}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -408,9 +438,17 @@ export default function BusinessRegistration() {
                       name="atividadePrincipal"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Atividade Principal *</FormLabel>
+                          <FormLabel style={{ color: '#ffffff' }}>Atividade Principal *</FormLabel>
                           <FormControl>
-                            <Input placeholder="Digite a atividade principal da empresa" {...field} />
+                            <Input 
+                              placeholder="Digite a atividade principal da empresa" 
+                              {...field}
+                              style={{ 
+                                backgroundColor: '#374151', 
+                                border: '1px solid #4b5563', 
+                                color: '#ffffff' 
+                              }}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -424,12 +462,17 @@ export default function BusinessRegistration() {
                       name="atividadesSecundarias"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Atividades Secundárias</FormLabel>
+                          <FormLabel style={{ color: '#ffffff' }}>Atividades Secundárias</FormLabel>
                           <FormControl>
                             <Textarea 
                               placeholder="Liste as atividades secundárias (opcional)" 
                               rows={3}
-                              {...field} 
+                              {...field}
+                              style={{ 
+                                backgroundColor: '#374151', 
+                                border: '1px solid #4b5563', 
+                                color: '#ffffff' 
+                              }}
                             />
                           </FormControl>
                           <FormMessage />
@@ -444,7 +487,7 @@ export default function BusinessRegistration() {
                       name="atividadesSugeridas"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Atividades mais usadas que poderia acrescentar:</FormLabel>
+                          <FormLabel style={{ color: '#ffffff' }}>Atividades mais usadas que poderia acrescentar:</FormLabel>
                           <div className="space-y-3">
                             {suggestedActivities.map((activity) => (
                               <div key={activity.value} className="flex items-start space-x-3">
@@ -459,8 +502,12 @@ export default function BusinessRegistration() {
                                       field.onChange(current.filter(v => v !== activity.value));
                                     }
                                   }}
+                                  style={{
+                                    backgroundColor: '#374151',
+                                    borderColor: '#4b5563'
+                                  }}
                                 />
-                                <Label htmlFor={activity.value} className="text-sm text-gray-300">
+                                <Label htmlFor={activity.value} style={{ color: '#ffffff', fontSize: '14px' }}>
                                   {activity.label}
                                 </Label>
                               </div>

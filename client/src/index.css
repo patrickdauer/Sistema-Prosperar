@@ -2,11 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Business Registration Dark Theme - Complete Override */
+/* Business Registration Dark Theme - Force Complete Override */
+
+/* Remove all blue colors and force dark theme */
+.business-registration-form * {
+  border-color: #4b5563 !important;
+}
+
 .business-registration-form label,
 .business-registration-form .form-label,
-.business-registration-form span {
-  color: #d1d5db !important;
+.business-registration-form span:not([class*="green"]):not([class*="orange"]) {
+  color: #ffffff !important;
 }
 
 .business-registration-form input,
@@ -25,7 +31,7 @@
   color: #9ca3af !important;
 }
 
-/* Focus states */
+/* Focus states - Green accent */
 .business-registration-form input:focus,
 .business-registration-form textarea:focus,
 .business-registration-form select:focus,
@@ -36,12 +42,27 @@
   outline: none !important;
 }
 
-/* Remove any conflicting blue styles */
-[data-state="open"] {
-  border-color: #22c55e !important;
+/* Remove any blue/default button styles */
+.business-registration-form button:not([class*="bg-green"]):not([class*="green"]) {
+  background-color: #6b7280 !important;
+  border: 1px solid #4b5563 !important;
+  color: #ffffff !important;
 }
 
-/* Select dropdown content */
+.business-registration-form button:not([class*="bg-green"]):not([class*="green"]):hover {
+  background-color: #4b5563 !important;
+}
+
+/* Force remove all blue/primary colors */
+.business-registration-form .bg-blue-700,
+.business-registration-form .bg-blue-600,
+.business-registration-form .text-blue-700,
+.business-registration-form .text-blue-600 {
+  background-color: #22c55e !important;
+  color: #ffffff !important;
+}
+
+/* Select dropdown styling */
 [data-radix-select-content] {
   background-color: #374151 !important;
   border: 1px solid #4b5563 !important;
@@ -50,10 +71,24 @@
 
 [data-radix-select-item] {
   color: #ffffff !important;
+  background-color: transparent !important;
 }
 
-[data-radix-select-item]:hover {
-  background-color: #4b5563 !important;
+[data-radix-select-item]:hover,
+[data-radix-select-item][data-highlighted] {
+  background-color: #22c55e !important;
+  color: #ffffff !important;
+}
+
+/* Checkbox styling */
+.business-registration-form [data-radix-checkbox-root] {
+  background-color: #374151 !important;
+  border: 1px solid #4b5563 !important;
+}
+
+.business-registration-form [data-radix-checkbox-root][data-state="checked"] {
+  background-color: #22c55e !important;
+  border-color: #22c55e !important;
 }
 
 :root {
