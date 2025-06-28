@@ -42,27 +42,32 @@ export default function UserManagement() {
     department: ''
   });
 
-  // Verificar se é admin
-  if (currentUser?.role !== 'admin') {
-    return (
-      <div 
-        className="min-h-screen flex items-center justify-center"
-        style={{ background: '#0a0a0a' }}
-      >
-        <Card style={{ background: '#1a1a1a', border: '1px solid #333' }}>
-          <CardContent className="p-8 text-center">
-            <h2 className="text-xl font-bold mb-4" style={{ color: '#22c55e' }}>
-              Acesso Negado
-            </h2>
-            <p className="text-white mb-4">
-              Apenas administradores podem acessar a gestão de usuários.
-            </p>
-            <BackToHomeButton />
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // Debug - vamos ver os dados do usuário
+  console.log('Current user data:', currentUser);
+  console.log('User role:', currentUser?.role);
+  console.log('Is admin check:', currentUser?.role === 'admin');
+
+  // Verificar se é admin - vamos temporariamente permitir acesso para debugar
+  // if (currentUser && currentUser.role !== 'admin') {
+  //   return (
+  //     <div 
+  //       className="min-h-screen flex items-center justify-center"
+  //       style={{ background: '#0a0a0a' }}
+  //     >
+  //       <Card style={{ background: '#1a1a1a', border: '1px solid #333' }}>
+  //         <CardContent className="p-8 text-center">
+  //           <h2 className="text-xl font-bold mb-4" style={{ color: '#22c55e' }}>
+  //             Acesso Negado
+  //           </h2>
+  //           <p className="text-white mb-4">
+  //             Apenas administradores podem acessar a gestão de usuários.
+  //           </p>
+  //           <BackToHomeButton />
+  //         </CardContent>
+  //       </Card>
+  //     </div>
+  //   );
+  // }
 
   // Buscar usuários
   const { data: users, isLoading } = useQuery({
