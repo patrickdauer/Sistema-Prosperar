@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Building2, User, Lock } from "lucide-react";
+import { Building2, User, Lock, ArrowLeft } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function Login() {
@@ -47,6 +47,17 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
+        {/* Botão Voltar */}
+        <div className="mb-4">
+          <Button
+            variant="ghost"
+            onClick={() => window.location.href = "/"}
+            className="text-gray-400 hover:text-white hover:bg-gray-800 p-2"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar à Página Principal
+          </Button>
+        </div>
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-green-600 rounded-full mb-4">
             <Building2 className="h-8 w-8 text-white" />
