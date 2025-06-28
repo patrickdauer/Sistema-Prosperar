@@ -8,6 +8,7 @@ import {
   type BusinessRegistration,
   type InsertBusinessRegistration,
   type User,
+  type UpsertUser,
   type InsertUser,
   type Task,
   type InsertTask,
@@ -22,15 +23,12 @@ import { eq, and, desc, asc } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
 export interface IStorage {
-  // User management
-  getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
+  // User management - Updated for Replit Auth
+  getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
   getAllUsers(): Promise<User[]>;
-  createUser(user: InsertUser): Promise<User>;
-  updateUser(id: number, data: Partial<User>): Promise<User>;
-  deleteUser(id: number): Promise<void>;
-  authenticateUser(username: string, password: string): Promise<User | null>;
-  updateUserPassword(userId: number, newPassword: string): Promise<void>;
+  updateUser(id: string, data: Partial<User>): Promise<User>;
+  deleteUser(id: string): Promise<void>;
   
   // Business registration
   createBusinessRegistration(registration: InsertBusinessRegistration): Promise<BusinessRegistration>;
@@ -66,63 +64,42 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  // User management
-  async getUser(id: number): Promise<User | undefined> {
+  // User management - Updated for Replit Auth
+  async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user || undefined;
+    return user;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user || undefined;
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const hashedPassword = await bcrypt.hash(insertUser.password, 10);
+  async upsertUser(userData: UpsertUser): Promise<User> {
     const [user] = await db
       .insert(users)
-      .values({ ...insertUser, password: hashedPassword })
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
       .returning();
     return user;
   }
 
-  async authenticateUser(username: string, password: string): Promise<User | null> {
-    const user = await this.getUserByUsername(username);
-    if (!user) return null;
-    
-    const isValid = await bcrypt.compare(password, user.password);
-    return isValid ? user : null;
-  }
-
-  async updateUserPassword(userId: number, newPassword: string): Promise<void> {
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await db
-      .update(users)
-      .set({ password: hashedPassword })
-      .where(eq(users.id, userId));
-  }
-
   async getAllUsers(): Promise<User[]> {
-    return await db.select().from(users).orderBy(asc(users.name));
+    return await db.select().from(users).orderBy(asc(users.firstName));
   }
 
-  async updateUser(id: number, data: Partial<User>): Promise<User> {
-    const updateData: any = { ...data };
-    
-    if (updateData.password) {
-      updateData.password = await bcrypt.hash(updateData.password, 10);
-    }
-    
+  async updateUser(id: string, data: Partial<User>): Promise<User> {
     const [updatedUser] = await db
       .update(users)
-      .set(updateData)
+      .set({ ...data, updatedAt: new Date() })
       .where(eq(users.id, id))
       .returning();
     
     return updatedUser;
   }
 
-  async deleteUser(id: number): Promise<void> {
+  async deleteUser(id: string): Promise<void> {
     await db.delete(users).where(eq(users.id, id));
   }
 
