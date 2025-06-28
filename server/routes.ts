@@ -49,7 +49,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Protected route example
-  app.get("/api/protected", isAuthenticated, async (req, res) => {
+  app.get("/api/protected", isAuthenticated, async (req: any, res) => {
     const userId = req.user?.claims?.sub;
     res.json({ message: "This is a protected route", userId });
   });

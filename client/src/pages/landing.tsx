@@ -7,7 +7,7 @@ export default function Landing() {
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-16">
           <h1 className="text-6xl font-bold text-white mb-6">
-            Sistema de Gestão Empresarial
+            Sistema de Gestão <span className="text-green-500">Prosperar Contabilidade</span>
           </h1>
           <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
             Plataforma completa para gerenciamento de cadastros empresariais, 

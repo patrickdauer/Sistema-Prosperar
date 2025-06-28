@@ -48,25 +48,8 @@ export async function seedTaskTemplates() {
 
 export async function createAdminUser() {
   try {
-    // Check if admin already exists
-    const existingAdmin = await storage.getUserByUsername('admin');
-    if (existingAdmin) {
-      console.log('Admin user already exists, skipping creation');
-      return;
-    }
-
-    // Create admin user
-    const adminUser = await storage.createUser({
-      username: 'admin',
-      password: 'admin123', // This will be hashed
-      name: 'Administrador',
-      email: 'admin@prosperarcontabilidade.com.br',
-      role: 'admin',
-      department: null,
-      isActive: true,
-    });
-
-    console.log('✓ Created admin user (username: admin, password: admin123)');
+    // For Replit Auth, we don't create default users since authentication is handled externally
+    console.log('Admin user creation skipped - using Replit Auth');
   } catch (error) {
     console.error('Error creating admin user:', error);
   }
