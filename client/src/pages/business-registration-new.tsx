@@ -304,8 +304,12 @@ export default function BusinessRegistration() {
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center justify-center flex-col space-y-4 flex-1">
-              <div className="w-32 h-16 rounded-lg flex items-center justify-center bg-[#22c55e]">
-                <Building className="text-white text-2xl" />
+              <div className="w-48 h-20 rounded-lg flex items-center justify-center bg-white p-2">
+                <img 
+                  src="/attached_assets/logo-png-prosperar-verde-laranja-prata_1751175742339.png" 
+                  alt="Prosperar Contabilidade" 
+                  className="w-full h-full object-contain"
+                />
               </div>
               <h1 className="text-2xl font-bold text-foreground text-center">
                 DADOS PARA ABERTURA DE EMPRESA
