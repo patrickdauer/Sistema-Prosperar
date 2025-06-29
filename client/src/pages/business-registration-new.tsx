@@ -304,7 +304,7 @@ export default function BusinessRegistration() {
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center justify-center flex-col space-y-4 flex-1">
-              <div className="w-32 h-16 bg-primary rounded-lg flex items-center justify-center">
+              <div className="w-32 h-16 rounded-lg flex items-center justify-center bg-[#068a03]">
                 <Building className="text-primary-foreground text-2xl" />
               </div>
               <h1 className="text-2xl font-bold text-foreground text-center">
@@ -317,7 +317,6 @@ export default function BusinessRegistration() {
           </div>
         </div>
       </header>
-
       <main className="max-w-4xl mx-auto px-4 py-8">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
