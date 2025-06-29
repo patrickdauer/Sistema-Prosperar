@@ -101,13 +101,58 @@ button {
   color: #ffffff !important;
 }
 
-/* Force all icons to green */
-[data-page="business-registration-new"] svg,
-[data-page="business-registration-new"] .lucide,
-[data-page="business-registration-new"] svg path {
-  color: #22c55e !important;
-  fill: #22c55e !important;
-  stroke: #22c55e !important;
+/* Create square green background for all SVG icons with white content */
+[data-page="business-registration-new"] svg {
+  background-color: #22c55e !important;
+  border-radius: 3px !important;
+  padding: 2px !important;
+  box-sizing: border-box !important;
+}
+
+[data-page="business-registration-new"] svg path,
+[data-page="business-registration-new"] svg circle,
+[data-page="business-registration-new"] svg rect,
+[data-page="business-registration-new"] svg line,
+[data-page="business-registration-new"] svg polyline,
+[data-page="business-registration-new"] svg polygon {
+  stroke: #ffffff !important;
+  fill: #ffffff !important;
+  stroke-width: 2 !important;
+}
+
+/* Special handling for outline icons to keep white stroke only */
+[data-page="business-registration-new"] .lucide-user svg path,
+[data-page="business-registration-new"] .lucide-users svg path,
+[data-page="business-registration-new"] .lucide-building svg path,
+[data-page="business-registration-new"] .lucide-plus svg path,
+[data-page="business-registration-new"] .lucide-edit svg path,
+[data-page="business-registration-new"] .lucide-trash-2 svg path {
+  fill: none !important;
+  stroke: #ffffff !important;
+  stroke-width: 2 !important;
+}
+
+/* Override for checkboxes to show solid white checkmark */
+[data-page="business-registration-new"] input[type="checkbox"] {
+  background-color: #22c55e !important;
+  border: 2px solid #22c55e !important;
+  border-radius: 3px !important;
+}
+
+[data-page="business-registration-new"] input[type="checkbox"]:checked {
+  background-color: #22c55e !important;
+  border-color: #22c55e !important;
+}
+
+/* Ensure button icons follow the same pattern */
+[data-page="business-registration-new"] button svg {
+  background-color: transparent !important;
+  padding: 0 !important;
+}
+
+[data-page="business-registration-new"] button svg path {
+  stroke: currentColor !important;
+  fill: none !important;
 }
 
 /* Force all form inputs to dark theme */
