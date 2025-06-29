@@ -15,6 +15,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { FileUpload } from '@/components/file-upload';
 import { PartnerForm } from '@/components/partner-form';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { BackToHomeButton } from '@/components/back-to-home-button';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { insertBusinessRegistrationSchema, type Partner } from '@shared/schema';
@@ -213,22 +214,26 @@ export default function BusinessRegistration() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" data-page="business-registration">
+      <BackToHomeButton isPublicPage={true} />
       {/* Header */}
-      <header style={{ background: '#1f2937', borderBottom: '1px solid #374151' }}>
+      <header className="bg-card dark:bg-card shadow-sm border-b border-border">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
-                <Building className="text-white text-xl" />
+            <div className="flex items-center justify-center flex-col space-y-4 flex-1">
+              <div className="w-56 h-20 flex items-center justify-center">
+                <img 
+                  src="./attached_assets/logo-png-prosperar-verde-laranja-prata_1751208874003.png" 
+                  alt="Prosperar Contabilidade" 
+                  className="w-full h-full object-contain"
+                />
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white">
-                  DADOS PARA ABERTURA DE EMPRESA
-                </h1>
-                <p className="text-gray-300 text-sm">Prosperar Contabilidade</p>
-              </div>
+              <h1 className="text-2xl font-bold text-foreground text-center">
+                DADOS PARA ABERTURA DE EMPRESA
+              </h1>
             </div>
-            <ThemeToggle />
+            <div className="absolute top-4 right-4">
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </header>
@@ -238,12 +243,16 @@ export default function BusinessRegistration() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 business-registration-form">
             
             {/* Company Data Section */}
-            <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+            <Card className="border-border dark:border-border">
+              <CardHeader className="bg-[#22c55e] text-white py-4">
+                <CardTitle className="flex items-center gap-3 text-white text-lg font-semibold">
+                  <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center">
+                    <Building className="w-4 h-4 text-white" />
+                  </div>
+                  Dados da Empresa
+                </CardTitle>
+              </CardHeader>
               <CardContent className="p-6">
-                <div className="flex items-center mb-6">
-                  <Building className="text-green-500 mr-3" />
-                  <h2 className="text-xl font-semibold text-white">Dados da Empresa</h2>
-                </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="md:col-span-2">
@@ -523,22 +532,26 @@ export default function BusinessRegistration() {
             </Card>
 
             {/* Partner Data Section */}
-            <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center">
-                    <Users className="text-green-500 mr-3" />
-                    <h2 className="text-xl font-semibold text-white">Sócios da Empresa</h2>
-                  </div>
+            <Card className="border-border dark:border-border">
+              <CardHeader className="bg-[#22c55e] text-white py-4">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-3 text-white text-lg font-semibold">
+                    <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center">
+                      <Users className="w-4 h-4 text-white" />
+                    </div>
+                    Sócios ({partners.length})
+                  </CardTitle>
                   <Button
                     type="button"
                     onClick={() => setShowPartnerForm(true)}
-                    className="bg-green-600 hover:bg-green-700 text-white"
+                    className="bg-white text-[#22c55e] hover:bg-gray-100 flex items-center gap-2 font-medium"
                   >
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus className="h-4 w-4" />
                     Adicionar Sócio
                   </Button>
                 </div>
+              </CardHeader>
+              <CardContent className="p-6">
 
                 {/* Display existing partners */}
                 {partners.length > 0 && (
