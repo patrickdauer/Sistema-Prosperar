@@ -306,7 +306,7 @@ export default function BusinessRegistration() {
             <div className="flex items-center justify-center flex-col space-y-4 flex-1">
               <div className="w-48 h-20 rounded-lg flex items-center justify-center bg-white p-2">
                 <img 
-                  src="/attached_assets/logo-png-prosperar-verde-laranja-prata_1751175742339.png" 
+                  src="/attached_assets/logo-png-prosperar-verde-laranja-prata_1751208550052.png" 
                   alt="Prosperar Contabilidade" 
                   className="w-full h-full object-contain"
                 />
