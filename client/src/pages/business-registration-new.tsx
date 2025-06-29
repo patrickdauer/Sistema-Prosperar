@@ -327,9 +327,11 @@ export default function BusinessRegistration() {
             
             {/* Company Data Section */}
             <Card className="border-border dark:border-border">
-              <CardHeader className="bg-muted/50 dark:bg-muted/20">
-                <CardTitle className="flex items-center gap-2 text-foreground">
-                  <Building className="text-primary" />
+              <CardHeader className="bg-[#22c55e] text-white py-4">
+                <CardTitle className="flex items-center gap-3 text-white text-lg font-semibold">
+                  <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center">
+                    <Building className="w-4 h-4 text-white" />
+                  </div>
                   Dados da Empresa
                 </CardTitle>
               </CardHeader>
@@ -557,16 +559,18 @@ export default function BusinessRegistration() {
 
             {/* Partners Section */}
             <Card className="border-border">
-              <CardHeader className="bg-muted/50 dark:bg-muted/20">
+              <CardHeader className="bg-[#22c55e] text-white py-4">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-foreground">
-                    <Users className="text-primary" />
+                  <CardTitle className="flex items-center gap-3 text-white text-lg font-semibold">
+                    <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center">
+                      <Users className="w-4 h-4 text-white" />
+                    </div>
                     Sócios ({partners.length})
                   </CardTitle>
                   <Button
                     type="button"
                     onClick={handleAddPartner}
-                    className="flex items-center gap-2"
+                    className="bg-white text-[#22c55e] hover:bg-gray-100 flex items-center gap-2 font-medium"
                   >
                     <Plus className="h-4 w-4" />
                     Adicionar Sócio
