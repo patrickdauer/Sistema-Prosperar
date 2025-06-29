@@ -17,6 +17,7 @@ import { BackToHomeButton } from '@/components/back-to-home-button';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { insertBusinessRegistrationSchema, type Partner } from '@shared/schema';
+import logoPath from '@assets/logo-png-prosperar-verde-laranja-prata_1751208874003.png';
 
 const businessRegistrationSchema = z.object({
   // Company Data
@@ -306,7 +307,7 @@ export default function BusinessRegistration() {
             <div className="flex items-center justify-center flex-col space-y-4 flex-1">
               <div className="w-56 h-20 flex items-center justify-center">
                 <img 
-                  src="/attached_assets/logo-png-prosperar-verde-laranja-prata_1751208874003.png" 
+                  src={logoPath} 
                   alt="Prosperar Contabilidade" 
                   className="w-full h-full object-contain"
                 />
