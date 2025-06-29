@@ -304,7 +304,7 @@ export default function BusinessRegistration() {
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center justify-center flex-col space-y-4 flex-1">
-              <div className="w-48 h-20 rounded-lg flex items-center justify-center bg-white p-2">
+              <div className="w-48 h-20 flex items-center justify-center">
                 <img 
                   src="/attached_assets/logo-png-prosperar-verde-laranja-prata_1751208550052.png" 
                   alt="Prosperar Contabilidade" 
