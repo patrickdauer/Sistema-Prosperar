@@ -101,106 +101,26 @@ button {
   color: #ffffff !important;
 }
 
-/* Icons with transparent background and green stroke/fill - GLOBAL FOR ALL PAGES */
+/* Simple green icons for all pages */
 [data-page="business-registration-new"] svg,
 [data-page="business-registration"] svg,
 [data-page="landing"] svg {
-  background-color: transparent !important;
-  padding: 0 !important;
-  border-radius: 0 !important;
+  color: #22c55e !important;
 }
 
 [data-page="business-registration-new"] svg path,
-[data-page="business-registration-new"] svg circle,
-[data-page="business-registration-new"] svg rect,
-[data-page="business-registration-new"] svg line,
-[data-page="business-registration-new"] svg polyline,
-[data-page="business-registration-new"] svg polygon,
 [data-page="business-registration"] svg path,
-[data-page="business-registration"] svg circle,
-[data-page="business-registration"] svg rect,
-[data-page="business-registration"] svg line,
-[data-page="business-registration"] svg polyline,
-[data-page="business-registration"] svg polygon,
-[data-page="landing"] svg path,
-[data-page="landing"] svg circle,
-[data-page="landing"] svg rect,
-[data-page="landing"] svg line,
-[data-page="landing"] svg polyline,
-[data-page="landing"] svg polygon {
+[data-page="landing"] svg path {
   stroke: #22c55e !important;
-  fill: #22c55e !important;
-  stroke-width: 2 !important;
-}
-
-/* For outline-style icons, keep stroke only */
-[data-page="business-registration-new"] .lucide-user svg path,
-[data-page="business-registration-new"] .lucide-users svg path,
-[data-page="business-registration-new"] .lucide-building svg path,
-[data-page="business-registration-new"] .lucide-plus svg path,
-[data-page="business-registration-new"] .lucide-edit svg path,
-[data-page="business-registration-new"] .lucide-trash-2 svg path,
-[data-page="business-registration-new"] .lucide-send svg path,
-[data-page="business-registration-new"] .lucide-loader-2 svg path,
-[data-page="business-registration"] .lucide-user svg path,
-[data-page="business-registration"] .lucide-users svg path,
-[data-page="business-registration"] .lucide-building svg path,
-[data-page="business-registration"] .lucide-plus svg path,
-[data-page="business-registration"] .lucide-edit svg path,
-[data-page="business-registration"] .lucide-trash-2 svg path,
-[data-page="business-registration"] .lucide-send svg path,
-[data-page="business-registration"] .lucide-loader-2 svg path,
-[data-page="landing"] .lucide-user svg path,
-[data-page="landing"] .lucide-users svg path,
-[data-page="landing"] .lucide-building svg path,
-[data-page="landing"] .lucide-plus svg path,
-[data-page="landing"] .lucide-edit svg path,
-[data-page="landing"] .lucide-trash-2 svg path,
-[data-page="landing"] .lucide-send svg path,
-[data-page="landing"] .lucide-loader-2 svg path {
   fill: none !important;
-  stroke: #22c55e !important;
   stroke-width: 2 !important;
 }
 
-/* For solid icons, use green fill */
+/* Icons that should be filled */
 [data-page="business-registration-new"] .lucide-check svg path,
-[data-page="business-registration-new"] .lucide-check-circle svg path,
 [data-page="business-registration"] .lucide-check svg path,
-[data-page="business-registration"] .lucide-check-circle svg path,
-[data-page="landing"] .lucide-check svg path,
-[data-page="landing"] .lucide-check-circle svg path {
+[data-page="landing"] .lucide-check svg path {
   fill: #22c55e !important;
-  stroke: #22c55e !important;
-}
-
-/* Checkboxes with green styling */
-[data-page="business-registration-new"] input[type="checkbox"],
-[data-page="business-registration"] input[type="checkbox"],
-[data-page="landing"] input[type="checkbox"] {
-  background-color: transparent !important;
-  border: 2px solid #22c55e !important;
-  border-radius: 3px !important;
-}
-
-[data-page="business-registration-new"] input[type="checkbox"]:checked,
-[data-page="business-registration"] input[type="checkbox"]:checked,
-[data-page="landing"] input[type="checkbox"]:checked {
-  background-color: #22c55e !important;
-  border-color: #22c55e !important;
-}
-
-/* Button icons inherit from parent */
-[data-page="business-registration-new"] button svg,
-[data-page="business-registration"] button svg,
-[data-page="landing"] button svg {
-  background-color: transparent !important;
-}
-
-[data-page="business-registration-new"] button svg path,
-[data-page="business-registration"] button svg path,
-[data-page="landing"] button svg path {
-  stroke: currentColor !important;
 }
 
 /* Force all form inputs to dark theme */
