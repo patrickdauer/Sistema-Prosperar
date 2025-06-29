@@ -798,7 +798,7 @@ export default function BusinessRegistration() {
                 type="submit"
                 size="lg"
                 disabled={submitMutation.isPending}
-                className="w-full md:w-auto px-8"
+                className="w-full md:w-auto px-8 bg-[#068a03]"
               >
                 {submitMutation.isPending ? (
                   <>
