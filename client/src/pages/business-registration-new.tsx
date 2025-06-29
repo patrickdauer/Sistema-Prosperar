@@ -305,11 +305,49 @@ export default function BusinessRegistration() {
           <div className="flex items-center justify-between">
             <div className="flex items-center justify-center flex-col space-y-4 flex-1">
               <div className="w-48 h-20 flex items-center justify-center">
-                <img 
-                  src="/attached_assets/logo-png-prosperar-verde-laranja-prata_1751208550052.png" 
-                  alt="Prosperar Contabilidade" 
+                <svg 
+                  viewBox="0 0 800 300" 
                   className="w-full h-full object-contain"
-                />
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  {/* P Letter with Arrow */}
+                  <path 
+                    d="M120 40 C180 40, 220 80, 220 140 C220 200, 180 240, 120 240 L80 240 L80 40 Z M80 80 L80 200 L120 200 C160 200, 180 180, 180 140 C180 100, 160 80, 120 80 Z" 
+                    fill="#22c55e"
+                  />
+                  {/* Arrow */}
+                  <path 
+                    d="M160 80 L220 140 L160 200 L180 220 L260 140 L180 60 Z" 
+                    fill="white"
+                  />
+                  {/* Orange Curve */}
+                  <path 
+                    d="M40 160 C60 120, 100 100, 140 120 C120 140, 100 160, 80 180 C60 200, 40 180, 40 160 Z" 
+                    fill="#ff8c42"
+                  />
+                  {/* PROSPERAR Text */}
+                  <text 
+                    x="280" 
+                    y="180" 
+                    fill="#22c55e" 
+                    fontSize="72" 
+                    fontFamily="Arial, sans-serif" 
+                    fontWeight="bold"
+                  >
+                    PROSPERAR
+                  </text>
+                  {/* CONTABILIDADE Text */}
+                  <text 
+                    x="280" 
+                    y="240" 
+                    fill="#9ca3af" 
+                    fontSize="48" 
+                    fontFamily="Arial, sans-serif" 
+                    fontWeight="normal"
+                  >
+                    CONTABILIDADE
+                  </text>
+                </svg>
               </div>
               <h1 className="text-2xl font-bold text-foreground text-center">
                 DADOS PARA ABERTURA DE EMPRESA
