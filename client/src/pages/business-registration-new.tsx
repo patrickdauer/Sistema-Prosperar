@@ -297,15 +297,15 @@ export default function BusinessRegistration() {
   }
 
   return (
-    <div className="min-h-screen bg-background dark:bg-background">
+    <div className="min-h-screen bg-background dark:bg-background" data-page="business-registration-new">
       <BackToHomeButton isPublicPage={true} />
       {/* Header */}
       <header className="bg-card dark:bg-card shadow-sm border-b border-border">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center justify-center flex-col space-y-4 flex-1">
-              <div className="w-32 h-16 rounded-lg flex items-center justify-center bg-[#068a03]">
-                <Building className="text-primary-foreground text-2xl" />
+              <div className="w-32 h-16 rounded-lg flex items-center justify-center bg-[#22c55e]">
+                <Building className="text-white text-2xl" />
               </div>
               <h1 className="text-2xl font-bold text-foreground text-center">
                 DADOS PARA ABERTURA DE EMPRESA
@@ -798,7 +798,7 @@ export default function BusinessRegistration() {
                 type="submit"
                 size="lg"
                 disabled={submitMutation.isPending}
-                className="w-full md:w-auto px-8 bg-[#068a03]"
+                className="w-full md:w-auto px-8 bg-[#22c55e] hover:bg-[#16a34a] text-white border-[#22c55e]"
               >
                 {submitMutation.isPending ? (
                   <>
