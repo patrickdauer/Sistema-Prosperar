@@ -216,7 +216,7 @@ export default function BusinessRegistration() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" data-page="business-registration">
       <BackToHomeButton isPublicPage={true} />
       {/* Header */}
-      <header className="bg-card dark:bg-card shadow-sm border-b border-border">
+      <header style={{ background: '#1a1a1a', borderBottom: '1px solid #333' }}>
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center justify-center flex-col space-y-4 flex-1">
@@ -227,7 +227,7 @@ export default function BusinessRegistration() {
                   className="w-full h-full object-contain"
                 />
               </div>
-              <h1 className="text-2xl font-bold text-foreground text-center">
+              <h1 style={{ color: '#ffffff', fontSize: '1.5rem', fontWeight: 'bold', textAlign: 'center' }}>
                 DADOS PARA ABERTURA DE EMPRESA
               </h1>
             </div>
@@ -243,11 +243,11 @@ export default function BusinessRegistration() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 business-registration-form">
             
             {/* Company Data Section */}
-            <Card className="border-border dark:border-border">
-              <CardHeader className="bg-[#22c55e] text-white py-4">
-                <CardTitle className="flex items-center gap-3 text-white text-lg font-semibold">
-                  <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center">
-                    <Building className="w-4 h-4 text-white" />
+            <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+              <CardHeader style={{ background: '#22c55e', color: '#ffffff', padding: '1rem' }}>
+                <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#ffffff', fontSize: '1.125rem', fontWeight: '600' }}>
+                  <div style={{ width: '1.5rem', height: '1.5rem', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Building style={{ width: '1rem', height: '1rem', color: '#ffffff' }} />
                   </div>
                   Dados da Empresa
                 </CardTitle>
@@ -532,21 +532,21 @@ export default function BusinessRegistration() {
             </Card>
 
             {/* Partner Data Section */}
-            <Card className="border-border dark:border-border">
-              <CardHeader className="bg-[#22c55e] text-white py-4">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-3 text-white text-lg font-semibold">
-                    <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center">
-                      <Users className="w-4 h-4 text-white" />
+            <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+              <CardHeader style={{ background: '#22c55e', color: '#ffffff', padding: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#ffffff', fontSize: '1.125rem', fontWeight: '600' }}>
+                    <div style={{ width: '1.5rem', height: '1.5rem', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Users style={{ width: '1rem', height: '1rem', color: '#ffffff' }} />
                     </div>
                     Sócios ({partners.length})
                   </CardTitle>
                   <Button
                     type="button"
                     onClick={() => setShowPartnerForm(true)}
-                    className="bg-white text-[#22c55e] hover:bg-gray-100 flex items-center gap-2 font-medium"
+                    style={{ background: '#ffffff', color: '#22c55e', border: 'none', padding: '0.5rem 1rem', borderRadius: '0.375rem', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                   >
-                    <Plus className="h-4 w-4" />
+                    <Plus style={{ width: '1rem', height: '1rem' }} />
                     Adicionar Sócio
                   </Button>
                 </div>
