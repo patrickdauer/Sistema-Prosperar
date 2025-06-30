@@ -73,6 +73,7 @@ export default function Landing() {
               variant="outline" 
               onClick={() => window.location.href = '/business-registration'}
               className="landing-green-button"
+              data-testid="landing-button"
             >
               Cadastro de Empresa
             </Button>
@@ -80,6 +81,7 @@ export default function Landing() {
               variant="outline" 
               onClick={() => window.location.href = '/contratacao-funcionarios'}
               className="landing-green-button"
+              data-testid="landing-button"
             >
               Contratação de Funcionários
             </Button>

@@ -122,29 +122,7 @@ export default function Login() {
             </Button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-gray-700">
-            <p className="text-sm text-gray-400 text-center">
-              Acesso público disponível em:
-            </p>
-            <div className="flex gap-2 mt-2">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => window.location.href = "/business-registration"}
-                className="flex-1 border-orange-500 text-orange-400 hover:bg-orange-500/10"
-              >
-                Cadastro Empresarial
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => window.location.href = "/contratacao-funcionarios"}
-                className="flex-1 border-orange-500 text-orange-400 hover:bg-orange-500/10"
-              >
-                Contratação
-              </Button>
-            </div>
-          </div>
+
         </div>
 
         <p className="text-center text-gray-500 text-xs mt-6">
