@@ -72,7 +72,7 @@ export default function Landing() {
             <Button 
               variant="outline" 
               onClick={() => window.location.href = '/business-registration'}
-              className="border-orange-500 text-orange-400 hover:bg-orange-500/10 hover:text-orange-300"
+              className="border-green-500 text-green-400 hover:bg-green-500/10 hover:text-green-300"
             >
               Cadastro de Empresa
             </Button>
