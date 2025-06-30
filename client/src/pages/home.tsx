@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Users, FileText, Settings, LogOut, User } from "lucide-react";
+import { Building2, Users, FileText, Settings, LogOut, User, Copy } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useLocation } from "wouter";
 
@@ -12,6 +12,15 @@ export default function Home() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     window.location.href = '/login';
+  };
+
+  const copyToClipboard = (url: string, cardName: string) => {
+    const fullUrl = `${window.location.origin}${url}`;
+    navigator.clipboard.writeText(fullUrl).then(() => {
+      alert(`Link do ${cardName} copiado para a área de transferência!`);
+    }).catch(() => {
+      alert('Erro ao copiar link. Tente novamente.');
+    });
   };
 
   return (
@@ -140,13 +149,12 @@ export default function Home() {
           )}
 
           <Card 
-            className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl" 
+            className="transform transition-all duration-300 hover:scale-105 hover:shadow-2xl" 
             style={{ 
               background: '#1a1a1a', 
               border: '1px solid #333',
               borderRadius: '8px'
-            }}
-            onClick={() => window.open('/business-registration', '_blank')}>
+            }}>
             <CardHeader style={{ borderBottom: '1px solid #333' }}>
               <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
                 <Building2 className="h-5 w-5" style={{ color: '#ff8c42' }} />
@@ -157,20 +165,47 @@ export default function Home() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-white">
+              <p className="text-sm text-white mb-4">
                 Acesso ao formulário de cadastro de empresas
               </p>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => window.open('/business-registration', '_blank')}
+                  style={{ 
+                    backgroundColor: '#22c55e', 
+                    color: 'white',
+                    border: '1px solid #22c55e'
+                  }}
+                  className="hover:bg-green-600 flex-1"
+                >
+                  Abrir Formulário
+                </Button>
+                <Button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    copyToClipboard('/business-registration', 'Cadastro Empresarial');
+                  }}
+                  style={{ 
+                    backgroundColor: '#ff8c42', 
+                    color: 'white',
+                    border: '1px solid #ff8c42'
+                  }}
+                  className="hover:bg-orange-600"
+                  size="sm"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
           <Card 
-            className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl" 
+            className="transform transition-all duration-300 hover:scale-105 hover:shadow-2xl" 
             style={{ 
               background: '#1a1a1a', 
               border: '1px solid #333',
               borderRadius: '8px'
-            }}
-            onClick={() => window.open('/contratacao-funcionarios', '_blank')}>
+            }}>
             <CardHeader style={{ borderBottom: '1px solid #333' }}>
               <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
                 <Users className="h-5 w-5" style={{ color: '#ff8c42' }} />
@@ -181,9 +216,37 @@ export default function Home() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-white">
+              <p className="text-sm text-white mb-4">
                 Cadastro de novos colaboradores
               </p>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => window.open('/contratacao-funcionarios', '_blank')}
+                  style={{ 
+                    backgroundColor: '#22c55e', 
+                    color: 'white',
+                    border: '1px solid #22c55e'
+                  }}
+                  className="hover:bg-green-600 flex-1"
+                >
+                  Abrir Formulário
+                </Button>
+                <Button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    copyToClipboard('/contratacao-funcionarios', 'Contratação');
+                  }}
+                  style={{ 
+                    backgroundColor: '#ff8c42', 
+                    color: 'white',
+                    border: '1px solid #ff8c42'
+                  }}
+                  className="hover:bg-orange-600"
+                  size="sm"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
