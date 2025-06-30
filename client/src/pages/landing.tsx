@@ -72,14 +72,16 @@ export default function Landing() {
             <Button 
               variant="outline" 
               onClick={() => window.location.href = '/business-registration'}
-              className="border-green-500 text-green-400 hover:bg-green-500/10 hover:text-green-300"
+              style={{ borderColor: '#22c55e', color: '#22c55e' }}
+              className="hover:bg-green-500/10 hover:text-green-300"
             >
               Cadastro de Empresa
             </Button>
             <Button 
               variant="outline" 
               onClick={() => window.location.href = '/contratacao-funcionarios'}
-              className="border-green-500 text-green-400 hover:bg-green-500/10 hover:text-green-300"
+              style={{ borderColor: '#22c55e', color: '#22c55e' }}
+              className="hover:bg-green-500/10 hover:text-green-300"
             >
               Contratação de Funcionários
             </Button>
