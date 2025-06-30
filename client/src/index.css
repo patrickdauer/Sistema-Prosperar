@@ -42,6 +42,19 @@ button {
   color: #ffffff !important;
 }
 
+/* Force landing page buttons to be green */
+.landing-green-button {
+  border-color: #22c55e !important;
+  color: #22c55e !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+}
+
+.landing-green-button:hover {
+  background-color: rgba(34, 197, 94, 0.1) !important;
+  color: #16a34a !important;
+}
+
 /* FORCE ALL ICONS GREEN ON BUSINESS REGISTRATION PAGE */
 [data-page="business-registration"] svg,
 [data-page="business-registration"] .lucide,
