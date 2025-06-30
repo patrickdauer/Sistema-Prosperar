@@ -727,19 +727,7 @@ export default function ContratacaoFuncionarios() {
           </Card>
 
           {/* Botões */}
-          <div className="flex flex-col md:flex-row gap-4 justify-center">
-            <Link href="/simulador-custo">
-              <Button
-                type="button"
-                variant="outline"
-                size="lg"
-                className="w-full md:w-auto px-8 py-3 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
-              >
-                <Calculator className="h-4 w-4 mr-2" />
-                Simular Custo do Funcionário
-              </Button>
-            </Link>
-            
+          <div className="flex justify-center">
             <Button
               type="submit"
               size="lg"
