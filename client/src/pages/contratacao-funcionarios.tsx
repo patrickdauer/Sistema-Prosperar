@@ -660,9 +660,7 @@ export default function ContratacaoFuncionarios() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-4">
-                <p className="text-sm text-gray-300">
-                  Envie os documentos necessários para a contratação (CPF, RG, Carteira de Trabalho, Comprovante de Residência, etc.)
-                </p>
+                <p className="text-sm text-gray-300">Envie os documentos necessários para a contratação (Exame admissional, CNH ou RG e Comprovante de Residência).</p>
                 <FileUpload
                   onFilesChange={setDocumentos}
                   accept={{
