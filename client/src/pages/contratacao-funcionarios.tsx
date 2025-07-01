@@ -144,8 +144,12 @@ export default function ContratacaoFuncionarios() {
         <div className="mb-8">
           <div className="text-center">
             <div className="flex justify-center items-center mb-6">
-              <div className="bg-blue-600 p-4 rounded-lg mb-4">
-                <UserPlus className="h-8 w-8 text-white" />
+              <div className="bg-white p-4 rounded-lg mb-4">
+                <img 
+                  src="/attached_assets/logo-png-prosperar-verde-laranja-prata_1751208874003.png" 
+                  alt="Prosperar Contabilidade" 
+                  className="h-12 w-auto"
+                />
               </div>
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">
