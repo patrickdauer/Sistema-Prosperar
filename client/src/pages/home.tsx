@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Users, FileText, Settings, LogOut, User, Copy } from "lucide-react";
+import { Building2, Users, FileText, Settings, LogOut, User, Copy, Zap } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useLocation } from "wouter";
 
@@ -268,6 +268,30 @@ export default function Home() {
             <CardContent>
               <p className="text-sm text-white">
                 Simule custos de contratação e benefícios
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl" 
+            style={{ 
+              background: '#1a1a1a', 
+              border: '1px solid #333',
+              borderRadius: '8px'
+            }}
+            onClick={() => window.open('https://prompt-pro-patrickdauer.replit.app/', '_blank')}>
+            <CardHeader style={{ borderBottom: '1px solid #333' }}>
+              <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
+                <Zap className="h-5 w-5" style={{ color: '#ff8c42' }} />
+                Prompt Pro
+              </CardTitle>
+              <CardDescription style={{ color: '#888' }}>
+                Gerador de prompts inteligente
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-white">
+                Ferramenta de criação e otimização de prompts
               </p>
             </CardContent>
           </Card>
