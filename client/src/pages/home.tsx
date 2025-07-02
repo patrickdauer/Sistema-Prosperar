@@ -30,7 +30,10 @@ export default function Home() {
         borderBottom: '1px solid #333'
       }}>
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold" style={{ color: '#22c55e' }}>Sistema Interno Prosperar Contabilidade</h1>
+          <h1 className="text-2xl font-bold">
+            <span style={{ color: 'white' }}>Sistema Interno </span>
+            <span style={{ color: '#22c55e' }}>Prosperar Contabilidade</span>
+          </h1>
           <div className="flex items-center gap-4">
             <span className="text-sm text-white">
               {user?.name || user?.username || 'Usuário'}

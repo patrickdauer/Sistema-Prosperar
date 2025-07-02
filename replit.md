@@ -146,6 +146,16 @@ The system uses a `business_registrations` table with:
 
 ## Recent Changes
 
+### January 02, 2025 - Expansão do Sistema com Novos Cards e Correções
+- **Novos Cards de Ferramentas**: Adicionados três novos cards na página home do sistema interno
+  - Prompt Pro: https://prompt-pro-patrickdauer.replit.app/ (ícone Zap)
+  - Link Hub Pro: https://link-hub-pro-patrickdauer.replit.app/ (ícone Link)
+  - Salão Contrato: https://salao-contrato-patrickdauer.replit.app/ (ícone Scissors)
+- **Logo Corrigida**: Aplicado fundo transparente na logo da página de contratação de funcionários
+- **API Contratação**: Criada rota /api/contratacao-funcionarios funcional com validação e storage
+- **Título Atualizado**: "Sistema Interno" em branco, "Prosperar Contabilidade" em verde no cabeçalho
+- **Integração Completa**: Todos os cards abrem em nova aba sem necessidade de novo login
+
 ### December 28, 2025 - Sistema CRUD Completo no Dashboard Geral
 - **CRUD Completo**: Implementado sistema completo para criar, ler, atualizar e deletar empresas
 - **Botões de Status**: Sistema de mudança de status com cores específicas e lógica contextual
