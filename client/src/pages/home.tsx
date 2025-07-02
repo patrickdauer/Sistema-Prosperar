@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Users, FileText, Settings, LogOut, User, Copy, Zap } from "lucide-react";
+import { Building2, Users, FileText, Settings, LogOut, User, Copy, Zap, Link } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useLocation } from "wouter";
 
@@ -292,6 +292,30 @@ export default function Home() {
             <CardContent>
               <p className="text-sm text-white">
                 Ferramenta de criação e otimização de prompts
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl" 
+            style={{ 
+              background: '#1a1a1a', 
+              border: '1px solid #333',
+              borderRadius: '8px'
+            }}
+            onClick={() => window.open('https://link-hub-pro-patrickdauer.replit.app/', '_blank')}>
+            <CardHeader style={{ borderBottom: '1px solid #333' }}>
+              <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
+                <Link className="h-5 w-5" style={{ color: '#ff8c42' }} />
+                Link Hub Pro
+              </CardTitle>
+              <CardDescription style={{ color: '#888' }}>
+                Central de links e recursos
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-white">
+                Organize e gerencie seus links importantes
               </p>
             </CardContent>
           </Card>
