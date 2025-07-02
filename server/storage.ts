@@ -8,7 +8,6 @@ import {
   type BusinessRegistration,
   type InsertBusinessRegistration,
   type User,
-
   type InsertUser,
   type Task,
   type InsertTask,
@@ -18,6 +17,11 @@ import {
   type Activity,
   type InsertActivity,
 } from "@shared/schema";
+import {
+  contratacaoFuncionarios,
+  type ContratacaoFuncionario,
+  type InsertContratacaoFuncionario,
+} from "@shared/contratacao-schema";
 import { db } from "./db";
 import { eq, and, desc, asc } from "drizzle-orm";
 import bcrypt from "bcrypt";
@@ -62,6 +66,9 @@ export interface IStorage {
   // Activity log
   createActivity(activity: InsertActivity): Promise<Activity>;
   getActivities(registrationId: number): Promise<Activity[]>;
+  
+  // Contratação de funcionários
+  createContratacaoFuncionario(contratacao: InsertContratacaoFuncionario): Promise<ContratacaoFuncionario>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -361,6 +368,12 @@ export class DatabaseStorage implements IStorage {
       .from(activities)
       .where(eq(activities.businessRegistrationId, registrationId))
       .orderBy(desc(activities.createdAt));
+  }
+
+  // Contratação de funcionários
+  async createContratacaoFuncionario(contratacao: InsertContratacaoFuncionario): Promise<ContratacaoFuncionario> {
+    const [created] = await db.insert(contratacaoFuncionarios).values(contratacao).returning();
+    return created;
   }
 }
 

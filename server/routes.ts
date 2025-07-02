@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertBusinessRegistrationSchema } from "@shared/schema";
+import { insertContratacaoSchema } from "@shared/contratacao-schema";
 import multer from "multer";
 import { z } from "zod";
 import { generateBusinessRegistrationPDF } from "./services/pdf";
@@ -521,6 +522,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error generating PDF:", error);
       res.status(500).json({ message: "Erro ao gerar PDF" });
+    }
+  });
+
+  // Contratação de Funcionários route
+  app.post("/api/contratacao-funcionarios", upload.array('documento', 10), async (req, res) => {
+    try {
+      // Parse and validate the form data
+      const formData = { ...req.body };
+      
+      // Convert boolean fields from strings
+      const booleanFields = ['valeTransporte', 'valeRefeicao', 'valeAlimentacao', 'planoSaude', 'planoDental', 'seguroVida'];
+      booleanFields.forEach(field => {
+        if (formData[field] === 'true') formData[field] = true;
+        else if (formData[field] === 'false') formData[field] = false;
+        else formData[field] = false;
+      });
+
+      // Validate the data
+      const validatedData = insertContratacaoSchema.parse(formData);
+      
+      // Create the contratacao record
+      const contratacao = await storage.createContratacaoFuncionario(validatedData);
+      
+      // Handle file uploads if any
+      const files = req.files as Express.Multer.File[];
+      if (files && files.length > 0) {
+        // You can add file handling logic here if needed
+        console.log(`Received ${files.length} files for contratacao ${contratacao.id}`);
+      }
+
+      res.json({ 
+        message: "Solicitação de contratação enviada com sucesso!", 
+        id: contratacao.id 
+      });
+    } catch (error) {
+      console.error("Error creating contratacao:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Dados inválidos", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ message: "Erro interno do servidor" });
     }
   });
 
