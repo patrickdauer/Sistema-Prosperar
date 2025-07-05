@@ -419,6 +419,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Rota alternativa para compatibilidade
+  app.get("/api/internal/business-registrations/with-tasks", authenticateToken, async (req, res) => {
+    try {
+      const registrations = await storage.getAllBusinessRegistrationsWithTasks();
+      res.json(registrations);
+    } catch (error) {
+      console.error("Error fetching registrations:", error);
+      res.status(500).json({ message: "Erro ao buscar cadastros" });
+    }
+  });
+
+  // Update task status
+  app.patch("/api/internal/tasks/:taskId/status", authenticateToken, async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.taskId);
+      const { status } = req.body;
+      const userId = req.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({ message: "Usuário não autenticado" });
+      }
+
+      const updatedTask = await storage.updateTaskStatus(taskId, status, userId);
+      res.json(updatedTask);
+    } catch (error) {
+      console.error("Error updating task status:", error);
+      res.status(500).json({ message: "Erro ao atualizar status da tarefa" });
+    }
+  });
+
+  // Assign task to user
+  app.patch("/api/internal/tasks/:taskId/assign", authenticateToken, async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.taskId);
+      const { userId } = req.body;
+
+      const updatedTask = await storage.assignTask(taskId, userId);
+      res.json(updatedTask);
+    } catch (error) {
+      console.error("Error assigning task:", error);
+      res.status(500).json({ message: "Erro ao atribuir tarefa" });
+    }
+  });
+
+  // Create new task
+  app.post("/api/internal/tasks", authenticateToken, async (req, res) => {
+    try {
+      const task = await storage.createTask(req.body);
+      res.status(201).json(task);
+    } catch (error) {
+      console.error("Error creating task:", error);
+      res.status(500).json({ message: "Erro ao criar tarefa" });
+    }
+  });
+
+  // Delete task
+  app.delete("/api/internal/tasks/:taskId", authenticateToken, async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.taskId);
+      await storage.deleteTask(taskId);
+      res.json({ message: "Tarefa excluída com sucesso" });
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      res.status(500).json({ message: "Erro ao excluir tarefa" });
+    }
+  });
+
   // Get registration by ID
   app.get("/api/business-registration/:id", async (req, res) => {
     try {
