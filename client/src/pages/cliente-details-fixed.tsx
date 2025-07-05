@@ -1009,11 +1009,17 @@ export default function ClienteDetailsFix() {
                 </Select>
               ) : (
                 <p className="text-white py-2">
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    cliente.status === 'ativo' ? 'bg-green-600 text-white' : 
-                    cliente.status === 'bloqueado' ? 'bg-red-600 text-white' : 
-                    cliente.status === 'inativo' ? 'bg-gray-600 text-white' : 'bg-gray-600 text-white'
-                  }`}>
+                  <span 
+                    className="px-4 py-2 rounded-lg text-sm font-semibold uppercase tracking-wide"
+                    style={{
+                      backgroundColor: cliente.status === 'ativo' ? '#16a34a' : 
+                                     cliente.status === 'bloqueado' ? '#dc2626' : '#6b7280',
+                      color: 'white',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                      border: `2px solid ${cliente.status === 'ativo' ? '#22c55e' : 
+                                         cliente.status === 'bloqueado' ? '#ef4444' : '#9ca3af'}`
+                    }}
+                  >
                     {cliente.status === 'ativo' ? 'ATIVO' : 
                      cliente.status === 'bloqueado' ? 'BLOQUEADO' : 
                      cliente.status === 'inativo' ? 'INATIVO' : cliente.status || 'N/A'}

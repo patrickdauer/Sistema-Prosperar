@@ -413,7 +413,7 @@ export default function Clientes() {
               <div className="col-span-2">CNPJ</div>
               <div className="col-span-2">Contato</div>
               <div className="col-span-2">Celular</div>
-              <div className="col-span-1">Status</div>
+              <div className="col-span-1 text-center">Status</div>
               <div className="col-span-2">Ações</div>
             </div>
 
@@ -452,21 +452,25 @@ export default function Clientes() {
                     </div>
 
                     {/* Status */}
-                    <div className="col-span-1">
+                    <div className="col-span-1 flex justify-center items-center pr-4">
                       <button
                         onClick={() => toggleClienteStatus(cliente.id, cliente.status)}
                         style={{
-                          backgroundColor: cliente.status === 'ativo' ? 'green' : 
-                                         cliente.status === 'bloqueado' ? 'red' : 'gray',
-                          color: 'white !important',
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          fontSize: '12px',
-                          fontWeight: '500',
+                          backgroundColor: cliente.status === 'ativo' ? '#16a34a' : 
+                                         cliente.status === 'bloqueado' ? '#dc2626' : '#6b7280',
+                          color: 'white',
+                          padding: '4px 12px',
+                          borderRadius: '6px',
+                          fontSize: '11px',
+                          fontWeight: '600',
                           cursor: 'pointer',
                           border: 'none',
-                          minWidth: '80px',
-                          outline: 'none'
+                          minWidth: '85px',
+                          outline: 'none',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          transition: 'all 0.2s ease',
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                         }}
                       >
                         {cliente.status === 'ativo' ? 'ATIVO' : 
