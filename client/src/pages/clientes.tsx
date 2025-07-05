@@ -445,7 +445,7 @@ export default function Clientes() {
                     <div className="col-span-1">
                       <button
                         onClick={() => toggleClienteStatus(cliente.id, cliente.status)}
-                        className={`px-3 py-1 rounded text-sm font-medium cursor-pointer hover:opacity-80 transition-opacity ${
+                        className={`px-2 py-1 rounded text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity ${
                           cliente.status === 'ativo' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
                         }`}
                       >
