@@ -1297,17 +1297,17 @@ export default function ClienteDetailsFix() {
           </CardContent>
         </Card>
 
-        {/* Campos Personalizados */}
+        {/* Imposto de Renda Pessoa Física */}
         <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-white">
-              <Settings className="h-5 w-5 text-green-500" />
-              Campos Personalizados
+              <DollarSign className="h-5 w-5 text-green-500" />
+              Imposto de Renda Pessoa Física
             </CardTitle>
           </CardHeader>
           <CardContent className="grid md:grid-cols-2 gap-4">
             <div>
-              <Label className="text-gray-300">Imposto de Renda</Label>
+              <Label className="text-gray-300">Declara IR</Label>
               {editing ? (
                 <Select value={formData?.imposto_renda || ''} onValueChange={(value) => handleInputChange('imposto_renda', value)}>
                   <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
@@ -1316,11 +1316,125 @@ export default function ClienteDetailsFix() {
                   <SelectContent>
                     <SelectItem value="sim">Sim</SelectItem>
                     <SelectItem value="nao">Não</SelectItem>
+                    <SelectItem value="isento">Isento</SelectItem>
                   </SelectContent>
                 </Select>
               ) : (
-                <p className="text-white py-2">{formData?.imposto_renda === 'sim' ? 'Sim' : formData?.imposto_renda === 'nao' ? 'Não' : 'N/A'}</p>
+                <p className="text-white py-2">
+                  {formData?.imposto_renda === 'sim' ? 'Sim' : 
+                   formData?.imposto_renda === 'nao' ? 'Não' : 
+                   formData?.imposto_renda === 'isento' ? 'Isento' : 'N/A'}
+                </p>
               )}
+            </div>
+            <div>
+              <Label className="text-gray-300">Ano de Referência</Label>
+              {editing ? (
+                <Input
+                  type="number"
+                  value={formData?.ir_ano_referencia || new Date().getFullYear()}
+                  onChange={(e) => handleInputChange('ir_ano_referencia', e.target.value)}
+                  className="bg-gray-700 border-gray-600 text-white"
+                  placeholder="2024"
+                />
+              ) : (
+                <p className="text-white py-2">{formData?.ir_ano_referencia || new Date().getFullYear()}</p>
+              )}
+            </div>
+            <div>
+              <Label className="text-gray-300">Status da Declaração</Label>
+              {editing ? (
+                <Select value={formData?.ir_status || ''} onValueChange={(value) => handleInputChange('ir_status', value)}>
+                  <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                    <SelectValue placeholder="Selecione o status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="nao_entregue">Não Entregue</SelectItem>
+                    <SelectItem value="entregue">Entregue</SelectItem>
+                    <SelectItem value="em_processamento">Em Processamento</SelectItem>
+                    <SelectItem value="pendente_retificacao">Pendente Retificação</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <p className="text-white py-2">
+                  {formData?.ir_status === 'nao_entregue' ? 'Não Entregue' :
+                   formData?.ir_status === 'entregue' ? 'Entregue' :
+                   formData?.ir_status === 'em_processamento' ? 'Em Processamento' :
+                   formData?.ir_status === 'pendente_retificacao' ? 'Pendente Retificação' : 'N/A'}
+                </p>
+              )}
+            </div>
+            <div>
+              <Label className="text-gray-300">Data de Entrega</Label>
+              {editing ? (
+                <Input
+                  type="date"
+                  value={formData?.ir_data_entrega || ''}
+                  onChange={(e) => handleInputChange('ir_data_entrega', e.target.value)}
+                  className="bg-gray-700 border-gray-600 text-white"
+                />
+              ) : (
+                <p className="text-white py-2">
+                  {formData?.ir_data_entrega ? 
+                    new Date(formData.ir_data_entrega).toLocaleDateString('pt-BR') : 'N/A'}
+                </p>
+              )}
+            </div>
+            <div>
+              <Label className="text-gray-300">Valor a Pagar</Label>
+              {editing ? (
+                <Input
+                  value={formData?.ir_valor_pagar || ''}
+                  onChange={(e) => handleInputChange('ir_valor_pagar', e.target.value)}
+                  className="bg-gray-700 border-gray-600 text-white"
+                  placeholder="R$ 0,00"
+                />
+              ) : (
+                <p className="text-white py-2">{formData?.ir_valor_pagar || 'N/A'}</p>
+              )}
+            </div>
+            <div>
+              <Label className="text-gray-300">Valor a Restituir</Label>
+              {editing ? (
+                <Input
+                  value={formData?.ir_valor_restituir || ''}
+                  onChange={(e) => handleInputChange('ir_valor_restituir', e.target.value)}
+                  className="bg-gray-700 border-gray-600 text-white"
+                  placeholder="R$ 0,00"
+                />
+              ) : (
+                <p className="text-white py-2">{formData?.ir_valor_restituir || 'N/A'}</p>
+              )}
+            </div>
+            <div className="md:col-span-2">
+              <Label className="text-gray-300">Observações IR</Label>
+              {editing ? (
+                <Textarea
+                  value={formData?.ir_observacoes || ''}
+                  onChange={(e) => handleInputChange('ir_observacoes', e.target.value)}
+                  className="bg-gray-700 border-gray-600 text-white"
+                  placeholder="Observações sobre o Imposto de Renda..."
+                  rows={3}
+                />
+              ) : (
+                <p className="text-white py-2 whitespace-pre-wrap">{formData?.ir_observacoes || 'N/A'}</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Campos Personalizados */}
+        <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-white">
+              <Settings className="h-5 w-5 text-green-500" />
+              Campos Personalizados
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8">
+              <p className="text-gray-400">Nenhum campo personalizado adicionado ainda.</p>
+              <p className="text-gray-500 text-sm mt-2">Esta seção ficará disponível para campos customizados no futuro.</p>
             </div>
           </CardContent>
         </Card>

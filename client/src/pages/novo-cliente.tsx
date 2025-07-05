@@ -45,6 +45,12 @@ export default function NovoCliente() {
     data_abertura: '',
     cliente_desde: '',
     imposto_renda: '',
+    ir_ano_referencia: '',
+    ir_status: '',
+    ir_data_entrega: '',
+    ir_valor_pagar: '',
+    ir_valor_restituir: '',
+    ir_observacoes: '',
     
     // Endereço completo
     endereco: '',
@@ -1156,15 +1162,15 @@ export default function NovoCliente() {
 
 
 
-          {/* Campos Personalizados */}
+          {/* Imposto de Renda Pessoa Física */}
           <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
             <CardHeader>
-              <CardTitle className="text-white">Campos Personalizados</CardTitle>
+              <CardTitle className="text-white">Imposto de Renda Pessoa Física</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-gray-200">Imposto de Renda Pessoa Física</Label>
+                  <Label className="text-gray-200">Declara IR</Label>
                   <Select value={formData.imposto_renda} onValueChange={(value) => handleInputChange('imposto_renda', value)}>
                     <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                       <SelectValue placeholder="Selecione" />
@@ -1172,9 +1178,84 @@ export default function NovoCliente() {
                     <SelectContent className="bg-gray-800 border-gray-600">
                       <SelectItem value="sim">Sim</SelectItem>
                       <SelectItem value="nao">Não</SelectItem>
+                      <SelectItem value="isento">Isento</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
+                <div>
+                  <Label className="text-gray-200">Ano de Referência</Label>
+                  <Input
+                    value={formData.ir_ano_referencia || new Date().getFullYear()}
+                    onChange={(e) => handleInputChange('ir_ano_referencia', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="2024"
+                    type="number"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Status da Declaração</Label>
+                  <Select value={formData.ir_status} onValueChange={(value) => handleInputChange('ir_status', value)}>
+                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                      <SelectValue placeholder="Selecione o status" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-800 border-gray-600">
+                      <SelectItem value="nao_entregue">Não Entregue</SelectItem>
+                      <SelectItem value="entregue">Entregue</SelectItem>
+                      <SelectItem value="em_processamento">Em Processamento</SelectItem>
+                      <SelectItem value="pendente_retificacao">Pendente Retificação</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-gray-200">Data de Entrega</Label>
+                  <Input
+                    type="date"
+                    value={formData.ir_data_entrega}
+                    onChange={(e) => handleInputChange('ir_data_entrega', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Valor a Pagar</Label>
+                  <Input
+                    value={formData.ir_valor_pagar}
+                    onChange={(e) => handleInputChange('ir_valor_pagar', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="R$ 0,00"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Valor a Restituir</Label>
+                  <Input
+                    value={formData.ir_valor_restituir}
+                    onChange={(e) => handleInputChange('ir_valor_restituir', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="R$ 0,00"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Label className="text-gray-200">Observações IR</Label>
+                  <Textarea
+                    value={formData.ir_observacoes}
+                    onChange={(e) => handleInputChange('ir_observacoes', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Observações sobre o Imposto de Renda..."
+                    rows={3}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Campos Personalizados */}
+          <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+            <CardHeader>
+              <CardTitle className="text-white">Campos Personalizados</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-center py-8">
+                <p className="text-gray-400">Nenhum campo personalizado adicionado ainda.</p>
+                <p className="text-gray-500 text-sm mt-2">Esta seção ficará disponível para campos customizados no futuro.</p>
               </div>
             </CardContent>
           </Card>

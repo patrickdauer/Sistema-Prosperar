@@ -57,6 +57,15 @@ export const clientes = pgTable("clientes", {
   // Status
   status: varchar("status", { length: 20 }).default("ativo"), // ativo, inativo, suspenso
   observacoes: text("observacoes"),
+
+  // Imposto de Renda Pessoa Física
+  impostoRenda: varchar("imposto_renda", { length: 10 }), // sim, nao, isento
+  irAnoReferencia: varchar("ir_ano_referencia", { length: 4 }),
+  irStatus: varchar("ir_status", { length: 30 }), // nao_entregue, entregue, em_processamento, pendente_retificacao
+  irDataEntrega: date("ir_data_entrega"),
+  irValorPagar: varchar("ir_valor_pagar", { length: 20 }),
+  irValorRestituir: varchar("ir_valor_restituir", { length: 20 }),
+  irObservacoes: text("ir_observacoes"),
   
   // Sócios (JSON)
   socios: json("socios"),
