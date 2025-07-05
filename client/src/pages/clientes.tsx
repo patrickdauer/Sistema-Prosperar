@@ -443,24 +443,41 @@ export default function Clientes() {
 
                     {/* Status Ativo/Inativo */}
                     <div className="col-span-1">
-                      <button
-                        onClick={() => toggleClienteStatus(cliente.id, cliente.status)}
-                        style={{
-                          backgroundColor: cliente.status === 'ativo' ? '#22c55e' : '#ef4444',
-                          color: '#ffffff',
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          fontSize: '12px',
-                          fontWeight: '500',
-                          cursor: 'pointer',
-                          border: 'none',
-                          transition: 'opacity 0.2s'
-                        }}
-                        onMouseEnter={(e) => (e.target as HTMLElement).style.opacity = '0.8'}
-                        onMouseLeave={(e) => (e.target as HTMLElement).style.opacity = '1'}
-                      >
-                        {cliente.status === 'ativo' ? 'ATIVO' : 'INATIVO'}
-                      </button>
+                      {cliente.status === 'ativo' ? (
+                        <button
+                          onClick={() => toggleClienteStatus(cliente.id, cliente.status)}
+                          style={{
+                            backgroundColor: '#22c55e',
+                            color: '#ffffff',
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                            border: 'none',
+                            minWidth: '60px'
+                          }}
+                        >
+                          ATIVO
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => toggleClienteStatus(cliente.id, cliente.status)}
+                          style={{
+                            backgroundColor: '#ef4444',
+                            color: '#ffffff',
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                            border: 'none',
+                            minWidth: '60px'
+                          }}
+                        >
+                          INATIVO
+                        </button>
+                      )}
                     </div>
 
                     {/* Ações */}
