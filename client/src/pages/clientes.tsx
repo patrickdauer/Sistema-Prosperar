@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Eye, Users, Building2, Plus, MoreVertical, Copy, Phone, MessageCircle, Filter, X } from 'lucide-react';
+import { Search, Eye, Users, Building2, Plus, MoreVertical, Copy, Phone, MessageCircle, Filter, X, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -201,6 +201,43 @@ export default function Clientes() {
   const clientesAtivos = clientes.filter(c => c.status === 'ativo').length;
   const clientesBloqueados = clientes.filter(c => c.status === 'bloqueado').length;
   const clientesInativos = clientes.filter(c => c.status === 'inativo').length;
+
+  // Função para editar cliente
+  const handleEditCliente = (cliente: Cliente) => {
+    setLocation(`/clientes/${cliente.id}`);
+  };
+
+  // Função para deletar cliente
+  const handleDeleteCliente = async (cliente: Cliente) => {
+    const confirmDelete = window.confirm(
+      `Tem certeza que deseja deletar o cliente "${cliente.razao_social || 'Sem nome'}"? Esta ação não pode ser desfeita.`
+    );
+    
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetch(`/api/clientes/${cliente.id}`, {
+        method: 'DELETE',
+      });
+      
+      if (response.ok) {
+        toast({
+          title: "Cliente deletado",
+          description: "Cliente foi removido com sucesso",
+        });
+        fetchClientes(); // Recarregar lista
+      } else {
+        throw new Error('Erro ao deletar cliente');
+      }
+    } catch (error) {
+      console.error('Erro ao deletar cliente:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível deletar o cliente",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
@@ -508,6 +545,14 @@ export default function Clientes() {
                           </DropdownMenuItem>
                           
                           <DropdownMenuItem 
+                            onClick={() => handleEditCliente(cliente)}
+                            className="text-blue-400 hover:bg-gray-700 cursor-pointer"
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            Editar Cliente
+                          </DropdownMenuItem>
+                          
+                          <DropdownMenuItem 
                             onClick={() => copyToClipboard(cliente.cnpj, 'CNPJ')}
                             className="text-white hover:bg-gray-700 cursor-pointer"
                           >
@@ -532,6 +577,14 @@ export default function Clientes() {
                               WhatsApp
                             </DropdownMenuItem>
                           )}
+                          
+                          <DropdownMenuItem 
+                            onClick={() => handleDeleteCliente(cliente)}
+                            className="text-red-400 hover:bg-gray-700 cursor-pointer"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Deletar Cliente
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
