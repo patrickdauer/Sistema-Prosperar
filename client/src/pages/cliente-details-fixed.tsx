@@ -226,107 +226,12 @@ export default function ClienteDetailsFix() {
           style={{ background: '#1f2937', border: '1px solid #374151' }}
         >
           <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              onClick={() => setLocation('/gestao-clientes')}
-              className="border-gray-600 text-white hover:bg-gray-700"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar
-            </Button>
             <h1 className="text-2xl font-bold text-white">
               {cliente.razao_social || 'Cliente sem nome'}
             </h1>
           </div>
           <div className="flex gap-2">
-            {editing ? (
-              <>
-                <Dialog open={showCustomFieldModal} onOpenChange={setShowCustomFieldModal}>
-                  <DialogTrigger asChild>
-                    <Button
-                      style={{ 
-                        backgroundColor: '#3b82f6', 
-                        color: 'white'
-                      }}
-                      className="hover:bg-blue-600"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Adicionar Campo
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="bg-gray-900 border-gray-700">
-                    <DialogHeader>
-                      <DialogTitle className="text-white">Adicionar Campo Personalizado</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="fieldName" className="text-gray-200">Nome do Campo</Label>
-                        <Input
-                          id="fieldName"
-                          value={newFieldName}
-                          onChange={(e) => setNewFieldName(e.target.value)}
-                          placeholder="Ex: observacoes_especiais"
-                          className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
-                        />
-                        <p className="text-xs text-gray-400 mt-1">
-                          O nome será convertido automaticamente para formato de banco de dados
-                        </p>
-                      </div>
-                      <div>
-                        <Label htmlFor="fieldValue" className="text-gray-200">Valor Inicial (opcional)</Label>
-                        <Input
-                          id="fieldValue"
-                          value={newFieldValue}
-                          onChange={(e) => setNewFieldValue(e.target.value)}
-                          placeholder="Valor inicial do campo"
-                          className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
-                        />
-                      </div>
-                      <div className="flex gap-2 justify-end">
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            setShowCustomFieldModal(false);
-                            setNewFieldName('');
-                            setNewFieldValue('');
-                          }}
-                          className="border-gray-600 text-gray-300 hover:bg-gray-800"
-                        >
-                          Cancelar
-                        </Button>
-                        <Button
-                          onClick={addCustomField}
-                          disabled={!newFieldName.trim()}
-                          className="bg-green-600 hover:bg-green-700 text-white"
-                        >
-                          Adicionar Campo
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-                <Button
-                  onClick={handleSave}
-                  style={{ 
-                    backgroundColor: '#22c55e', 
-                    color: 'white'
-                  }}
-                  className="hover:bg-green-600"
-                  disabled={updateMutation.isPending}
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  Salvar
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleCancel}
-                  className="border-gray-600 text-white hover:bg-gray-700"
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  Cancelar
-                </Button>
-              </>
-            ) : (
+            {!editing && (
               <Button
                 onClick={() => setEditing(true)}
                 style={{ 
@@ -965,6 +870,109 @@ export default function ClienteDetailsFix() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Botões de Ação */}
+        <div className="flex gap-4 justify-center pt-6 border-t border-gray-700">
+          <Button
+            variant="outline"
+            onClick={() => setLocation('/gestao-clientes')}
+            className="border-gray-600 text-white hover:bg-gray-700"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar
+          </Button>
+
+          {editing && (
+            <>
+              <Dialog open={showCustomFieldModal} onOpenChange={setShowCustomFieldModal}>
+                <DialogTrigger asChild>
+                  <Button
+                    style={{ 
+                      backgroundColor: '#3b82f6', 
+                      color: 'white'
+                    }}
+                    className="hover:bg-blue-600"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Adicionar Campo
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-gray-900 border-gray-700">
+                  <DialogHeader>
+                    <DialogTitle className="text-white">Adicionar Campo Personalizado</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="fieldName" className="text-gray-200">Nome do Campo</Label>
+                      <Input
+                        id="fieldName"
+                        value={newFieldName}
+                        onChange={(e) => setNewFieldName(e.target.value)}
+                        placeholder="Ex: observacoes_especiais"
+                        className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                      />
+                      <p className="text-xs text-gray-400 mt-1">
+                        O nome será convertido automaticamente para formato de banco de dados
+                      </p>
+                    </div>
+                    <div>
+                      <Label htmlFor="fieldValue" className="text-gray-200">Valor Inicial (opcional)</Label>
+                      <Input
+                        id="fieldValue"
+                        value={newFieldValue}
+                        onChange={(e) => setNewFieldValue(e.target.value)}
+                        placeholder="Valor inicial do campo"
+                        className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                      />
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setShowCustomFieldModal(false);
+                          setNewFieldName('');
+                          setNewFieldValue('');
+                        }}
+                        className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        onClick={addCustomField}
+                        disabled={!newFieldName.trim()}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        Adicionar Campo
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              <Button
+                onClick={handleSave}
+                style={{ 
+                  backgroundColor: '#22c55e', 
+                  color: 'white'
+                }}
+                className="hover:bg-green-600"
+                disabled={updateMutation.isPending}
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Salvar
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={handleCancel}
+                className="border-gray-600 text-white hover:bg-gray-700"
+              >
+                <X className="h-4 w-4 mr-2" />
+                Cancelar
+              </Button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

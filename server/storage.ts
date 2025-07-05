@@ -472,7 +472,7 @@ export class DatabaseStorage implements IStorage {
       }
 
       // Construir query de update dinâmicamente
-      const updateFields = Object.keys(knownUpdates).filter(key => key !== 'id');
+      const updateFields = Object.keys(knownUpdates).filter(key => key !== 'id' && key !== 'created_at' && key !== 'updated_at');
       if (updateFields.length === 0) {
         const cliente = await this.getCliente(id);
         return cliente as Cliente;
