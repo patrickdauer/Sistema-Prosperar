@@ -53,6 +53,15 @@ export const clientes = pgTable("clientes", {
   dataFimContrato: date("data_fim_contrato"),
   valorMensalidade: decimal("valor_mensalidade", { precision: 10, scale: 2 }),
   diaVencimento: integer("dia_vencimento"),
+  observacoesMensalidade: text("observacoes_mensalidade"), // Observações sobre negociação do cliente
+  
+  // Status Dívidas Tributárias
+  temDebitos: varchar("tem_debitos", { length: 10 }), // sim, nao
+  observacoesDebitos: text("observacoes_debitos"),
+  temParcelamentos: varchar("tem_parcelamentos", { length: 10 }), // sim, nao
+  observacoesParcelamentos: text("observacoes_parcelamentos"),
+  temDividaAtiva: varchar("tem_divida_ativa", { length: 10 }), // sim, nao
+  observacoesDividaAtiva: text("observacoes_divida_ativa"),
   
   // Status
   status: varchar("status", { length: 20 }).default("ativo"), // ativo, inativo, suspenso

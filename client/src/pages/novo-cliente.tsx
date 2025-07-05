@@ -119,6 +119,13 @@ export default function NovoCliente() {
     mensalidade_sem_faturamento: '',
     valor_mensalidade: '',
     data_vencimento: '',
+    observacoes_mensalidade: '',
+    
+    // Status Dívidas Tributárias
+    observacoes_debitos: '',
+    tem_parcelamentos: '',
+    observacoes_parcelamentos: '',
+    observacoes_divida_ativa: '',
     
     // Status operacional
     status_das: '',

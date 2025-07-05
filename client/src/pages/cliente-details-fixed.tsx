@@ -73,6 +73,11 @@ interface ClienteCompleto {
   tem_divida_ativa: string | null;
   mensalidade_com_faturamento: string | null;
   mensalidade_sem_faturamento: string | null;
+  observacoes_mensalidade: string | null;
+  observacoes_debitos: string | null;
+  tem_parcelamentos: string | null;
+  observacoes_parcelamentos: string | null;
+  observacoes_divida_ativa: string | null;
   certificado_empresa: string | null;
   senha_certificado_empresa: string | null;
   valor_mensalidade: string | null;
@@ -1083,6 +1088,195 @@ export default function ClienteDetailsFix() {
                 </p>
               )}
             </div>
+            <div className="md:col-span-2">
+              <Label className="text-gray-300">Observações sobre Mensalidade e Negociação</Label>
+              {editing ? (
+                <Textarea
+                  value={formData?.observacoes_mensalidade || ''}
+                  onChange={(e) => handleInputChange('observacoes_mensalidade', e.target.value)}
+                  className="bg-gray-700 border-gray-600 text-white"
+                  placeholder="Observações sobre negociação do cliente, histórico de pagamentos, etc..."
+                  rows={3}
+                />
+              ) : (
+                <p className="text-white py-2 whitespace-pre-wrap">{formData?.observacoes_mensalidade || 'N/A'}</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Status Dívidas Tributárias */}
+        <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-white">
+              <CreditCard className="h-5 w-5 text-green-500" />
+              Status Dívidas Tributárias
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            
+            {/* Débitos */}
+            <div className="border border-gray-600 rounded-lg p-4">
+              <h4 className="text-white font-semibold mb-4">Débitos</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-gray-300">Possui Débitos</Label>
+                  {editing ? (
+                    <div className="flex items-center gap-2 mt-2">
+                      <Switch
+                        checked={formData?.tem_debitos === 'sim' || formData?.tem_debitos === true}
+                        onCheckedChange={(checked) => handleInputChange('tem_debitos', checked ? 'sim' : 'nao')}
+                        className={`${
+                          formData?.tem_debitos === 'sim' || formData?.tem_debitos === true
+                            ? 'data-[state=checked]:bg-red-500'
+                            : 'bg-green-500'
+                        }`}
+                      />
+                      <span className={`text-sm font-medium ${
+                        formData?.tem_debitos === 'sim' || formData?.tem_debitos === true
+                          ? 'text-red-400'
+                          : 'text-green-400'
+                      }`}>
+                        {formData?.tem_debitos === 'sim' || formData?.tem_debitos === true ? 'Sim' : 'Não'}
+                      </span>
+                    </div>
+                  ) : (
+                    <p className="text-white py-2">
+                      <span className={`${
+                        formData?.tem_debitos === 'sim' || formData?.tem_debitos === true
+                          ? 'text-red-400'
+                          : 'text-green-400'
+                      }`}>
+                        {formData?.tem_debitos === 'sim' || formData?.tem_debitos === true ? 'Sim' : 'Não'}
+                      </span>
+                    </p>
+                  )}
+                </div>
+                <div className="md:col-span-2">
+                  <Label className="text-gray-300">Observações sobre Débitos</Label>
+                  {editing ? (
+                    <Textarea
+                      value={formData?.observacoes_debitos || ''}
+                      onChange={(e) => handleInputChange('observacoes_debitos', e.target.value)}
+                      placeholder="Observações sobre débitos tributários..."
+                      className="bg-gray-700 border-gray-600 text-white"
+                      rows={2}
+                    />
+                  ) : (
+                    <p className="text-white py-2 whitespace-pre-wrap">{formData?.observacoes_debitos || 'N/A'}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Parcelamentos */}
+            <div className="border border-gray-600 rounded-lg p-4">
+              <h4 className="text-white font-semibold mb-4">Parcelamentos</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-gray-300">Possui Parcelamentos</Label>
+                  {editing ? (
+                    <div className="flex items-center gap-2 mt-2">
+                      <Switch
+                        checked={formData?.tem_parcelamentos === 'sim' || formData?.tem_parcelamentos === true}
+                        onCheckedChange={(checked) => handleInputChange('tem_parcelamentos', checked ? 'sim' : 'nao')}
+                        className={`${
+                          formData?.tem_parcelamentos === 'sim' || formData?.tem_parcelamentos === true
+                            ? 'data-[state=checked]:bg-yellow-500'
+                            : 'bg-green-500'
+                        }`}
+                      />
+                      <span className={`text-sm font-medium ${
+                        formData?.tem_parcelamentos === 'sim' || formData?.tem_parcelamentos === true
+                          ? 'text-yellow-400'
+                          : 'text-green-400'
+                      }`}>
+                        {formData?.tem_parcelamentos === 'sim' || formData?.tem_parcelamentos === true ? 'Sim' : 'Não'}
+                      </span>
+                    </div>
+                  ) : (
+                    <p className="text-white py-2">
+                      <span className={`${
+                        formData?.tem_parcelamentos === 'sim' || formData?.tem_parcelamentos === true
+                          ? 'text-yellow-400'
+                          : 'text-green-400'
+                      }`}>
+                        {formData?.tem_parcelamentos === 'sim' || formData?.tem_parcelamentos === true ? 'Sim' : 'Não'}
+                      </span>
+                    </p>
+                  )}
+                </div>
+                <div className="md:col-span-2">
+                  <Label className="text-gray-300">Observações sobre Parcelamentos</Label>
+                  {editing ? (
+                    <Textarea
+                      value={formData?.observacoes_parcelamentos || ''}
+                      onChange={(e) => handleInputChange('observacoes_parcelamentos', e.target.value)}
+                      placeholder="Observações sobre parcelamentos tributários..."
+                      className="bg-gray-700 border-gray-600 text-white"
+                      rows={2}
+                    />
+                  ) : (
+                    <p className="text-white py-2 whitespace-pre-wrap">{formData?.observacoes_parcelamentos || 'N/A'}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Dívida Ativa */}
+            <div className="border border-gray-600 rounded-lg p-4">
+              <h4 className="text-white font-semibold mb-4">Dívida Ativa</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-gray-300">Possui Dívida Ativa</Label>
+                  {editing ? (
+                    <div className="flex items-center gap-2 mt-2">
+                      <Switch
+                        checked={formData?.tem_divida_ativa === 'sim' || formData?.tem_divida_ativa === true}
+                        onCheckedChange={(checked) => handleInputChange('tem_divida_ativa', checked ? 'sim' : 'nao')}
+                        className={`${
+                          formData?.tem_divida_ativa === 'sim' || formData?.tem_divida_ativa === true
+                            ? 'data-[state=checked]:bg-red-600'
+                            : 'bg-green-500'
+                        }`}
+                      />
+                      <span className={`text-sm font-medium ${
+                        formData?.tem_divida_ativa === 'sim' || formData?.tem_divida_ativa === true
+                          ? 'text-red-400'
+                          : 'text-green-400'
+                      }`}>
+                        {formData?.tem_divida_ativa === 'sim' || formData?.tem_divida_ativa === true ? 'Sim' : 'Não'}
+                      </span>
+                    </div>
+                  ) : (
+                    <p className="text-white py-2">
+                      <span className={`${
+                        formData?.tem_divida_ativa === 'sim' || formData?.tem_divida_ativa === true
+                          ? 'text-red-400'
+                          : 'text-green-400'
+                      }`}>
+                        {formData?.tem_divida_ativa === 'sim' || formData?.tem_divida_ativa === true ? 'Sim' : 'Não'}
+                      </span>
+                    </p>
+                  )}
+                </div>
+                <div className="md:col-span-2">
+                  <Label className="text-gray-300">Observações sobre Dívida Ativa</Label>
+                  {editing ? (
+                    <Textarea
+                      value={formData?.observacoes_divida_ativa || ''}
+                      onChange={(e) => handleInputChange('observacoes_divida_ativa', e.target.value)}
+                      placeholder="Observações sobre dívida ativa..."
+                      className="bg-gray-700 border-gray-600 text-white"
+                      rows={2}
+                    />
+                  ) : (
+                    <p className="text-white py-2 whitespace-pre-wrap">{formData?.observacoes_divida_ativa || 'N/A'}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
           </CardContent>
         </Card>
 
