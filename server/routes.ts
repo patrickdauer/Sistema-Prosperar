@@ -638,6 +638,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch('/api/clientes/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      console.log(`🔄 Atualizando status do cliente ${id}:`, req.body);
+      const cliente = await storage.updateCliente(id, req.body);
+      console.log(`✅ Cliente ${id} atualizado com sucesso:`, cliente.status);
+      res.json(cliente);
+    } catch (error) {
+      console.error('Erro ao atualizar status do cliente:', error);
+      res.status(400).json({ error: 'Dados inválidos' });
+    }
+  });
+
   app.delete('/api/clientes/:id', async (req, res) => {
     try {
       const id = parseInt(req.params.id);
