@@ -437,6 +437,7 @@ export class DatabaseStorage implements IStorage {
          OR nome_fantasia ILIKE '%${searchTerm}%'
          OR cnpj ILIKE '%${searchTerm}%'
          OR email_empresa ILIKE '%${searchTerm}%'
+         OR contato ILIKE '%${searchTerm}%'
       ORDER BY created_at DESC
     `);
     return result.rows;
