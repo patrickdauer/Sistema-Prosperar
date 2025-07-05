@@ -1297,53 +1297,33 @@ export default function ClienteDetailsFix() {
           </CardContent>
         </Card>
 
-        {/* Campos Customizados */}
-        {Object.keys(formData || {}).some(key => !standardFields.includes(key)) && (
-          <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
-                <Settings className="h-5 w-5 text-green-500" />
-                Campos Personalizados
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="grid md:grid-cols-2 gap-4">
-              {Object.entries(formData || {}).map(([key, value]) => {
-                if (standardFields.includes(key)) return null;
-                
-                return (
-                  <div key={key} className="flex items-center gap-2">
-                    <div className="flex-1">
-                      <Label className="text-gray-300 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</Label>
-                      {editing ? (
-                        <Input
-                          value={String(value || '')}
-                          onChange={(e) => handleInputChange(key, e.target.value)}
-                          className="bg-gray-700 border-gray-600 text-white"
-                        />
-                      ) : (
-                        <p className="text-white py-2">{String(value || 'N/A')}</p>
-                      )}
-                    </div>
-                    {editing && (
-                      <Button
-                        onClick={() => {
-                          const newFormData = { ...formData };
-                          delete newFormData[key];
-                          setFormData(newFormData);
-                        }}
-                        variant="outline"
-                        size="sm"
-                        className="border-red-600 text-red-400 hover:bg-red-700 mt-6"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                );
-              })}
-            </CardContent>
-          </Card>
-        )}
+        {/* Campos Personalizados */}
+        <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-white">
+              <Settings className="h-5 w-5 text-green-500" />
+              Campos Personalizados
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid md:grid-cols-2 gap-4">
+            <div>
+              <Label className="text-gray-300">Imposto de Renda</Label>
+              {editing ? (
+                <Select value={formData?.imposto_renda || ''} onValueChange={(value) => handleInputChange('imposto_renda', value)}>
+                  <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="sim">Sim</SelectItem>
+                    <SelectItem value="nao">Não</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <p className="text-white py-2">{formData?.imposto_renda === 'sim' ? 'Sim' : formData?.imposto_renda === 'nao' ? 'Não' : 'N/A'}</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Histórico */}
         <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>

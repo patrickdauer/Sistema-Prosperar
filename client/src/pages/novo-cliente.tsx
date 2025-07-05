@@ -324,15 +324,7 @@ export default function NovoCliente() {
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                   />
                 </div>
-                <div>
-                  <Label className="text-gray-200">Imposto de Renda</Label>
-                  <Input
-                    value={formData.imposto_renda}
-                    onChange={(e) => handleInputChange('imposto_renda', e.target.value)}
-                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                    placeholder="Informações do IR"
-                  />
-                </div>
+
                 <div>
                   <Label className="text-gray-200">Nota de Serviço</Label>
                   <Input
@@ -1164,6 +1156,29 @@ export default function NovoCliente() {
           </Card>
 
 
+
+          {/* Campos Personalizados */}
+          <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+            <CardHeader>
+              <CardTitle className="text-white">Campos Personalizados</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-gray-200">Imposto de Renda</Label>
+                  <Select value={formData.imposto_renda} onValueChange={(value) => handleInputChange('imposto_renda', value)}>
+                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-800 border-gray-600">
+                      <SelectItem value="sim">Sim</SelectItem>
+                      <SelectItem value="nao">Não</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Botões */}
           <div className="flex gap-4 justify-end">
