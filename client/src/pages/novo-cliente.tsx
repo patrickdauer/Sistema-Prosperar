@@ -1287,43 +1287,7 @@ export default function NovoCliente() {
             </CardContent>
           </Card>
 
-          {/* Status Operacional */}
-          <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
-            <CardHeader>
-              <CardTitle className="text-white">Status Operacional</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-gray-200">Status DAS</Label>
-                  <Input
-                    value={formData.status_das}
-                    onChange={(e) => handleInputChange('status_das', e.target.value)}
-                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                    placeholder="Status DAS"
-                  />
-                </div>
-                <div>
-                  <Label className="text-gray-200">Status Envio</Label>
-                  <Input
-                    value={formData.status_envio}
-                    onChange={(e) => handleInputChange('status_envio', e.target.value)}
-                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                    placeholder="Status de envio"
-                  />
-                </div>
-                <div>
-                  <Label className="text-gray-200">Link MEI</Label>
-                  <Input
-                    value={formData.link_mei}
-                    onChange={(e) => handleInputChange('link_mei', e.target.value)}
-                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                    placeholder="Link MEI"
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+
 
           {/* Sócios Adicionais */}
           <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
@@ -1574,6 +1538,44 @@ export default function NovoCliente() {
               <div className="text-center py-8">
                 <p className="text-gray-400">Nenhum campo personalizado adicionado ainda.</p>
                 <p className="text-gray-500 text-sm mt-2">Esta seção ficará disponível para campos customizados no futuro.</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Status Operacional */}
+          <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+            <CardHeader>
+              <CardTitle className="text-white">Status Operacional</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-gray-200">Status DAS</Label>
+                  <Input
+                    value={formData.status_das}
+                    onChange={(e) => handleInputChange('status_das', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Status DAS"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Status Envio</Label>
+                  <Input
+                    value={formData.status_envio}
+                    onChange={(e) => handleInputChange('status_envio', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Status de envio"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Label className="text-gray-200">Link MEI</Label>
+                  <Input
+                    value={formData.link_mei}
+                    onChange={(e) => handleInputChange('link_mei', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Link MEI"
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>

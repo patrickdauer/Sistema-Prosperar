@@ -100,15 +100,98 @@ export const clientes = pgTable("clientes", {
   
   // Origem do cliente
   origem: varchar("origem", { length: 50 }), // website, indicacao, marketing, etc
-  indicadoPor: varchar("indicado_por", { length: 255 })
+  indicadoPor: varchar("indicado_por", { length: 255 }),
+  
+  // Status Operacional
+  statusDas: varchar("status_das", { length: 100 }),
+  statusEnvio: varchar("status_envio", { length: 100 }),
+  linkMei: varchar("link_mei", { length: 255 }),
+  
+  // Informações empresariais adicionais
+  telefoneEmpresa: varchar("telefone_empresa", { length: 20 }),
+  emailEmpresa: varchar("email_empresa", { length: 255 }),
+  contato: varchar("contato", { length: 100 }),
+  celular: varchar("celular", { length: 20 }),
+  contato2: varchar("contato_2", { length: 100 }),
+  celular2: varchar("celular_2", { length: 20 }),
+  
+  // Informações adicionais
+  nire: varchar("nire", { length: 50 }),
+  notaServico: varchar("nota_servico", { length: 100 }),
+  notaVenda: varchar("nota_venda", { length: 100 }),
+  metragemOcupada: varchar("metragem_ocupada", { length: 50 }),
+  dataAbertura: date("data_abertura"),
+  clienteDesde: date("cliente_desde"),
+  
+  // Certificados digitais
+  temCertificadoDigital: varchar("tem_certificado_digital", { length: 10 }),
+  dataVencimentoCertificado: date("data_vencimento_certificado"),
+  emissorCertificado: varchar("emissor_certificado", { length: 100 }),
+  observacoesCertificado: text("observacoes_certificado"),
+  
+  // Certificados específicos
+  certificadoDigitalEmpresa: varchar("certificado_digital_empresa", { length: 100 }),
+  senhaCertificadoDigitalEmpresa: varchar("senha_certificado_digital_empresa", { length: 100 }),
+  validadeCertificadoDigitalEmpresa: date("validade_certificado_digital_empresa"),
+  certificadoEmpresa: varchar("certificado_empresa", { length: 100 }),
+  senhaCertificadoEmpresa: varchar("senha_certificado_empresa", { length: 100 }),
+  
+  // Procurações
+  temProcuracaoPj: varchar("tem_procuracao_pj", { length: 10 }),
+  dataVencimentoProcuracaoPj: date("data_vencimento_procuracao_pj"),
+  observacoesProcuracaoPj: text("observacoes_procuracao_pj"),
+  temProcuracaoPf: varchar("tem_procuracao_pf", { length: 10 }),
+  dataVencimentoProcuracaoPf: date("data_vencimento_procuracao_pf"),
+  observacoesProcuracaoPf: text("observacoes_procuracao_pf"),
+  
+  // Procurações específicas
+  procuracaoCnpjContabilidade: varchar("procuracao_cnpj_contabilidade", { length: 100 }),
+  procuracaoCnpjCpf: varchar("procuracao_cnpj_cpf", { length: 100 }),
+  
+  // Informações sócio 1
+  socio1: varchar("socio_1", { length: 255 }),
+  cpfSocio1: varchar("cpf_socio_1", { length: 15 }),
+  senhaGovSocio1: varchar("senha_gov_socio_1", { length: 100 }),
+  certificadoSocio1: varchar("certificado_socio_1", { length: 100 }),
+  senhaCertificadoSocio1: varchar("senha_certificado_socio_1", { length: 100 }),
+  validadeCertificadoSocio1: date("validade_certificado_socio_1"),
+  procuracaoSocio1: varchar("procuracao_socio_1", { length: 100 }),
+  nacionalidadeSocio1: varchar("nacionalidade_socio_1", { length: 100 }),
+  nascimentoSocio1: date("nascimento_socio_1"),
+  filiacaoSocio1: varchar("filiacao_socio_1", { length: 255 }),
+  profissaoSocio1: varchar("profissao_socio_1", { length: 100 }),
+  estadoCivilSocio1: varchar("estado_civil_socio_1", { length: 50 }),
+  enderecoSocio1: text("endereco_socio_1"),
+  telefoneSocio1: varchar("telefone_socio_1", { length: 20 }),
+  emailSocio1: varchar("email_socio_1", { length: 255 }),
+  cnhSocio1: varchar("cnh_socio_1", { length: 50 }),
+  rgSocio1: varchar("rg_socio_1", { length: 20 }),
+  certidaoCasamentoSocio1: varchar("certidao_casamento_socio_1", { length: 100 }),
+  
+  // Status financeiro adicional
+  mensalidadeComFaturamento: varchar("mensalidade_com_faturamento", { length: 10 }),
+  mensalidadeSemFaturamento: varchar("mensalidade_sem_faturamento", { length: 10 }),
+  
+  // Links do Google Drive
+  linkGoogleDrive: varchar("link_google_drive", { length: 255 }),
+  linkGoogleDriveCompartilhado: varchar("link_google_drive_compartilhado", { length: 255 }),
+  linkGoogleDrivePublico: varchar("link_google_drive_publico", { length: 255 }),
+  linkEspecifico: varchar("link_especifico", { length: 255 }),
+  
+  // Observações específicas
+  observacoesGerais: text("observacoes_gerais"),
+  observacoesGoogleDrive: text("observacoes_google_drive"),
+  observacoesAtividades: text("observacoes_atividades")
 });
 
-// Schema de inserção
+// Schema de inserção - apenas razão social obrigatória
 export const insertClienteSchema = createInsertSchema(clientes).omit({
   id: true,
   createdAt: true,
   updatedAt: true
-});
+}).extend({
+  razaoSocial: z.string().min(1, "Razão social é obrigatória")
+}).partial().required({ razaoSocial: true });
 
 // Schema de sócio
 export const socioSchema = z.object({
