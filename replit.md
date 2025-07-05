@@ -146,6 +146,19 @@ The system uses a `business_registrations` table with:
 
 ## Recent Changes
 
+### January 05, 2025 - Sistema Completo de Status de Dívidas Tributárias e Observações de Mensalidade
+- **Status Dívidas Tributárias**: Criado sistema completo para gerenciamento de status de dívidas tributárias
+  - Seção organizada em três subsistemas: Débitos, Parcelamentos e Dívida Ativa
+  - Campos de observação individuais para cada tipo de dívida (observacoes_debitos, observacoes_parcelamentos, observacoes_divida_ativa)
+  - Interface com bordas e organização visual clara para cada subsistema
+- **Observações de Mensalidade**: Adicionado campo para observações sobre negociação e histórico de pagamentos
+  - Campo observacoes_mensalidade para documentar negociações com clientes
+  - Implementado tanto na página de detalhes quanto no formulário de novo cliente
+- **Atualização de Schema**: Adicionados novos campos ao banco de dados e interfaces
+  - tem_parcelamentos (corrigido para plural) e campos de observação
+  - Validação e integração completa em todas as interfaces
+- **Consistência de Interface**: Mantida uniformidade entre formulário de novo cliente e detalhes do cliente
+
 ### January 05, 2025 - Reorganização de Campos no Sistema de Clientes
 - **Correção de Organização**: Movidos os campos NIRE, Nota de Serviço, Nota de Venda e Observações para dentro da seção "Informações da Empresa"
 - **Consistência de Interface**: Atualizado tanto o formulário de novo cliente quanto as páginas de detalhes dos clientes existentes

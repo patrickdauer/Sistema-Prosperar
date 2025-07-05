@@ -883,50 +883,100 @@ export default function NovoCliente() {
             </CardContent>
           </Card>
 
-          {/* Status Financeiro */}
+          {/* Status Dívidas Tributárias */}
           <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
             <CardHeader>
-              <CardTitle className="text-white">Status Financeiro e Dívidas</CardTitle>
+              <CardTitle className="text-white">Status Dívidas Tributárias</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-gray-200">Tem Débitos?</Label>
-                  <Select value={formData.tem_debitos} onValueChange={(value) => handleInputChange('tem_debitos', value)}>
-                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-600">
-                      <SelectItem value="sim">Sim</SelectItem>
-                      <SelectItem value="nao">Não</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="text-gray-200">Tem Parcelamento?</Label>
-                  <Select value={formData.tem_parcelamento} onValueChange={(value) => handleInputChange('tem_parcelamento', value)}>
-                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-600">
-                      <SelectItem value="sim">Sim</SelectItem>
-                      <SelectItem value="nao">Não</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="text-gray-200">Tem Dívida Ativa?</Label>
-                  <Select value={formData.tem_divida_ativa} onValueChange={(value) => handleInputChange('tem_divida_ativa', value)}>
-                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-600">
-                      <SelectItem value="sim">Sim</SelectItem>
-                      <SelectItem value="nao">Não</SelectItem>
-                    </SelectContent>
-                  </Select>
+            <CardContent className="space-y-6">
+              
+              {/* Débitos */}
+              <div className="border border-gray-600 rounded-lg p-4">
+                <h4 className="text-white font-semibold mb-4">Débitos</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-gray-200">Possui Débitos</Label>
+                    <Select value={formData.tem_debitos} onValueChange={(value) => handleInputChange('tem_debitos', value)}>
+                      <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 border-gray-600">
+                        <SelectItem value="sim">Sim</SelectItem>
+                        <SelectItem value="nao">Não</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label className="text-gray-200">Observações sobre Débitos</Label>
+                    <Textarea
+                      value={formData.observacoes_debitos}
+                      onChange={(e) => handleInputChange('observacoes_debitos', e.target.value)}
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                      placeholder="Observações sobre débitos tributários..."
+                      rows={2}
+                    />
+                  </div>
                 </div>
               </div>
+
+              {/* Parcelamentos */}
+              <div className="border border-gray-600 rounded-lg p-4">
+                <h4 className="text-white font-semibold mb-4">Parcelamentos</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-gray-200">Possui Parcelamentos</Label>
+                    <Select value={formData.tem_parcelamentos} onValueChange={(value) => handleInputChange('tem_parcelamentos', value)}>
+                      <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 border-gray-600">
+                        <SelectItem value="sim">Sim</SelectItem>
+                        <SelectItem value="nao">Não</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label className="text-gray-200">Observações sobre Parcelamentos</Label>
+                    <Textarea
+                      value={formData.observacoes_parcelamentos}
+                      onChange={(e) => handleInputChange('observacoes_parcelamentos', e.target.value)}
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                      placeholder="Observações sobre parcelamentos tributários..."
+                      rows={2}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Dívida Ativa */}
+              <div className="border border-gray-600 rounded-lg p-4">
+                <h4 className="text-white font-semibold mb-4">Dívida Ativa</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-gray-200">Possui Dívida Ativa</Label>
+                    <Select value={formData.tem_divida_ativa} onValueChange={(value) => handleInputChange('tem_divida_ativa', value)}>
+                      <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 border-gray-600">
+                        <SelectItem value="sim">Sim</SelectItem>
+                        <SelectItem value="nao">Não</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label className="text-gray-200">Observações sobre Dívida Ativa</Label>
+                    <Textarea
+                      value={formData.observacoes_divida_ativa}
+                      onChange={(e) => handleInputChange('observacoes_divida_ativa', e.target.value)}
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                      placeholder="Observações sobre dívida ativa..."
+                      rows={2}
+                    />
+                  </div>
+                </div>
+              </div>
+
             </CardContent>
           </Card>
 
@@ -971,6 +1021,16 @@ export default function NovoCliente() {
                     onChange={(e) => handleInputChange('data_vencimento', e.target.value)}
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     placeholder="Dia do vencimento"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Label className="text-gray-200">Observações sobre Mensalidade e Negociação</Label>
+                  <Textarea
+                    value={formData.observacoes_mensalidade}
+                    onChange={(e) => handleInputChange('observacoes_mensalidade', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Observações sobre negociação do cliente, histórico de pagamentos, acordos especiais..."
+                    rows={3}
                   />
                 </div>
               </div>
