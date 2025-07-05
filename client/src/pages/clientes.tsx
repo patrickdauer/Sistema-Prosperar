@@ -1,35 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, Plus, Search, Edit, Trash2, Eye, Users, Phone, Mail, MapPin } from 'lucide-react';
+import { Search, Eye, Users, Building2, Plus, ToggleLeft, ToggleRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { BackToHomeButton } from '@/components/back-to-home-button';
+import { useLocation } from 'wouter';
 
-// Definindo os tipos localmente para simplificar
+// Definindo os tipos baseados no schema real
 interface Cliente {
   id: number;
-  razaoSocial: string | null;
-  nomeFantasia: string | null;
+  razao_social: string | null;
+  nome_fantasia: string | null;
   cnpj: string | null;
-  email: string | null;
-  telefoneComercial: string | null;
-  endereco: string | null;
+  email_empresa: string | null;
+  telefone_empresa: string | null;
+  contato: string | null;
+  celular: string | null;
   status: string | null;
-  atividadePrincipal: string | null;
-  atividadesSecundarias: string | null;
-  socios: any;
-  site: string | null;
-  createdAt: string | null;
+  created_at: string;
 }
 
 export default function Clientes() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
-  const [showDetails, setShowDetails] = useState(false);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
+  const [, setLocation] = useLocation();
 
   // Função para buscar clientes
   const fetchClientes = async () => {
@@ -60,47 +55,35 @@ export default function Clientes() {
     fetchClientes();
   }, [searchTerm]);
 
-  // Função para deletar cliente
-  const handleDelete = async (id: number) => {
-    if (confirm('Tem certeza que deseja deletar este cliente?')) {
-      try {
-        const response = await fetch(`/api/clientes/${id}`, {
-          method: 'DELETE',
-        });
-        
-        if (response.ok) {
-          fetchClientes(); // Recarregar lista
-        } else {
-          alert('Erro ao deletar cliente');
-        }
-      } catch (error) {
-        console.error('Erro ao deletar cliente:', error);
-        alert('Erro ao deletar cliente');
+  // Função para alternar status ativo/inativo
+  const toggleClienteStatus = async (id: number, currentStatus: string | null) => {
+    try {
+      const newStatus = currentStatus === 'ativo' ? 'inativo' : 'ativo';
+      const response = await fetch(`/api/clientes/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      
+      if (response.ok) {
+        fetchClientes(); // Recarregar lista
+      } else {
+        alert('Erro ao atualizar status do cliente');
       }
+    } catch (error) {
+      console.error('Erro ao atualizar status:', error);
+      alert('Erro ao atualizar status do cliente');
     }
   };
 
-  const handleView = (cliente: Cliente) => {
-    setSelectedCliente(cliente);
-    setShowDetails(true);
-  };
-
-  const getStatusColor = (status: string | null) => {
-    switch (status) {
-      case 'ativo': return 'bg-green-500';
-      case 'inativo': return 'bg-red-500';
-      case 'suspenso': return 'bg-yellow-500';
-      default: return 'bg-gray-500';
-    }
+  // Função para ver detalhes completos
+  const handleViewDetails = (cliente: Cliente) => {
+    setLocation(`/clientes/${cliente.id}`);
   };
 
   const clientesAtivos = clientes.filter(c => c.status === 'ativo').length;
-  const clientesNovos = clientes.filter(c => {
-    if (!c.createdAt) return false;
-    const created = new Date(c.createdAt);
-    const now = new Date();
-    return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
-  }).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
@@ -118,7 +101,7 @@ export default function Clientes() {
 
       <main className="container mx-auto px-4 py-8">
         {/* Header com estatísticas */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -147,22 +130,10 @@ export default function Clientes() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-400">Novos Este Mês</p>
-                  <p className="text-2xl font-bold text-white">{clientesNovos}</p>
-                </div>
-                <Plus className="h-8 w-8 text-orange-500" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
                   <p className="text-sm text-gray-400">Taxa de Retenção</p>
                   <p className="text-2xl font-bold text-white">95%</p>
                 </div>
-                <Users className="h-8 w-8 text-green-500" />
+                <Building2 className="h-8 w-8 text-orange-500" />
               </div>
             </CardContent>
           </Card>
@@ -180,7 +151,7 @@ export default function Clientes() {
             />
           </div>
           <Button
-            onClick={() => window.location.href = '/business-registration'}
+            onClick={() => setLocation('/business-registration')}
             style={{ 
               backgroundColor: '#22c55e', 
               color: 'white',
@@ -193,7 +164,7 @@ export default function Clientes() {
           </Button>
         </div>
 
-        {/* Lista de clientes */}
+        {/* Lista simplificada de clientes */}
         {loading ? (
           <div className="text-center py-8">
             <p className="text-white">Carregando clientes...</p>
@@ -205,72 +176,76 @@ export default function Clientes() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4">
+          <div className="space-y-2">
+            {/* Cabeçalho da tabela */}
+            <div className="grid grid-cols-12 gap-4 p-4 text-sm font-medium text-gray-400 border-b border-gray-600">
+              <div className="col-span-3">Nome do Cliente</div>
+              <div className="col-span-2">CNPJ</div>
+              <div className="col-span-2">Contato</div>
+              <div className="col-span-2">Celular</div>
+              <div className="col-span-1">Status</div>
+              <div className="col-span-2">Ações</div>
+            </div>
+
+            {/* Linhas de clientes */}
             {clientes.map((cliente) => (
               <Card 
                 key={cliente.id} 
                 style={{ background: '#1f2937', border: '1px solid #374151' }}
                 className="hover:border-green-500 transition-colors"
               >
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold text-white">
-                          {cliente.razaoSocial || 'Sem nome'}
-                        </h3>
-                        <Badge className={`${getStatusColor(cliente.status)} text-white`}>
-                          {cliente.status || 'ativo'}
-                        </Badge>
+                <CardContent className="p-4">
+                  <div className="grid grid-cols-12 gap-4 items-center">
+                    {/* Nome do Cliente */}
+                    <div className="col-span-3">
+                      <div className="text-white font-medium">
+                        {cliente.razao_social || 'Sem nome'}
                       </div>
-                      
-                      <div className="grid md:grid-cols-3 gap-4 text-sm text-gray-300">
-                        <div className="flex items-center gap-2">
-                          <Building2 className="h-4 w-4 text-orange-500" />
-                          <span>{cliente.nomeFantasia || 'N/A'}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Phone className="h-4 w-4 text-orange-500" />
-                          <span>{cliente.telefoneComercial || 'N/A'}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Mail className="h-4 w-4 text-orange-500" />
-                          <span>{cliente.email || 'N/A'}</span>
-                        </div>
+                      <div className="text-sm text-gray-400">
+                        {cliente.nome_fantasia || 'N/A'}
                       </div>
-                      
-                      {cliente.endereco && (
-                        <div className="flex items-center gap-2 mt-2 text-sm text-gray-400">
-                          <MapPin className="h-4 w-4 text-orange-500" />
-                          <span>{cliente.endereco}</span>
-                        </div>
-                      )}
                     </div>
 
-                    <div className="flex gap-2">
+                    {/* CNPJ */}
+                    <div className="col-span-2 text-sm text-gray-300">
+                      {cliente.cnpj || 'N/A'}
+                    </div>
+
+                    {/* Contato */}
+                    <div className="col-span-2 text-sm text-gray-300">
+                      {cliente.contato || 'N/A'}
+                    </div>
+
+                    {/* Celular */}
+                    <div className="col-span-2 text-sm text-gray-300">
+                      {cliente.celular || 'N/A'}
+                    </div>
+
+                    {/* Status Ativo/Inativo */}
+                    <div className="col-span-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleClienteStatus(cliente.id, cliente.status)}
+                        className="p-1 hover:bg-gray-700"
+                      >
+                        {cliente.status === 'ativo' ? (
+                          <ToggleRight className="h-6 w-6 text-green-500" />
+                        ) : (
+                          <ToggleLeft className="h-6 w-6 text-red-500" />
+                        )}
+                      </Button>
+                    </div>
+
+                    {/* Ações */}
+                    <div className="col-span-2 flex gap-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleView(cliente)}
+                        onClick={() => handleViewDetails(cliente)}
                         className="border-gray-600 text-white hover:bg-gray-700"
                       >
                         <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => window.location.href = `/clientes/${cliente.id}/edit`}
-                        className="border-gray-600 text-white hover:bg-gray-700"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(cliente.id)}
-                        className="border-red-600 text-red-400 hover:bg-red-900"
-                      >
-                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
@@ -279,86 +254,6 @@ export default function Clientes() {
             ))}
           </div>
         )}
-
-        {/* Modal de detalhes */}
-        <Dialog open={showDetails} onOpenChange={setShowDetails}>
-          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-gray-800 text-white">
-            <DialogHeader>
-              <DialogTitle className="text-green-500">
-                Detalhes do Cliente
-              </DialogTitle>
-            </DialogHeader>
-            
-            {selectedCliente && (
-              <div className="space-y-6">
-                {/* Informações básicas */}
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="text-lg font-semibold text-green-500 mb-3">Informações da Empresa</h4>
-                    <div className="space-y-2 text-sm">
-                      <p><span className="text-gray-400">Razão Social:</span> {selectedCliente.razaoSocial || 'N/A'}</p>
-                      <p><span className="text-gray-400">Nome Fantasia:</span> {selectedCliente.nomeFantasia || 'N/A'}</p>
-                      <p><span className="text-gray-400">CNPJ:</span> {selectedCliente.cnpj || 'N/A'}</p>
-                      <p><span className="text-gray-400">Status:</span> 
-                        <Badge className={`ml-2 ${getStatusColor(selectedCliente.status)} text-white`}>
-                          {selectedCliente.status || 'ativo'}
-                        </Badge>
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h4 className="text-lg font-semibold text-green-500 mb-3">Contato</h4>
-                    <div className="space-y-2 text-sm">
-                      <p><span className="text-gray-400">Email:</span> {selectedCliente.email || 'N/A'}</p>
-                      <p><span className="text-gray-400">Telefone:</span> {selectedCliente.telefoneComercial || 'N/A'}</p>
-                      <p><span className="text-gray-400">Site:</span> {selectedCliente.site || 'N/A'}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Endereço */}
-                {selectedCliente.endereco && (
-                  <div>
-                    <h4 className="text-lg font-semibold text-green-500 mb-3">Endereço</h4>
-                    <p className="text-sm text-gray-300">{selectedCliente.endereco}</p>
-                  </div>
-                )}
-
-                {/* Atividades */}
-                {selectedCliente.atividadePrincipal && (
-                  <div>
-                    <h4 className="text-lg font-semibold text-green-500 mb-3">Atividades</h4>
-                    <div className="space-y-2 text-sm">
-                      <p><span className="text-gray-400">Principal:</span> {selectedCliente.atividadePrincipal}</p>
-                      {selectedCliente.atividadesSecundarias && (
-                        <p><span className="text-gray-400">Secundárias:</span> {selectedCliente.atividadesSecundarias}</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Sócios */}
-                {selectedCliente.socios && Array.isArray(selectedCliente.socios) && selectedCliente.socios.length > 0 && (
-                  <div>
-                    <h4 className="text-lg font-semibold text-green-500 mb-3">Sócios</h4>
-                    <div className="space-y-3">
-                      {selectedCliente.socios.map((socio: any, index: number) => (
-                        <div key={index} className="bg-gray-700 p-3 rounded">
-                          <p className="font-medium">{socio.nomeCompleto || 'Nome não informado'}</p>
-                          <div className="text-sm text-gray-400 mt-1">
-                            <p>CPF: {socio.cpf || 'N/A'}</p>
-                            <p>Participação: {socio.participacao || 'N/A'}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
       </main>
     </div>
   );

@@ -405,8 +405,14 @@ export class DatabaseStorage implements IStorage {
     return cliente || undefined;
   }
 
-  async getAllClientes(): Promise<Cliente[]> {
-    return await db.select().from(clientes).orderBy(desc(clientes.createdAt));
+  async getAllClientes(): Promise<any[]> {
+    const result = await db.execute(`
+      SELECT id, razao_social, nome_fantasia, cnpj, email_empresa, telefone_empresa, 
+             contato, celular, status, created_at 
+      FROM clientes 
+      ORDER BY created_at DESC
+    `);
+    return result.rows;
   }
 
   async updateCliente(id: number, data: Partial<Cliente>): Promise<Cliente> {
@@ -423,19 +429,18 @@ export class DatabaseStorage implements IStorage {
     await db.delete(clientes).where(eq(clientes.id, id));
   }
 
-  async searchClientes(searchTerm: string): Promise<Cliente[]> {
-    return await db
-      .select()
-      .from(clientes)
-      .where(
-        or(
-          ilike(clientes.razaoSocial, `%${searchTerm}%`),
-          ilike(clientes.nomeFantasia, `%${searchTerm}%`),
-          ilike(clientes.cnpj, `%${searchTerm}%`),
-          ilike(clientes.email, `%${searchTerm}%`)
-        )
-      )
-      .orderBy(desc(clientes.createdAt));
+  async searchClientes(searchTerm: string): Promise<any[]> {
+    const result = await db.execute(`
+      SELECT id, razao_social, nome_fantasia, cnpj, email_empresa, telefone_empresa, 
+             contato, celular, status, created_at 
+      FROM clientes 
+      WHERE razao_social ILIKE '%${searchTerm}%'
+         OR nome_fantasia ILIKE '%${searchTerm}%'
+         OR cnpj ILIKE '%${searchTerm}%'
+         OR email_empresa ILIKE '%${searchTerm}%'
+      ORDER BY created_at DESC
+    `);
+    return result.rows;
   }
 
   async promoverClienteFromRegistration(registrationId: number, clienteData: Partial<InsertCliente>): Promise<Cliente> {
