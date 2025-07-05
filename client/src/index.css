@@ -35,6 +35,25 @@ button {
   border: 1px solid #4b5563 !important;
 }
 
+/* Status buttons with specific colors - highest priority */
+button[data-status="ativo"] {
+  background-color: #16a34a !important;
+  border-color: #16a34a !important;
+  color: white !important;
+}
+
+button[data-status="bloqueado"] {
+  background-color: #dc2626 !important;
+  border-color: #dc2626 !important;
+  color: white !important;
+}
+
+button[data-status="inativo"] {
+  background-color: #6b7280 !important;
+  border-color: #6b7280 !important;
+  color: white !important;
+}
+
 /* Green buttons specifically */
 .bg-green-600, .bg-green-700 {
   background-color: #22c55e !important;

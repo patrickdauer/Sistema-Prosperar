@@ -454,11 +454,9 @@ export default function Clientes() {
                     {/* Status */}
                     <div className="col-span-1 flex justify-center items-center pr-4">
                       <button
+                        data-status={cliente.status || 'inativo'}
                         onClick={() => toggleClienteStatus(cliente.id, cliente.status)}
                         style={{
-                          backgroundColor: cliente.status === 'ativo' ? '#16a34a' : 
-                                         cliente.status === 'bloqueado' ? '#dc2626' : '#6b7280',
-                          color: 'white',
                           padding: '4px 12px',
                           borderRadius: '6px',
                           fontSize: '11px',
