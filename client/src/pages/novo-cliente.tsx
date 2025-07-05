@@ -240,7 +240,6 @@ export default function NovoCliente() {
           <BackToHomeButton />
         </div>
       </header>
-
       <main className="container mx-auto px-4 py-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Dados Básicos */}
@@ -1165,7 +1164,7 @@ export default function NovoCliente() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-gray-200">Imposto de Renda</Label>
+                  <Label className="text-gray-200">Imposto de Renda Pessoa Física</Label>
                   <Select value={formData.imposto_renda} onValueChange={(value) => handleInputChange('imposto_renda', value)}>
                     <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                       <SelectValue placeholder="Selecione" />
