@@ -223,7 +223,7 @@ export default function ClienteDetailsFix() {
     // Campo do Google Drive
     'link_google_drive',
     // Novos campos do sócio
-    'regime_tributario_socio_1', 'senha_gov_socio_1', 'filiacao_socio_1', 'observacao_socio_1'
+    'regime_casamento_socio_1', 'senha_gov_socio_1', 'filiacao_socio_1', 'observacao_socio_1'
   ];
 
   return (
@@ -660,6 +660,7 @@ export default function ClienteDetailsFix() {
                     handleInputChange(`nacionalidade_socio_${newSocioNumber}`, '');
                     handleInputChange(`nascimento_socio_${newSocioNumber}`, '');
                     handleInputChange(`estado_civil_socio_${newSocioNumber}`, '');
+                    handleInputChange(`regime_casamento_socio_${newSocioNumber}`, '');
                     handleInputChange(`profissao_socio_${newSocioNumber}`, '');
                     handleInputChange(`telefone_socio_${newSocioNumber}`, '');
                     handleInputChange(`email_socio_${newSocioNumber}`, '');
@@ -759,14 +760,14 @@ export default function ClienteDetailsFix() {
                 <p className="text-white py-2">{cliente.estado_civil_socio_1 || 'N/A'}</p>
               )}
             </div>
-            {/* Regime Tributário - só aparece se casado */}
+            {/* Regime de Casamento - só aparece se casado */}
             {(formData?.estado_civil_socio_1 === 'CASADO' || cliente.estado_civil_socio_1 === 'CASADO') && (
               <div>
-                <Label className="text-gray-300">Regime Tributário</Label>
+                <Label className="text-gray-300">Regime de Casamento</Label>
                 {editing ? (
-                  <Select value={formData?.regime_tributario_socio_1 || ''} onValueChange={(value) => handleInputChange('regime_tributario_socio_1', value)}>
+                  <Select value={formData?.regime_casamento_socio_1 || ''} onValueChange={(value) => handleInputChange('regime_casamento_socio_1', value)}>
                     <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                      <SelectValue placeholder="Selecione o regime tributário" />
+                      <SelectValue placeholder="Selecione o regime de casamento" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="COMUNHAO_PARCIAL">Comunhão Parcial de Bens</SelectItem>
@@ -776,7 +777,7 @@ export default function ClienteDetailsFix() {
                     </SelectContent>
                   </Select>
                 ) : (
-                  <p className="text-white py-2">{cliente.regime_tributario_socio_1 || 'N/A'}</p>
+                  <p className="text-white py-2">{cliente.regime_casamento_socio_1 || 'N/A'}</p>
                 )}
               </div>
             )}
