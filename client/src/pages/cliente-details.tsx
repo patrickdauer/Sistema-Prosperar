@@ -10,15 +10,15 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
 
-// Interface baseada na estrutura COMPLETA da tabela + campos customizados
+// Interface baseada na estrutura REAL da tabela (snake_case como no banco)
 interface ClienteCompleto {
   id: number;
   // Informações básicas da empresa
-  razaoSocial: string | null;
-  nomeFantasia: string | null;
+  razao_social: string | null;
+  nome_fantasia: string | null;
   cnpj: string | null;
-  inscricaoEstadual: string | null;
-  inscricaoMunicipal: string | null;
+  inscricao_estadual: string | null;
+  inscricao_municipal: string | null;
   
   // Endereço
   endereco: string | null;
@@ -29,36 +29,36 @@ interface ClienteCompleto {
   complemento: string | null;
   
   // Contato
-  telefoneComercial: string | null;
-  telefoneAlternativo: string | null;
+  telefone_comercial: string | null;
+  telefone_alternativo: string | null;
   email: string | null;
-  emailAlternativo: string | null;
+  email_alternativo: string | null;
   site: string | null;
   
   // Informações fiscais
-  regimeTributario: string | null;
-  atividadePrincipal: string | null;
-  atividadesSecundarias: string | null;
-  capitalSocial: string | null;
+  regime_tributario: string | null;
+  atividade_principal: string | null;
+  atividades_secundarias: string | null;
+  capital_social: string | null;
   
   // Dados bancários
   banco: string | null;
   agencia: string | null;
   conta: string | null;
-  tipoConta: string | null;
+  tipo_conta: string | null;
   
   // Informações do responsável
-  responsavelNome: string | null;
-  responsavelCpf: string | null;
-  responsavelRg: string | null;
-  responsavelTelefone: string | null;
-  responsavelEmail: string | null;
+  responsavel_nome: string | null;
+  responsavel_cpf: string | null;
+  responsavel_rg: string | null;
+  responsavel_telefone: string | null;
+  responsavel_email: string | null;
   
   // Informações contratuais
-  dataInicioContrato: string | null;
-  dataFimContrato: string | null;
-  valorMensalidade: string | null;
-  diaVencimento: number | null;
+  data_inicio_contrato: string | null;
+  data_fim_contrato: string | null;
+  valor_mensalidade: string | null;
+  dia_vencimento: number | null;
   
   // Status e observações
   status: string | null;
@@ -68,27 +68,27 @@ interface ClienteCompleto {
   socios: any[] | null;
   
   // Metadados
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
   
   // Informações adicionais
-  certificadoDigital: boolean | null;
-  eCommerce: boolean | null;
+  certificado_digital: boolean | null;
+  e_commerce: boolean | null;
   funcionarios: number | null;
   
   // Serviços contratados
   contabilidade: boolean | null;
-  departamentoPessoal: boolean | null;
-  consultoriaFiscal: boolean | null;
+  departamento_pessoal: boolean | null;
+  consultoria_fiscal: boolean | null;
   auditoria: boolean | null;
-  aberturaMei: boolean | null;
+  abertura_mei: boolean | null;
   
   // Documentos
   documentos: any[] | null;
   
   // Origem do cliente
   origem: string | null;
-  indicadoPor: string | null;
+  indicado_por: string | null;
   
   // Para suportar campos customizados adicionais
   [key: string]: any;
@@ -223,7 +223,7 @@ export default function ClienteDetails({ params }: ClienteDetailsProps) {
               Voltar
             </Button>
             <h1 className="text-2xl font-bold text-white">
-              {cliente.razaoSocial || 'Cliente sem nome'}
+              {cliente.razao_social || 'Cliente sem nome'}
             </h1>
           </div>
           <div className="flex gap-2">
@@ -291,24 +291,24 @@ export default function ClienteDetails({ params }: ClienteDetailsProps) {
               <Label className="text-gray-300">Razão Social</Label>
               {editing ? (
                 <Input
-                  value={formData.razaoSocial || ''}
-                  onChange={(e) => handleInputChange('razaoSocial', e.target.value)}
+                  value={formData.razao_social || ''}
+                  onChange={(e) => handleInputChange('razao_social', e.target.value)}
                   className="bg-gray-700 border-gray-600 text-white"
                 />
               ) : (
-                <p className="text-white py-2">{cliente.razaoSocial || 'N/A'}</p>
+                <p className="text-white py-2">{cliente.razao_social || 'N/A'}</p>
               )}
             </div>
             <div>
               <Label className="text-gray-300">Nome Fantasia</Label>
               {editing ? (
                 <Input
-                  value={formData.nomeFantasia || ''}
-                  onChange={(e) => handleInputChange('nomeFantasia', e.target.value)}
+                  value={formData.nome_fantasia || ''}
+                  onChange={(e) => handleInputChange('nome_fantasia', e.target.value)}
                   className="bg-gray-700 border-gray-600 text-white"
                 />
               ) : (
-                <p className="text-white py-2">{cliente.nomeFantasia || 'N/A'}</p>
+                <p className="text-white py-2">{cliente.nome_fantasia || 'N/A'}</p>
               )}
             </div>
             <div>
@@ -327,24 +327,24 @@ export default function ClienteDetails({ params }: ClienteDetailsProps) {
               <Label className="text-gray-300">Inscrição Estadual</Label>
               {editing ? (
                 <Input
-                  value={formData.inscricaoEstadual || ''}
-                  onChange={(e) => handleInputChange('inscricaoEstadual', e.target.value)}
+                  value={formData.inscricao_estadual || ''}
+                  onChange={(e) => handleInputChange('inscricao_estadual', e.target.value)}
                   className="bg-gray-700 border-gray-600 text-white"
                 />
               ) : (
-                <p className="text-white py-2">{cliente.inscricaoEstadual || 'N/A'}</p>
+                <p className="text-white py-2">{cliente.inscricao_estadual || 'N/A'}</p>
               )}
             </div>
             <div>
               <Label className="text-gray-300">Inscrição Municipal</Label>
               {editing ? (
                 <Input
-                  value={formData.inscricaoMunicipal || ''}
-                  onChange={(e) => handleInputChange('inscricaoMunicipal', e.target.value)}
+                  value={formData.inscricao_municipal || ''}
+                  onChange={(e) => handleInputChange('inscricao_municipal', e.target.value)}
                   className="bg-gray-700 border-gray-600 text-white"
                 />
               ) : (
-                <p className="text-white py-2">{cliente.inscricaoMunicipal || 'N/A'}</p>
+                <p className="text-white py-2">{cliente.inscricao_municipal || 'N/A'}</p>
               )}
             </div>
             <div>
@@ -460,24 +460,24 @@ export default function ClienteDetails({ params }: ClienteDetailsProps) {
               <Label className="text-gray-300">Telefone Comercial</Label>
               {editing ? (
                 <Input
-                  value={formData.telefoneComercial || ''}
-                  onChange={(e) => handleInputChange('telefoneComercial', e.target.value)}
+                  value={formData.telefone_comercial || ''}
+                  onChange={(e) => handleInputChange('telefone_comercial', e.target.value)}
                   className="bg-gray-700 border-gray-600 text-white"
                 />
               ) : (
-                <p className="text-white py-2">{cliente.telefoneComercial || 'N/A'}</p>
+                <p className="text-white py-2">{cliente.telefone_comercial || 'N/A'}</p>
               )}
             </div>
             <div>
               <Label className="text-gray-300">Telefone Alternativo</Label>
               {editing ? (
                 <Input
-                  value={formData.telefoneAlternativo || ''}
-                  onChange={(e) => handleInputChange('telefoneAlternativo', e.target.value)}
+                  value={formData.telefone_alternativo || ''}
+                  onChange={(e) => handleInputChange('telefone_alternativo', e.target.value)}
                   className="bg-gray-700 border-gray-600 text-white"
                 />
               ) : (
-                <p className="text-white py-2">{cliente.telefoneAlternativo || 'N/A'}</p>
+                <p className="text-white py-2">{cliente.telefone_alternativo || 'N/A'}</p>
               )}
             </div>
             <div>
@@ -496,12 +496,12 @@ export default function ClienteDetails({ params }: ClienteDetailsProps) {
               <Label className="text-gray-300">Email Alternativo</Label>
               {editing ? (
                 <Input
-                  value={formData.emailAlternativo || ''}
-                  onChange={(e) => handleInputChange('emailAlternativo', e.target.value)}
+                  value={formData.email_alternativo || ''}
+                  onChange={(e) => handleInputChange('email_alternativo', e.target.value)}
                   className="bg-gray-700 border-gray-600 text-white"
                 />
               ) : (
-                <p className="text-white py-2">{cliente.emailAlternativo || 'N/A'}</p>
+                <p className="text-white py-2">{cliente.email_alternativo || 'N/A'}</p>
               )}
             </div>
           </CardContent>
@@ -983,17 +983,19 @@ export default function ClienteDetails({ params }: ClienteDetailsProps) {
 
         {/* Campos Customizados */}
         {Object.keys(formData || {}).some(key => 
-          !['id', 'razaoSocial', 'nomeFantasia', 'cnpj', 'inscricaoEstadual', 'inscricaoMunicipal', 
-            'endereco', 'cidade', 'estado', 'cep', 'bairro', 'complemento', 
-            'telefoneComercial', 'telefoneAlternativo', 'email', 'emailAlternativo', 'site',
-            'regimeTributario', 'atividadePrincipal', 'atividadesSecundarias', 'capitalSocial',
-            'banco', 'agencia', 'conta', 'tipoConta',
-            'responsavelNome', 'responsavelCpf', 'responsavelRg', 'responsavelTelefone', 'responsavelEmail',
-            'dataInicioContrato', 'dataFimContrato', 'valorMensalidade', 'diaVencimento',
-            'status', 'observacoes', 'socios', 'createdAt', 'updatedAt',
-            'certificadoDigital', 'eCommerce', 'funcionarios',
-            'contabilidade', 'departamentoPessoal', 'consultoriaFiscal', 'auditoria', 'aberturaMei',
-            'documentos', 'origem', 'indicadoPor'].includes(key)
+          !['id', 'data_abertura', 'cliente_desde', 'razao_social', 'nome_fantasia', 'cnpj', 'regime_tributario', 'inscricao_estadual', 'inscricao_municipal', 
+            'endereco', 'numero', 'cidade', 'estado', 'cep', 'bairro', 'complemento', 
+            'telefone_empresa', 'email_empresa', 'contato', 'celular', 'contato_2', 'celular_2',
+            'atividade_principal', 'atividades_secundarias', 'capital_social', 'metragem_ocupada',
+            'certificado_digital_empresa', 'senha_certificado_digital_empresa', 'validade_certificado_digital_empresa',
+            'procuracao_cnpj_contabilidade', 'procuracao_cnpj_cpf', 'valor_mensalidade', 'data_vencimento',
+            'status', 'socios', 'created_at', 'updated_at', 'email', 'telefone_comercial',
+            'socio_1', 'cpf_socio_1', 'senha_gov_socio_1', 'certificado_socio_1', 'senha_certificado_socio_1',
+            'validade_certificado_socio_1', 'procuracao_socio_1', 'nacionalidade_socio_1', 'nascimento_socio_1',
+            'filiacao_socio_1', 'profissao_socio_1', 'estado_civil_socio_1', 'endereco_socio_1',
+            'telefone_socio_1', 'email_socio_1', 'cnh_socio_1', 'rg_socio_1', 'certidao_casamento_socio_1',
+            'tem_debitos', 'tem_parcelamento', 'tem_divida_ativa', 'mensalidade_com_faturamento', 'mensalidade_sem_faturamento',
+            'certificado_empresa', 'senha_certificado_empresa', 'status_das', 'status_envio', 'link_mei'].includes(key)
         ) && (
           <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
             <CardHeader>

@@ -20,7 +20,7 @@ import Home from "@/pages/home";
 import UserManagement from "@/pages/user-management";
 import Profile from "@/pages/profile";
 import Clientes from "@/pages/clientes";
-import ClienteDetails from "@/pages/cliente-details";
+import ClienteDetails from "@/pages/cliente-details-fixed";
 
 function ProtectedDashboardInterno() {
   const { isAuthenticated, isLoading } = useAuth();
