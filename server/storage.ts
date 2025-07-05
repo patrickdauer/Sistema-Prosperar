@@ -25,7 +25,7 @@ import {
   type ContratacaoFuncionario,
   type InsertContratacaoFuncionario,
 } from "@shared/contratacao-schema";
-import { db } from "./db";
+import { db, pool } from "./db";
 import { eq, and, desc, asc, or, ilike } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
@@ -415,22 +415,93 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateCliente(id: number, data: Partial<Cliente>): Promise<Cliente> {
-    // Para simplificar, vamos focar apenas no status primeiro
-    if (data.status !== undefined) {
-      const query = `
+    try {
+      // Lista de campos padrão conhecidos na tabela
+      const knownFields = [
+        'id', 'data_abertura', 'cliente_desde', 'razao_social', 'nome_fantasia', 'cnpj', 'regime_tributario', 
+        'inscricao_estadual', 'inscricao_municipal', 'endereco', 'numero', 'cidade', 'estado', 'cep', 'bairro', 
+        'complemento', 'telefone_empresa', 'email_empresa', 'contato', 'celular', 'contato_2', 'celular_2',
+        'atividade_principal', 'atividades_secundarias', 'capital_social', 'metragem_ocupada',
+        'certificado_digital_empresa', 'senha_certificado_digital_empresa', 'validade_certificado_digital_empresa',
+        'procuracao_cnpj_contabilidade', 'procuracao_cnpj_cpf', 'valor_mensalidade', 'data_vencimento',
+        'status', 'socios', 'created_at', 'updated_at', 'email', 'telefone_comercial',
+        'socio_1', 'cpf_socio_1', 'senha_gov_socio_1', 'certificado_socio_1', 'senha_certificado_socio_1',
+        'validade_certificado_socio_1', 'procuracao_socio_1', 'nacionalidade_socio_1', 'nascimento_socio_1',
+        'filiacao_socio_1', 'profissao_socio_1', 'estado_civil_socio_1', 'endereco_socio_1',
+        'telefone_socio_1', 'email_socio_1', 'cnh_socio_1', 'rg_socio_1', 'certidao_casamento_socio_1',
+        'tem_debitos', 'tem_parcelamento', 'tem_divida_ativa', 'mensalidade_com_faturamento', 'mensalidade_sem_faturamento',
+        'certificado_empresa', 'senha_certificado_empresa', 'status_das', 'status_envio', 'link_mei',
+        'imposto_renda', 'nire', 'nota_servico', 'nota_venda'
+      ];
+
+      // Separar campos conhecidos de campos customizados
+      const knownUpdates: any = {};
+      const customFields: any = {};
+      
+      Object.keys(data).forEach(key => {
+        if (knownFields.includes(key)) {
+          knownUpdates[key] = data[key as keyof Cliente];
+        } else {
+          customFields[key] = data[key as keyof Cliente];
+        }
+      });
+
+      // Para campos customizados, primeiro verificar se a coluna existe, se não, adicionar
+      for (const [fieldName, fieldValue] of Object.entries(customFields)) {
+        try {
+          // Tentar verificar se a coluna existe
+          const checkColumnQuery = `
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'clientes' AND column_name = $1
+          `;
+          const columnExists = await pool.query(checkColumnQuery, [fieldName]);
+          
+          if (columnExists.rows.length === 0) {
+            // Coluna não existe, criar ela
+            const addColumnQuery = `ALTER TABLE clientes ADD COLUMN "${fieldName}" TEXT`;
+            await pool.query(addColumnQuery);
+            console.log(`✅ Coluna customizada '${fieldName}' adicionada à tabela clientes`);
+          }
+          
+          // Adicionar campo customizado aos updates conhecidos
+          knownUpdates[fieldName] = fieldValue;
+        } catch (error) {
+          console.error(`❌ Erro ao adicionar campo customizado '${fieldName}':`, error);
+        }
+      }
+
+      // Construir query de update dinâmicamente
+      const updateFields = Object.keys(knownUpdates).filter(key => key !== 'id');
+      if (updateFields.length === 0) {
+        const cliente = await this.getCliente(id);
+        return cliente as Cliente;
+      }
+
+      const setClause = updateFields.map((field, index) => `"${field}" = $${index + 2}`).join(', ');
+      const values = [id, ...updateFields.map(field => knownUpdates[field])];
+      
+      const updateQuery = `
         UPDATE clientes 
-        SET status = '${data.status}', updated_at = NOW()
-        WHERE id = ${id}
+        SET ${setClause}, updated_at = NOW()
+        WHERE id = $1
         RETURNING *
       `;
+
+      console.log(`🔄 Atualizando cliente ${id} com campos:`, updateFields);
+      const result = await pool.query(updateQuery, values);
       
-      const result = await db.execute(query);
+      if (result.rows.length === 0) {
+        throw new Error('Cliente não encontrado');
+      }
+
+      console.log(`✅ Cliente ${id} atualizado com sucesso`);
       return result.rows[0] as Cliente;
+      
+    } catch (error) {
+      console.error('❌ Erro ao atualizar cliente:', error);
+      throw error;
     }
-    
-    // Para outros campos, retornar cliente como está por enquanto
-    const cliente = await this.getCliente(id);
-    return cliente as Cliente;
   }
 
   async deleteCliente(id: number): Promise<void> {

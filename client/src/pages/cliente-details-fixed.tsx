@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, Building, MapPin, Phone, Mail, CreditCard, DollarSign, User, Calendar, Plus, Edit, Save, X, Trash2, Settings } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
@@ -97,6 +98,9 @@ export default function ClienteDetailsFix() {
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState<ClienteCompleto | null>(null);
+  const [showCustomFieldModal, setShowCustomFieldModal] = useState(false);
+  const [newFieldName, setNewFieldName] = useState('');
+  const [newFieldValue, setNewFieldValue] = useState('');
 
   const { data: cliente, isLoading } = useQuery({
     queryKey: ['/api/clientes', id],
@@ -140,12 +144,35 @@ export default function ClienteDetailsFix() {
   };
 
   const addCustomField = () => {
-    const fieldName = prompt('Digite o nome do novo campo:');
-    if (fieldName && formData) {
-      setFormData(prev => ({
-        ...prev!,
-        [fieldName]: ''
-      }));
+    if (newFieldName && formData) {
+      // Limpar o nome do campo e converter para snake_case
+      const cleanFieldName = newFieldName
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '')
+        .replace(/\s+/g, '_')
+        .trim();
+      
+      if (cleanFieldName && !standardFields.includes(cleanFieldName)) {
+        setFormData(prev => ({
+          ...prev!,
+          [cleanFieldName]: newFieldValue
+        }));
+        
+        setShowCustomFieldModal(false);
+        setNewFieldName('');
+        setNewFieldValue('');
+        
+        toast({
+          title: "Campo personalizado adicionado",
+          description: `Campo "${newFieldName}" foi adicionado ao formulário.`
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: "Nome de campo inválido ou já existe.",
+          variant: "destructive"
+        });
+      }
     }
   };
 
@@ -214,17 +241,70 @@ export default function ClienteDetailsFix() {
           <div className="flex gap-2">
             {editing ? (
               <>
-                <Button
-                  onClick={addCustomField}
-                  style={{ 
-                    backgroundColor: '#3b82f6', 
-                    color: 'white'
-                  }}
-                  className="hover:bg-blue-600"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar Campo
-                </Button>
+                <Dialog open={showCustomFieldModal} onOpenChange={setShowCustomFieldModal}>
+                  <DialogTrigger asChild>
+                    <Button
+                      style={{ 
+                        backgroundColor: '#3b82f6', 
+                        color: 'white'
+                      }}
+                      className="hover:bg-blue-600"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Adicionar Campo
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="bg-gray-900 border-gray-700">
+                    <DialogHeader>
+                      <DialogTitle className="text-white">Adicionar Campo Personalizado</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="fieldName" className="text-gray-200">Nome do Campo</Label>
+                        <Input
+                          id="fieldName"
+                          value={newFieldName}
+                          onChange={(e) => setNewFieldName(e.target.value)}
+                          placeholder="Ex: observacoes_especiais"
+                          className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                        />
+                        <p className="text-xs text-gray-400 mt-1">
+                          O nome será convertido automaticamente para formato de banco de dados
+                        </p>
+                      </div>
+                      <div>
+                        <Label htmlFor="fieldValue" className="text-gray-200">Valor Inicial (opcional)</Label>
+                        <Input
+                          id="fieldValue"
+                          value={newFieldValue}
+                          onChange={(e) => setNewFieldValue(e.target.value)}
+                          placeholder="Valor inicial do campo"
+                          className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                        />
+                      </div>
+                      <div className="flex gap-2 justify-end">
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setShowCustomFieldModal(false);
+                            setNewFieldName('');
+                            setNewFieldValue('');
+                          }}
+                          className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                        >
+                          Cancelar
+                        </Button>
+                        <Button
+                          onClick={addCustomField}
+                          disabled={!newFieldName.trim()}
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          Adicionar Campo
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
                 <Button
                   onClick={handleSave}
                   style={{ 
