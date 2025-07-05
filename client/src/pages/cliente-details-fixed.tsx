@@ -214,7 +214,12 @@ export default function ClienteDetailsFix() {
     'filiacao_socio_1', 'profissao_socio_1', 'estado_civil_socio_1', 'endereco_socio_1',
     'telefone_socio_1', 'email_socio_1', 'cnh_socio_1', 'rg_socio_1', 'certidao_casamento_socio_1',
     'tem_debitos', 'tem_parcelamento', 'tem_divida_ativa', 'mensalidade_com_faturamento', 'mensalidade_sem_faturamento',
-    'certificado_empresa', 'senha_certificado_empresa', 'status_das', 'status_envio', 'link_mei'
+    'certificado_empresa', 'senha_certificado_empresa', 'status_das', 'status_envio', 'link_mei',
+    // Novos campos do certificado digital
+    'tem_certificado_digital', 'data_vencimento_certificado', 'emissor_certificado', 'observacoes_certificado',
+    // Novos campos das procurações
+    'tem_procuracao_pj', 'data_vencimento_procuracao_pj', 'observacoes_procuracao_pj',
+    'tem_procuracao_pf', 'data_vencimento_procuracao_pf', 'observacoes_procuracao_pf'
   ];
 
   return (
@@ -795,6 +800,185 @@ export default function ClienteDetailsFix() {
               ) : (
                 <p className="text-white py-2">{cliente.status || 'N/A'}</p>
               )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Certificado Digital */}
+        <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-white">
+              <CreditCard className="h-5 w-5 text-green-500" />
+              Certificado Digital
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid md:grid-cols-2 gap-4">
+            <div>
+              <Label className="text-gray-300">Possui Certificado Digital</Label>
+              {editing ? (
+                <Switch
+                  checked={formData?.tem_certificado_digital === 'sim' || formData?.tem_certificado_digital === true}
+                  onCheckedChange={(checked) => handleInputChange('tem_certificado_digital', checked ? 'sim' : 'nao')}
+                  className="block mt-2"
+                />
+              ) : (
+                <p className="text-white py-2">
+                  {formData?.tem_certificado_digital === 'sim' || formData?.tem_certificado_digital === true ? 'Sim' : 'Não'}
+                </p>
+              )}
+            </div>
+            <div>
+              <Label className="text-gray-300">Data de Vencimento</Label>
+              {editing ? (
+                <Input
+                  type="date"
+                  value={formData?.data_vencimento_certificado || ''}
+                  onChange={(e) => handleInputChange('data_vencimento_certificado', e.target.value)}
+                  className="bg-gray-700 border-gray-600 text-white"
+                />
+              ) : (
+                <p className="text-white py-2">
+                  {formData?.data_vencimento_certificado ? 
+                    new Date(formData.data_vencimento_certificado).toLocaleDateString('pt-BR') : 'N/A'}
+                </p>
+              )}
+            </div>
+            <div>
+              <Label className="text-gray-300">Quem Fez o Certificado</Label>
+              {editing ? (
+                <Input
+                  value={formData?.emissor_certificado || ''}
+                  onChange={(e) => handleInputChange('emissor_certificado', e.target.value)}
+                  placeholder="Ex: Serasa, AC Certisign, etc."
+                  className="bg-gray-700 border-gray-600 text-white"
+                />
+              ) : (
+                <p className="text-white py-2">{formData?.emissor_certificado || 'N/A'}</p>
+              )}
+            </div>
+            <div>
+              <Label className="text-gray-300">Observações do Certificado</Label>
+              {editing ? (
+                <Textarea
+                  value={formData?.observacoes_certificado || ''}
+                  onChange={(e) => handleInputChange('observacoes_certificado', e.target.value)}
+                  placeholder="Observações sobre o certificado..."
+                  className="bg-gray-700 border-gray-600 text-white"
+                />
+              ) : (
+                <p className="text-white py-2">{formData?.observacoes_certificado || 'N/A'}</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Procurações */}
+        <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-white">
+              <User className="h-5 w-5 text-green-500" />
+              Procurações
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Procuração Pessoa Jurídica */}
+            <div className="border border-gray-600 rounded-lg p-4">
+              <h4 className="text-white font-semibold mb-4">Procuração Pessoa Jurídica</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-gray-300">Possui Procuração PJ</Label>
+                  {editing ? (
+                    <Switch
+                      checked={formData?.tem_procuracao_pj === 'sim' || formData?.tem_procuracao_pj === true}
+                      onCheckedChange={(checked) => handleInputChange('tem_procuracao_pj', checked ? 'sim' : 'nao')}
+                      className="block mt-2"
+                    />
+                  ) : (
+                    <p className="text-white py-2">
+                      {formData?.tem_procuracao_pj === 'sim' || formData?.tem_procuracao_pj === true ? 'Sim' : 'Não'}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label className="text-gray-300">Data de Vencimento PJ</Label>
+                  {editing ? (
+                    <Input
+                      type="date"
+                      value={formData?.data_vencimento_procuracao_pj || ''}
+                      onChange={(e) => handleInputChange('data_vencimento_procuracao_pj', e.target.value)}
+                      className="bg-gray-700 border-gray-600 text-white"
+                    />
+                  ) : (
+                    <p className="text-white py-2">
+                      {formData?.data_vencimento_procuracao_pj ? 
+                        new Date(formData.data_vencimento_procuracao_pj).toLocaleDateString('pt-BR') : 'N/A'}
+                    </p>
+                  )}
+                </div>
+                <div className="md:col-span-2">
+                  <Label className="text-gray-300">Observações Procuração PJ</Label>
+                  {editing ? (
+                    <Textarea
+                      value={formData?.observacoes_procuracao_pj || ''}
+                      onChange={(e) => handleInputChange('observacoes_procuracao_pj', e.target.value)}
+                      placeholder="Observações sobre a procuração pessoa jurídica..."
+                      className="bg-gray-700 border-gray-600 text-white"
+                    />
+                  ) : (
+                    <p className="text-white py-2">{formData?.observacoes_procuracao_pj || 'N/A'}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Procuração Pessoa Física */}
+            <div className="border border-gray-600 rounded-lg p-4">
+              <h4 className="text-white font-semibold mb-4">Procuração Pessoa Física</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-gray-300">Possui Procuração PF</Label>
+                  {editing ? (
+                    <Switch
+                      checked={formData?.tem_procuracao_pf === 'sim' || formData?.tem_procuracao_pf === true}
+                      onCheckedChange={(checked) => handleInputChange('tem_procuracao_pf', checked ? 'sim' : 'nao')}
+                      className="block mt-2"
+                    />
+                  ) : (
+                    <p className="text-white py-2">
+                      {formData?.tem_procuracao_pf === 'sim' || formData?.tem_procuracao_pf === true ? 'Sim' : 'Não'}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label className="text-gray-300">Data de Vencimento PF</Label>
+                  {editing ? (
+                    <Input
+                      type="date"
+                      value={formData?.data_vencimento_procuracao_pf || ''}
+                      onChange={(e) => handleInputChange('data_vencimento_procuracao_pf', e.target.value)}
+                      className="bg-gray-700 border-gray-600 text-white"
+                    />
+                  ) : (
+                    <p className="text-white py-2">
+                      {formData?.data_vencimento_procuracao_pf ? 
+                        new Date(formData.data_vencimento_procuracao_pf).toLocaleDateString('pt-BR') : 'N/A'}
+                    </p>
+                  )}
+                </div>
+                <div className="md:col-span-2">
+                  <Label className="text-gray-300">Observações Procuração PF</Label>
+                  {editing ? (
+                    <Textarea
+                      value={formData?.observacoes_procuracao_pf || ''}
+                      onChange={(e) => handleInputChange('observacoes_procuracao_pf', e.target.value)}
+                      placeholder="Observações sobre a procuração pessoa física..."
+                      className="bg-gray-700 border-gray-600 text-white"
+                    />
+                  ) : (
+                    <p className="text-white py-2">{formData?.observacoes_procuracao_pf || 'N/A'}</p>
+                  )}
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
