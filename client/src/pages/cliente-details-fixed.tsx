@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Building, MapPin, Phone, Mail, CreditCard, DollarSign, User, Calendar, Plus, Edit, Save, X, Trash2, Settings } from 'lucide-react';
+import { ArrowLeft, Building, MapPin, Phone, Mail, CreditCard, DollarSign, User, Calendar, Plus, Edit, Save, X, Trash2, Settings, Copy } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
@@ -695,13 +695,87 @@ export default function ClienteDetailsFix() {
             <div>
               <Label className="text-gray-300">CPF</Label>
               {editing ? (
-                <Input
-                  value={formData?.cpf_socio_1 || ''}
-                  onChange={(e) => handleInputChange('cpf_socio_1', e.target.value)}
-                  className="bg-gray-700 border-gray-600 text-white"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    value={formData?.cpf_socio_1 || ''}
+                    onChange={(e) => handleInputChange('cpf_socio_1', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white flex-1"
+                  />
+                  {formData?.cpf_socio_1 && (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(formData.cpf_socio_1 || '');
+                      }}
+                      size="sm"
+                      variant="outline"
+                      className="border-green-600 text-green-400 hover:bg-green-700"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               ) : (
-                <p className="text-white py-2">{cliente.cpf_socio_1 || 'N/A'}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-white py-2 flex-1">{cliente.cpf_socio_1 || 'N/A'}</p>
+                  {cliente.cpf_socio_1 && (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(cliente.cpf_socio_1 || '');
+                      }}
+                      size="sm"
+                      variant="outline"
+                      className="border-green-600 text-green-400 hover:bg-green-700"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+            <div>
+              <Label className="text-gray-300">Senha do Gov</Label>
+              {editing ? (
+                <div className="flex gap-2">
+                  <Input
+                    type="password"
+                    value={formData?.senha_gov_socio_1 || ''}
+                    onChange={(e) => handleInputChange('senha_gov_socio_1', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white flex-1"
+                    placeholder="Digite a senha do Gov.br"
+                  />
+                  {formData?.senha_gov_socio_1 && (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(formData.senha_gov_socio_1 || '');
+                      }}
+                      size="sm"
+                      variant="outline"
+                      className="border-green-600 text-green-400 hover:bg-green-700"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <p className="text-white py-2 flex-1">{cliente.senha_gov_socio_1 ? '••••••••' : 'N/A'}</p>
+                  {cliente.senha_gov_socio_1 && (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(cliente.senha_gov_socio_1 || '');
+                      }}
+                      size="sm"
+                      variant="outline"
+                      className="border-green-600 text-green-400 hover:bg-green-700"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
             <div>
@@ -781,20 +855,7 @@ export default function ClienteDetailsFix() {
                 )}
               </div>
             )}
-            <div>
-              <Label className="text-gray-300">Senha do Gov</Label>
-              {editing ? (
-                <Input
-                  type="password"
-                  value={formData?.senha_gov_socio_1 || ''}
-                  onChange={(e) => handleInputChange('senha_gov_socio_1', e.target.value)}
-                  className="bg-gray-700 border-gray-600 text-white"
-                  placeholder="Digite a senha do Gov.br"
-                />
-              ) : (
-                <p className="text-white py-2">{cliente.senha_gov_socio_1 ? '••••••••' : 'N/A'}</p>
-              )}
-            </div>
+
             <div>
               <Label className="text-gray-300">Filiação</Label>
               {editing ? (
