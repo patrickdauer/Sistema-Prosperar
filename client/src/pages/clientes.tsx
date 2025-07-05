@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Eye, Users, Building2, Plus, ToggleLeft, ToggleRight, MoreVertical, Copy, Phone, MessageCircle, Filter, X } from 'lucide-react';
+import { Search, Eye, Users, Building2, Plus, MoreVertical, Copy, Phone, MessageCircle, Filter, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -443,18 +443,14 @@ export default function Clientes() {
 
                     {/* Status Ativo/Inativo */}
                     <div className="col-span-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                      <button
                         onClick={() => toggleClienteStatus(cliente.id, cliente.status)}
-                        className="p-1 hover:bg-gray-700"
+                        className={`px-3 py-1 rounded text-sm font-medium cursor-pointer hover:opacity-80 transition-opacity ${
+                          cliente.status === 'ativo' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+                        }`}
                       >
-                        {cliente.status === 'ativo' ? (
-                          <ToggleRight className="h-6 w-6 text-green-500" />
-                        ) : (
-                          <ToggleLeft className="h-6 w-6 text-red-500" />
-                        )}
-                      </Button>
+                        {cliente.status === 'ativo' ? 'ATIVO' : 'INATIVO'}
+                      </button>
                     </div>
 
                     {/* Ações */}
