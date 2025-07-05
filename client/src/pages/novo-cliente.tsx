@@ -1585,7 +1585,10 @@ export default function NovoCliente() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setLocation('/clientes')}
+              onClick={() => {
+                console.log('Navegando para /clientes');
+                window.location.href = '/clientes';
+              }}
               className="border-gray-600 text-white hover:bg-gray-700"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
