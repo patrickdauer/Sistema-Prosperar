@@ -446,7 +446,7 @@ export default function Clientes() {
                       <button
                         onClick={() => toggleClienteStatus(cliente.id, cliente.status)}
                         style={{
-                          backgroundColor: cliente.status === 'ativo' ? '#16a34a' : '#dc2626',
+                          backgroundColor: cliente.status === 'ativo' ? '#22c55e' : '#ef4444',
                           color: '#ffffff',
                           padding: '4px 8px',
                           borderRadius: '4px',
@@ -456,8 +456,8 @@ export default function Clientes() {
                           border: 'none',
                           transition: 'opacity 0.2s'
                         }}
-                        onMouseEnter={(e) => e.target.style.opacity = '0.8'}
-                        onMouseLeave={(e) => e.target.style.opacity = '1'}
+                        onMouseEnter={(e) => (e.target as HTMLElement).style.opacity = '0.8'}
+                        onMouseLeave={(e) => (e.target as HTMLElement).style.opacity = '1'}
                       >
                         {cliente.status === 'ativo' ? 'ATIVO' : 'INATIVO'}
                       </button>
