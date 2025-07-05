@@ -333,6 +333,34 @@ export default function NovoCliente() {
                     placeholder="Informações do IR"
                   />
                 </div>
+                <div>
+                  <Label className="text-gray-200">Nota de Serviço</Label>
+                  <Input
+                    value={formData.nota_servico}
+                    onChange={(e) => handleInputChange('nota_servico', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Informações de nota de serviço"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Nota de Venda</Label>
+                  <Input
+                    value={formData.nota_venda}
+                    onChange={(e) => handleInputChange('nota_venda', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Informações de nota de venda"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Label className="text-gray-200">Observações</Label>
+                  <Textarea
+                    value={formData.observacoes}
+                    onChange={(e) => handleInputChange('observacoes', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Observações gerais sobre a empresa..."
+                    rows={3}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -542,24 +570,6 @@ export default function NovoCliente() {
                     onChange={(e) => handleInputChange('capital_social', e.target.value)}
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     placeholder="R$ 0,00"
-                  />
-                </div>
-                <div>
-                  <Label className="text-gray-200">Nota de Serviço</Label>
-                  <Input
-                    value={formData.nota_servico}
-                    onChange={(e) => handleInputChange('nota_servico', e.target.value)}
-                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                    placeholder="Informações de nota de serviço"
-                  />
-                </div>
-                <div>
-                  <Label className="text-gray-200">Nota de Venda</Label>
-                  <Input
-                    value={formData.nota_venda}
-                    onChange={(e) => handleInputChange('nota_venda', e.target.value)}
-                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                    placeholder="Informações de nota de venda"
                   />
                 </div>
                 <div>
@@ -1153,21 +1163,7 @@ export default function NovoCliente() {
             </CardContent>
           </Card>
 
-          {/* Observações */}
-          <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
-            <CardHeader>
-              <CardTitle className="text-white">Observações</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                value={formData.observacoes}
-                onChange={(e) => handleInputChange('observacoes', e.target.value)}
-                className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                placeholder="Observações adicionais sobre o cliente..."
-                rows={4}
-              />
-            </CardContent>
-          </Card>
+
 
           {/* Botões */}
           <div className="flex gap-4 justify-end">
