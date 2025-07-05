@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { BackToHomeButton } from '@/components/back-to-home-button';
-import { useLocation } from 'wouter';
+import { useLocation, Link } from 'wouter';
 
 // Definindo os tipos baseados no schema real
 interface Cliente {
@@ -428,9 +428,11 @@ export default function Clientes() {
                   <div className="grid grid-cols-12 gap-4 items-center">
                     {/* Nome do Cliente */}
                     <div className="col-span-3">
-                      <div className="text-white font-medium">
-                        {cliente.razao_social || 'Sem nome'}
-                      </div>
+                      <Link href={`/clientes/${cliente.id}`}>
+                        <div className="text-white font-medium hover:text-green-400 cursor-pointer transition-colors underline decoration-transparent hover:decoration-green-400">
+                          {cliente.razao_social || 'Sem nome'}
+                        </div>
+                      </Link>
                       <div className="text-sm text-gray-400">
                         {cliente.nome_fantasia || 'N/A'}
                       </div>
