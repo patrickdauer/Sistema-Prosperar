@@ -445,9 +445,19 @@ export default function Clientes() {
                     <div className="col-span-1">
                       <button
                         onClick={() => toggleClienteStatus(cliente.id, cliente.status)}
-                        className={`px-2 py-1 rounded text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity ${
-                          cliente.status === 'ativo' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
-                        }`}
+                        style={{
+                          backgroundColor: cliente.status === 'ativo' ? '#16a34a' : '#dc2626',
+                          color: '#ffffff',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          cursor: 'pointer',
+                          border: 'none',
+                          transition: 'opacity 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.target.style.opacity = '0.8'}
+                        onMouseLeave={(e) => e.target.style.opacity = '1'}
                       >
                         {cliente.status === 'ativo' ? 'ATIVO' : 'INATIVO'}
                       </button>
