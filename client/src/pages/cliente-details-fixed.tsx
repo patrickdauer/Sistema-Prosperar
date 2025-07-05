@@ -816,11 +816,24 @@ export default function ClienteDetailsFix() {
             <div>
               <Label className="text-gray-300">Possui Certificado Digital</Label>
               {editing ? (
-                <Switch
-                  checked={formData?.tem_certificado_digital === 'sim' || formData?.tem_certificado_digital === true}
-                  onCheckedChange={(checked) => handleInputChange('tem_certificado_digital', checked ? 'sim' : 'nao')}
-                  className="block mt-2"
-                />
+                <div className="flex items-center gap-2 mt-2">
+                  <Switch
+                    checked={formData?.tem_certificado_digital === 'sim' || formData?.tem_certificado_digital === true}
+                    onCheckedChange={(checked) => handleInputChange('tem_certificado_digital', checked ? 'sim' : 'nao')}
+                    className={`${
+                      formData?.tem_certificado_digital === 'sim' || formData?.tem_certificado_digital === true
+                        ? 'data-[state=checked]:bg-green-500'
+                        : 'bg-red-500'
+                    }`}
+                  />
+                  <span className={`text-sm font-medium ${
+                    formData?.tem_certificado_digital === 'sim' || formData?.tem_certificado_digital === true
+                      ? 'text-green-400'
+                      : 'text-red-400'
+                  }`}>
+                    {formData?.tem_certificado_digital === 'sim' || formData?.tem_certificado_digital === true ? 'Sim' : 'Não'}
+                  </span>
+                </div>
               ) : (
                 <p className="text-white py-2">
                   {formData?.tem_certificado_digital === 'sim' || formData?.tem_certificado_digital === true ? 'Sim' : 'Não'}
@@ -888,11 +901,24 @@ export default function ClienteDetailsFix() {
                 <div>
                   <Label className="text-gray-300">Possui Procuração PJ</Label>
                   {editing ? (
-                    <Switch
-                      checked={formData?.tem_procuracao_pj === 'sim' || formData?.tem_procuracao_pj === true}
-                      onCheckedChange={(checked) => handleInputChange('tem_procuracao_pj', checked ? 'sim' : 'nao')}
-                      className="block mt-2"
-                    />
+                    <div className="flex items-center gap-2 mt-2">
+                      <Switch
+                        checked={formData?.tem_procuracao_pj === 'sim' || formData?.tem_procuracao_pj === true}
+                        onCheckedChange={(checked) => handleInputChange('tem_procuracao_pj', checked ? 'sim' : 'nao')}
+                        className={`${
+                          formData?.tem_procuracao_pj === 'sim' || formData?.tem_procuracao_pj === true
+                            ? 'data-[state=checked]:bg-green-500'
+                            : 'bg-red-500'
+                        }`}
+                      />
+                      <span className={`text-sm font-medium ${
+                        formData?.tem_procuracao_pj === 'sim' || formData?.tem_procuracao_pj === true
+                          ? 'text-green-400'
+                          : 'text-red-400'
+                      }`}>
+                        {formData?.tem_procuracao_pj === 'sim' || formData?.tem_procuracao_pj === true ? 'Sim' : 'Não'}
+                      </span>
+                    </div>
                   ) : (
                     <p className="text-white py-2">
                       {formData?.tem_procuracao_pj === 'sim' || formData?.tem_procuracao_pj === true ? 'Sim' : 'Não'}
@@ -938,11 +964,24 @@ export default function ClienteDetailsFix() {
                 <div>
                   <Label className="text-gray-300">Possui Procuração PF</Label>
                   {editing ? (
-                    <Switch
-                      checked={formData?.tem_procuracao_pf === 'sim' || formData?.tem_procuracao_pf === true}
-                      onCheckedChange={(checked) => handleInputChange('tem_procuracao_pf', checked ? 'sim' : 'nao')}
-                      className="block mt-2"
-                    />
+                    <div className="flex items-center gap-2 mt-2">
+                      <Switch
+                        checked={formData?.tem_procuracao_pf === 'sim' || formData?.tem_procuracao_pf === true}
+                        onCheckedChange={(checked) => handleInputChange('tem_procuracao_pf', checked ? 'sim' : 'nao')}
+                        className={`${
+                          formData?.tem_procuracao_pf === 'sim' || formData?.tem_procuracao_pf === true
+                            ? 'data-[state=checked]:bg-green-500'
+                            : 'bg-red-500'
+                        }`}
+                      />
+                      <span className={`text-sm font-medium ${
+                        formData?.tem_procuracao_pf === 'sim' || formData?.tem_procuracao_pf === true
+                          ? 'text-green-400'
+                          : 'text-red-400'
+                      }`}>
+                        {formData?.tem_procuracao_pf === 'sim' || formData?.tem_procuracao_pf === true ? 'Sim' : 'Não'}
+                      </span>
+                    </div>
                   ) : (
                     <p className="text-white py-2">
                       {formData?.tem_procuracao_pf === 'sim' || formData?.tem_procuracao_pf === true ? 'Sim' : 'Não'}
