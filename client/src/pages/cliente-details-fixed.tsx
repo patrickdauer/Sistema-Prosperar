@@ -219,7 +219,9 @@ export default function ClienteDetailsFix() {
     'tem_certificado_digital', 'data_vencimento_certificado', 'emissor_certificado', 'observacoes_certificado',
     // Novos campos das procurações
     'tem_procuracao_pj', 'data_vencimento_procuracao_pj', 'observacoes_procuracao_pj',
-    'tem_procuracao_pf', 'data_vencimento_procuracao_pf', 'observacoes_procuracao_pf'
+    'tem_procuracao_pf', 'data_vencimento_procuracao_pf', 'observacoes_procuracao_pf',
+    // Campo do Google Drive
+    'link_google_drive'
   ];
 
   return (
@@ -251,6 +253,59 @@ export default function ClienteDetailsFix() {
             )}
           </div>
         </div>
+
+        {/* Link da Pasta Google Drive */}
+        <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-white">
+              <CreditCard className="h-5 w-5 text-green-500" />
+              Link da Pasta no Google Drive
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label className="text-gray-300">URL da Pasta no Google Drive</Label>
+              {editing ? (
+                <div className="space-y-2">
+                  <Input
+                    value={formData?.link_google_drive || ''}
+                    onChange={(e) => handleInputChange('link_google_drive', e.target.value)}
+                    placeholder="https://drive.google.com/drive/folders/..."
+                    className="bg-gray-700 border-gray-600 text-white"
+                  />
+                  <p className="text-xs text-gray-400">
+                    Cole aqui o link da pasta do Google Drive onde estão armazenados os documentos do cliente
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {formData?.link_google_drive ? (
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={formData.link_google_drive}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:text-blue-300 underline py-2 break-all"
+                      >
+                        {formData.link_google_drive}
+                      </a>
+                      <Button
+                        onClick={() => window.open(formData.link_google_drive, '_blank')}
+                        size="sm"
+                        style={{ backgroundColor: '#3b82f6', color: 'white' }}
+                        className="hover:bg-blue-600 shrink-0"
+                      >
+                        Abrir Pasta
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="text-gray-400 py-2">Nenhuma pasta do Google Drive vinculada</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Informações Básicas da Empresa */}
         <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
