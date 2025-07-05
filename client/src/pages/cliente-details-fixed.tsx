@@ -396,6 +396,55 @@ export default function ClienteDetailsFix() {
                 <p className="text-white py-2">{cliente.inscricao_municipal || 'N/A'}</p>
               )}
             </div>
+            <div>
+              <Label className="text-gray-300">NIRE</Label>
+              {editing ? (
+                <Input
+                  value={formData?.nire || ''}
+                  onChange={(e) => handleInputChange('nire', e.target.value)}
+                  className="bg-gray-700 border-gray-600 text-white"
+                />
+              ) : (
+                <p className="text-white py-2">{cliente.nire || 'N/A'}</p>
+              )}
+            </div>
+            <div>
+              <Label className="text-gray-300">Nota de Serviço</Label>
+              {editing ? (
+                <Input
+                  value={formData?.nota_servico || ''}
+                  onChange={(e) => handleInputChange('nota_servico', e.target.value)}
+                  className="bg-gray-700 border-gray-600 text-white"
+                />
+              ) : (
+                <p className="text-white py-2">{cliente.nota_servico || 'N/A'}</p>
+              )}
+            </div>
+            <div>
+              <Label className="text-gray-300">Nota de Venda</Label>
+              {editing ? (
+                <Input
+                  value={formData?.nota_venda || ''}
+                  onChange={(e) => handleInputChange('nota_venda', e.target.value)}
+                  className="bg-gray-700 border-gray-600 text-white"
+                />
+              ) : (
+                <p className="text-white py-2">{cliente.nota_venda || 'N/A'}</p>
+              )}
+            </div>
+            <div className="md:col-span-2">
+              <Label className="text-gray-300">Observações</Label>
+              {editing ? (
+                <Textarea
+                  value={formData?.observacoes || ''}
+                  onChange={(e) => handleInputChange('observacoes', e.target.value)}
+                  className="bg-gray-700 border-gray-600 text-white"
+                  rows={3}
+                />
+              ) : (
+                <p className="text-white py-2 whitespace-pre-wrap">{cliente.observacoes || 'N/A'}</p>
+              )}
+            </div>
           </CardContent>
         </Card>
 

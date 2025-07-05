@@ -146,6 +146,12 @@ The system uses a `business_registrations` table with:
 
 ## Recent Changes
 
+### January 05, 2025 - Reorganização de Campos no Sistema de Clientes
+- **Correção de Organização**: Movidos os campos NIRE, Nota de Serviço, Nota de Venda e Observações para dentro da seção "Informações da Empresa"
+- **Consistência de Interface**: Atualizado tanto o formulário de novo cliente quanto as páginas de detalhes dos clientes existentes
+- **Melhoria da UX**: Campos agora estão logicamente agrupados na seção correta para melhor organização da informação
+- **Observações como Textarea**: Campo de observações agora utiliza textarea com múltiplas linhas na seção "Informações da Empresa"
+
 ### January 02, 2025 - Expansão do Sistema com Novos Cards e Correções
 - **Novos Cards de Ferramentas**: Adicionados três novos cards na página home do sistema interno
   - Prompt Pro: https://prompt-pro-patrickdauer.replit.app/ (ícone Zap)
