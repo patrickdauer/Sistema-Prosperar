@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Eye, Users, Building2, Plus, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Search, Eye, Users, Building2, Plus, ToggleLeft, ToggleRight, MoreVertical, Copy, Phone, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { useToast } from '@/hooks/use-toast';
 import { BackToHomeButton } from '@/components/back-to-home-button';
 import { useLocation } from 'wouter';
 
@@ -81,6 +88,58 @@ export default function Clientes() {
   // Função para ver detalhes completos
   const handleViewDetails = (cliente: Cliente) => {
     setLocation(`/clientes/${cliente.id}`);
+  };
+
+  // Função para copiar texto para a área de transferência
+  const { toast } = useToast();
+  
+  const copyToClipboard = async (text: string | null, label: string) => {
+    if (!text) {
+      toast({
+        title: "Erro",
+        description: `${label} não disponível`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        title: "Copiado!",
+        description: `${label} copiado para a área de transferência`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: `Não foi possível copiar o ${label}`,
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Função para abrir WhatsApp
+  const openWhatsApp = (celular: string | null) => {
+    if (!celular) {
+      toast({
+        title: "Erro",
+        description: "Número de celular não disponível",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Remove caracteres não numéricos
+    const numeroLimpo = celular.replace(/\D/g, '');
+    
+    // Verifica se tem DDD (se começa com 55 para Brasil, ou adiciona)
+    let numeroFormatado = numeroLimpo;
+    if (!numeroFormatado.startsWith('55') && numeroFormatado.length >= 10) {
+      numeroFormatado = '55' + numeroFormatado;
+    }
+
+    const whatsappUrl = `https://wa.me/${numeroFormatado}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   const clientesAtivos = clientes.filter(c => c.status === 'ativo').length;
@@ -239,14 +298,55 @@ export default function Clientes() {
 
                     {/* Ações */}
                     <div className="col-span-2 flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleViewDetails(cliente)}
-                        className="border-gray-600 text-white hover:bg-gray-700"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-gray-600 text-white hover:bg-gray-700"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent 
+                          className="bg-gray-800 border-gray-600" 
+                          align="end"
+                        >
+                          <DropdownMenuItem 
+                            onClick={() => handleViewDetails(cliente)}
+                            className="text-white hover:bg-gray-700 cursor-pointer"
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            Ver Detalhes
+                          </DropdownMenuItem>
+                          
+                          <DropdownMenuItem 
+                            onClick={() => copyToClipboard(cliente.cnpj, 'CNPJ')}
+                            className="text-white hover:bg-gray-700 cursor-pointer"
+                          >
+                            <Copy className="h-4 w-4 mr-2" />
+                            Copiar CNPJ
+                          </DropdownMenuItem>
+                          
+                          <DropdownMenuItem 
+                            onClick={() => copyToClipboard(cliente.celular, 'Celular')}
+                            className="text-white hover:bg-gray-700 cursor-pointer"
+                          >
+                            <Phone className="h-4 w-4 mr-2" />
+                            Copiar Celular
+                          </DropdownMenuItem>
+                          
+                          {cliente.celular && (
+                            <DropdownMenuItem 
+                              onClick={() => openWhatsApp(cliente.celular)}
+                              className="text-green-400 hover:bg-gray-700 cursor-pointer"
+                            >
+                              <MessageCircle className="h-4 w-4 mr-2" />
+                              WhatsApp
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 </CardContent>
