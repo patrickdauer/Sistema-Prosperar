@@ -674,6 +674,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Rotas para histórico de IR
+  app.get('/api/clientes/:id/ir-history', async (req, res) => {
+    try {
+      const clienteId = parseInt(req.params.id);
+      const history = await storage.getIrHistory(clienteId);
+      res.json(history);
+    } catch (error) {
+      console.error('Erro ao buscar histórico de IR:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.post('/api/clientes/:id/ir-history', async (req, res) => {
+    try {
+      const clienteId = parseInt(req.params.id);
+      await storage.saveIrToHistory(clienteId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Erro ao salvar histórico de IR:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.put('/api/clientes/:id/ir-history/:year', async (req, res) => {
+    try {
+      const clienteId = parseInt(req.params.id);
+      const year = parseInt(req.params.year);
+      await storage.updateIrHistoryYear(clienteId, year, req.body);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Erro ao atualizar histórico de IR:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

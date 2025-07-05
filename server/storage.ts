@@ -19,6 +19,9 @@ import {
   clientes,
   type Cliente,
   type InsertCliente,
+  irHistorico,
+  type IrHistorico,
+  type InsertIrHistorico,
 } from "@shared/schema";
 import {
   contratacaoFuncionarios,
@@ -81,6 +84,11 @@ export interface IStorage {
   deleteCliente(id: number): Promise<void>;
   searchClientes(searchTerm: string): Promise<Cliente[]>;
   promoverClienteFromRegistration(registrationId: number, clienteData: Partial<InsertCliente>): Promise<Cliente>;
+  
+  // IR History management
+  saveIrToHistory(clienteId: number): Promise<void>;
+  getIrHistory(clienteId: number): Promise<any[]>;
+  updateIrHistoryYear(clienteId: number, ano: number, data: any): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -495,6 +503,20 @@ export class DatabaseStorage implements IStorage {
         throw new Error('Cliente não encontrado');
       }
 
+      // Check if any IR field was updated and save to history
+      const irFields = ['ir_ano_referencia', 'ir_status', 'ir_data_entrega', 'ir_valor_pagar', 'ir_valor_restituir', 'ir_observacoes', 'imposto_renda'];
+      const hasIrUpdate = updateFields.some(field => irFields.includes(field));
+      
+      if (hasIrUpdate) {
+        try {
+          await this.saveIrToHistory(id);
+          console.log(`📊 IR data saved to history for client ${id}`);
+        } catch (error) {
+          console.error('❌ Failed to save IR to history:', error);
+          // Don't fail the main update if history saving fails
+        }
+      }
+
       console.log(`✅ Cliente ${id} atualizado com sucesso`);
       return result.rows[0] as Cliente;
       
@@ -598,6 +620,86 @@ export class DatabaseStorage implements IStorage {
     await this.updateBusinessRegistration(registrationId, { status: 'concluida' });
     
     return novoCliente;
+  }
+
+  // IR History methods
+  async saveIrToHistory(clienteId: number): Promise<void> {
+    try {
+      // Get current client IR data
+      const cliente = await this.getCliente(clienteId);
+      if (!cliente) return;
+
+      // Extract IR data from client
+      const ano = cliente.irAnoReferencia || new Date().getFullYear().toString();
+      
+      const historyData: InsertIrHistorico = {
+        clienteId: clienteId,
+        ano: parseInt(ano),
+        status: cliente.irStatus || null,
+        dataEntrega: cliente.irDataEntrega || null,
+        valorPagar: cliente.irValorPagar || null,
+        valorRestituir: cliente.irValorRestituir || null,
+        observacoes: cliente.irObservacoes || null,
+      };
+
+      // Use UPSERT to insert or update the history record
+      await db
+        .insert(irHistorico)
+        .values(historyData)
+        .onConflictDoUpdate({
+          target: [irHistorico.clienteId, irHistorico.ano],
+          set: {
+            status: historyData.status,
+            dataEntrega: historyData.dataEntrega,
+            valorPagar: historyData.valorPagar,
+            valorRestituir: historyData.valorRestituir,
+            observacoes: historyData.observacoes,
+            updatedAt: new Date(),
+          },
+        });
+
+      console.log(`✅ IR data saved to history for client ${clienteId}, year ${ano}`);
+    } catch (error) {
+      console.error('❌ Error saving IR to history:', error);
+      throw error;
+    }
+  }
+
+  async getIrHistory(clienteId: number): Promise<any[]> {
+    try {
+      const history = await db
+        .select()
+        .from(irHistorico)
+        .where(eq(irHistorico.clienteId, clienteId))
+        .orderBy(desc(irHistorico.ano));
+      
+      return history;
+    } catch (error) {
+      console.error('❌ Error getting IR history:', error);
+      throw error;
+    }
+  }
+
+  async updateIrHistoryYear(clienteId: number, ano: number, data: any): Promise<void> {
+    try {
+      await db
+        .update(irHistorico)
+        .set({
+          ...data,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(irHistorico.clienteId, clienteId),
+            eq(irHistorico.ano, ano)
+          )
+        );
+      
+      console.log(`✅ IR history updated for client ${clienteId}, year ${ano}`);
+    } catch (error) {
+      console.error('❌ Error updating IR history:', error);
+      throw error;
+    }
   }
 }
 

@@ -108,6 +108,12 @@ export default function ClienteDetailsFix() {
     enabled: !!id
   });
 
+  const { data: irHistory, isLoading: isLoadingIrHistory } = useQuery({
+    queryKey: ['/api/clientes', id, 'ir-history'],
+    queryFn: () => fetch(`/api/clientes/${id}/ir-history`).then(res => res.json()),
+    enabled: !!id
+  });
+
   const updateMutation = useMutation({
     mutationFn: (data: Partial<ClienteCompleto>) =>
       fetch(`/api/clientes/${id}`, {
@@ -117,6 +123,7 @@ export default function ClienteDetailsFix() {
       }).then(res => res.json()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/clientes'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clientes', id, 'ir-history'] });
       setEditing(false);
       toast({
         title: "Cliente atualizado",
@@ -1349,6 +1356,7 @@ export default function ClienteDetailsFix() {
                     <SelectValue placeholder="Selecione o status" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="aguardando_informacoes">Aguardando Informações</SelectItem>
                     <SelectItem value="nao_entregue">Não Entregue</SelectItem>
                     <SelectItem value="entregue">Entregue</SelectItem>
                     <SelectItem value="em_processamento">Em Processamento</SelectItem>
@@ -1357,7 +1365,8 @@ export default function ClienteDetailsFix() {
                 </Select>
               ) : (
                 <p className="text-white py-2">
-                  {formData?.ir_status === 'nao_entregue' ? 'Não Entregue' :
+                  {formData?.ir_status === 'aguardando_informacoes' ? 'Aguardando Informações' :
+                   formData?.ir_status === 'nao_entregue' ? 'Não Entregue' :
                    formData?.ir_status === 'entregue' ? 'Entregue' :
                    formData?.ir_status === 'em_processamento' ? 'Em Processamento' :
                    formData?.ir_status === 'pendente_retificacao' ? 'Pendente Retificação' : 'N/A'}
@@ -1420,6 +1429,78 @@ export default function ClienteDetailsFix() {
                 <p className="text-white py-2 whitespace-pre-wrap">{formData?.ir_observacoes || 'N/A'}</p>
               )}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Histórico de IR */}
+        <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-white">
+              <Calendar className="h-5 w-5 text-green-500" />
+              Histórico de Imposto de Renda
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoadingIrHistory ? (
+              <div className="text-center py-4">
+                <p className="text-gray-400">Carregando histórico...</p>
+              </div>
+            ) : irHistory && irHistory.length > 0 ? (
+              <div className="space-y-4">
+                {irHistory.map((record: any) => (
+                  <div key={record.id} className="border border-gray-600 rounded-lg p-4">
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div>
+                        <Label className="text-gray-300">Ano</Label>
+                        <p className="text-white font-semibold">{record.ano}</p>
+                      </div>
+                      <div>
+                        <Label className="text-gray-300">Status</Label>
+                        <p className="text-white">
+                          {record.status === 'aguardando_informacoes' ? 'Aguardando Informações' :
+                           record.status === 'nao_entregue' ? 'Não Entregue' :
+                           record.status === 'entregue' ? 'Entregue' :
+                           record.status === 'em_processamento' ? 'Em Processamento' :
+                           record.status === 'pendente_retificacao' ? 'Pendente Retificação' : 'N/A'}
+                        </p>
+                      </div>
+                      <div>
+                        <Label className="text-gray-300">Data de Entrega</Label>
+                        <p className="text-white">
+                          {record.data_entrega ? 
+                            new Date(record.data_entrega).toLocaleDateString('pt-BR') : 'N/A'}
+                        </p>
+                      </div>
+                      <div>
+                        <Label className="text-gray-300">Valor a Pagar</Label>
+                        <p className="text-white">{record.valor_pagar ? `R$ ${record.valor_pagar}` : 'N/A'}</p>
+                      </div>
+                      <div>
+                        <Label className="text-gray-300">Valor a Restituir</Label>
+                        <p className="text-white">{record.valor_restituir ? `R$ ${record.valor_restituir}` : 'N/A'}</p>
+                      </div>
+                      <div>
+                        <Label className="text-gray-300">Data de Registro</Label>
+                        <p className="text-white">
+                          {new Date(record.created_at).toLocaleDateString('pt-BR')}
+                        </p>
+                      </div>
+                      {record.observacoes && (
+                        <div className="md:col-span-3">
+                          <Label className="text-gray-300">Observações</Label>
+                          <p className="text-white whitespace-pre-wrap">{record.observacoes}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-400">Nenhum histórico de IR encontrado.</p>
+                <p className="text-gray-500 text-sm mt-2">O histórico será criado automaticamente quando as informações de IR forem atualizadas.</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 

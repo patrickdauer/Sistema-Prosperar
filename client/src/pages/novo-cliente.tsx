@@ -1199,6 +1199,7 @@ export default function NovoCliente() {
                       <SelectValue placeholder="Selecione o status" />
                     </SelectTrigger>
                     <SelectContent className="bg-gray-800 border-gray-600">
+                      <SelectItem value="aguardando_informacoes">Aguardando Informações</SelectItem>
                       <SelectItem value="nao_entregue">Não Entregue</SelectItem>
                       <SelectItem value="entregue">Entregue</SelectItem>
                       <SelectItem value="em_processamento">Em Processamento</SelectItem>
