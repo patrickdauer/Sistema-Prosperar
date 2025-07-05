@@ -137,6 +137,9 @@ export default function NovoCliente() {
     
     // Observações gerais
     observacoes: '',
+    
+    // Link Google Drive
+    link_google_drive: '',
   });
 
   const [socios, setSocios] = useState<Socio[]>([]);
@@ -255,6 +258,28 @@ export default function NovoCliente() {
       </header>
       <main className="container mx-auto px-4 py-8">
         <form onSubmit={handleSubmit} className="space-y-6">
+          
+          {/* Link Google Drive */}
+          <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+            <CardHeader>
+              <CardTitle className="text-white">Link da Pasta no Google Drive</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label className="text-gray-200">URL da Pasta no Google Drive</Label>
+                <Input
+                  value={formData.link_google_drive}
+                  onChange={(e) => handleInputChange('link_google_drive', e.target.value)}
+                  className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                  placeholder="https://drive.google.com/drive/folders/..."
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  Cole aqui o link da pasta do Google Drive onde estão armazenados os documentos do cliente
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+          
           {/* Dados Básicos */}
           <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
             <CardHeader>
@@ -362,6 +387,60 @@ export default function NovoCliente() {
                     onChange={(e) => handleInputChange('observacoes', e.target.value)}
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     placeholder="Observações gerais sobre a empresa..."
+                    rows={3}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Atividades da Empresa */}
+          <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+            <CardHeader>
+              <CardTitle className="text-white">Atividades da Empresa</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-gray-200">Regime Tributário</Label>
+                  <Select value={formData.regime_tributario} onValueChange={(value) => handleInputChange('regime_tributario', value)}>
+                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                      <SelectValue placeholder="Selecione o regime" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-800 border-gray-600">
+                      <SelectItem value="MEI">MEI</SelectItem>
+                      <SelectItem value="SIMPLES">Simples Nacional</SelectItem>
+                      <SelectItem value="LUCRO_PRESUMIDO">Lucro Presumido</SelectItem>
+                      <SelectItem value="LUCRO_REAL">Lucro Real</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-gray-200">Capital Social</Label>
+                  <Input
+                    value={formData.capital_social}
+                    onChange={(e) => handleInputChange('capital_social', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="R$ 0,00"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Label className="text-gray-200">Atividade Principal</Label>
+                  <Textarea
+                    value={formData.atividade_principal}
+                    onChange={(e) => handleInputChange('atividade_principal', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Atividade principal da empresa"
+                    rows={2}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Label className="text-gray-200">Atividades Secundárias</Label>
+                  <Textarea
+                    value={formData.atividades_secundarias}
+                    onChange={(e) => handleInputChange('atividades_secundarias', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Atividades secundárias da empresa"
                     rows={3}
                   />
                 </div>
@@ -522,6 +601,81 @@ export default function NovoCliente() {
                     onChange={(e) => handleInputChange('celular_2', e.target.value)}
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     placeholder="(11) 91234-5678"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Imposto de Renda Pessoa Física */}
+          <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+            <CardHeader>
+              <CardTitle className="text-white">Imposto de Renda Pessoa Física</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-gray-200">Imposto de Renda</Label>
+                  <Input
+                    value={formData.imposto_renda}
+                    onChange={(e) => handleInputChange('imposto_renda', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Status do IR"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Ano de Referência</Label>
+                  <Input
+                    value={formData.ir_ano_referencia}
+                    onChange={(e) => handleInputChange('ir_ano_referencia', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="2024"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Status do IR</Label>
+                  <Input
+                    value={formData.ir_status}
+                    onChange={(e) => handleInputChange('ir_status', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Status atual"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Data de Entrega</Label>
+                  <Input
+                    type="date"
+                    value={formData.ir_data_entrega}
+                    onChange={(e) => handleInputChange('ir_data_entrega', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Valor a Pagar</Label>
+                  <Input
+                    value={formData.ir_valor_pagar}
+                    onChange={(e) => handleInputChange('ir_valor_pagar', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="R$ 0,00"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Valor a Restituir</Label>
+                  <Input
+                    value={formData.ir_valor_restituir}
+                    onChange={(e) => handleInputChange('ir_valor_restituir', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="R$ 0,00"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Label className="text-gray-200">Observações sobre IR</Label>
+                  <Textarea
+                    value={formData.ir_observacoes}
+                    onChange={(e) => handleInputChange('ir_observacoes', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Observações sobre o Imposto de Renda..."
+                    rows={3}
                   />
                 </div>
               </div>
