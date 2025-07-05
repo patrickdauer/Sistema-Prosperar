@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { db } from "./db";
 import { insertBusinessRegistrationSchema } from "@shared/schema";
 import { insertContratacaoSchema } from "@shared/contratacao-schema";
 import multer from "multer";
