@@ -32,6 +32,17 @@ export default function NovoCliente() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const navigateToClientes = () => {
+    console.log('Tentativa de navegação para /clientes');
+    try {
+      setLocation('/clientes');
+      console.log('setLocation executado com sucesso');
+    } catch (error) {
+      console.error('Erro no setLocation:', error);
+      window.location.href = '/clientes';
+    }
+  };
 
   // Estados para dados do cliente - TODOS os campos do banco
   const [formData, setFormData] = useState({
@@ -244,7 +255,7 @@ export default function NovoCliente() {
           title: "Cliente criado",
           description: "Cliente foi adicionado com sucesso!",
         });
-        setLocation('/clientes');
+        navigateToClientes();
       } else {
         throw new Error('Erro ao criar cliente');
       }
@@ -1585,10 +1596,7 @@ export default function NovoCliente() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => {
-                console.log('Navegando para /clientes');
-                window.location.href = '/clientes';
-              }}
+              onClick={navigateToClientes}
               className="border-gray-600 text-white hover:bg-gray-700"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
