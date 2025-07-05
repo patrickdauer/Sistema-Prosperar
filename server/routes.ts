@@ -572,26 +572,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Rotas para gerenciamento de clientes
   app.get('/api/clientes', async (req, res) => {
     try {
-      const { search } = req.query;
-      let query = `
-        SELECT id, razao_social, nome_fantasia, cnpj, email_empresa, telefone_empresa, 
-               contato, celular, status, created_at 
-        FROM clientes 
-      `;
+      const { 
+        search, 
+        cidade, 
+        regimeTributario, 
+        dataAberturaInicio, 
+        dataAberturaFim, 
+        clienteDesdeInicio, 
+        clienteDesdeFim 
+      } = req.query;
       
-      if (search && typeof search === 'string') {
-        query += `
-          WHERE razao_social ILIKE '%${search}%'
-             OR nome_fantasia ILIKE '%${search}%'
-             OR cnpj ILIKE '%${search}%'
-             OR email_empresa ILIKE '%${search}%'
-        `;
-      }
+      const filters = {
+        cidade,
+        regimeTributario,
+        dataAberturaInicio,
+        dataAberturaFim,
+        clienteDesdeInicio,
+        clienteDesdeFim
+      };
       
-      query += ' ORDER BY created_at DESC';
+      const searchTerm = search && typeof search === 'string' ? search : undefined;
+      const clientes = await storage.searchClientes(searchTerm, filters);
       
-      const result = await db.execute(query);
-      res.json(result.rows);
+      res.json(clientes);
     } catch (error) {
       console.error('Erro ao buscar clientes:', error);
       res.status(500).json({ error: 'Erro interno do servidor' });

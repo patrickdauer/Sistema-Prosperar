@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Eye, Users, Building2, Plus, ToggleLeft, ToggleRight, MoreVertical, Copy, Phone, MessageCircle } from 'lucide-react';
+import { Search, Eye, Users, Building2, Plus, ToggleLeft, ToggleRight, MoreVertical, Copy, Phone, MessageCircle, Filter, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -32,14 +39,55 @@ export default function Clientes() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
   const [, setLocation] = useLocation();
+  
+  // Estados para filtros avançados
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    cidade: '',
+    regimeTributario: '',
+    dataAberturaInicio: '',
+    dataAberturaFim: '',
+    clienteDesdeInicio: '',
+    clienteDesdeFim: ''
+  });
 
   // Função para buscar clientes
   const fetchClientes = async () => {
     try {
       setLoading(true);
-      const url = searchTerm 
-        ? `/api/clientes?search=${encodeURIComponent(searchTerm)}`
-        : '/api/clientes';
+      
+      // Construir URL com filtros
+      const params = new URLSearchParams();
+      
+      if (searchTerm) {
+        params.append('search', searchTerm);
+      }
+      
+      if (filters.cidade) {
+        params.append('cidade', filters.cidade);
+      }
+      
+      if (filters.regimeTributario) {
+        params.append('regimeTributario', filters.regimeTributario);
+      }
+      
+      if (filters.dataAberturaInicio) {
+        params.append('dataAberturaInicio', filters.dataAberturaInicio);
+      }
+      
+      if (filters.dataAberturaFim) {
+        params.append('dataAberturaFim', filters.dataAberturaFim);
+      }
+      
+      if (filters.clienteDesdeInicio) {
+        params.append('clienteDesdeInicio', filters.clienteDesdeInicio);
+      }
+      
+      if (filters.clienteDesdeFim) {
+        params.append('clienteDesdeFim', filters.clienteDesdeFim);
+      }
+      
+      const url = `/api/clientes${params.toString() ? `?${params.toString()}` : ''}`;
       
       const response = await fetch(url);
       if (response.ok) {
@@ -57,10 +105,10 @@ export default function Clientes() {
     }
   };
 
-  // Buscar clientes ao carregar e quando searchTerm mudar
+  // Buscar clientes ao carregar e quando searchTerm ou filtros mudarem
   useEffect(() => {
     fetchClientes();
-  }, [searchTerm]);
+  }, [searchTerm, filters]);
 
   // Função para alternar status ativo/inativo
   const toggleClienteStatus = async (id: number, currentStatus: string | null) => {
@@ -203,12 +251,20 @@ export default function Clientes() {
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
-              placeholder="Buscar clientes por nome, CNPJ ou email..."
+              placeholder="Buscar clientes por nome, CNPJ, email ou contato..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 bg-gray-700 border-gray-600 text-white placeholder-gray-400"
             />
           </div>
+          <Button
+            onClick={() => setShowFilters(!showFilters)}
+            variant="outline"
+            className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
+          >
+            <Filter className="h-4 w-4 mr-2" />
+            Filtros
+          </Button>
           <Button
             onClick={() => setLocation('/business-registration')}
             style={{ 
@@ -222,6 +278,111 @@ export default function Clientes() {
             Novo Cliente
           </Button>
         </div>
+
+        {/* Filtros Avançados */}
+        {showFilters && (
+          <Card style={{ background: '#1f2937', border: '1px solid #374151' }} className="mb-6">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white">Filtros Avançados</h3>
+                <Button
+                  onClick={() => {
+                    setFilters({
+                      cidade: '',
+                      regimeTributario: '',
+                      dataAberturaInicio: '',
+                      dataAberturaFim: '',
+                      clienteDesdeInicio: '',
+                      clienteDesdeFim: ''
+                    });
+                  }}
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-400 hover:text-white"
+                >
+                  <X className="h-4 w-4 mr-1" />
+                  Limpar
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Filtro por Cidade */}
+                <div>
+                  <label className="text-sm text-gray-300 mb-1 block">Cidade</label>
+                  <Input
+                    placeholder="Ex: Itajaí"
+                    value={filters.cidade}
+                    onChange={(e) => setFilters(prev => ({ ...prev, cidade: e.target.value }))}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                  />
+                </div>
+
+                {/* Filtro por Regime Tributário */}
+                <div>
+                  <label className="text-sm text-gray-300 mb-1 block">Regime Tributário</label>
+                  <Select
+                    value={filters.regimeTributario}
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, regimeTributario: value }))}
+                  >
+                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                      <SelectValue placeholder="Selecione o regime" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-700 border-gray-600">
+                      <SelectItem value="SIMPLES">Simples Nacional</SelectItem>
+                      <SelectItem value="LUCRO_REAL">Lucro Real</SelectItem>
+                      <SelectItem value="LUCRO_PRESUMIDO">Lucro Presumido</SelectItem>
+                      <SelectItem value="MEI">MEI</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Data de Abertura - Início */}
+                <div>
+                  <label className="text-sm text-gray-300 mb-1 block">Data Abertura (De)</label>
+                  <Input
+                    type="date"
+                    value={filters.dataAberturaInicio}
+                    onChange={(e) => setFilters(prev => ({ ...prev, dataAberturaInicio: e.target.value }))}
+                    className="bg-gray-700 border-gray-600 text-white"
+                  />
+                </div>
+
+                {/* Data de Abertura - Fim */}
+                <div>
+                  <label className="text-sm text-gray-300 mb-1 block">Data Abertura (Até)</label>
+                  <Input
+                    type="date"
+                    value={filters.dataAberturaFim}
+                    onChange={(e) => setFilters(prev => ({ ...prev, dataAberturaFim: e.target.value }))}
+                    className="bg-gray-700 border-gray-600 text-white"
+                  />
+                </div>
+
+                {/* Cliente Desde - Início */}
+                <div>
+                  <label className="text-sm text-gray-300 mb-1 block">Cliente Desde (De)</label>
+                  <Input
+                    type="date"
+                    value={filters.clienteDesdeInicio}
+                    onChange={(e) => setFilters(prev => ({ ...prev, clienteDesdeInicio: e.target.value }))}
+                    className="bg-gray-700 border-gray-600 text-white"
+                  />
+                </div>
+
+                {/* Cliente Desde - Fim */}
+                <div>
+                  <label className="text-sm text-gray-300 mb-1 block">Cliente Desde (Até)</label>
+                  <Input
+                    type="date"
+                    value={filters.clienteDesdeFim}
+                    onChange={(e) => setFilters(prev => ({ ...prev, clienteDesdeFim: e.target.value }))}
+                    className="bg-gray-700 border-gray-600 text-white"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Lista simplificada de clientes */}
         {loading ? (

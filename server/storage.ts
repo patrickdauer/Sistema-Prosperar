@@ -437,16 +437,55 @@ export class DatabaseStorage implements IStorage {
     await db.delete(clientes).where(eq(clientes.id, id));
   }
 
-  async searchClientes(searchTerm: string): Promise<any[]> {
+  async searchClientes(searchTerm?: string, filters?: any): Promise<any[]> {
+    let whereConditions = [];
+    
+    // Busca por texto
+    if (searchTerm) {
+      whereConditions.push(`(
+        razao_social ILIKE '%${searchTerm}%'
+        OR nome_fantasia ILIKE '%${searchTerm}%'
+        OR cnpj ILIKE '%${searchTerm}%'
+        OR email_empresa ILIKE '%${searchTerm}%'
+        OR contato ILIKE '%${searchTerm}%'
+      )`);
+    }
+    
+    // Filtros específicos
+    if (filters?.cidade) {
+      whereConditions.push(`cidade ILIKE '%${filters.cidade}%'`);
+    }
+    
+    if (filters?.regimeTributario) {
+      whereConditions.push(`regime_tributario ILIKE '%${filters.regimeTributario}%'`);
+    }
+    
+    if (filters?.dataAberturaInicio) {
+      whereConditions.push(`data_abertura >= '${filters.dataAberturaInicio}'`);
+    }
+    
+    if (filters?.dataAberturaFim) {
+      whereConditions.push(`data_abertura <= '${filters.dataAberturaFim}'`);
+    }
+    
+    if (filters?.clienteDesdeInicio) {
+      whereConditions.push(`cliente_desde >= '${filters.clienteDesdeInicio}'`);
+    }
+    
+    if (filters?.clienteDesdeFim) {
+      whereConditions.push(`cliente_desde <= '${filters.clienteDesdeFim}'`);
+    }
+    
+    const whereClause = whereConditions.length > 0 
+      ? `WHERE ${whereConditions.join(' AND ')}`
+      : '';
+    
     const result = await db.execute(`
       SELECT id, razao_social, nome_fantasia, cnpj, email_empresa, telefone_empresa, 
-             contato, celular, status, created_at 
+             contato, celular, status, created_at, cidade, regime_tributario, 
+             data_abertura, cliente_desde
       FROM clientes 
-      WHERE razao_social ILIKE '%${searchTerm}%'
-         OR nome_fantasia ILIKE '%${searchTerm}%'
-         OR cnpj ILIKE '%${searchTerm}%'
-         OR email_empresa ILIKE '%${searchTerm}%'
-         OR contato ILIKE '%${searchTerm}%'
+      ${whereClause}
       ORDER BY created_at DESC
     `);
     return result.rows;
