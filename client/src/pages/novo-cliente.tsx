@@ -140,6 +140,20 @@ export default function NovoCliente() {
     
     // Link Google Drive
     link_google_drive: '',
+    
+    // Certificado Digital
+    tem_certificado_digital: 'nao',
+    data_vencimento_certificado: '',
+    emissor_certificado: '',
+    observacoes_certificado: '',
+    
+    // Procurações
+    tem_procuracao_pj: 'nao',
+    data_vencimento_procuracao_pj: '',
+    observacoes_procuracao_pj: '',
+    tem_procuracao_pf: 'nao',
+    data_vencimento_procuracao_pf: '',
+    observacoes_procuracao_pf: '',
   });
 
   const [socios, setSocios] = useState<Socio[]>([]);
@@ -989,49 +1003,131 @@ export default function NovoCliente() {
             </CardContent>
           </Card>
 
-          {/* Certificados e Procurações do Sócio */}
+          {/* Certificado Digital */}
           <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
             <CardHeader>
-              <CardTitle className="text-white">Certificados e Procurações do Sócio</CardTitle>
+              <CardTitle className="text-white">Certificado Digital</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-gray-200">Certificado Sócio 1</Label>
-                  <Input
-                    value={formData.certificado_socio_1}
-                    onChange={(e) => handleInputChange('certificado_socio_1', e.target.value)}
-                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                    placeholder="Certificado digital"
-                  />
+            <CardContent className="grid md:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-gray-200">Possui Certificado Digital</Label>
+                <Select value={formData.tem_certificado_digital} onValueChange={(value) => handleInputChange('tem_certificado_digital', value)}>
+                  <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-600">
+                    <SelectItem value="sim">Sim</SelectItem>
+                    <SelectItem value="nao">Não</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-gray-200">Data de Vencimento</Label>
+                <Input
+                  type="date"
+                  value={formData.data_vencimento_certificado}
+                  onChange={(e) => handleInputChange('data_vencimento_certificado', e.target.value)}
+                  className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                />
+              </div>
+              <div>
+                <Label className="text-gray-200">Quem Fez o Certificado</Label>
+                <Input
+                  value={formData.emissor_certificado}
+                  onChange={(e) => handleInputChange('emissor_certificado', e.target.value)}
+                  placeholder="Ex: Serasa, AC Certisign, etc."
+                  className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                />
+              </div>
+              <div>
+                <Label className="text-gray-200">Observações do Certificado</Label>
+                <Textarea
+                  value={formData.observacoes_certificado}
+                  onChange={(e) => handleInputChange('observacoes_certificado', e.target.value)}
+                  placeholder="Observações sobre o certificado..."
+                  className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Procurações */}
+          <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+            <CardHeader>
+              <CardTitle className="text-white">Procurações</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Procuração Pessoa Jurídica */}
+              <div className="border border-gray-600 rounded-lg p-4">
+                <h4 className="text-white font-semibold mb-4">Procuração Pessoa Jurídica</h4>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-gray-200">Possui Procuração PJ</Label>
+                    <Select value={formData.tem_procuracao_pj} onValueChange={(value) => handleInputChange('tem_procuracao_pj', value)}>
+                      <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 border-gray-600">
+                        <SelectItem value="sim">Sim</SelectItem>
+                        <SelectItem value="nao">Não</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-gray-200">Data de Vencimento PJ</Label>
+                    <Input
+                      type="date"
+                      value={formData.data_vencimento_procuracao_pj}
+                      onChange={(e) => handleInputChange('data_vencimento_procuracao_pj', e.target.value)}
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label className="text-gray-200">Observações Procuração PJ</Label>
+                    <Textarea
+                      value={formData.observacoes_procuracao_pj}
+                      onChange={(e) => handleInputChange('observacoes_procuracao_pj', e.target.value)}
+                      placeholder="Observações sobre a procuração pessoa jurídica..."
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Label className="text-gray-200">Senha Certificado Sócio 1</Label>
-                  <Input
-                    type="password"
-                    value={formData.senha_certificado_socio_1}
-                    onChange={(e) => handleInputChange('senha_certificado_socio_1', e.target.value)}
-                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                    placeholder="Senha do certificado"
-                  />
-                </div>
-                <div>
-                  <Label className="text-gray-200">Validade Certificado Sócio 1</Label>
-                  <Input
-                    type="date"
-                    value={formData.validade_certificado_socio_1}
-                    onChange={(e) => handleInputChange('validade_certificado_socio_1', e.target.value)}
-                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                  />
-                </div>
-                <div>
-                  <Label className="text-gray-200">Procuração Sócio 1</Label>
-                  <Input
-                    value={formData.procuracao_socio_1}
-                    onChange={(e) => handleInputChange('procuracao_socio_1', e.target.value)}
-                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                    placeholder="Procuração"
-                  />
+              </div>
+
+              {/* Procuração Pessoa Física */}
+              <div className="border border-gray-600 rounded-lg p-4">
+                <h4 className="text-white font-semibold mb-4">Procuração Pessoa Física</h4>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-gray-200">Possui Procuração PF</Label>
+                    <Select value={formData.tem_procuracao_pf} onValueChange={(value) => handleInputChange('tem_procuracao_pf', value)}>
+                      <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 border-gray-600">
+                        <SelectItem value="sim">Sim</SelectItem>
+                        <SelectItem value="nao">Não</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-gray-200">Data de Vencimento PF</Label>
+                    <Input
+                      type="date"
+                      value={formData.data_vencimento_procuracao_pf}
+                      onChange={(e) => handleInputChange('data_vencimento_procuracao_pf', e.target.value)}
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label className="text-gray-200">Observações Procuração PF</Label>
+                    <Textarea
+                      value={formData.observacoes_procuracao_pf}
+                      onChange={(e) => handleInputChange('observacoes_procuracao_pf', e.target.value)}
+                      placeholder="Observações sobre a procuração pessoa física..."
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    />
+                  </div>
                 </div>
               </div>
             </CardContent>
