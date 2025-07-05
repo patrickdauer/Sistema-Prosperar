@@ -33,57 +33,97 @@ export default function NovoCliente() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Estados para dados do cliente
+  // Estados para dados do cliente - TODOS os campos do banco
   const [formData, setFormData] = useState({
     // Dados básicos
     razao_social: '',
     nome_fantasia: '',
     cnpj: '',
+    nire: '',
     inscricao_estadual: '',
     inscricao_municipal: '',
     data_abertura: '',
     cliente_desde: '',
+    imposto_renda: '',
     
-    // Endereço
+    // Endereço completo
     endereco: '',
+    numero: '',
+    complemento: '',
+    bairro: '',
     cidade: '',
     estado: '',
     cep: '',
     
     // Contato
     telefone_empresa: '',
+    telefone_comercial: '',
     email_empresa: '',
+    email: '',
     contato: '',
     celular: '',
+    contato_2: '',
+    celular_2: '',
     
-    // Informações tributárias
+    // Informações tributárias e empresariais
     regime_tributario: '',
     atividade_principal: '',
+    atividades_secundarias: '',
     capital_social: '',
+    nota_servico: '',
+    nota_venda: '',
+    metragem_ocupada: '',
     
-    // Informações bancárias
-    banco: '',
-    agencia: '',
-    conta_corrente: '',
-    
-    // Certificados digitais
-    certificado_a1: '',
-    certificado_a3: '',
-    senha_certificado: '',
-    validade_certificado: '',
+    // Certificados digitais empresa
+    certificado_digital_empresa: '',
+    senha_certificado_digital_empresa: '',
+    validade_certificado_digital_empresa: '',
+    certificado_empresa: '',
+    senha_certificado_empresa: '',
     
     // Procurações
-    procuracao_receita: '',
-    procuracao_previdencia: '',
-    procuracao_estadual: '',
-    procuracao_municipal: '',
+    procuracao_cnpj_contabilidade: '',
+    procuracao_cnpj_cpf: '',
     
-    // Google Drive
-    link_pasta_drive: '',
+    // Informações sócio 1 (campos específicos)
+    socio_1: '',
+    cpf_socio_1: '',
+    senha_gov_socio_1: '',
+    certificado_socio_1: '',
+    senha_certificado_socio_1: '',
+    validade_certificado_socio_1: '',
+    procuracao_socio_1: '',
+    nacionalidade_socio_1: '',
+    nascimento_socio_1: '',
+    filiacao_socio_1: '',
+    profissao_socio_1: '',
+    estado_civil_socio_1: '',
+    endereco_socio_1: '',
+    telefone_socio_1: '',
+    email_socio_1: '',
+    cnh_socio_1: '',
+    rg_socio_1: '',
+    certidao_casamento_socio_1: '',
     
-    // Outros
-    observacoes: '',
+    // Status financeiro
+    tem_debitos: '',
+    tem_parcelamento: '',
+    tem_divida_ativa: '',
+    mensalidade_com_faturamento: '',
+    mensalidade_sem_faturamento: '',
+    valor_mensalidade: '',
+    data_vencimento: '',
+    
+    // Status operacional
+    status_das: '',
+    status_envio: '',
+    link_mei: '',
+    
+    // Status geral
     status: 'ativo',
+    
+    // Observações gerais
+    observacoes: '',
   });
 
   const [socios, setSocios] = useState<Socio[]>([]);
@@ -206,7 +246,7 @@ export default function NovoCliente() {
           {/* Dados Básicos */}
           <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
             <CardHeader>
-              <CardTitle className="text-white">Dados Básicos</CardTitle>
+              <CardTitle className="text-white">Dados Básicos da Empresa</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -240,12 +280,30 @@ export default function NovoCliente() {
                   />
                 </div>
                 <div>
+                  <Label className="text-gray-200">NIRE</Label>
+                  <Input
+                    value={formData.nire}
+                    onChange={(e) => handleInputChange('nire', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="NIRE"
+                  />
+                </div>
+                <div>
                   <Label className="text-gray-200">Inscrição Estadual</Label>
                   <Input
                     value={formData.inscricao_estadual}
                     onChange={(e) => handleInputChange('inscricao_estadual', e.target.value)}
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     placeholder="Inscrição estadual"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Inscrição Municipal</Label>
+                  <Input
+                    value={formData.inscricao_municipal}
+                    onChange={(e) => handleInputChange('inscricao_municipal', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Inscrição municipal"
                   />
                 </div>
                 <div>
@@ -266,24 +324,60 @@ export default function NovoCliente() {
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                   />
                 </div>
+                <div>
+                  <Label className="text-gray-200">Imposto de Renda</Label>
+                  <Input
+                    value={formData.imposto_renda}
+                    onChange={(e) => handleInputChange('imposto_renda', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Informações do IR"
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Endereço */}
+          {/* Endereço Completo */}
           <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
             <CardHeader>
-              <CardTitle className="text-white">Endereço</CardTitle>
+              <CardTitle className="text-white">Endereço da Empresa</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="md:col-span-2">
-                  <Label className="text-gray-200">Endereço Completo</Label>
+                <div>
+                  <Label className="text-gray-200">Endereço</Label>
                   <Input
                     value={formData.endereco}
                     onChange={(e) => handleInputChange('endereco', e.target.value)}
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                    placeholder="Rua, número, bairro"
+                    placeholder="Rua, avenida..."
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Número</Label>
+                  <Input
+                    value={formData.numero}
+                    onChange={(e) => handleInputChange('numero', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Número"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Complemento</Label>
+                  <Input
+                    value={formData.complemento}
+                    onChange={(e) => handleInputChange('complemento', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Sala, andar..."
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Bairro</Label>
+                  <Input
+                    value={formData.bairro}
+                    onChange={(e) => handleInputChange('bairro', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Bairro"
                   />
                 </div>
                 <div>
@@ -317,7 +411,7 @@ export default function NovoCliente() {
             </CardContent>
           </Card>
 
-          {/* Contato */}
+          {/* Informações de Contato */}
           <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
             <CardHeader>
               <CardTitle className="text-white">Informações de Contato</CardTitle>
@@ -334,6 +428,15 @@ export default function NovoCliente() {
                   />
                 </div>
                 <div>
+                  <Label className="text-gray-200">Telefone Comercial</Label>
+                  <Input
+                    value={formData.telefone_comercial}
+                    onChange={(e) => handleInputChange('telefone_comercial', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="(11) 1234-5678"
+                  />
+                </div>
+                <div>
                   <Label className="text-gray-200">Email da Empresa</Label>
                   <Input
                     type="email"
@@ -341,6 +444,16 @@ export default function NovoCliente() {
                     onChange={(e) => handleInputChange('email_empresa', e.target.value)}
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     placeholder="contato@empresa.com"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Email</Label>
+                  <Input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="email@empresa.com"
                   />
                 </div>
                 <div>
@@ -361,14 +474,32 @@ export default function NovoCliente() {
                     placeholder="(11) 91234-5678"
                   />
                 </div>
+                <div>
+                  <Label className="text-gray-200">Contato 2</Label>
+                  <Input
+                    value={formData.contato_2}
+                    onChange={(e) => handleInputChange('contato_2', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Nome do segundo contato"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Celular 2</Label>
+                  <Input
+                    value={formData.celular_2}
+                    onChange={(e) => handleInputChange('celular_2', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="(11) 91234-5678"
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Informações Tributárias */}
+          {/* Informações Tributárias e Empresariais */}
           <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
             <CardHeader>
-              <CardTitle className="text-white">Informações Tributárias</CardTitle>
+              <CardTitle className="text-white">Informações Tributárias e Empresariais</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -396,6 +527,15 @@ export default function NovoCliente() {
                   />
                 </div>
                 <div>
+                  <Label className="text-gray-200">Atividades Secundárias</Label>
+                  <Input
+                    value={formData.atividades_secundarias}
+                    onChange={(e) => handleInputChange('atividades_secundarias', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Atividades secundárias"
+                  />
+                </div>
+                <div>
                   <Label className="text-gray-200">Capital Social</Label>
                   <Input
                     value={formData.capital_social}
@@ -404,15 +544,468 @@ export default function NovoCliente() {
                     placeholder="R$ 0,00"
                   />
                 </div>
+                <div>
+                  <Label className="text-gray-200">Nota de Serviço</Label>
+                  <Input
+                    value={formData.nota_servico}
+                    onChange={(e) => handleInputChange('nota_servico', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Informações de nota de serviço"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Nota de Venda</Label>
+                  <Input
+                    value={formData.nota_venda}
+                    onChange={(e) => handleInputChange('nota_venda', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Informações de nota de venda"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Metragem Ocupada</Label>
+                  <Input
+                    value={formData.metragem_ocupada}
+                    onChange={(e) => handleInputChange('metragem_ocupada', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Metragem em m²"
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Sócios */}
+          {/* Certificados Digitais da Empresa */}
+          <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+            <CardHeader>
+              <CardTitle className="text-white">Certificados Digitais da Empresa</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-gray-200">Certificado Digital Empresa</Label>
+                  <Input
+                    value={formData.certificado_digital_empresa}
+                    onChange={(e) => handleInputChange('certificado_digital_empresa', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Certificado digital da empresa"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Senha Certificado Digital Empresa</Label>
+                  <Input
+                    type="password"
+                    value={formData.senha_certificado_digital_empresa}
+                    onChange={(e) => handleInputChange('senha_certificado_digital_empresa', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Senha do certificado"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Validade Certificado Digital Empresa</Label>
+                  <Input
+                    type="date"
+                    value={formData.validade_certificado_digital_empresa}
+                    onChange={(e) => handleInputChange('validade_certificado_digital_empresa', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Certificado Empresa</Label>
+                  <Input
+                    value={formData.certificado_empresa}
+                    onChange={(e) => handleInputChange('certificado_empresa', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Certificado da empresa"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Senha Certificado Empresa</Label>
+                  <Input
+                    type="password"
+                    value={formData.senha_certificado_empresa}
+                    onChange={(e) => handleInputChange('senha_certificado_empresa', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Senha do certificado"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Procurações */}
+          <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+            <CardHeader>
+              <CardTitle className="text-white">Procurações</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-gray-200">Procuração CNPJ Contabilidade</Label>
+                  <Input
+                    value={formData.procuracao_cnpj_contabilidade}
+                    onChange={(e) => handleInputChange('procuracao_cnpj_contabilidade', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Procuração CNPJ contabilidade"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Procuração CNPJ CPF</Label>
+                  <Input
+                    value={formData.procuracao_cnpj_cpf}
+                    onChange={(e) => handleInputChange('procuracao_cnpj_cpf', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Procuração CNPJ CPF"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Informações do Sócio Principal */}
+          <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+            <CardHeader>
+              <CardTitle className="text-white">Sócio Principal</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-gray-200">Nome do Sócio 1</Label>
+                  <Input
+                    value={formData.socio_1}
+                    onChange={(e) => handleInputChange('socio_1', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Nome completo"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">CPF Sócio 1</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={formData.cpf_socio_1}
+                      onChange={(e) => handleInputChange('cpf_socio_1', e.target.value)}
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                      placeholder="000.000.000-00"
+                    />
+                    <Button
+                      type="button"
+                      onClick={() => copyToClipboard(formData.cpf_socio_1, 'CPF')}
+                      size="sm"
+                      variant="outline"
+                      className="border-gray-600 text-white hover:bg-gray-700"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-gray-200">Senha Gov Sócio 1</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={formData.senha_gov_socio_1}
+                      onChange={(e) => handleInputChange('senha_gov_socio_1', e.target.value)}
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                      placeholder="Senha gov.br"
+                    />
+                    <Button
+                      type="button"
+                      onClick={() => copyToClipboard(formData.senha_gov_socio_1, 'Senha Gov')}
+                      size="sm"
+                      variant="outline"
+                      className="border-gray-600 text-white hover:bg-gray-700"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-gray-200">RG Sócio 1</Label>
+                  <Input
+                    value={formData.rg_socio_1}
+                    onChange={(e) => handleInputChange('rg_socio_1', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="RG"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">CNH Sócio 1</Label>
+                  <Input
+                    value={formData.cnh_socio_1}
+                    onChange={(e) => handleInputChange('cnh_socio_1', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="CNH"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Nacionalidade Sócio 1</Label>
+                  <Input
+                    value={formData.nacionalidade_socio_1}
+                    onChange={(e) => handleInputChange('nacionalidade_socio_1', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Brasileiro"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Data Nascimento Sócio 1</Label>
+                  <Input
+                    type="date"
+                    value={formData.nascimento_socio_1}
+                    onChange={(e) => handleInputChange('nascimento_socio_1', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Filiação Sócio 1</Label>
+                  <Input
+                    value={formData.filiacao_socio_1}
+                    onChange={(e) => handleInputChange('filiacao_socio_1', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Nome dos pais"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Profissão Sócio 1</Label>
+                  <Input
+                    value={formData.profissao_socio_1}
+                    onChange={(e) => handleInputChange('profissao_socio_1', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Profissão"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Estado Civil Sócio 1</Label>
+                  <Input
+                    value={formData.estado_civil_socio_1}
+                    onChange={(e) => handleInputChange('estado_civil_socio_1', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Estado civil"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Endereço Sócio 1</Label>
+                  <Input
+                    value={formData.endereco_socio_1}
+                    onChange={(e) => handleInputChange('endereco_socio_1', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Endereço completo"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Telefone Sócio 1</Label>
+                  <Input
+                    value={formData.telefone_socio_1}
+                    onChange={(e) => handleInputChange('telefone_socio_1', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="(11) 91234-5678"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Email Sócio 1</Label>
+                  <Input
+                    value={formData.email_socio_1}
+                    onChange={(e) => handleInputChange('email_socio_1', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="email@exemplo.com"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Certidão Casamento Sócio 1</Label>
+                  <Input
+                    value={formData.certidao_casamento_socio_1}
+                    onChange={(e) => handleInputChange('certidao_casamento_socio_1', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Número da certidão"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Certificados e Procurações do Sócio */}
+          <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+            <CardHeader>
+              <CardTitle className="text-white">Certificados e Procurações do Sócio</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-gray-200">Certificado Sócio 1</Label>
+                  <Input
+                    value={formData.certificado_socio_1}
+                    onChange={(e) => handleInputChange('certificado_socio_1', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Certificado digital"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Senha Certificado Sócio 1</Label>
+                  <Input
+                    type="password"
+                    value={formData.senha_certificado_socio_1}
+                    onChange={(e) => handleInputChange('senha_certificado_socio_1', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Senha do certificado"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Validade Certificado Sócio 1</Label>
+                  <Input
+                    type="date"
+                    value={formData.validade_certificado_socio_1}
+                    onChange={(e) => handleInputChange('validade_certificado_socio_1', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Procuração Sócio 1</Label>
+                  <Input
+                    value={formData.procuracao_socio_1}
+                    onChange={(e) => handleInputChange('procuracao_socio_1', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Procuração"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Status Financeiro */}
+          <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+            <CardHeader>
+              <CardTitle className="text-white">Status Financeiro e Dívidas</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-gray-200">Tem Débitos?</Label>
+                  <Select value={formData.tem_debitos} onValueChange={(value) => handleInputChange('tem_debitos', value)}>
+                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-800 border-gray-600">
+                      <SelectItem value="sim">Sim</SelectItem>
+                      <SelectItem value="nao">Não</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-gray-200">Tem Parcelamento?</Label>
+                  <Select value={formData.tem_parcelamento} onValueChange={(value) => handleInputChange('tem_parcelamento', value)}>
+                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-800 border-gray-600">
+                      <SelectItem value="sim">Sim</SelectItem>
+                      <SelectItem value="nao">Não</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-gray-200">Tem Dívida Ativa?</Label>
+                  <Select value={formData.tem_divida_ativa} onValueChange={(value) => handleInputChange('tem_divida_ativa', value)}>
+                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-800 border-gray-600">
+                      <SelectItem value="sim">Sim</SelectItem>
+                      <SelectItem value="nao">Não</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Informações de Mensalidade */}
+          <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+            <CardHeader>
+              <CardTitle className="text-white">Mensalidade e Pagamentos</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-gray-200">Mensalidade com Faturamento</Label>
+                  <Input
+                    value={formData.mensalidade_com_faturamento}
+                    onChange={(e) => handleInputChange('mensalidade_com_faturamento', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="R$ 0,00"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Mensalidade sem Faturamento</Label>
+                  <Input
+                    value={formData.mensalidade_sem_faturamento}
+                    onChange={(e) => handleInputChange('mensalidade_sem_faturamento', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="R$ 0,00"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Valor Mensalidade</Label>
+                  <Input
+                    value={formData.valor_mensalidade}
+                    onChange={(e) => handleInputChange('valor_mensalidade', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="R$ 0,00"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Data Vencimento</Label>
+                  <Input
+                    value={formData.data_vencimento}
+                    onChange={(e) => handleInputChange('data_vencimento', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Dia do vencimento"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Status Operacional */}
+          <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+            <CardHeader>
+              <CardTitle className="text-white">Status Operacional</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-gray-200">Status DAS</Label>
+                  <Input
+                    value={formData.status_das}
+                    onChange={(e) => handleInputChange('status_das', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Status DAS"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Status Envio</Label>
+                  <Input
+                    value={formData.status_envio}
+                    onChange={(e) => handleInputChange('status_envio', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Status de envio"
+                  />
+                </div>
+                <div>
+                  <Label className="text-gray-200">Link MEI</Label>
+                  <Input
+                    value={formData.link_mei}
+                    onChange={(e) => handleInputChange('link_mei', e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    placeholder="Link MEI"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Sócios Adicionais */}
           <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
             <CardHeader>
               <CardTitle className="text-white flex items-center justify-between">
-                Sócios
+                Sócios Adicionais
                 <Button
                   type="button"
                   onClick={handleAddSocio}
@@ -429,7 +1022,7 @@ export default function NovoCliente() {
               {socios.map((socio, index) => (
                 <div key={index} className="p-4 border border-gray-600 rounded-lg">
                   <div className="flex items-center justify-between mb-4">
-                    <h4 className="text-lg font-semibold text-white">Sócio {index + 1}</h4>
+                    <h4 className="text-lg font-semibold text-white">Sócio {index + 2}</h4>
                     <Button
                       type="button"
                       onClick={() => handleRemoveSocio(index)}
