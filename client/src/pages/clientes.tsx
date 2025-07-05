@@ -468,7 +468,11 @@ export default function Clientes() {
                           textTransform: 'uppercase',
                           letterSpacing: '0.5px',
                           transition: 'all 0.2s ease',
-                          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                          textAlign: 'center',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
                         }}
                       >
                         {cliente.status === 'ativo' ? 'ATIVO' : 
