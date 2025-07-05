@@ -110,10 +110,18 @@ export default function Clientes() {
     fetchClientes();
   }, [searchTerm, filters]);
 
-  // Função para alternar status ativo/inativo
+  // Função para alternar status: ativo -> bloqueado -> inativo -> ativo
   const toggleClienteStatus = async (id: number, currentStatus: string | null) => {
     try {
-      const newStatus = currentStatus === 'ativo' ? 'inativo' : 'ativo';
+      let newStatus;
+      if (currentStatus === 'ativo') {
+        newStatus = 'bloqueado';
+      } else if (currentStatus === 'bloqueado') {
+        newStatus = 'inativo';
+      } else {
+        newStatus = 'ativo';
+      }
+      
       const response = await fetch(`/api/clientes/${id}`, {
         method: 'PATCH',
         headers: {
@@ -191,6 +199,8 @@ export default function Clientes() {
   };
 
   const clientesAtivos = clientes.filter(c => c.status === 'ativo').length;
+  const clientesBloqueados = clientes.filter(c => c.status === 'bloqueado').length;
+  const clientesInativos = clientes.filter(c => c.status === 'inativo').length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
@@ -441,47 +451,28 @@ export default function Clientes() {
                       {cliente.celular || 'N/A'}
                     </div>
 
-                    {/* Status Ativo/Inativo */}
+                    {/* Status */}
                     <div className="col-span-1">
-                      {cliente.status === 'ativo' ? (
-                        <button
-                          onClick={() => toggleClienteStatus(cliente.id, cliente.status)}
-                          className="status-ativo-btn"
-                          style={{
-                            backgroundColor: 'green !important',
-                            color: 'white !important',
-                            padding: '4px 8px',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            fontWeight: '500',
-                            cursor: 'pointer',
-                            border: 'none',
-                            minWidth: '60px',
-                            outline: 'none'
-                          }}
-                        >
-                          ATIVO
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => toggleClienteStatus(cliente.id, cliente.status)}
-                          className="status-inativo-btn"
-                          style={{
-                            backgroundColor: 'red !important',
-                            color: 'white !important',
-                            padding: '4px 8px',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            fontWeight: '500',
-                            cursor: 'pointer',
-                            border: 'none',
-                            minWidth: '60px',
-                            outline: 'none'
-                          }}
-                        >
-                          INATIVO
-                        </button>
-                      )}
+                      <button
+                        onClick={() => toggleClienteStatus(cliente.id, cliente.status)}
+                        style={{
+                          backgroundColor: cliente.status === 'ativo' ? 'green' : 
+                                         cliente.status === 'bloqueado' ? 'red' : 'gray',
+                          color: 'white !important',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          cursor: 'pointer',
+                          border: 'none',
+                          minWidth: '80px',
+                          outline: 'none'
+                        }}
+                      >
+                        {cliente.status === 'ativo' ? 'ATIVO' : 
+                         cliente.status === 'bloqueado' ? 'BLOQUEADO' : 
+                         cliente.status === 'inativo' ? 'INATIVO' : 'N/A'}
+                      </button>
                     </div>
 
                     {/* Ações */}

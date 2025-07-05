@@ -1003,12 +1003,22 @@ export default function ClienteDetailsFix() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="ativo">Ativo</SelectItem>
+                    <SelectItem value="bloqueado">Bloqueado</SelectItem>
                     <SelectItem value="inativo">Inativo</SelectItem>
-                    <SelectItem value="suspenso">Suspenso</SelectItem>
                   </SelectContent>
                 </Select>
               ) : (
-                <p className="text-white py-2">{cliente.status || 'N/A'}</p>
+                <p className="text-white py-2">
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    cliente.status === 'ativo' ? 'bg-green-600 text-white' : 
+                    cliente.status === 'bloqueado' ? 'bg-red-600 text-white' : 
+                    cliente.status === 'inativo' ? 'bg-gray-600 text-white' : 'bg-gray-600 text-white'
+                  }`}>
+                    {cliente.status === 'ativo' ? 'ATIVO' : 
+                     cliente.status === 'bloqueado' ? 'BLOQUEADO' : 
+                     cliente.status === 'inativo' ? 'INATIVO' : cliente.status || 'N/A'}
+                  </span>
+                </p>
               )}
             </div>
           </CardContent>
