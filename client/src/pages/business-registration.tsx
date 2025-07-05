@@ -23,18 +23,18 @@ import logoPath from '@assets/logo-png-prosperar-verde-laranja-prata_17512088740
 
 const businessRegistrationSchema = z.object({
   // Company Data
-  razaoSocial: z.string().min(1, "Razão social é obrigatória"),
-  nomeFantasia: z.string().min(1, "Nome fantasia é obrigatório"),
-  endereco: z.string().min(1, "Endereço é obrigatório"),
-  inscricaoImobiliaria: z.string().min(1, "Inscrição imobiliária é obrigatória"),
-  metragem: z.number().min(1, "Metragem deve ser maior que 0"),
-  telefoneEmpresa: z.string().min(1, "Telefone da empresa é obrigatório"),
-  emailEmpresa: z.string().email("Email inválido"),
-  capitalSocial: z.string().min(1, "Capital social é obrigatório"),
-  atividadePrincipal: z.string().min(1, "Atividade principal é obrigatória"),
+  razaoSocial: z.string().optional(),
+  nomeFantasia: z.string().optional(),
+  endereco: z.string().optional(),
+  inscricaoImobiliaria: z.string().optional(),
+  metragem: z.number().optional(),
+  telefoneEmpresa: z.string().optional(),
+  emailEmpresa: z.string().optional(),
+  capitalSocial: z.string().optional(),
+  atividadePrincipal: z.string().optional(),
   atividadesSecundarias: z.string().optional(),
   atividadesSugeridas: z.array(z.string()).optional(),
-  socios: z.array(z.any()).min(1, "Pelo menos um sócio é obrigatório"),
+  socios: z.array(z.any()).optional(),
 });
 
 type BusinessRegistrationForm = z.infer<typeof businessRegistrationSchema>;
@@ -59,7 +59,7 @@ export default function BusinessRegistration() {
       nomeFantasia: '',
       endereco: '',
       inscricaoImobiliaria: '',
-      metragem: 0,
+      metragem: undefined,
       telefoneEmpresa: '',
       emailEmpresa: '',
       capitalSocial: '',
@@ -157,15 +157,6 @@ export default function BusinessRegistration() {
   };
 
   const onSubmit = (data: BusinessRegistrationForm) => {
-    if (partners.length === 0) {
-      toast({
-        title: "Erro",
-        description: "Pelo menos um sócio é obrigatório",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     // Update data with partners
     const submissionData = {
       ...data,
