@@ -438,6 +438,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async searchClientes(searchTerm?: string, filters?: any): Promise<any[]> {
+    console.log('🔍 Filtros recebidos:', JSON.stringify(filters, null, 2));
     let whereConditions = [];
     
     // Busca por texto
@@ -461,33 +462,40 @@ export class DatabaseStorage implements IStorage {
     }
     
     if (filters?.dataAberturaInicio) {
-      whereConditions.push(`data_abertura >= '${filters.dataAberturaInicio}'`);
+      console.log('📅 Data abertura início:', filters.dataAberturaInicio);
+      whereConditions.push(`data_abertura IS NOT NULL AND data_abertura >= '${filters.dataAberturaInicio}'`);
     }
     
     if (filters?.dataAberturaFim) {
-      whereConditions.push(`data_abertura <= '${filters.dataAberturaFim}'`);
+      console.log('📅 Data abertura fim:', filters.dataAberturaFim);
+      whereConditions.push(`data_abertura IS NOT NULL AND data_abertura <= '${filters.dataAberturaFim}'`);
     }
     
     if (filters?.clienteDesdeInicio) {
-      whereConditions.push(`cliente_desde >= '${filters.clienteDesdeInicio}'`);
+      console.log('📅 Cliente desde início:', filters.clienteDesdeInicio);
+      whereConditions.push(`cliente_desde IS NOT NULL AND cliente_desde >= '${filters.clienteDesdeInicio}'`);
     }
     
     if (filters?.clienteDesdeFim) {
-      whereConditions.push(`cliente_desde <= '${filters.clienteDesdeFim}'`);
+      console.log('📅 Cliente desde fim:', filters.clienteDesdeFim);
+      whereConditions.push(`cliente_desde IS NOT NULL AND cliente_desde <= '${filters.clienteDesdeFim}'`);
     }
     
     const whereClause = whereConditions.length > 0 
       ? `WHERE ${whereConditions.join(' AND ')}`
       : '';
     
-    const result = await db.execute(`
+    const query = `
       SELECT id, razao_social, nome_fantasia, cnpj, email_empresa, telefone_empresa, 
              contato, celular, status, created_at, cidade, regime_tributario, 
              data_abertura, cliente_desde
       FROM clientes 
       ${whereClause}
       ORDER BY created_at DESC
-    `);
+    `;
+    
+    console.log('🔍 Query final:', query);
+    const result = await db.execute(query);
     return result.rows;
   }
 
