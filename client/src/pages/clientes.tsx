@@ -313,7 +313,7 @@ export default function Clientes() {
             Filtros
           </Button>
           <Button
-            onClick={() => setLocation('/business-registration')}
+            onClick={() => setLocation('/novo-cliente')}
             style={{ 
               backgroundColor: '#22c55e', 
               color: 'white',

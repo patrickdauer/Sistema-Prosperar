@@ -21,6 +21,7 @@ import UserManagement from "@/pages/user-management";
 import Profile from "@/pages/profile";
 import Clientes from "@/pages/clientes";
 import ClienteDetails from "@/pages/cliente-details-fixed";
+import NovoCliente from "@/pages/novo-cliente";
 
 function ProtectedDashboardInterno() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -134,6 +135,7 @@ function Router() {
       <Route path="/user-management" component={UserManagement} />
       <Route path="/profile" component={Profile} />
       <Route path="/clientes" component={Clientes} />
+      <Route path="/novo-cliente" component={NovoCliente} />
       <Route path="/clientes/:id" component={ClienteDetails} />
       <Route component={Home} />
     </Switch>
