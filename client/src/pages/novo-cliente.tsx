@@ -1589,7 +1589,7 @@ export default function NovoCliente() {
               className="border-gray-600 text-white hover:bg-gray-700"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Cancelar
+              Voltar para Clientes
             </Button>
             <Button
               type="submit"
