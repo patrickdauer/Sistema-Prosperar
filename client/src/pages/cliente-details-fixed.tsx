@@ -221,7 +221,9 @@ export default function ClienteDetailsFix() {
     'tem_procuracao_pj', 'data_vencimento_procuracao_pj', 'observacoes_procuracao_pj',
     'tem_procuracao_pf', 'data_vencimento_procuracao_pf', 'observacoes_procuracao_pf',
     // Campo do Google Drive
-    'link_google_drive'
+    'link_google_drive',
+    // Novos campos do sócio
+    'regime_tributario_socio_1', 'senha_gov_socio_1', 'filiacao_socio_1', 'observacao_socio_1'
   ];
 
   return (
@@ -642,10 +644,39 @@ export default function ClienteDetailsFix() {
         {/* Informações do Sócio Principal */}
         <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <User className="h-5 w-5 text-green-500" />
-              Sócio Principal
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-white">
+                <User className="h-5 w-5 text-green-500" />
+                Sócio Principal
+              </CardTitle>
+              {editing && (
+                <Button
+                  onClick={() => {
+                    // Função para adicionar novo sócio
+                    const newSocioNumber = 2; // Por enquanto, vamos começar com sócio 2
+                    handleInputChange(`socio_${newSocioNumber}`, '');
+                    handleInputChange(`cpf_socio_${newSocioNumber}`, '');
+                    handleInputChange(`rg_socio_${newSocioNumber}`, '');
+                    handleInputChange(`nacionalidade_socio_${newSocioNumber}`, '');
+                    handleInputChange(`nascimento_socio_${newSocioNumber}`, '');
+                    handleInputChange(`estado_civil_socio_${newSocioNumber}`, '');
+                    handleInputChange(`profissao_socio_${newSocioNumber}`, '');
+                    handleInputChange(`telefone_socio_${newSocioNumber}`, '');
+                    handleInputChange(`email_socio_${newSocioNumber}`, '');
+                    handleInputChange(`endereco_socio_${newSocioNumber}`, '');
+                    handleInputChange(`senha_gov_socio_${newSocioNumber}`, '');
+                    handleInputChange(`filiacao_socio_${newSocioNumber}`, '');
+                    handleInputChange(`observacao_socio_${newSocioNumber}`, '');
+                  }}
+                  size="sm"
+                  style={{ backgroundColor: '#3b82f6', color: 'white' }}
+                  className="hover:bg-blue-600"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Adicionar Sócio
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent className="grid md:grid-cols-2 gap-4">
             <div>
@@ -728,6 +759,54 @@ export default function ClienteDetailsFix() {
                 <p className="text-white py-2">{cliente.estado_civil_socio_1 || 'N/A'}</p>
               )}
             </div>
+            {/* Regime Tributário - só aparece se casado */}
+            {(formData?.estado_civil_socio_1 === 'CASADO' || cliente.estado_civil_socio_1 === 'CASADO') && (
+              <div>
+                <Label className="text-gray-300">Regime Tributário</Label>
+                {editing ? (
+                  <Select value={formData?.regime_tributario_socio_1 || ''} onValueChange={(value) => handleInputChange('regime_tributario_socio_1', value)}>
+                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                      <SelectValue placeholder="Selecione o regime tributário" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="COMUNHAO_PARCIAL">Comunhão Parcial de Bens</SelectItem>
+                      <SelectItem value="COMUNHAO_TOTAL">Comunhão Total de Bens</SelectItem>
+                      <SelectItem value="SEPARACAO_BENS">Separação de Bens</SelectItem>
+                      <SelectItem value="PARTICIPACAO_FINAL">Participação Final dos Aquestos</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="text-white py-2">{cliente.regime_tributario_socio_1 || 'N/A'}</p>
+                )}
+              </div>
+            )}
+            <div>
+              <Label className="text-gray-300">Senha do Gov</Label>
+              {editing ? (
+                <Input
+                  type="password"
+                  value={formData?.senha_gov_socio_1 || ''}
+                  onChange={(e) => handleInputChange('senha_gov_socio_1', e.target.value)}
+                  className="bg-gray-700 border-gray-600 text-white"
+                  placeholder="Digite a senha do Gov.br"
+                />
+              ) : (
+                <p className="text-white py-2">{cliente.senha_gov_socio_1 ? '••••••••' : 'N/A'}</p>
+              )}
+            </div>
+            <div>
+              <Label className="text-gray-300">Filiação</Label>
+              {editing ? (
+                <Input
+                  value={formData?.filiacao_socio_1 || ''}
+                  onChange={(e) => handleInputChange('filiacao_socio_1', e.target.value)}
+                  className="bg-gray-700 border-gray-600 text-white"
+                  placeholder="Nome dos pais"
+                />
+              ) : (
+                <p className="text-white py-2">{cliente.filiacao_socio_1 || 'N/A'}</p>
+              )}
+            </div>
             <div>
               <Label className="text-gray-300">Profissão</Label>
               {editing ? (
@@ -775,6 +854,20 @@ export default function ClienteDetailsFix() {
                 />
               ) : (
                 <p className="text-white py-2">{cliente.endereco_socio_1 || 'N/A'}</p>
+              )}
+            </div>
+            <div className="col-span-2">
+              <Label className="text-gray-300">Observação</Label>
+              {editing ? (
+                <Textarea
+                  value={formData?.observacao_socio_1 || ''}
+                  onChange={(e) => handleInputChange('observacao_socio_1', e.target.value)}
+                  className="bg-gray-700 border-gray-600 text-white"
+                  rows={3}
+                  placeholder="Observações adicionais sobre o sócio"
+                />
+              ) : (
+                <p className="text-white py-2">{cliente.observacao_socio_1 || 'N/A'}</p>
               )}
             </div>
           </CardContent>
