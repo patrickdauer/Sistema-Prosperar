@@ -446,16 +446,18 @@ export default function Clientes() {
                       {cliente.status === 'ativo' ? (
                         <button
                           onClick={() => toggleClienteStatus(cliente.id, cliente.status)}
+                          className="status-ativo-btn"
                           style={{
-                            backgroundColor: '#22c55e',
-                            color: '#ffffff',
+                            backgroundColor: 'green !important',
+                            color: 'white !important',
                             padding: '4px 8px',
                             borderRadius: '4px',
                             fontSize: '12px',
                             fontWeight: '500',
                             cursor: 'pointer',
                             border: 'none',
-                            minWidth: '60px'
+                            minWidth: '60px',
+                            outline: 'none'
                           }}
                         >
                           ATIVO
@@ -463,16 +465,18 @@ export default function Clientes() {
                       ) : (
                         <button
                           onClick={() => toggleClienteStatus(cliente.id, cliente.status)}
+                          className="status-inativo-btn"
                           style={{
-                            backgroundColor: '#ef4444',
-                            color: '#ffffff',
+                            backgroundColor: 'red !important',
+                            color: 'white !important',
                             padding: '4px 8px',
                             borderRadius: '4px',
                             fontSize: '12px',
                             fontWeight: '500',
                             cursor: 'pointer',
                             border: 'none',
-                            minWidth: '60px'
+                            minWidth: '60px',
+                            outline: 'none'
                           }}
                         >
                           INATIVO

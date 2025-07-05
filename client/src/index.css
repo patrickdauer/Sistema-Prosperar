@@ -553,3 +553,20 @@ button.task-status-inactive,
   color: #d1d5db !important;
   border-color: #6b7280 !important;
 }
+
+/* Cliente Status Buttons - NUCLEAR OVERRIDE */
+.status-ativo-btn,
+button.status-ativo-btn {
+  background-color: green !important;
+  background: green !important;
+  color: white !important;
+  border: none !important;
+}
+
+.status-inativo-btn,
+button.status-inativo-btn {
+  background-color: red !important;
+  background: red !important;
+  color: white !important;
+  border: none !important;
+}
