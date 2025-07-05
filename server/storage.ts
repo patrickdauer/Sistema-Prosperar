@@ -16,6 +16,9 @@ import {
   type InsertTaskFile,
   type Activity,
   type InsertActivity,
+  clientes,
+  type Cliente,
+  type InsertCliente,
 } from "@shared/schema";
 import {
   contratacaoFuncionarios,
@@ -23,7 +26,7 @@ import {
   type InsertContratacaoFuncionario,
 } from "@shared/contratacao-schema";
 import { db } from "./db";
-import { eq, and, desc, asc } from "drizzle-orm";
+import { eq, and, desc, asc, or, ilike } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
 export interface IStorage {
@@ -69,6 +72,15 @@ export interface IStorage {
   
   // Contratação de funcionários
   createContratacaoFuncionario(contratacao: InsertContratacaoFuncionario): Promise<ContratacaoFuncionario>;
+  
+  // Gerenciamento de clientes
+  createCliente(cliente: InsertCliente): Promise<Cliente>;
+  getCliente(id: number): Promise<Cliente | undefined>;
+  getAllClientes(): Promise<Cliente[]>;
+  updateCliente(id: number, data: Partial<Cliente>): Promise<Cliente>;
+  deleteCliente(id: number): Promise<void>;
+  searchClientes(searchTerm: string): Promise<Cliente[]>;
+  promoverClienteFromRegistration(registrationId: number, clienteData: Partial<InsertCliente>): Promise<Cliente>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -374,6 +386,86 @@ export class DatabaseStorage implements IStorage {
   async createContratacaoFuncionario(contratacao: InsertContratacaoFuncionario): Promise<ContratacaoFuncionario> {
     const [created] = await db.insert(contratacaoFuncionarios).values(contratacao).returning();
     return created;
+  }
+
+  // Métodos de gerenciamento de clientes
+  async createCliente(cliente: InsertCliente): Promise<Cliente> {
+    const [newCliente] = await db
+      .insert(clientes)
+      .values(cliente)
+      .returning();
+    return newCliente;
+  }
+
+  async getCliente(id: number): Promise<Cliente | undefined> {
+    const [cliente] = await db
+      .select()
+      .from(clientes)
+      .where(eq(clientes.id, id));
+    return cliente || undefined;
+  }
+
+  async getAllClientes(): Promise<Cliente[]> {
+    return await db.select().from(clientes).orderBy(desc(clientes.createdAt));
+  }
+
+  async updateCliente(id: number, data: Partial<Cliente>): Promise<Cliente> {
+    const updateData = { ...data, updatedAt: new Date() };
+    const [updatedCliente] = await db
+      .update(clientes)
+      .set(updateData)
+      .where(eq(clientes.id, id))
+      .returning();
+    return updatedCliente;
+  }
+
+  async deleteCliente(id: number): Promise<void> {
+    await db.delete(clientes).where(eq(clientes.id, id));
+  }
+
+  async searchClientes(searchTerm: string): Promise<Cliente[]> {
+    return await db
+      .select()
+      .from(clientes)
+      .where(
+        or(
+          ilike(clientes.razaoSocial, `%${searchTerm}%`),
+          ilike(clientes.nomeFantasia, `%${searchTerm}%`),
+          ilike(clientes.cnpj, `%${searchTerm}%`),
+          ilike(clientes.email, `%${searchTerm}%`)
+        )
+      )
+      .orderBy(desc(clientes.createdAt));
+  }
+
+  async promoverClienteFromRegistration(registrationId: number, clienteData: Partial<InsertCliente>): Promise<Cliente> {
+    const registration = await this.getBusinessRegistration(registrationId);
+    if (!registration) {
+      throw new Error('Registration not found');
+    }
+
+    // Mapear dados do registro para cliente
+    const dadosCliente: InsertCliente = {
+      razaoSocial: registration.razaoSocial,
+      nomeFantasia: registration.nomeFantasia,
+      endereco: registration.endereco,
+      telefoneComercial: registration.telefoneEmpresa,
+      email: registration.emailEmpresa,
+      atividadePrincipal: registration.atividadePrincipal,
+      atividadesSecundarias: registration.atividadesSecundarias,
+      capitalSocial: registration.capitalSocial ? registration.capitalSocial : undefined,
+      socios: registration.socios as any,
+      origem: 'website',
+      status: 'ativo',
+      ...clienteData
+    };
+
+    const novoCliente = await this.createCliente(dadosCliente);
+    
+    // Atualizar status do registro para 'concluída'
+    await this.updateBusinessRegistration(registrationId, { status: 'concluida' });
+    
+    return novoCliente;
   }
 }
 

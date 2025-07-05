@@ -227,3 +227,6 @@ export type InsertTaskFile = z.infer<typeof insertTaskFileSchema>;
 export type Activity = typeof activities.$inferSelect;
 export type InsertActivity = z.infer<typeof insertActivitySchema>;
 export type TaskTemplate = typeof taskTemplates.$inferSelect;
+
+// Re-export clients schema
+export * from './clientes-schema';

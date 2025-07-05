@@ -19,6 +19,7 @@ import Landing from "@/pages/landing";
 import Home from "@/pages/home";
 import UserManagement from "@/pages/user-management";
 import Profile from "@/pages/profile";
+import Clientes from "@/pages/clientes";
 
 function ProtectedDashboardInterno() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -131,6 +132,7 @@ function Router() {
       <Route path="/sistema-final" component={ProtectedSistemaFinal} />
       <Route path="/user-management" component={UserManagement} />
       <Route path="/profile" component={Profile} />
+      <Route path="/clientes" component={Clientes} />
       <Route component={Home} />
     </Switch>
   );

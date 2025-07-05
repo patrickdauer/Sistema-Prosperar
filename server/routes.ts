@@ -568,6 +568,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Rotas para gerenciamento de clientes
+  app.get('/api/clientes', async (req, res) => {
+    try {
+      const { search } = req.query;
+      let clientes;
+      
+      if (search && typeof search === 'string') {
+        clientes = await storage.searchClientes(search);
+      } else {
+        clientes = await storage.getAllClientes();
+      }
+      
+      res.json(clientes);
+    } catch (error) {
+      console.error('Erro ao buscar clientes:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.post('/api/clientes', async (req, res) => {
+    try {
+      const cliente = await storage.createCliente(req.body);
+      res.json(cliente);
+    } catch (error) {
+      console.error('Erro ao criar cliente:', error);
+      res.status(400).json({ error: 'Dados inválidos' });
+    }
+  });
+
+  app.get('/api/clientes/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const cliente = await storage.getCliente(id);
+      
+      if (!cliente) {
+        return res.status(404).json({ error: 'Cliente não encontrado' });
+      }
+      
+      res.json(cliente);
+    } catch (error) {
+      console.error('Erro ao buscar cliente:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.put('/api/clientes/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const cliente = await storage.updateCliente(id, req.body);
+      res.json(cliente);
+    } catch (error) {
+      console.error('Erro ao atualizar cliente:', error);
+      res.status(400).json({ error: 'Dados inválidos' });
+    }
+  });
+
+  app.delete('/api/clientes/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteCliente(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Erro ao deletar cliente:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Rota para promover registro para cliente
+  app.post('/api/business-registrations/:id/promover-cliente', async (req, res) => {
+    try {
+      const registrationId = parseInt(req.params.id);
+      const cliente = await storage.promoverClienteFromRegistration(registrationId, req.body);
+      res.json(cliente);
+    } catch (error) {
+      console.error('Erro ao promover cliente:', error);
+      res.status(400).json({ error: 'Erro ao promover cliente' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
