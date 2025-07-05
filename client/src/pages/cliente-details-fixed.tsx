@@ -875,7 +875,7 @@ export default function ClienteDetailsFix() {
         <div className="flex gap-4 justify-center pt-6 border-t border-gray-700">
           <Button
             variant="outline"
-            onClick={() => setLocation('/gestao-clientes')}
+            onClick={() => setLocation('/clientes')}
             className="border-gray-600 text-white hover:bg-gray-700"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
