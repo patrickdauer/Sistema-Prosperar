@@ -22,6 +22,7 @@ import Profile from "@/pages/profile";
 import Clientes from "@/pages/clientes";
 import ClienteDetails from "@/pages/cliente-details-fixed";
 import NovoCliente from "@/pages/novo-cliente";
+import ClienteTasks from "@/pages/cliente-tasks";
 
 function ProtectedDashboardInterno() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -137,6 +138,7 @@ function Router() {
       <Route path="/clientes" component={Clientes} />
       <Route path="/novo-cliente" component={NovoCliente} />
       <Route path="/clientes/:id" component={ClienteDetails} />
+      <Route path="/cliente-tasks" component={ClienteTasks} />
       <Route component={Home} />
     </Switch>
   );

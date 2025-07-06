@@ -394,6 +394,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.createTasksForRegistration(registration.id);
       console.log("Initial tasks created");
 
+      // Automatically create a client from the registration
+      try {
+        const cliente = await storage.promoverClienteFromRegistration(registration.id, {
+          origem: 'website',
+          status: 'novo'
+        });
+        console.log(`Cliente criado automaticamente com ID: ${cliente.id}`);
+        
+        // Create tasks for the new client as well
+        await storage.createTasksForClient(cliente.id);
+        console.log("Tarefas criadas para o novo cliente");
+      } catch (clientError) {
+        console.error("Erro ao criar cliente automaticamente:", clientError);
+        // Continue even if client creation fails - registration was successful
+      }
+
       res.status(201).json({ 
         message: "Cadastro realizado com sucesso!",
         registrationId: registration.id
@@ -483,6 +499,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting task:", error);
       res.status(500).json({ message: "Erro ao excluir tarefa" });
+    }
+  });
+
+  // Client with tasks routes
+  app.get("/api/clientes/with-tasks", authenticateToken, async (req, res) => {
+    try {
+      const clients = await storage.getAllClientsWithTasks();
+      res.json(clients);
+    } catch (error) {
+      console.error("Error fetching clients with tasks:", error);
+      res.status(500).json({ message: "Erro ao buscar clientes com tarefas" });
+    }
+  });
+
+  // Create tasks for specific client
+  app.post("/api/clientes/:clientId/tasks", authenticateToken, async (req, res) => {
+    try {
+      const clientId = parseInt(req.params.clientId);
+      const tasks = await storage.createTasksForClient(clientId);
+      res.status(201).json(tasks);
+    } catch (error) {
+      console.error("Error creating tasks for client:", error);
+      res.status(500).json({ message: "Erro ao criar tarefas para cliente" });
+    }
+  });
+
+  // Get tasks for specific client
+  app.get("/api/clientes/:clientId/tasks", authenticateToken, async (req, res) => {
+    try {
+      const clientId = parseInt(req.params.clientId);
+      const tasks = await storage.getTasksByClient(clientId);
+      res.json(tasks);
+    } catch (error) {
+      console.error("Error fetching client tasks:", error);
+      res.status(500).json({ message: "Erro ao buscar tarefas do cliente" });
     }
   });
 

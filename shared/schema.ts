@@ -99,7 +99,8 @@ export const taskTemplates = pgTable("task_templates", {
 // Tasks for each business registration
 export const tasks = pgTable("tasks", {
   id: serial("id").primaryKey(),
-  businessRegistrationId: integer("business_registration_id").notNull(),
+  businessRegistrationId: integer("business_registration_id"), // Agora opcional
+  clienteId: integer("cliente_id"), // Novo campo para associar com clientes
   templateId: integer("template_id"),
   title: text("title").notNull(),
   description: text("description"),
@@ -112,7 +113,9 @@ export const tasks = pgTable("tasks", {
   order: integer("order").notNull(),
   observacao: text("observacao"), // Campo de observação
   data_lembrete: timestamp("data_lembrete"), // Campo de data de lembrete
-  cnpj: text("cnpj") // Campo específico para tarefa de CNPJ
+  cnpj: text("cnpj"), // Campo específico para tarefa de CNPJ
+  priority: text("priority").default("medium"), // low, medium, high
+  estimatedHours: integer("estimated_hours") // Horas estimadas para completar
 });
 
 // Task files/documents

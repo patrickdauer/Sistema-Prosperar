@@ -59,6 +59,11 @@ export interface IStorage {
   createTask(task: Omit<InsertTask, 'id' | 'createdAt' | 'templateId'>): Promise<Task>;
   updateTaskField(taskId: number, field: string, value: any): Promise<Task>;
   
+  // Task management for clients
+  createTasksForClient(clienteId: number): Promise<Task[]>;
+  getTasksByClient(clienteId: number): Promise<Task[]>;
+  getAllClientsWithTasks(): Promise<any[]>;
+  
   // Task templates
   getTaskTemplates(): Promise<TaskTemplate[]>;
   createTaskTemplate(template: Omit<TaskTemplate, 'id'>): Promise<TaskTemplate>;
@@ -700,6 +705,55 @@ export class DatabaseStorage implements IStorage {
       console.error('❌ Error updating IR history:', error);
       throw error;
     }
+  }
+
+  // Task management for clients
+  async createTasksForClient(clienteId: number): Promise<Task[]> {
+    const templates = await this.getTaskTemplates();
+    const createdTasks: Task[] = [];
+
+    for (const template of templates) {
+      const task = await this.createTask({
+        title: template.title,
+        description: template.description,
+        status: 'pending',
+        priority: template.priority,
+        department: template.department,
+        estimatedHours: template.estimatedHours,
+        businessRegistrationId: null, // Cliente não tem registration ID
+        clienteId: clienteId, // Novo campo para relacionar com cliente
+        dueDate: template.defaultDueDays ? new Date(Date.now() + template.defaultDueDays * 24 * 60 * 60 * 1000) : null,
+        order: template.order || 0
+      });
+      createdTasks.push(task);
+    }
+
+    return createdTasks;
+  }
+
+  async getTasksByClient(clienteId: number): Promise<Task[]> {
+    return await db
+      .select()
+      .from(tasks)
+      .where(eq(tasks.clienteId, clienteId))
+      .orderBy(asc(tasks.order));
+  }
+
+  async getAllClientsWithTasks(): Promise<any[]> {
+    const clients = await this.getAllClientes();
+    
+    const clientsWithTasks = await Promise.all(
+      clients.map(async (client) => {
+        const clientTasks = await this.getTasksByClient(client.id);
+        
+        return {
+          ...client,
+          tasks: clientTasks
+        };
+      })
+    );
+    
+    return clientsWithTasks;
   }
 }
 
