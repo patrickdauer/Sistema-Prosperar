@@ -202,7 +202,7 @@ export default function SistemaNovo() {
               borderRadius: '6px',
               cursor: 'pointer',
               fontSize: '14px',
-              fontWeight: '500'
+                              fontWeight: '500'
             }}
           >
             Sair
@@ -378,14 +378,14 @@ export default function SistemaNovo() {
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'pending' })}
                           style={{
-                            background: task.status === 'pending' ? '#e74c3c' : '#555555',
+                                            background: task.status === 'pending' ? '#e74c3c' : '#555555',
                             color: '#ffffff',
                             border: 'none',
                             padding: '6px 12px',
                             fontSize: '11px',
                             borderRadius: '4px',
                             cursor: 'pointer',
-            fontWeight: "500"
+                            fontWeight: '500'
                           }}
                         >
                           Pendente
@@ -393,14 +393,14 @@ export default function SistemaNovo() {
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'in_progress' })}
                           style={{
-            background: task.status === "in_progress" ? "#f39c12" : "#555555",
+                            background: task.status === 'in_progress' ? '#f39c12' : '#555555',
                             color: '#ffffff',
                             border: 'none',
                             padding: '6px 12px',
                             fontSize: '11px',
                             borderRadius: '4px',
                             cursor: 'pointer',
-            fontWeight: "500"
+                            fontWeight: '500'
                           }}
                         >
                           Andamento
@@ -408,14 +408,14 @@ export default function SistemaNovo() {
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'completed' })}
                           style={{
-            background: task.status === "completed" ? "#27ae60" : "#555555",
+                            background: task.status === 'completed' ? '#27ae60' : '#555555',
                             color: '#ffffff',
                             border: 'none',
                             padding: '6px 12px',
                             fontSize: '11px',
                             borderRadius: '4px',
                             cursor: 'pointer',
-            fontWeight: "500"
+                            fontWeight: '500'
                           }}
                         >
                           Concluído
@@ -446,14 +446,14 @@ export default function SistemaNovo() {
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'pending' })}
                           style={{
-                            background: task.status === 'pending' ? '#e74c3c' : '#555555',
+                                            background: task.status === 'pending' ? '#e74c3c' : '#555555',
                             color: '#ffffff',
                             border: 'none',
                             padding: '6px 12px',
                             fontSize: '11px',
                             borderRadius: '4px',
                             cursor: 'pointer',
-            fontWeight: "500"
+                            fontWeight: '500'
                           }}
                         >
                           Pendente
@@ -461,14 +461,14 @@ export default function SistemaNovo() {
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'in_progress' })}
                           style={{
-            background: task.status === "in_progress" ? "#f39c12" : "#555555",
+                            background: task.status === 'in_progress' ? '#f39c12' : '#555555',
                             color: '#ffffff',
                             border: 'none',
                             padding: '6px 12px',
                             fontSize: '11px',
                             borderRadius: '4px',
                             cursor: 'pointer',
-            fontWeight: "500"
+                            fontWeight: '500'
                           }}
                         >
                           Andamento
@@ -476,14 +476,14 @@ export default function SistemaNovo() {
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'completed' })}
                           style={{
-            background: task.status === "completed" ? "#27ae60" : "#555555",
+                            background: task.status === 'completed' ? '#27ae60' : '#555555',
                             color: '#ffffff',
                             border: 'none',
                             padding: '6px 12px',
                             fontSize: '11px',
                             borderRadius: '4px',
                             cursor: 'pointer',
-            fontWeight: "500"
+                            fontWeight: '500'
                           }}
                         >
                           Concluído
@@ -514,14 +514,14 @@ export default function SistemaNovo() {
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'pending' })}
                           style={{
-                            background: task.status === 'pending' ? '#e74c3c' : '#555555',
+                                            background: task.status === 'pending' ? '#e74c3c' : '#555555',
                             color: '#ffffff',
                             border: 'none',
                             padding: '6px 12px',
                             fontSize: '11px',
                             borderRadius: '4px',
                             cursor: 'pointer',
-            fontWeight: "500"
+                            fontWeight: '500'
                           }}
                         >
                           Pendente
@@ -529,14 +529,14 @@ export default function SistemaNovo() {
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'in_progress' })}
                           style={{
-            background: task.status === "in_progress" ? "#f39c12" : "#555555",
+                            background: task.status === 'in_progress' ? '#f39c12' : '#555555',
                             color: '#ffffff',
                             border: 'none',
                             padding: '6px 12px',
                             fontSize: '11px',
                             borderRadius: '4px',
                             cursor: 'pointer',
-            fontWeight: "500"
+                            fontWeight: '500'
                           }}
                         >
                           Andamento
@@ -544,14 +544,14 @@ export default function SistemaNovo() {
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'completed' })}
                           style={{
-            background: task.status === "completed" ? "#27ae60" : "#555555",
+                            background: task.status === 'completed' ? '#27ae60' : '#555555',
                             color: '#ffffff',
                             border: 'none',
                             padding: '6px 12px',
                             fontSize: '11px',
                             borderRadius: '4px',
                             cursor: 'pointer',
-            fontWeight: "500"
+                            fontWeight: '500'
                           }}
                         >
                           Concluído
