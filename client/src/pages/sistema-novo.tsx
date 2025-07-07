@@ -134,52 +134,7 @@ export default function SistemaNovo() {
   const processingRegistrations = allRegistrations.filter((reg: any) => reg.status === 'in_progress').length;
   const completedRegistrations = allRegistrations.filter((reg: any) => reg.status === 'completed').length;
 
-  const renderStatusButton = (task: any, status: string, label: string) => {
-    const isActive = task.status === status;
-    
-    let backgroundColor = '#555555';
-    let color = '#ffffff';
-    let fontWeight = '400';
-    
-    if (isActive) {
-      fontWeight = '600';
-      switch (status) {
-        case 'pending':
-          backgroundColor = '#e74c3c';
-          break;
-        case 'in_progress':
-          backgroundColor = '#f39c12';
-          break;
-        case 'completed':
-          backgroundColor = '#27ae60';
-          break;
-      }
-    }
 
-    const buttonStyle = {
-      backgroundColor: backgroundColor,
-      background: backgroundColor,
-      color: color,
-      border: 'none',
-      padding: '6px 12px',
-      fontSize: '11px',
-      borderRadius: '4px',
-      cursor: 'pointer',
-      fontWeight: fontWeight,
-      minWidth: '80px',
-      transition: 'all 0.2s ease'
-    };
-
-    return (
-      <button
-        key={`${task.id}-${status}`}
-        onClick={() => updateTaskMutation.mutate({ taskId: task.id, status })}
-        style={buttonStyle}
-      >
-        {label}
-      </button>
-    );
-  };
 
   return (
     <div style={{ 
@@ -334,9 +289,51 @@ export default function SistemaNovo() {
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '6px' }}>
-                      {renderStatusButton(task, 'pending', 'Pendente')}
-                      {renderStatusButton(task, 'in_progress', 'Andamento')}
-                      {renderStatusButton(task, 'completed', 'Concluído')}
+                      <button
+                        onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'pending' })}
+                        style={{
+                          backgroundColor: task.status === 'pending' ? '#e74c3c' : '#555555',
+                          color: '#ffffff',
+                          border: 'none',
+                          padding: '6px 12px',
+                          fontSize: '11px',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontWeight: task.status === 'pending' ? '600' : '400'
+                        }}
+                      >
+                        Pendente
+                      </button>
+                      <button
+                        onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'in_progress' })}
+                        style={{
+                          backgroundColor: task.status === 'in_progress' ? '#f39c12' : '#555555',
+                          color: '#ffffff',
+                          border: 'none',
+                          padding: '6px 12px',
+                          fontSize: '11px',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontWeight: task.status === 'in_progress' ? '600' : '400'
+                        }}
+                      >
+                        Andamento
+                      </button>
+                      <button
+                        onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'completed' })}
+                        style={{
+                          backgroundColor: task.status === 'completed' ? '#27ae60' : '#555555',
+                          color: '#ffffff',
+                          border: 'none',
+                          padding: '6px 12px',
+                          fontSize: '11px',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontWeight: task.status === 'completed' ? '600' : '400'
+                        }}
+                      >
+                        Concluído
+                      </button>
                     </div>
                   </div>
                 ))}
