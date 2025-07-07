@@ -202,7 +202,7 @@ export default function SistemaNovo() {
               borderRadius: '6px',
               cursor: 'pointer',
               fontSize: '14px',
-              fontWeight: task.status === 'pending' || task.status === 'in_progress' || task.status === 'completed' ? '600' : '400'
+              fontWeight: '500'
             }}
           >
             Sair
@@ -232,7 +232,7 @@ export default function SistemaNovo() {
             <div style={{ fontSize: '32px', fontWeight: '700', color: '#ffffff', marginBottom: '8px' }}>
               {registrations?.length || 0}
             </div>
-            <div style={{ fontSize: '14px', color: '#a0a0a0', fontWeight: task.status === 'pending' || task.status === 'in_progress' || task.status === 'completed' ? '600' : '400' }}>Total de Empresas</div>
+            <div style={{ fontSize: '14px', color: '#a0a0a0', fontWeight: '500' }}>Total de Empresas</div>
           </div>
           
           <div style={{ 
@@ -246,7 +246,7 @@ export default function SistemaNovo() {
               {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
                 acc + (reg.tasks?.filter((t: Task) => t.status === 'pending').length || 0), 0) || 0}
             </div>
-            <div style={{ fontSize: '14px', color: '#a0a0a0', fontWeight: task.status === 'pending' || task.status === 'in_progress' || task.status === 'completed' ? '600' : '400' }}>Pendentes</div>
+            <div style={{ fontSize: '14px', color: '#a0a0a0', fontWeight: '500' }}>Pendentes</div>
           </div>
 
           <div style={{ 
@@ -260,7 +260,7 @@ export default function SistemaNovo() {
               {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
                 acc + (reg.tasks?.filter((t: Task) => t.status === 'in_progress').length || 0), 0) || 0}
             </div>
-            <div style={{ fontSize: '14px', color: '#a0a0a0', fontWeight: task.status === 'pending' || task.status === 'in_progress' || task.status === 'completed' ? '600' : '400' }}>Em Andamento</div>
+            <div style={{ fontSize: '14px', color: '#a0a0a0', fontWeight: '500' }}>Em Andamento</div>
           </div>
 
           <div style={{ 
@@ -274,7 +274,7 @@ export default function SistemaNovo() {
               {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
                 acc + (reg.tasks?.filter((t: Task) => t.status === 'completed').length || 0), 0) || 0}
             </div>
-            <div style={{ fontSize: '14px', color: '#a0a0a0', fontWeight: task.status === 'pending' || task.status === 'in_progress' || task.status === 'completed' ? '600' : '400' }}>Concluídas</div>
+            <div style={{ fontSize: '14px', color: '#a0a0a0', fontWeight: '500' }}>Concluídas</div>
           </div>
         </div>
 
