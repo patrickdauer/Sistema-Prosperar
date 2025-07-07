@@ -59,7 +59,12 @@ export default function SistemaNovo() {
       return response.json();
     },
     onSuccess: () => {
+      // Invalidate cache to refresh data and update UI
       queryClient.invalidateQueries({ queryKey: ['registrations-sistema-novo'] });
+      // Force refresh to ensure color updates
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ['registrations-sistema-novo'] });
+      }, 100);
       toast({ title: "Status atualizado!" });
     }
   });
@@ -265,10 +270,29 @@ export default function SistemaNovo() {
                           )}
                         </div>
                         <div style={{ display: 'flex', gap: '4px' }}>
-                          <button style={{ background: '#444', color: '#fff', border: 'none', padding: '4px 8px', fontSize: '10px', borderRadius: '3px', cursor: 'pointer' }}>
+                          <button 
+                            onClick={() => {
+                              const newTitle = prompt('Novo título:', task.title);
+                              const newDescription = prompt('Nova descrição:', task.description);
+                              const newObservacao = prompt('Observação:', task.observacao || '');
+                              if (newTitle) {
+                                // TODO: Implementar edição via API
+                                alert(`Edição em desenvolvimento.\nTítulo: ${newTitle}\nDescrição: ${newDescription}\nObs: ${newObservacao}`);
+                              }
+                            }}
+                            style={{ background: '#444', color: '#fff', border: 'none', padding: '4px 8px', fontSize: '10px', borderRadius: '3px', cursor: 'pointer' }}
+                          >
                             ✏️
                           </button>
-                          <button style={{ background: '#e74c3c', color: '#fff', border: 'none', padding: '4px 8px', fontSize: '10px', borderRadius: '3px', cursor: 'pointer' }}>
+                          <button 
+                            onClick={() => {
+                              if (confirm(`Deletar tarefa "${task.title}"?`)) {
+                                // TODO: Implementar exclusão via API
+                                alert('Exclusão em desenvolvimento');
+                              }
+                            }}
+                            style={{ background: '#e74c3c', color: '#fff', border: 'none', padding: '4px 8px', fontSize: '10px', borderRadius: '3px', cursor: 'pointer' }}
+                          >
                             🗑️
                           </button>
                         </div>
