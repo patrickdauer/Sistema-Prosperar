@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -78,6 +78,20 @@ export default function ClienteTasks() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [departmentFilter, setDepartmentFilter] = useState('all');
+  const [clienteIdFilter, setClienteIdFilter] = useState<number | null>(null);
+  const [razaoSocialFilter, setRazaoSocialFilter] = useState<string | null>(null);
+
+  // Detectar parâmetros da URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const clienteId = urlParams.get('clienteId');
+    const razaoSocial = urlParams.get('razaoSocial');
+    
+    if (clienteId) {
+      setClienteIdFilter(parseInt(clienteId));
+      setRazaoSocialFilter(razaoSocial);
+    }
+  }, []);
 
   // Fetch clients with tasks
   const { data: clients, isLoading } = useQuery({
@@ -139,6 +153,12 @@ export default function ClienteTasks() {
   });
 
   const filteredClients = clients?.filter((client: ClienteWithTasks) => {
+    // Filtrar por cliente específico se especificado na URL
+    if (clienteIdFilter && client.id !== clienteIdFilter) {
+      return false;
+    }
+    
+    // Filtrar por departamento
     if (departmentFilter === 'all') return true;
     return client.tasks?.some(task => task.department === departmentFilter);
   });
@@ -164,7 +184,12 @@ export default function ClienteTasks() {
             <BackToHomeButton />
             <div>
               <h1 className="text-3xl font-bold text-white">Gestão de Clientes</h1>
-              <p className="text-gray-300">Tarefas e acompanhamento de clientes</p>
+              <p className="text-gray-300">
+                {clienteIdFilter && razaoSocialFilter 
+                  ? `Tarefas do cliente: ${razaoSocialFilter}`
+                  : 'Tarefas e acompanhamento de clientes'
+                }
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -174,7 +199,7 @@ export default function ClienteTasks() {
         </div>
 
         {/* Department Filter */}
-        <div className="flex gap-2 mb-6 flex-wrap">
+        <div className="flex gap-2 mb-6 flex-wrap items-center">
           {departments.map(dept => (
             <Button
               key={dept}
@@ -190,6 +215,23 @@ export default function ClienteTasks() {
               {dept === 'all' ? 'Todos' : dept.charAt(0).toUpperCase() + dept.slice(1)}
             </Button>
           ))}
+          
+          {/* Botão para limpar filtro de cliente específico */}
+          {clienteIdFilter && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setClienteIdFilter(null);
+                setRazaoSocialFilter(null);
+                // Limpar parâmetros da URL
+                window.history.replaceState({}, '', '/cliente-tasks');
+              }}
+              className="bg-red-600 hover:bg-red-700 text-white border-red-600"
+            >
+              Mostrar Todos os Clientes
+            </Button>
+          )}
         </div>
 
         {/* Clients Grid */}

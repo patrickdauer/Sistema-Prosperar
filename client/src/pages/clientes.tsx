@@ -229,6 +229,12 @@ export default function Clientes() {
     setShowAddTaskModal(true);
   };
 
+  // Função para ver tarefas do cliente
+  const handleViewTasks = (cliente: Cliente) => {
+    // Redirecionar para página de tarefas com filtro específico do cliente
+    setLocation(`/cliente-tasks?clienteId=${cliente.id}&razaoSocial=${encodeURIComponent(cliente.razao_social || '')}`);
+  };
+
   // Função para fechar modal de adicionar tarefa
   const handleCloseAddTaskModal = () => {
     setShowAddTaskModal(false);
@@ -643,7 +649,7 @@ export default function Clientes() {
                           </DropdownMenuItem>
                           
                           <DropdownMenuItem 
-                            onClick={() => window.location.href = '/interno'}
+                            onClick={() => handleViewTasks(cliente)}
                             className="text-purple-400 hover:bg-gray-700 cursor-pointer"
                           >
                             <Eye className="h-4 w-4 mr-2" />
