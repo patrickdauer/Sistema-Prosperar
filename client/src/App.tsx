@@ -131,6 +131,7 @@ function Router() {
       <Route path="/simulador-custo" component={SimuladorCusto} />
       <Route path="/equipe" component={Login} />
       <Route path="/dashboard-interno" component={ProtectedDashboardInterno} />
+      <Route path="/interno" component={ProtectedDashboardInterno} />
       <Route path="/novo-sistema" component={ProtectedSistemaFinal} />
       <Route path="/sistema-final" component={ProtectedSistemaFinal} />
       <Route path="/user-management" component={UserManagement} />

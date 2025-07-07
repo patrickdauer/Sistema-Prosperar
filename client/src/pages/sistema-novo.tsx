@@ -30,12 +30,12 @@ export default function SistemaNovo() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch registrations
+  // Fetch registrations with client tasks
   const { data: registrations, isLoading } = useQuery({
     queryKey: ['registrations-sistema-novo'],
     queryFn: async () => {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/internal/registrations', {
+      const response = await fetch('/api/internal/business-registrations/with-tasks', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!response.ok) throw new Error('Erro ao carregar');
