@@ -108,11 +108,11 @@ export default function Home() {
               border: '1px solid #333',
               borderRadius: '8px'
             }}
-            onClick={() => window.open('/sistema-final', '_blank')}>
+            onClick={() => window.location.href = '/interno'}>
             <CardHeader style={{ borderBottom: '1px solid #333' }}>
               <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
                 <FileText className="h-5 w-5" style={{ color: '#ff8c42' }} />
-                Sistema de Tarefas
+                Controle de Tarefas
               </CardTitle>
               <CardDescription style={{ color: '#888' }}>
                 Gerenciamento completo de workflows
