@@ -30,179 +30,177 @@ export default function SistemaNovo() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Helper function for status button styles
-  const getStatusButtonStyle = (taskStatus: string, buttonStatus: string) => {
-    const isActive = taskStatus === buttonStatus;
+  const { data: registrationsData, isLoading } = useQuery({
+    queryKey: ['/api/internal/business-registrations/with-tasks'],
+    refetchInterval: 3000,
+  });
+
+  const updateTaskMutation = useMutation({
+    mutationFn: async ({ taskId, status }: { taskId: number; status: string }) => {
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status }),
+      });
+      if (!response.ok) {
+        throw new Error('Erro ao atualizar tarefa');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/internal/business-registrations/with-tasks'] });
+      toast({
+        title: "Sucesso",
+        description: "Status da tarefa atualizado com sucesso!",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar status da tarefa",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateTaskDetailsMutation = useMutation({
+    mutationFn: async ({ taskId, data }: { taskId: number; data: any }) => {
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        throw new Error('Erro ao atualizar tarefa');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/internal/business-registrations/with-tasks'] });
+      toast({
+        title: "Sucesso",
+        description: "Tarefa atualizada com sucesso!",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar tarefa",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteTaskMutation = useMutation({
+    mutationFn: async (taskId: number) => {
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Erro ao deletar tarefa');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/internal/business-registrations/with-tasks'] });
+      toast({
+        title: "Sucesso",
+        description: "Tarefa deletada com sucesso!",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Erro",
+        description: "Erro ao deletar tarefa",
+        variant: "destructive",
+      });
+    },
+  });
+
+  if (isLoading) return <div>Carregando...</div>;
+
+  const allRegistrations = registrationsData || [];
+  const totalRegistrations = allRegistrations.length;
+  const pendingRegistrations = allRegistrations.filter((reg: any) => reg.status === 'pending').length;
+  const processingRegistrations = allRegistrations.filter((reg: any) => reg.status === 'in_progress').length;
+  const completedRegistrations = allRegistrations.filter((reg: any) => reg.status === 'completed').length;
+
+  const renderStatusButton = (task: any, status: string, label: string) => {
     let backgroundColor = '#555555';
-    
-    if (isActive) {
-      switch (buttonStatus) {
+    if (task.status === status) {
+      switch (status) {
         case 'pending':
-          backgroundColor = '#e74c3c'; // Vermelho
+          backgroundColor = '#e74c3c';
           break;
         case 'in_progress':
-          backgroundColor = '#f39c12'; // Laranja
+          backgroundColor = '#f39c12';
           break;
         case 'completed':
-          backgroundColor = '#27ae60'; // Verde
+          backgroundColor = '#27ae60';
           break;
       }
     }
 
-    return {
-      background: backgroundColor,
-      color: '#ffffff',
-      border: 'none',
-      padding: '6px 12px',
-      fontSize: '11px',
-      borderRadius: '4px',
-      cursor: 'pointer',
-      fontWeight: isActive ? '600' : '400',
-      opacity: isActive ? '1' : '0.7'
-    };
-  };
-
-  // Fetch registrations with client tasks
-  const { data: registrations, isLoading } = useQuery({
-    queryKey: ['registrations-sistema-novo'],
-    queryFn: async () => {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/internal/business-registrations/with-tasks', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!response.ok) throw new Error('Erro ao carregar');
-      return response.json();
-    }
-  });
-
-  // Update task status
-  const updateTaskMutation = useMutation({
-    mutationFn: async ({ taskId, status }: { taskId: number; status: string }) => {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/internal/tasks/${taskId}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ status })
-      });
-      if (!response.ok) throw new Error('Erro ao atualizar');
-      return response.json();
-    },
-    onSuccess: () => {
-      // Force complete refresh
-      queryClient.clear();
-      window.location.reload();
-    }
-  });
-
-  // Update task details
-  const updateTaskDetailsMutation = useMutation({
-    mutationFn: async ({ taskId, data }: { taskId: number; data: any }) => {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/internal/tasks/${taskId}/edit`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(data)
-      });
-      if (!response.ok) throw new Error('Erro ao atualizar');
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.removeQueries({ queryKey: ['registrations-sistema-novo'] });
-      queryClient.refetchQueries({ queryKey: ['registrations-sistema-novo'] });
-      toast({ title: "Tarefa atualizada!" });
-    }
-  });
-
-  // Delete task
-  const deleteTaskMutation = useMutation({
-    mutationFn: async (taskId: number) => {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/internal/tasks/${taskId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (!response.ok) throw new Error('Erro ao deletar');
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.removeQueries({ queryKey: ['registrations-sistema-novo'] });
-      queryClient.refetchQueries({ queryKey: ['registrations-sistema-novo'] });
-      toast({ title: "Tarefa deletada!" });
-    }
-  });
-
-  if (isLoading) {
     return (
-      <div style={{ 
-        minHeight: '100vh', 
-        background: '#000',
-        color: '#0f0',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontFamily: 'monospace',
-        fontSize: '24px'
-      }}>
-        <div>LOADING NEW SYSTEM...</div>
-      </div>
+      <button
+        onClick={() => updateTaskMutation.mutate({ taskId: task.id, status })}
+        style={{
+          background: backgroundColor,
+          color: '#ffffff',
+          border: 'none',
+          padding: '6px 12px',
+          fontSize: '11px',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          fontWeight: '500'
+        }}
+      >
+        {label}
+      </button>
     );
-  }
+  };
 
   return (
     <div style={{ 
       minHeight: '100vh', 
-      background: '#1a1a1a',
-      color: '#e0e0e0',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      padding: '0',
-      margin: '0'
+      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)', 
+      color: '#ffffff',
+      fontFamily: 'system-ui, -apple-system, sans-serif'
     }}>
-      
-      {/* Header Professional */}
       <div style={{ 
-        background: '#2a2a2a',
-        padding: '24px',
-        borderBottom: '1px solid #404040'
+        background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', 
+        padding: '20px',
+        borderBottom: '1px solid #333'
       }}>
         <div style={{ 
-          maxWidth: '1400px', 
-          margin: '0 auto',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          maxWidth: '1200px',
+          margin: '0 auto'
         }}>
-          <div>
-            <div style={{ 
-              fontSize: '28px', 
-              fontWeight: '600',
-              color: '#ffffff',
-              marginBottom: '4px'
-            }}>
-              Sistema de Gestão Interno
-            </div>
-            <div style={{ fontSize: '14px', color: '#a0a0a0' }}>
-              {user?.name} • {user?.role} • Sistema Ativo
-            </div>
-          </div>
+          <h1 style={{ 
+            fontSize: '28px', 
+            fontWeight: '700', 
+            color: '#ffffff',
+            margin: 0
+          }}>
+            Sistema Interno
+          </h1>
           <button
             onClick={logout}
             style={{
-              background: '#404040',
-              border: '1px solid #606060',
+              background: '#dc2626',
               color: '#ffffff',
               padding: '12px 24px',
               borderRadius: '6px',
               cursor: 'pointer',
               fontSize: '14px',
-                              fontWeight: '500'
+              fontWeight: '500'
             }}
           >
             Sair
@@ -210,143 +208,86 @@ export default function SistemaNovo() {
         </div>
       </div>
 
-      {/* Stats Professional */}
-      <div style={{ 
-        maxWidth: '1400px', 
-        margin: '0 auto', 
-        padding: '30px 24px' 
-      }}>
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(4, 1fr)', 
-          gap: '16px',
-          marginBottom: '40px'
-        }}>
-          <div style={{ 
-            background: '#2a2a2a',
-            padding: '24px',
-            borderRadius: '8px',
-            textAlign: 'center',
-            border: '1px solid #404040'
-          }}>
-            <div style={{ fontSize: '32px', fontWeight: '700', color: '#ffffff', marginBottom: '8px' }}>
-              {registrations?.length || 0}
-            </div>
+      <div style={{ padding: '40px 20px', maxWidth: '1200px', margin: '0 auto' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '40px' }}>
+          <div style={{ background: '#1a1a1a', padding: '20px', borderRadius: '8px', border: '1px solid #333' }}>
+            <div style={{ fontSize: '32px', fontWeight: '700', color: '#22c55e' }}>{totalRegistrations}</div>
             <div style={{ fontSize: '14px', color: '#a0a0a0', fontWeight: '500' }}>Total de Empresas</div>
           </div>
-          
-          <div style={{ 
-            background: '#2a2a2a',
-            padding: '24px',
-            borderRadius: '8px',
-            textAlign: 'center',
-            border: '1px solid #e74c3c'
-          }}>
-            <div style={{ fontSize: '32px', fontWeight: '700', color: '#e74c3c', marginBottom: '8px' }}>
-              {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
-                acc + (reg.tasks?.filter((t: Task) => t.status === 'pending').length || 0), 0) || 0}
-            </div>
+          <div style={{ background: '#1a1a1a', padding: '20px', borderRadius: '8px', border: '1px solid #333' }}>
+            <div style={{ fontSize: '32px', fontWeight: '700', color: '#e74c3c' }}>{pendingRegistrations}</div>
             <div style={{ fontSize: '14px', color: '#a0a0a0', fontWeight: '500' }}>Pendentes</div>
           </div>
-
-          <div style={{ 
-            background: '#2a2a2a',
-            padding: '24px',
-            borderRadius: '8px',
-            textAlign: 'center',
-            border: '1px solid #f39c12'
-          }}>
-            <div style={{ fontSize: '32px', fontWeight: '700', color: '#f39c12', marginBottom: '8px' }}>
-              {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
-                acc + (reg.tasks?.filter((t: Task) => t.status === 'in_progress').length || 0), 0) || 0}
-            </div>
+          <div style={{ background: '#1a1a1a', padding: '20px', borderRadius: '8px', border: '1px solid #333' }}>
+            <div style={{ fontSize: '32px', fontWeight: '700', color: '#f39c12' }}>{processingRegistrations}</div>
             <div style={{ fontSize: '14px', color: '#a0a0a0', fontWeight: '500' }}>Em Andamento</div>
           </div>
-
-          <div style={{ 
-            background: '#2a2a2a',
-            padding: '24px',
-            borderRadius: '8px',
-            textAlign: 'center',
-            border: '1px solid #27ae60'
-          }}>
-            <div style={{ fontSize: '32px', fontWeight: '700', color: '#27ae60', marginBottom: '8px' }}>
-              {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
-                acc + (reg.tasks?.filter((t: Task) => t.status === 'completed').length || 0), 0) || 0}
-            </div>
+          <div style={{ background: '#1a1a1a', padding: '20px', borderRadius: '8px', border: '1px solid #333' }}>
+            <div style={{ fontSize: '32px', fontWeight: '700', color: '#27ae60' }}>{completedRegistrations}</div>
             <div style={{ fontSize: '14px', color: '#a0a0a0', fontWeight: '500' }}>Concluídas</div>
           </div>
         </div>
 
-        {/* Companies Professional List */}
-        <div style={{ display: 'grid', gap: '24px' }}>
-          {registrations?.map((registration: BusinessRegistration) => (
-            <div key={registration.id} style={{ 
-              border: '1px solid #404040',
-              background: '#2a2a2a',
-              borderRadius: '8px',
-              overflow: 'hidden'
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '20px' }}>
+          {allRegistrations.map((registration: any, index: number) => (
+            <div key={registration.id || index} style={{ 
+              background: '#1a1a1a', 
+              padding: '20px', 
+              borderRadius: '8px', 
+              border: '1px solid #333',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '15px'
             }}>
-              
-              {/* Company Header */}
-              <div style={{ 
-                background: '#333333', 
-                padding: '20px',
-                borderBottom: '1px solid #404040'
-              }}>
-                <div style={{ fontSize: '18px', fontWeight: '600', color: '#ffffff', marginBottom: '8px' }}>
+              <div>
+                <h3 style={{ 
+                  fontSize: '18px', 
+                  fontWeight: '600', 
+                  color: '#22c55e', 
+                  margin: '0 0 8px 0' 
+                }}>
                   {registration.razaoSocial}
-                </div>
+                </h3>
                 <div style={{ fontSize: '14px', color: '#a0a0a0' }}>
-                  {registration.nomeFantasia && `${registration.nomeFantasia} • `}
-                  ID: {registration.id} • {registration.emailEmpresa} • {registration.telefoneEmpresa}
+                  {registration.emailEmpresa}
                 </div>
               </div>
-
-              {/* Departments Professional Grid */}
-              <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: '1fr 1fr 1fr',
-                gap: '16px',
-                padding: '20px'
-              }}>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ fontSize: '16px', fontWeight: '600', color: '#ffffff' }}>
+                  Tarefas ({registration.tasks?.length || 0})
+                </div>
                 
-                {/* Societário */}
-                <div style={{ background: '#333333', padding: '16px', borderRadius: '6px' }}>
-                  <div style={{ 
-                    fontSize: '14px', 
-                    fontWeight: '600', 
-                    color: '#ffffff',
-                    marginBottom: '16px',
-                    paddingBottom: '8px',
-                    borderBottom: '1px solid #505050'
+                {registration.tasks?.map((task: any) => (
+                  <div key={task.id} style={{ 
+                    background: '#2a2a2a', 
+                    padding: '15px', 
+                    borderRadius: '6px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px'
                   }}>
-                    Departamento Societário
-                  </div>
-                  {registration.tasks?.filter(task => task.department === 'societario' || task.department === 'Societário' || task.department === 'DEPTO SOCIETARIO').map(task => (
-                    <div key={task.id} style={{ marginBottom: '16px', padding: '12px', border: '1px solid #505050', borderRadius: '6px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                        <div>
-                          <div style={{ fontSize: '13px', color: '#e0e0e0', marginBottom: '4px', lineHeight: '1.4', fontWeight: '600' }}>
-                            {task.title}
-                          </div>
-                          <div style={{ fontSize: '11px', color: '#a0a0a0', marginBottom: '8px' }}>
-                            {task.description}
-                          </div>
-                          {task.observacao && (
-                            <div style={{ fontSize: '10px', color: '#f39c12', marginBottom: '8px', fontStyle: 'italic' }}>
-                              Obs: {task.observacao}
-                            </div>
-                          )}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '14px', fontWeight: '600', color: '#ffffff' }}>
+                          {task.title}
                         </div>
-                        <div style={{ display: 'flex', gap: '4px' }}>
-                          <button 
-                            onClick={() => {
-                              const newTitle = prompt('Novo título:', task.title);
-                              if (newTitle !== null) {
-                                const newDescription = prompt('Nova descrição:', task.description);
-                                if (newDescription !== null) {
-                                  const newObservacao = prompt('Observação:', task.observacao || '');
+                        <div style={{ fontSize: '12px', color: '#a0a0a0', marginTop: '4px' }}>
+                          {task.description}
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#ff8c42', marginTop: '4px', fontWeight: '500' }}>
+                          {task.department}
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <button 
+                          onClick={() => {
+                            const newTitle = prompt('Novo título:', task.title);
+                            if (newTitle && newTitle !== task.title) {
+                              const newDescription = prompt('Nova descrição:', task.description);
+                              if (newDescription !== null) {
+                                const newObservacao = prompt('Nova observação:', task.observacao || '');
+                                if (newObservacao !== null) {
                                   updateTaskDetailsMutation.mutate({
                                     taskId: task.id,
                                     data: {
@@ -357,209 +298,31 @@ export default function SistemaNovo() {
                                   });
                                 }
                               }
-                            }}
-                            style={{ background: '#444', color: '#fff', border: 'none', padding: '4px 8px', fontSize: '10px', borderRadius: '3px', cursor: 'pointer' }}
-                          >
-                            ✏️
-                          </button>
-                          <button 
-                            onClick={() => {
-                              if (confirm(`Deletar tarefa "${task.title}"?`)) {
-                                deleteTaskMutation.mutate(task.id);
-                              }
-                            }}
-                            style={{ background: '#e74c3c', color: '#fff', border: 'none', padding: '4px 8px', fontSize: '10px', borderRadius: '3px', cursor: 'pointer' }}
-                          >
-                            🗑️
-                          </button>
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        <button
-                          onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'pending' })}
-                          style={{
-                                            background: task.status === 'pending' ? '#e74c3c' : '#555555',
-                            color: '#ffffff',
-                            border: 'none',
-                            padding: '6px 12px',
-                            fontSize: '11px',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontWeight: '500'
+                            }
                           }}
+                          style={{ background: '#444', color: '#fff', border: 'none', padding: '4px 8px', fontSize: '10px', borderRadius: '3px', cursor: 'pointer' }}
                         >
-                          Pendente
+                          ✏️
                         </button>
-                        <button
-                          onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'in_progress' })}
-                          style={{
-                            background: task.status === 'in_progress' ? '#f39c12' : '#555555',
-                            color: '#ffffff',
-                            border: 'none',
-                            padding: '6px 12px',
-                            fontSize: '11px',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontWeight: '500'
+                        <button 
+                          onClick={() => {
+                            if (confirm(`Deletar tarefa "${task.title}"?`)) {
+                              deleteTaskMutation.mutate(task.id);
+                            }
                           }}
+                          style={{ background: '#e74c3c', color: '#fff', border: 'none', padding: '4px 8px', fontSize: '10px', borderRadius: '3px', cursor: 'pointer' }}
                         >
-                          Andamento
-                        </button>
-                        <button
-                          onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'completed' })}
-                          style={{
-                            background: task.status === 'completed' ? '#27ae60' : '#555555',
-                            color: '#ffffff',
-                            border: 'none',
-                            padding: '6px 12px',
-                            fontSize: '11px',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontWeight: '500'
-                          }}
-                        >
-                          Concluído
+                          🗑️
                         </button>
                       </div>
                     </div>
-                  ))}
-                </div>
-
-                {/* Fiscal */}
-                <div style={{ background: '#333333', padding: '16px', borderRadius: '6px' }}>
-                  <div style={{ 
-                    fontSize: '14px', 
-                    fontWeight: '600', 
-                    color: '#ffffff',
-                    marginBottom: '16px',
-                    paddingBottom: '8px',
-                    borderBottom: '1px solid #505050'
-                  }}>
-                    Departamento Fiscal
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      {renderStatusButton(task, 'pending', 'Pendente')}
+                      {renderStatusButton(task, 'in_progress', 'Andamento')}
+                      {renderStatusButton(task, 'completed', 'Concluído')}
+                    </div>
                   </div>
-                  {registration.tasks?.filter(task => task.department === 'fiscal' || task.department === 'Fiscal' || task.department === 'DEPTO FISCAL').map(task => (
-                    <div key={task.id} style={{ marginBottom: '16px' }}>
-                      <div style={{ fontSize: '13px', color: '#e0e0e0', marginBottom: '8px', lineHeight: '1.4' }}>
-                        {task.title}
-                      </div>
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        <button
-                          onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'pending' })}
-                          style={{
-                                            background: task.status === 'pending' ? '#e74c3c' : '#555555',
-                            color: '#ffffff',
-                            border: 'none',
-                            padding: '6px 12px',
-                            fontSize: '11px',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontWeight: '500'
-                          }}
-                        >
-                          Pendente
-                        </button>
-                        <button
-                          onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'in_progress' })}
-                          style={{
-                            background: task.status === 'in_progress' ? '#f39c12' : '#555555',
-                            color: '#ffffff',
-                            border: 'none',
-                            padding: '6px 12px',
-                            fontSize: '11px',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontWeight: '500'
-                          }}
-                        >
-                          Andamento
-                        </button>
-                        <button
-                          onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'completed' })}
-                          style={{
-                            background: task.status === 'completed' ? '#27ae60' : '#555555',
-                            color: '#ffffff',
-                            border: 'none',
-                            padding: '6px 12px',
-                            fontSize: '11px',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontWeight: '500'
-                          }}
-                        >
-                          Concluído
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Pessoal */}
-                <div style={{ background: '#333333', padding: '16px', borderRadius: '6px' }}>
-                  <div style={{ 
-                    fontSize: '14px', 
-                    fontWeight: '600', 
-                    color: '#ffffff',
-                    marginBottom: '16px',
-                    paddingBottom: '8px',
-                    borderBottom: '1px solid #505050'
-                  }}>
-                    Departamento Pessoal
-                  </div>
-                  {registration.tasks?.filter(task => task.department === 'pessoal' || task.department === 'Pessoal' || task.department === 'DEPTO PESSOAL').map(task => (
-                    <div key={task.id} style={{ marginBottom: '16px' }}>
-                      <div style={{ fontSize: '13px', color: '#e0e0e0', marginBottom: '8px', lineHeight: '1.4' }}>
-                        {task.title}
-                      </div>
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        <button
-                          onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'pending' })}
-                          style={{
-                                            background: task.status === 'pending' ? '#e74c3c' : '#555555',
-                            color: '#ffffff',
-                            border: 'none',
-                            padding: '6px 12px',
-                            fontSize: '11px',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontWeight: '500'
-                          }}
-                        >
-                          Pendente
-                        </button>
-                        <button
-                          onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'in_progress' })}
-                          style={{
-                            background: task.status === 'in_progress' ? '#f39c12' : '#555555',
-                            color: '#ffffff',
-                            border: 'none',
-                            padding: '6px 12px',
-                            fontSize: '11px',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontWeight: '500'
-                          }}
-                        >
-                          Andamento
-                        </button>
-                        <button
-                          onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'completed' })}
-                          style={{
-                            background: task.status === 'completed' ? '#27ae60' : '#555555',
-                            color: '#ffffff',
-                            border: 'none',
-                            padding: '6px 12px',
-                            fontSize: '11px',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontWeight: '500'
-                          }}
-                        >
-                          Concluído
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                ))}
               </div>
             </div>
           ))}
