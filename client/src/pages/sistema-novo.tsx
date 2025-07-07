@@ -155,14 +155,31 @@ export default function SistemaNovo() {
           maxWidth: '1200px',
           margin: '0 auto'
         }}>
-          <h1 style={{ 
-            fontSize: '28px', 
-            fontWeight: '700', 
-            color: '#ffffff',
-            margin: 0
-          }}>
-            Sistema Interno
-          </h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <button
+              onClick={() => window.location.href = '/clientes'}
+              style={{
+                background: '#22c55e',
+                color: '#ffffff',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500',
+                border: 'none'
+              }}
+            >
+              ← Voltar aos Clientes
+            </button>
+            <h1 style={{ 
+              fontSize: '28px', 
+              fontWeight: '700', 
+              color: '#ffffff',
+              margin: 0
+            }}>
+              Controle de Tarefas
+            </h1>
+          </div>
           <button
             onClick={logout}
             style={{
@@ -172,7 +189,8 @@ export default function SistemaNovo() {
               borderRadius: '6px',
               cursor: 'pointer',
               fontSize: '14px',
-              fontWeight: '500'
+              fontWeight: '500',
+              border: 'none'
             }}
           >
             Sair
