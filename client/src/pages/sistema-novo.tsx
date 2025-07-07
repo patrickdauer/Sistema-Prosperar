@@ -135,8 +135,14 @@ export default function SistemaNovo() {
   const completedRegistrations = allRegistrations.filter((reg: any) => reg.status === 'completed').length;
 
   const renderStatusButton = (task: any, status: string, label: string) => {
+    const isActive = task.status === status;
+    
     let backgroundColor = '#555555';
-    if (task.status === status) {
+    let color = '#ffffff';
+    let fontWeight = '400';
+    
+    if (isActive) {
+      fontWeight = '600';
       switch (status) {
         case 'pending':
           backgroundColor = '#e74c3c';
@@ -150,19 +156,25 @@ export default function SistemaNovo() {
       }
     }
 
+    const buttonStyle = {
+      backgroundColor: backgroundColor,
+      background: backgroundColor,
+      color: color,
+      border: 'none',
+      padding: '6px 12px',
+      fontSize: '11px',
+      borderRadius: '4px',
+      cursor: 'pointer',
+      fontWeight: fontWeight,
+      minWidth: '80px',
+      transition: 'all 0.2s ease'
+    };
+
     return (
       <button
+        key={`${task.id}-${status}`}
         onClick={() => updateTaskMutation.mutate({ taskId: task.id, status })}
-        style={{
-          background: backgroundColor,
-          color: '#ffffff',
-          border: 'none',
-          padding: '6px 12px',
-          fontSize: '11px',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          fontWeight: '500'
-        }}
+        style={buttonStyle}
       >
         {label}
       </button>
