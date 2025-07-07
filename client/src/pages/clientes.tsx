@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Eye, Users, Building2, Plus, MoreVertical, Copy, Phone, MessageCircle, Filter, X, Edit, Trash2 } from 'lucide-react';
+import { Search, Eye, Users, Building2, Plus, MoreVertical, Copy, Phone, MessageCircle, Filter, X, Edit, Trash2, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { 
   Select,
   SelectContent,
@@ -16,6 +18,13 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { BackToHomeButton } from '@/components/back-to-home-button';
 import { useLocation, Link } from 'wouter';
@@ -39,6 +48,13 @@ export default function Clientes() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
   const [, setLocation] = useLocation();
+  
+  // Estados para modal de adicionar tarefa
+  const [showAddTaskModal, setShowAddTaskModal] = useState(false);
+  const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
+  const [taskTitle, setTaskTitle] = useState('');
+  const [taskDescription, setTaskDescription] = useState('');
+  const [taskDepartment, setTaskDepartment] = useState('DEPTO SOCIETARIO');
   
   // Estados para filtros avançados
   const [showFilters, setShowFilters] = useState(false);
@@ -205,6 +221,68 @@ export default function Clientes() {
   // Função para editar cliente
   const handleEditCliente = (cliente: Cliente) => {
     setLocation(`/clientes/${cliente.id}`);
+  };
+
+  // Função para adicionar tarefa
+  const handleAddTask = (cliente: Cliente) => {
+    setSelectedCliente(cliente);
+    setShowAddTaskModal(true);
+  };
+
+  // Função para fechar modal de adicionar tarefa
+  const handleCloseAddTaskModal = () => {
+    setShowAddTaskModal(false);
+    setSelectedCliente(null);
+    setTaskTitle('');
+    setTaskDescription('');
+    setTaskDepartment('DEPTO SOCIETARIO');
+  };
+
+  // Função para salvar tarefa
+  const handleSaveTask = async () => {
+    if (!selectedCliente || !taskTitle.trim()) {
+      toast({
+        title: "Erro",
+        description: "Por favor, preencha pelo menos o título da tarefa.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/clientes/${selectedCliente.id}/tasks`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: taskTitle.trim(),
+          description: taskDescription.trim() || null,
+          department: taskDepartment,
+          status: 'pending',
+          priority: 'medium',
+          order: 1
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao criar tarefa');
+      }
+
+      toast({
+        title: "Sucesso",
+        description: `Tarefa adicionada para ${selectedCliente.razao_social || 'o cliente'}`,
+      });
+
+      handleCloseAddTaskModal();
+    } catch (error) {
+      console.error('Erro ao criar tarefa:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao criar tarefa. Tente novamente.",
+        variant: "destructive",
+      });
+    }
   };
 
   // Função para deletar cliente
@@ -553,6 +631,14 @@ export default function Clientes() {
                           </DropdownMenuItem>
                           
                           <DropdownMenuItem 
+                            onClick={() => handleAddTask(cliente)}
+                            className="text-yellow-400 hover:bg-gray-700 cursor-pointer"
+                          >
+                            <FileText className="h-4 w-4 mr-2" />
+                            Adicionar Tarefa
+                          </DropdownMenuItem>
+                          
+                          <DropdownMenuItem 
                             onClick={() => copyToClipboard(cliente.cnpj, 'CNPJ')}
                             className="text-white hover:bg-gray-700 cursor-pointer"
                           >
@@ -595,6 +681,81 @@ export default function Clientes() {
           </div>
         )}
       </main>
+
+      {/* Modal para adicionar tarefa */}
+      <Dialog open={showAddTaskModal} onOpenChange={setShowAddTaskModal}>
+        <DialogContent className="bg-gray-800 border-gray-600 text-white sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-white">
+              Adicionar Tarefa para {selectedCliente?.razao_social || 'Cliente'}
+            </DialogTitle>
+            <DialogDescription className="text-gray-300">
+              Crie uma nova tarefa que será enviada para o sistema de tarefas.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="task-title" className="text-white">
+                Título da Tarefa *
+              </Label>
+              <Input
+                id="task-title"
+                value={taskTitle}
+                onChange={(e) => setTaskTitle(e.target.value)}
+                placeholder="Ex: Abertura de empresa, Alteração contratual..."
+                className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="task-description" className="text-white">
+                Descrição (opcional)
+              </Label>
+              <Textarea
+                id="task-description"
+                value={taskDescription}
+                onChange={(e) => setTaskDescription(e.target.value)}
+                placeholder="Detalhes sobre a tarefa..."
+                className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 min-h-[100px]"
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="task-department" className="text-white">
+                Departamento
+              </Label>
+              <Select value={taskDepartment} onValueChange={setTaskDepartment}>
+                <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-700 border-gray-600">
+                  <SelectItem value="DEPTO SOCIETARIO">DEPTO SOCIETARIO</SelectItem>
+                  <SelectItem value="DEPTO FISCAL">DEPTO FISCAL</SelectItem>
+                  <SelectItem value="DEPTO CONTABIL">DEPTO CONTABIL</SelectItem>
+                  <SelectItem value="DEPTO PESSOAL">DEPTO PESSOAL</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <div className="flex justify-end gap-3">
+            <Button
+              variant="outline"
+              onClick={handleCloseAddTaskModal}
+              className="border-gray-600 text-white hover:bg-gray-700"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleSaveTask}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              Criar Tarefa
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
