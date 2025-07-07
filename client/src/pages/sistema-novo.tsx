@@ -248,7 +248,7 @@ export default function SistemaNovo() {
                   }}>
                     Departamento Societário
                   </div>
-                  {registration.tasks?.filter(task => task.department === 'societario').map(task => (
+                  {registration.tasks?.filter(task => task.department === 'societario' || task.department === 'Societário' || task.department === 'DEPTO SOCIETARIO').map(task => (
                     <div key={task.id} style={{ marginBottom: '16px' }}>
                       <div style={{ fontSize: '13px', color: '#e0e0e0', marginBottom: '8px', lineHeight: '1.4' }}>
                         {task.title}
@@ -316,7 +316,7 @@ export default function SistemaNovo() {
                   }}>
                     Departamento Fiscal
                   </div>
-                  {registration.tasks?.filter(task => task.department === 'fiscal').map(task => (
+                  {registration.tasks?.filter(task => task.department === 'fiscal' || task.department === 'Fiscal' || task.department === 'DEPTO FISCAL').map(task => (
                     <div key={task.id} style={{ marginBottom: '16px' }}>
                       <div style={{ fontSize: '13px', color: '#e0e0e0', marginBottom: '8px', lineHeight: '1.4' }}>
                         {task.title}
@@ -384,7 +384,7 @@ export default function SistemaNovo() {
                   }}>
                     Departamento Pessoal
                   </div>
-                  {registration.tasks?.filter(task => task.department === 'pessoal').map(task => (
+                  {registration.tasks?.filter(task => task.department === 'pessoal' || task.department === 'Pessoal' || task.department === 'DEPTO PESSOAL').map(task => (
                     <div key={task.id} style={{ marginBottom: '16px' }}>
                       <div style={{ fontSize: '13px', color: '#e0e0e0', marginBottom: '8px', lineHeight: '1.4' }}>
                         {task.title}
