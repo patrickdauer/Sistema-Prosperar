@@ -230,6 +230,10 @@ export class DatabaseStorage implements IStorage {
     // Adicionar grupos de clientes às registrações
     const clientRegistrations = Object.values(clientTaskGroups);
     
+    console.log('📊 Client tasks found:', clientTasks.length);
+    console.log('📊 Client registrations created:', clientRegistrations.length);
+    console.log('📊 Sample client registration:', clientRegistrations[0]);
+    
     return [...registrationsWithTasks, ...clientRegistrations];
   }
 
