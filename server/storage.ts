@@ -29,7 +29,7 @@ import {
   type InsertContratacaoFuncionario,
 } from "@shared/contratacao-schema";
 import { db, pool } from "./db";
-import { eq, and, desc, asc, or, ilike } from "drizzle-orm";
+import { eq, and, desc, asc, or, ilike, isNull, isNotNull } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
 export interface IStorage {
@@ -182,7 +182,48 @@ export class DatabaseStorage implements IStorage {
       })
     );
     
-    return registrationsWithTasks;
+    // Buscar tarefas de clientes que não estão vinculadas a registrações
+    const clientTasks = await db
+      .select({
+        task: tasks,
+        cliente: clientes
+      })
+      .from(tasks)
+      .leftJoin(clientes, eq(tasks.clienteId, clientes.id))
+      .where(and(
+        isNull(tasks.businessRegistrationId),
+        isNotNull(tasks.clienteId)
+      ))
+      .orderBy(asc(tasks.order));
+
+    // Agrupar tarefas por cliente e criar registros virtuais
+    const clientTaskGroups = clientTasks.reduce((groups, item) => {
+      const clienteId = item.task.clienteId;
+      if (!clienteId) return groups;
+      
+      if (!groups[clienteId]) {
+        groups[clienteId] = {
+          id: `cliente_${clienteId}`,
+          razaoSocial: item.cliente?.razaoSocial || 'Cliente Desconhecido',
+          nomeFantasia: item.cliente?.nomeFantasia,
+          emailEmpresa: item.cliente?.emailEmpresa,
+          telefoneEmpresa: item.cliente?.telefoneEmpresa,
+          createdAt: item.cliente?.createdAt || new Date(),
+          socios: [],
+          status: 'pending',
+          isClienteTask: true,
+          clienteId: clienteId,
+          tasks: []
+        };
+      }
+      groups[clienteId].tasks.push(item.task);
+      return groups;
+    }, {} as Record<number, any>);
+
+    // Adicionar grupos de clientes às registrações
+    const clientRegistrations = Object.values(clientTaskGroups);
+    
+    return [...registrationsWithTasks, ...clientRegistrations];
   }
 
   async updateBusinessRegistration(id: number, data: Partial<BusinessRegistration>): Promise<BusinessRegistration> {

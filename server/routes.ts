@@ -517,8 +517,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/clientes/:clientId/tasks", authenticateToken, async (req, res) => {
     try {
       const clientId = parseInt(req.params.clientId);
-      const tasks = await storage.createTasksForClient(clientId);
-      res.status(201).json(tasks);
+      
+      // Se há dados da tarefa no body, criar tarefa personalizada
+      if (req.body.title) {
+        const customTask = await storage.createTask({
+          title: req.body.title,
+          description: req.body.description || null,
+          status: req.body.status || 'pending',
+          priority: req.body.priority || 'medium',
+          department: req.body.department || 'DEPTO SOCIETARIO',
+          businessRegistrationId: null,
+          clienteId: clientId,
+          dueDate: null,
+          order: req.body.order || 1,
+          assignedUserId: null
+        });
+        res.status(201).json([customTask]);
+      } else {
+        // Caso contrário, criar tarefas a partir de templates
+        const tasks = await storage.createTasksForClient(clientId);
+        res.status(201).json(tasks);
+      }
     } catch (error) {
       console.error("Error creating tasks for client:", error);
       res.status(500).json({ message: "Erro ao criar tarefas para cliente" });
