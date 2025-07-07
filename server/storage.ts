@@ -186,7 +186,14 @@ export class DatabaseStorage implements IStorage {
     const clientTasks = await db
       .select({
         task: tasks,
-        cliente: clientes
+        cliente: {
+          id: clientes.id,
+          razaoSocial: clientes.razaoSocial,
+          nomeFantasia: clientes.nomeFantasia,
+          emailEmpresa: clientes.emailEmpresa,
+          telefoneEmpresa: clientes.telefoneEmpresa,
+          createdAt: clientes.createdAt
+        }
       })
       .from(tasks)
       .leftJoin(clientes, eq(tasks.clienteId, clientes.id))
