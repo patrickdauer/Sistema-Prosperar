@@ -378,7 +378,7 @@ export default function SistemaNovo() {
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'pending' })}
                           style={{
-                            background: task.status === 'pending' ? '#e74c3c' : '#555555',
+                            background: getStatusButtonStyle(task.status, 'pending').background,
                             color: '#ffffff',
                             border: 'none',
                             padding: '6px 12px',
@@ -446,7 +446,7 @@ export default function SistemaNovo() {
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'pending' })}
                           style={{
-                            background: task.status === 'pending' ? '#e74c3c' : '#555555',
+                            background: getStatusButtonStyle(task.status, 'pending').background,
                             color: '#ffffff',
                             border: 'none',
                             padding: '6px 12px',
@@ -514,7 +514,7 @@ export default function SistemaNovo() {
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'pending' })}
                           style={{
-                            background: task.status === 'pending' ? '#e74c3c' : '#555555',
+                            background: getStatusButtonStyle(task.status, 'pending').background,
                             color: '#ffffff',
                             border: 'none',
                             padding: '6px 12px',
