@@ -643,6 +643,14 @@ export default function Clientes() {
                           </DropdownMenuItem>
                           
                           <DropdownMenuItem 
+                            onClick={() => window.location.href = '/interno'}
+                            className="text-purple-400 hover:bg-gray-700 cursor-pointer"
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            Ver Tarefas
+                          </DropdownMenuItem>
+                          
+                          <DropdownMenuItem 
                             onClick={() => copyToClipboard(cliente.cnpj, 'CNPJ')}
                             className="text-white hover:bg-gray-700 cursor-pointer"
                           >
