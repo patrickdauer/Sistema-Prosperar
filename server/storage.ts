@@ -324,8 +324,8 @@ export class DatabaseStorage implements IStorage {
       .where(eq(tasks.id, taskId))
       .returning();
 
-    // Log activity (only if userId is provided)
-    if (userId) {
+    // Log activity (only if userId is provided and has business registration)
+    if (userId && updatedTask.businessRegistrationId) {
       await this.createActivity({
         businessRegistrationId: updatedTask.businessRegistrationId,
         taskId: taskId,

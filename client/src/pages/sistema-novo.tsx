@@ -249,9 +249,29 @@ export default function SistemaNovo() {
                     Departamento Societário
                   </div>
                   {registration.tasks?.filter(task => task.department === 'societario' || task.department === 'Societário' || task.department === 'DEPTO SOCIETARIO').map(task => (
-                    <div key={task.id} style={{ marginBottom: '16px' }}>
-                      <div style={{ fontSize: '13px', color: '#e0e0e0', marginBottom: '8px', lineHeight: '1.4' }}>
-                        {task.title}
+                    <div key={task.id} style={{ marginBottom: '16px', padding: '12px', border: '1px solid #505050', borderRadius: '6px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                        <div>
+                          <div style={{ fontSize: '13px', color: '#e0e0e0', marginBottom: '4px', lineHeight: '1.4', fontWeight: '600' }}>
+                            {task.title}
+                          </div>
+                          <div style={{ fontSize: '11px', color: '#a0a0a0', marginBottom: '8px' }}>
+                            {task.description}
+                          </div>
+                          {task.observacao && (
+                            <div style={{ fontSize: '10px', color: '#f39c12', marginBottom: '8px', fontStyle: 'italic' }}>
+                              Obs: {task.observacao}
+                            </div>
+                          )}
+                        </div>
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                          <button style={{ background: '#444', color: '#fff', border: 'none', padding: '4px 8px', fontSize: '10px', borderRadius: '3px', cursor: 'pointer' }}>
+                            ✏️
+                          </button>
+                          <button style={{ background: '#e74c3c', color: '#fff', border: 'none', padding: '4px 8px', fontSize: '10px', borderRadius: '3px', cursor: 'pointer' }}>
+                            🗑️
+                          </button>
+                        </div>
                       </div>
                       <div style={{ display: 'flex', gap: '6px' }}>
                         <button
