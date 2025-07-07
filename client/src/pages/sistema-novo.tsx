@@ -59,12 +59,9 @@ export default function SistemaNovo() {
       return response.json();
     },
     onSuccess: () => {
-      // Invalidate cache to refresh data and update UI
-      queryClient.invalidateQueries({ queryKey: ['registrations-sistema-novo'] });
-      // Force refresh to ensure color updates
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: ['registrations-sistema-novo'] });
-      }, 100);
+      // Force immediate refetch instead of cache invalidation
+      queryClient.removeQueries({ queryKey: ['registrations-sistema-novo'] });
+      queryClient.refetchQueries({ queryKey: ['registrations-sistema-novo'] });
       toast({ title: "Status atualizado!" });
     }
   });
