@@ -2,6 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
+.btn-status-active-red {
+  background-color: #e74c3c !important;
+  color: #ffffff !important;
+  border: none !important;
+  padding: 6px 12px !important;
+  font-size: 11px !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  font-weight: 600 !important;
+}
+
+.btn-status-active-orange {
+  background-color: #f39c12 !important;
+  color: #ffffff !important;
+  border: none !important;
+  padding: 6px 12px !important;
+  font-size: 11px !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  font-weight: 600 !important;
+}
+
+.btn-status-active-green {
+  background-color: #27ae60 !important;
+  color: #ffffff !important;
+  border: none !important;
+  padding: 6px 12px !important;
+  font-size: 11px !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  font-weight: 600 !important;
+}
+
+.btn-status-inactive {
+  background-color: #555555 !important;
+  color: #ffffff !important;
+  border: none !important;
+  padding: 6px 12px !important;
+  font-size: 11px !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  font-weight: 400 !important;
+}
+
 /* GLOBAL NUCLEAR OVERRIDE FOR BUSINESS REGISTRATION */
 body {
   background: #0a0a0a !important;

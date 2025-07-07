@@ -291,46 +291,19 @@ export default function SistemaNovo() {
                     <div style={{ display: 'flex', gap: '6px' }}>
                       <button
                         onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'pending' })}
-                        style={{
-                          backgroundColor: task.status === 'pending' ? '#e74c3c' : '#555555',
-                          color: '#ffffff',
-                          border: 'none',
-                          padding: '6px 12px',
-                          fontSize: '11px',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontWeight: task.status === 'pending' ? '600' : '400'
-                        }}
+                        className={task.status === 'pending' ? 'btn-status-active-red' : 'btn-status-inactive'}
                       >
                         Pendente
                       </button>
                       <button
                         onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'in_progress' })}
-                        style={{
-                          backgroundColor: task.status === 'in_progress' ? '#f39c12' : '#555555',
-                          color: '#ffffff',
-                          border: 'none',
-                          padding: '6px 12px',
-                          fontSize: '11px',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontWeight: task.status === 'in_progress' ? '600' : '400'
-                        }}
+                        className={task.status === 'in_progress' ? 'btn-status-active-orange' : 'btn-status-inactive'}
                       >
                         Andamento
                       </button>
                       <button
                         onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'completed' })}
-                        style={{
-                          backgroundColor: task.status === 'completed' ? '#27ae60' : '#555555',
-                          color: '#ffffff',
-                          border: 'none',
-                          padding: '6px 12px',
-                          fontSize: '11px',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontWeight: task.status === 'completed' ? '600' : '400'
-                        }}
+                        className={task.status === 'completed' ? 'btn-status-active-green' : 'btn-status-inactive'}
                       >
                         Concluído
                       </button>
