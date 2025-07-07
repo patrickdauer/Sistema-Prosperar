@@ -66,6 +66,48 @@ export default function SistemaNovo() {
     }
   });
 
+  // Update task details
+  const updateTaskDetailsMutation = useMutation({
+    mutationFn: async ({ taskId, data }: { taskId: number; data: any }) => {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/internal/tasks/${taskId}/edit`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Erro ao atualizar');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: ['registrations-sistema-novo'] });
+      queryClient.refetchQueries({ queryKey: ['registrations-sistema-novo'] });
+      toast({ title: "Tarefa atualizada!" });
+    }
+  });
+
+  // Delete task
+  const deleteTaskMutation = useMutation({
+    mutationFn: async (taskId: number) => {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/internal/tasks/${taskId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error('Erro ao deletar');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: ['registrations-sistema-novo'] });
+      queryClient.refetchQueries({ queryKey: ['registrations-sistema-novo'] });
+      toast({ title: "Tarefa deletada!" });
+    }
+  });
+
   if (isLoading) {
     return (
       <div style={{ 
@@ -270,11 +312,19 @@ export default function SistemaNovo() {
                           <button 
                             onClick={() => {
                               const newTitle = prompt('Novo título:', task.title);
-                              const newDescription = prompt('Nova descrição:', task.description);
-                              const newObservacao = prompt('Observação:', task.observacao || '');
-                              if (newTitle) {
-                                // TODO: Implementar edição via API
-                                alert(`Edição em desenvolvimento.\nTítulo: ${newTitle}\nDescrição: ${newDescription}\nObs: ${newObservacao}`);
+                              if (newTitle !== null) {
+                                const newDescription = prompt('Nova descrição:', task.description);
+                                if (newDescription !== null) {
+                                  const newObservacao = prompt('Observação:', task.observacao || '');
+                                  updateTaskDetailsMutation.mutate({
+                                    taskId: task.id,
+                                    data: {
+                                      title: newTitle,
+                                      description: newDescription,
+                                      observacao: newObservacao
+                                    }
+                                  });
+                                }
                               }
                             }}
                             style={{ background: '#444', color: '#fff', border: 'none', padding: '4px 8px', fontSize: '10px', borderRadius: '3px', cursor: 'pointer' }}
@@ -284,8 +334,7 @@ export default function SistemaNovo() {
                           <button 
                             onClick={() => {
                               if (confirm(`Deletar tarefa "${task.title}"?`)) {
-                                // TODO: Implementar exclusão via API
-                                alert('Exclusão em desenvolvimento');
+                                deleteTaskMutation.mutate(task.id);
                               }
                             }}
                             style={{ background: '#e74c3c', color: '#fff', border: 'none', padding: '4px 8px', fontSize: '10px', borderRadius: '3px', cursor: 'pointer' }}

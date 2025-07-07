@@ -356,15 +356,17 @@ export class DatabaseStorage implements IStorage {
   async updateTaskField(taskId: number, field: string, value: any): Promise<Task> {
     console.log(`Updating task ${taskId} field ${field} with value:`, value);
     
-    const validFields = ['status', 'observacao', 'data_lembrete', 'cnpj', 'title', 'description'];
+    const validFields = ['status', 'observacao', 'data_lembrete', 'cnpj', 'title', 'description', 'multiple'];
     if (!validFields.includes(field)) {
       throw new Error(`Campo inválido: ${field}`);
     }
     
     const updateData: any = {};
     
-    // Handle date fields conversion - ensure proper format
-    if (field === 'data_lembrete' && value) {
+    if (field === 'multiple') {
+      // Handle multiple fields update
+      Object.assign(updateData, value);
+    } else if (field === 'data_lembrete' && value) {
       // Convert date string to proper date format
       updateData['data_lembrete'] = new Date(value + 'T00:00:00.000Z');
     } else {

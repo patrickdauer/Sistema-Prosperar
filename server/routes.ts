@@ -465,6 +465,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update full task
+  app.patch('/api/internal/tasks/:taskId/edit', authenticateToken, async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.taskId);
+      const { title, description, observacao, department, priority } = req.body;
+
+      const updatedTask = await storage.updateTaskField(taskId, 'multiple', {
+        title,
+        description,
+        observacao,
+        department,
+        priority
+      });
+      res.json(updatedTask);
+    } catch (error) {
+      console.error('Error updating task:', error);
+      res.status(500).json({ message: 'Erro ao atualizar tarefa' });
+    }
+  });
+
+  // Delete task
+  app.delete('/api/internal/tasks/:taskId', authenticateToken, async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.taskId);
+      await storage.deleteTask(taskId);
+      res.json({ message: 'Tarefa deletada com sucesso' });
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      res.status(500).json({ message: 'Erro ao deletar tarefa' });
+    }
+  });
+
   // Assign task to user
   app.patch("/api/internal/tasks/:taskId/assign", authenticateToken, async (req, res) => {
     try {
