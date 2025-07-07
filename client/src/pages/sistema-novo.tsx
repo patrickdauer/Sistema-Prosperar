@@ -30,6 +30,38 @@ export default function SistemaNovo() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Helper function for status button styles
+  const getStatusButtonStyle = (taskStatus: string, buttonStatus: string) => {
+    const isActive = taskStatus === buttonStatus;
+    let backgroundColor = '#555555';
+    
+    if (isActive) {
+      switch (buttonStatus) {
+        case 'pending':
+          backgroundColor = '#e74c3c'; // Vermelho
+          break;
+        case 'in_progress':
+          backgroundColor = '#f39c12'; // Laranja
+          break;
+        case 'completed':
+          backgroundColor = '#27ae60'; // Verde
+          break;
+      }
+    }
+
+    return {
+      background: backgroundColor,
+      color: '#ffffff',
+      border: 'none',
+      padding: '6px 12px',
+      fontSize: '11px',
+      borderRadius: '4px',
+      cursor: 'pointer',
+      fontWeight: isActive ? '600' : '400',
+      opacity: isActive ? '1' : '0.7'
+    };
+  };
+
   // Fetch registrations with client tasks
   const { data: registrations, isLoading } = useQuery({
     queryKey: ['registrations-sistema-novo'],
@@ -170,7 +202,7 @@ export default function SistemaNovo() {
               borderRadius: '6px',
               cursor: 'pointer',
               fontSize: '14px',
-              fontWeight: '500'
+              fontWeight: task.status === 'pending' || task.status === 'in_progress' || task.status === 'completed' ? '600' : '400'
             }}
           >
             Sair
@@ -200,7 +232,7 @@ export default function SistemaNovo() {
             <div style={{ fontSize: '32px', fontWeight: '700', color: '#ffffff', marginBottom: '8px' }}>
               {registrations?.length || 0}
             </div>
-            <div style={{ fontSize: '14px', color: '#a0a0a0', fontWeight: '500' }}>Total de Empresas</div>
+            <div style={{ fontSize: '14px', color: '#a0a0a0', fontWeight: task.status === 'pending' || task.status === 'in_progress' || task.status === 'completed' ? '600' : '400' }}>Total de Empresas</div>
           </div>
           
           <div style={{ 
@@ -214,7 +246,7 @@ export default function SistemaNovo() {
               {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
                 acc + (reg.tasks?.filter((t: Task) => t.status === 'pending').length || 0), 0) || 0}
             </div>
-            <div style={{ fontSize: '14px', color: '#a0a0a0', fontWeight: '500' }}>Pendentes</div>
+            <div style={{ fontSize: '14px', color: '#a0a0a0', fontWeight: task.status === 'pending' || task.status === 'in_progress' || task.status === 'completed' ? '600' : '400' }}>Pendentes</div>
           </div>
 
           <div style={{ 
@@ -228,7 +260,7 @@ export default function SistemaNovo() {
               {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
                 acc + (reg.tasks?.filter((t: Task) => t.status === 'in_progress').length || 0), 0) || 0}
             </div>
-            <div style={{ fontSize: '14px', color: '#a0a0a0', fontWeight: '500' }}>Em Andamento</div>
+            <div style={{ fontSize: '14px', color: '#a0a0a0', fontWeight: task.status === 'pending' || task.status === 'in_progress' || task.status === 'completed' ? '600' : '400' }}>Em Andamento</div>
           </div>
 
           <div style={{ 
@@ -242,7 +274,7 @@ export default function SistemaNovo() {
               {registrations?.reduce((acc: number, reg: BusinessRegistration) => 
                 acc + (reg.tasks?.filter((t: Task) => t.status === 'completed').length || 0), 0) || 0}
             </div>
-            <div style={{ fontSize: '14px', color: '#a0a0a0', fontWeight: '500' }}>Concluídas</div>
+            <div style={{ fontSize: '14px', color: '#a0a0a0', fontWeight: task.status === 'pending' || task.status === 'in_progress' || task.status === 'completed' ? '600' : '400' }}>Concluídas</div>
           </div>
         </div>
 
@@ -346,14 +378,14 @@ export default function SistemaNovo() {
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'pending' })}
                           style={{
-                            background: task.status === 'pending' ? '#e74c3c' : '#404040',
+                            background: getStatusButtonStyle(task.status, 'pending').background,
                             color: '#ffffff',
                             border: 'none',
                             padding: '6px 12px',
                             fontSize: '11px',
                             borderRadius: '4px',
                             cursor: 'pointer',
-                            fontWeight: '500'
+                            fontWeight: task.status === 'pending' || task.status === 'in_progress' || task.status === 'completed' ? '600' : '400'
                           }}
                         >
                           Pendente
@@ -361,14 +393,14 @@ export default function SistemaNovo() {
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'in_progress' })}
                           style={{
-                            background: task.status === 'in_progress' ? '#f39c12' : '#404040',
+                            background: task.status === 'in_progress' ? '#f39c12' : '#555555',
                             color: '#ffffff',
                             border: 'none',
                             padding: '6px 12px',
                             fontSize: '11px',
                             borderRadius: '4px',
                             cursor: 'pointer',
-                            fontWeight: '500'
+                            fontWeight: task.status === 'pending' || task.status === 'in_progress' || task.status === 'completed' ? '600' : '400'
                           }}
                         >
                           Andamento
@@ -376,14 +408,14 @@ export default function SistemaNovo() {
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'completed' })}
                           style={{
-                            background: task.status === 'completed' ? '#27ae60' : '#404040',
+                            background: task.status === 'completed' ? '#27ae60' : '#555555',
                             color: '#ffffff',
                             border: 'none',
                             padding: '6px 12px',
                             fontSize: '11px',
                             borderRadius: '4px',
                             cursor: 'pointer',
-                            fontWeight: '500'
+                            fontWeight: task.status === 'pending' || task.status === 'in_progress' || task.status === 'completed' ? '600' : '400'
                           }}
                         >
                           Concluído
@@ -414,14 +446,14 @@ export default function SistemaNovo() {
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'pending' })}
                           style={{
-                            background: task.status === 'pending' ? '#e74c3c' : '#404040',
+                            background: getStatusButtonStyle(task.status, 'pending').background,
                             color: '#ffffff',
                             border: 'none',
                             padding: '6px 12px',
                             fontSize: '11px',
                             borderRadius: '4px',
                             cursor: 'pointer',
-                            fontWeight: '500'
+                            fontWeight: task.status === 'pending' || task.status === 'in_progress' || task.status === 'completed' ? '600' : '400'
                           }}
                         >
                           Pendente
@@ -429,14 +461,14 @@ export default function SistemaNovo() {
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'in_progress' })}
                           style={{
-                            background: task.status === 'in_progress' ? '#f39c12' : '#404040',
+                            background: task.status === 'in_progress' ? '#f39c12' : '#555555',
                             color: '#ffffff',
                             border: 'none',
                             padding: '6px 12px',
                             fontSize: '11px',
                             borderRadius: '4px',
                             cursor: 'pointer',
-                            fontWeight: '500'
+                            fontWeight: task.status === 'pending' || task.status === 'in_progress' || task.status === 'completed' ? '600' : '400'
                           }}
                         >
                           Andamento
@@ -444,14 +476,14 @@ export default function SistemaNovo() {
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'completed' })}
                           style={{
-                            background: task.status === 'completed' ? '#27ae60' : '#404040',
+                            background: task.status === 'completed' ? '#27ae60' : '#555555',
                             color: '#ffffff',
                             border: 'none',
                             padding: '6px 12px',
                             fontSize: '11px',
                             borderRadius: '4px',
                             cursor: 'pointer',
-                            fontWeight: '500'
+                            fontWeight: task.status === 'pending' || task.status === 'in_progress' || task.status === 'completed' ? '600' : '400'
                           }}
                         >
                           Concluído
@@ -482,14 +514,14 @@ export default function SistemaNovo() {
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'pending' })}
                           style={{
-                            background: task.status === 'pending' ? '#e74c3c' : '#404040',
+                            background: getStatusButtonStyle(task.status, 'pending').background,
                             color: '#ffffff',
                             border: 'none',
                             padding: '6px 12px',
                             fontSize: '11px',
                             borderRadius: '4px',
                             cursor: 'pointer',
-                            fontWeight: '500'
+                            fontWeight: task.status === 'pending' || task.status === 'in_progress' || task.status === 'completed' ? '600' : '400'
                           }}
                         >
                           Pendente
@@ -497,14 +529,14 @@ export default function SistemaNovo() {
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'in_progress' })}
                           style={{
-                            background: task.status === 'in_progress' ? '#f39c12' : '#404040',
+                            background: task.status === 'in_progress' ? '#f39c12' : '#555555',
                             color: '#ffffff',
                             border: 'none',
                             padding: '6px 12px',
                             fontSize: '11px',
                             borderRadius: '4px',
                             cursor: 'pointer',
-                            fontWeight: '500'
+                            fontWeight: task.status === 'pending' || task.status === 'in_progress' || task.status === 'completed' ? '600' : '400'
                           }}
                         >
                           Andamento
@@ -512,14 +544,14 @@ export default function SistemaNovo() {
                         <button
                           onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'completed' })}
                           style={{
-                            background: task.status === 'completed' ? '#27ae60' : '#404040',
+                            background: task.status === 'completed' ? '#27ae60' : '#555555',
                             color: '#ffffff',
                             border: 'none',
                             padding: '6px 12px',
                             fontSize: '11px',
                             borderRadius: '4px',
                             cursor: 'pointer',
-                            fontWeight: '500'
+                            fontWeight: task.status === 'pending' || task.status === 'in_progress' || task.status === 'completed' ? '600' : '400'
                           }}
                         >
                           Concluído
