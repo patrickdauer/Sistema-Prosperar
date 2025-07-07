@@ -37,7 +37,7 @@ export default function SistemaNovo() {
 
   const updateTaskMutation = useMutation({
     mutationFn: async ({ taskId, status }: { taskId: number; status: string }) => {
-      const response = await fetch(`/api/internal/tasks/${taskId}`, {
+      const response = await fetch(`/api/internal/tasks/${taskId}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
