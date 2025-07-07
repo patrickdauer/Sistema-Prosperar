@@ -37,10 +37,11 @@ export default function SistemaNovo() {
 
   const updateTaskMutation = useMutation({
     mutationFn: async ({ taskId, status }: { taskId: number; status: string }) => {
-      const response = await fetch(`/api/tasks/${taskId}`, {
+      const response = await fetch(`/api/internal/tasks/${taskId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({ status }),
       });
@@ -67,10 +68,11 @@ export default function SistemaNovo() {
 
   const updateTaskDetailsMutation = useMutation({
     mutationFn: async ({ taskId, data }: { taskId: number; data: any }) => {
-      const response = await fetch(`/api/tasks/${taskId}`, {
+      const response = await fetch(`/api/internal/tasks/${taskId}/edit`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify(data),
       });
@@ -97,8 +99,11 @@ export default function SistemaNovo() {
 
   const deleteTaskMutation = useMutation({
     mutationFn: async (taskId: number) => {
-      const response = await fetch(`/api/tasks/${taskId}`, {
+      const response = await fetch(`/api/internal/tasks/${taskId}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
       });
       if (!response.ok) {
         throw new Error('Erro ao deletar tarefa');
