@@ -59,10 +59,9 @@ export default function SistemaNovo() {
       return response.json();
     },
     onSuccess: () => {
-      // Force immediate refetch instead of cache invalidation
-      queryClient.removeQueries({ queryKey: ['registrations-sistema-novo'] });
-      queryClient.refetchQueries({ queryKey: ['registrations-sistema-novo'] });
-      toast({ title: "Status atualizado!" });
+      // Force complete refresh
+      queryClient.clear();
+      window.location.reload();
     }
   });
 
