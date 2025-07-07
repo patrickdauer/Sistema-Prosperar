@@ -250,10 +250,14 @@ export default function Clientes() {
     }
 
     try {
+      // Obter token do localStorage
+      const token = localStorage.getItem('token');
+      
       const response = await fetch(`/api/clientes/${selectedCliente.id}/tasks`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
           title: taskTitle.trim(),
