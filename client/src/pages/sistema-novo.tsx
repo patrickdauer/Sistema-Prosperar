@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -29,6 +29,21 @@ export default function SistemaNovo() {
   const { user, logout } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Estado para filtro de cliente específico
+  const [clienteFilter, setClienteFilter] = useState<number | null>(null);
+  
+  // Detectar parâmetro de cliente na URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const clienteParam = urlParams.get('cliente');
+    
+    if (clienteParam) {
+      const clienteId = parseInt(clienteParam);
+      setClienteFilter(clienteId);
+      console.log('Filtrando tarefas para cliente ID:', clienteId);
+    }
+  }, []);
 
   const { data: registrationsData, isLoading } = useQuery({
     queryKey: ['/api/internal/business-registrations/with-tasks'],
@@ -128,7 +143,19 @@ export default function SistemaNovo() {
 
   if (isLoading) return <div>Carregando...</div>;
 
-  const allRegistrations = registrationsData || [];
+  let allRegistrations = registrationsData || [];
+  
+  // Filtrar por cliente específico se especificado
+  if (clienteFilter) {
+    allRegistrations = allRegistrations.filter((reg: any) => {
+      // Se for uma tarefa de cliente (tem clienteId)
+      if (reg.isClienteTask && reg.clienteId === clienteFilter) {
+        return true;
+      }
+      return false;
+    });
+  }
+  
   const totalRegistrations = allRegistrations.length;
   const pendingRegistrations = allRegistrations.filter((reg: any) => reg.status === 'pending').length;
   const processingRegistrations = allRegistrations.filter((reg: any) => reg.status === 'in_progress').length;
@@ -171,13 +198,49 @@ export default function SistemaNovo() {
             >
               ← Voltar aos Clientes
             </button>
-            <h1 style={{ 
-              fontSize: '28px', 
-              fontWeight: '700', 
-              color: '#ffffff',
-              margin: 0
-            }}>
-              Controle de Tarefas
+            <div>
+              <h1 style={{ 
+                fontSize: '28px', 
+                fontWeight: '700', 
+                color: '#ffffff',
+                margin: 0
+              }}>
+                Controle de Tarefas
+              </h1>
+              {clienteFilter && (
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '10px',
+                  marginTop: '8px'
+                }}>
+                  <span style={{ 
+                    fontSize: '14px', 
+                    color: '#ffffff',
+                    opacity: 0.9
+                  }}>
+                    Filtrando por cliente específico
+                  </span>
+                  <button
+                    onClick={() => {
+                      setClienteFilter(null);
+                      window.history.replaceState({}, '', '/interno');
+                    }}
+                    style={{
+                      background: '#ef4444',
+                      color: '#ffffff',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      border: 'none',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Mostrar Todas
+                  </button>
+                </div>
+              )}
+            </div>
             </h1>
           </div>
           <button
