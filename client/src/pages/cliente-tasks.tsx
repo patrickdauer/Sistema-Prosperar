@@ -87,8 +87,12 @@ export default function ClienteTasks() {
     const clienteId = urlParams.get('clienteId');
     const razaoSocial = urlParams.get('razaoSocial');
     
+    console.log('Parâmetros da URL detectados:', { clienteId, razaoSocial });
+    
     if (clienteId) {
-      setClienteIdFilter(parseInt(clienteId));
+      const clienteIdNum = parseInt(clienteId);
+      console.log('Aplicando filtro do cliente:', clienteIdNum, razaoSocial);
+      setClienteIdFilter(clienteIdNum);
       setRazaoSocialFilter(razaoSocial);
     }
   }, []);

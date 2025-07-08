@@ -231,8 +231,16 @@ export default function Clientes() {
 
   // Função para ver tarefas do cliente
   const handleViewTasks = (cliente: Cliente) => {
+    // Debug: vamos verificar o que está acontecendo
+    console.log('Ver tarefas clicado para cliente:', cliente);
+    console.log('ID do cliente:', cliente.id);
+    console.log('Razão social:', cliente.razao_social);
+    
     // Redirecionar para página de tarefas com filtro específico do cliente
-    setLocation(`/cliente-tasks?clienteId=${cliente.id}&razaoSocial=${encodeURIComponent(cliente.razao_social || '')}`);
+    const url = `/cliente-tasks?clienteId=${cliente.id}&razaoSocial=${encodeURIComponent(cliente.razao_social || '')}`;
+    console.log('URL sendo gerada:', url);
+    
+    setLocation(url);
   };
 
   // Função para fechar modal de adicionar tarefa
