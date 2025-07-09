@@ -253,6 +253,27 @@ export default function NovoCliente() {
     e.preventDefault();
     setIsSubmitting(true);
 
+    // Validação simples - apenas razão social e CNPJ são obrigatórios
+    if (!formData.razao_social.trim()) {
+      toast({
+        title: "Erro",
+        description: "Razão Social é obrigatória",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (!formData.cnpj.trim()) {
+      toast({
+        title: "Erro",
+        description: "CNPJ é obrigatório",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const clienteData = {
         ...formData,
