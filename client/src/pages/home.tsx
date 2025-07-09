@@ -428,7 +428,7 @@ export default function Home() {
               border: '1px solid #333',
               borderRadius: '8px'
             }}
-            onClick={() => window.open('https://prosperarcontabilidade.com.br/juroscompostos/', '_blank')}>
+            onClick={() => window.open('https://drive.google.com/drive/folders/1zyAOSo2-wUHGkPgml8mQDIKL99LGrUIZ', '_blank')}>
             <CardHeader style={{ borderBottom: '1px solid #333' }}>
               <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
                 <HardDrive className="h-5 w-5" style={{ color: '#ff8c42' }} />
