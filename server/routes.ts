@@ -852,14 +852,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Remove dependentes from formData for validation
       delete formData.dependentes;
 
-      // Validate the data (without dependentes)
-      const validatedData = insertContratacaoSchema.parse(formData);
+      // Create custom validation schema - only termoCiencia is required
+      const customValidationSchema = z.object({
+        termoCiencia: z.boolean().refine(val => val === true, {
+          message: "Você deve marcar esta caixa para concordar com as obrigações legais."
+        })
+      }).passthrough(); // Allow all other fields to pass through without validation
+
+      // Validate only the required field
+      const validatedData = customValidationSchema.parse(formData);
       
       // Add dependentes back after validation (serialize as JSON string)
       validatedData.dependentes = JSON.stringify(dependentes);
       
+      // Prepare data for insertion - ensure all required fields have values or null
+      const insertData = {
+        ...validatedData,
+        // Ensure basic fields are present (can be null/empty)
+        razaoSocial: validatedData.razaoSocial || '',
+        cnpj: validatedData.cnpj || '',
+        endereco: validatedData.endereco || '',
+        telefone: validatedData.telefone || '',
+        email: validatedData.email || '',
+        responsavel: validatedData.responsavel || '',
+        nomeFuncionario: validatedData.nomeFuncionario || '',
+        nomeMae: validatedData.nomeMae || '',
+        cpfFuncionario: validatedData.cpfFuncionario || '',
+        rgFuncionario: validatedData.rgFuncionario || '',
+        dataNascimento: validatedData.dataNascimento || '',
+        estadoCivil: validatedData.estadoCivil || '',
+        escolaridade: validatedData.escolaridade || '',
+        endereco_funcionario: validatedData.endereco_funcionario || '',
+        telefone_funcionario: validatedData.telefone_funcionario || '',
+        email_funcionario: validatedData.email_funcionario || '',
+        cargo: validatedData.cargo || '',
+        setor: validatedData.setor || '',
+        salario: validatedData.salario || '',
+        cargaHoraria: validatedData.cargaHoraria || '',
+        tipoContrato: validatedData.tipoContrato || '',
+        dataAdmissao: validatedData.dataAdmissao || '',
+        possuiCarteira: validatedData.possuiCarteira || '',
+        banco: validatedData.banco || '',
+        agencia: validatedData.agencia || '',
+        conta: validatedData.conta || '',
+        tipoConta: validatedData.tipoConta || '',
+        // Remove termoCiencia as it's not in the database table
+        termoCiencia: undefined
+      };
+
       // Create the contratacao record
-      const contratacao = await storage.createContratacaoFuncionario(validatedData);
+      const contratacao = await storage.createContratacaoFuncionario(insertData);
       console.log("Contratacao record created with ID:", contratacao.id);
       
       // Create Google Drive folder (disabled for testing)

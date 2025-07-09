@@ -24,38 +24,38 @@ const dependenteSchema = z.object({
   cpf: z.string().min(11, "CPF deve ter 11 dígitos").max(14, "CPF inválido")
 });
 
-// Schema de validação
+// Schema de validação - apenas o termo de ciência é obrigatório
 const contratacaoSchema = z.object({
   // Dados da Empresa
-  razaoSocial: z.string().min(2, "Razão social é obrigatória"),
-  cnpj: z.string().min(14, "CNPJ deve ter 14 dígitos").max(18, "CNPJ inválido"),
-  endereco: z.string().min(5, "Endereço é obrigatório"),
-  telefone: z.string().min(10, "Telefone é obrigatório"),
-  email: z.string().email("Email inválido"),
-  responsavel: z.string().min(2, "Nome do responsável é obrigatório"),
+  razaoSocial: z.string().optional(),
+  cnpj: z.string().optional(),
+  endereco: z.string().optional(),
+  telefone: z.string().optional(),
+  email: z.string().optional(),
+  responsavel: z.string().optional(),
   
   // Dados do Funcionário
-  nomeFuncionario: z.string().min(2, "Nome do funcionário é obrigatório"),
-  nomeMae: z.string().min(2, "Nome da mãe é obrigatório"),
-  cpfFuncionario: z.string().min(11, "CPF deve ter 11 dígitos").max(14, "CPF inválido"),
-  rgFuncionario: z.string().min(7, "RG é obrigatório"),
-  dataNascimento: z.string().min(1, "Data de nascimento é obrigatória"),
-  estadoCivil: z.enum(["solteiro", "casado", "divorciado", "viuvo", "uniao_estavel"]),
-  escolaridade: z.enum(["fundamental", "medio", "superior", "pos_graduacao", "mestrado", "doutorado"]),
-  endereco_funcionario: z.string().min(5, "Endereço do funcionário é obrigatório"),
-  telefone_funcionario: z.string().min(10, "Telefone do funcionário é obrigatório"),
-  email_funcionario: z.string().email("Email do funcionário inválido"),
+  nomeFuncionario: z.string().optional(),
+  nomeMae: z.string().optional(),
+  cpfFuncionario: z.string().optional(),
+  rgFuncionario: z.string().optional(),
+  dataNascimento: z.string().optional(),
+  estadoCivil: z.enum(["solteiro", "casado", "divorciado", "viuvo", "uniao_estavel"]).optional(),
+  escolaridade: z.enum(["fundamental", "medio", "superior", "pos_graduacao", "mestrado", "doutorado"]).optional(),
+  endereco_funcionario: z.string().optional(),
+  telefone_funcionario: z.string().optional(),
+  email_funcionario: z.string().optional(),
   
   // Dependentes
   dependentes: z.array(dependenteSchema).optional(),
   
   // Dados do Cargo
-  cargo: z.string().min(2, "Cargo é obrigatório"),
-  setor: z.string().min(2, "Setor é obrigatório"),
-  salario: z.string().min(1, "Salário é obrigatório"),
-  cargaHoraria: z.enum(["20h", "30h", "40h", "44h"]),
-  tipoContrato: z.enum(["clt", "pj", "temporario", "estagio", "aprendiz"]),
-  dataAdmissao: z.string().min(1, "Data de admissão é obrigatória"),
+  cargo: z.string().optional(),
+  setor: z.string().optional(),
+  salario: z.string().optional(),
+  cargaHoraria: z.enum(["20h", "30h", "40h", "44h"]).optional(),
+  tipoContrato: z.enum(["clt", "pj", "temporario", "estagio", "aprendiz"]).optional(),
+  dataAdmissao: z.string().optional(),
   
   // Benefícios
   valeTransporte: z.boolean().default(false),
@@ -66,17 +66,17 @@ const contratacaoSchema = z.object({
   seguroVida: z.boolean().default(false),
   
   // Dados Bancários
-  banco: z.string().min(1, "Banco é obrigatório"),
-  agencia: z.string().min(1, "Agência é obrigatória"),
-  conta: z.string().min(1, "Conta é obrigatória"),
-  tipoConta: z.enum(["corrente", "poupanca"]),
+  banco: z.string().optional(),
+  agencia: z.string().optional(),
+  conta: z.string().optional(),
+  tipoConta: z.enum(["corrente", "poupanca"]).optional(),
   
   // Informações Adicionais
-  possuiCarteira: z.enum(["sim", "nao"]),
+  possuiCarteira: z.enum(["sim", "nao"]).optional(),
   numeroPis: z.string().optional(),
   observacoes: z.string().optional(),
   
-  // Termo de Ciência
+  // Termo de Ciência - ÚNICO CAMPO OBRIGATÓRIO
   termoCiencia: z.boolean().refine(val => val === true, {
     message: "Você deve marcar esta caixa para concordar com as obrigações legais."
   })
@@ -156,6 +156,8 @@ export default function ContratacaoFuncionarios() {
   });
 
   const onSubmit = (data: ContratacaoForm) => {
+    console.log("Form data:", data);
+    console.log("Form errors:", form.formState.errors);
     setIsSubmitting(true);
     submitMutation.mutate(data);
     setTimeout(() => setIsSubmitting(false), 2000);
@@ -198,7 +200,7 @@ export default function ContratacaoFuncionarios() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="razaoSocial" className="text-gray-200">Razão Social *</Label>
+                  <Label htmlFor="razaoSocial" className="text-gray-200">Razão Social</Label>
                   <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="razaoSocial"
@@ -214,7 +216,7 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div>
-                  <Label htmlFor="cnpj" className="text-gray-200">CNPJ *</Label>
+                  <Label htmlFor="cnpj" className="text-gray-200">CNPJ</Label>
                   <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="cnpj"
@@ -230,7 +232,7 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <Label htmlFor="endereco" className="text-gray-200">Endereço Completo *</Label>
+                  <Label htmlFor="endereco" className="text-gray-200">Endereço Completo</Label>
                   <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="endereco"
@@ -246,7 +248,7 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div>
-                  <Label htmlFor="telefone" className="text-gray-200">Telefone *</Label>
+                  <Label htmlFor="telefone" className="text-gray-200">Telefone</Label>
                   <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="telefone"
@@ -261,7 +263,7 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div>
-                  <Label htmlFor="email" className="text-gray-200">Email *</Label>
+                  <Label htmlFor="email" className="text-gray-200">Email</Label>
                   <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="email"
@@ -277,7 +279,7 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <Label htmlFor="responsavel" className="text-gray-200">Responsável pela Solicitação *</Label>
+                  <Label htmlFor="responsavel" className="text-gray-200">Responsável pela Solicitação</Label>
                   <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="responsavel"
@@ -305,7 +307,7 @@ export default function ContratacaoFuncionarios() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="nomeFuncionario" className="text-gray-200">Nome Completo *</Label>
+                  <Label htmlFor="nomeFuncionario" className="text-gray-200">Nome Completo</Label>
                   <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="nomeFuncionario"
                     {...form.register("nomeFuncionario")}
@@ -319,7 +321,7 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div>
-                  <Label htmlFor="nomeMae" className="text-gray-200">Nome da Mãe *</Label>
+                  <Label htmlFor="nomeMae" className="text-gray-200">Nome da Mãe</Label>
                   <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="nomeMae"
                     {...form.register("nomeMae")}
@@ -333,7 +335,7 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div>
-                  <Label htmlFor="cpfFuncionario" className="text-gray-200">CPF *</Label>
+                  <Label htmlFor="cpfFuncionario" className="text-gray-200">CPF</Label>
                   <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="cpfFuncionario"
@@ -348,7 +350,7 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div>
-                  <Label htmlFor="rgFuncionario" className="text-gray-200">RG *</Label>
+                  <Label htmlFor="rgFuncionario" className="text-gray-200">RG</Label>
                   <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="rgFuncionario"
@@ -363,7 +365,7 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div>
-                  <Label htmlFor="dataNascimento" className="text-gray-200">Data de Nascimento *</Label>
+                  <Label htmlFor="dataNascimento" className="text-gray-200">Data de Nascimento</Label>
                   <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="dataNascimento"
@@ -378,7 +380,7 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div>
-                  <Label className="text-gray-200">Estado Civil *</Label>
+                  <Label className="text-gray-200">Estado Civil</Label>
                   <Select onValueChange={(value) => form.setValue("estadoCivil", value as any)}>
                     <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                       <SelectValue placeholder="Selecione o estado civil" className="placeholder-gray-400" />
@@ -399,7 +401,7 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div>
-                  <Label className="text-gray-200">Escolaridade *</Label>
+                  <Label className="text-gray-200">Escolaridade</Label>
                   <Select onValueChange={(value) => form.setValue("escolaridade", value as any)}>
                     <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                       <SelectValue placeholder="Selecione a escolaridade" className="placeholder-gray-400" />
@@ -421,7 +423,7 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <Label htmlFor="endereco_funcionario" className="text-gray-200">Endereço Completo *</Label>
+                  <Label htmlFor="endereco_funcionario" className="text-gray-200">Endereço Completo</Label>
                   <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="endereco_funcionario"
@@ -436,7 +438,7 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div>
-                  <Label htmlFor="telefone_funcionario" className="text-gray-200">Telefone *</Label>
+                  <Label htmlFor="telefone_funcionario" className="text-gray-200">Telefone</Label>
                   <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="telefone_funcionario"
@@ -451,7 +453,7 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div>
-                  <Label htmlFor="email_funcionario" className="text-gray-200">Email *</Label>
+                  <Label htmlFor="email_funcionario" className="text-gray-200">Email</Label>
                   <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="email_funcionario"
@@ -480,7 +482,7 @@ export default function ContratacaoFuncionarios() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="cargo" className="text-gray-200">Cargo *</Label>
+                  <Label htmlFor="cargo" className="text-gray-200">Cargo</Label>
                   <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="cargo"
@@ -495,7 +497,7 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div>
-                  <Label htmlFor="setor" className="text-gray-200">Setor *</Label>
+                  <Label htmlFor="setor" className="text-gray-200">Setor</Label>
                   <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="setor"
@@ -510,7 +512,7 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div>
-                  <Label htmlFor="salario" className="text-gray-200">Salário *</Label>
+                  <Label htmlFor="salario" className="text-gray-200">Salário</Label>
                   <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="salario"
@@ -525,7 +527,7 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div>
-                  <Label className="text-gray-200">Carga Horária *</Label>
+                  <Label className="text-gray-200">Carga Horária</Label>
                   <Select onValueChange={(value) => form.setValue("cargaHoraria", value as any)}>
                     <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                       <SelectValue placeholder="Selecione a carga horária" className="placeholder-gray-400" />
@@ -545,7 +547,7 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div>
-                  <Label className="text-gray-200">Tipo de Contrato *</Label>
+                  <Label className="text-gray-200">Tipo de Contrato</Label>
                   <Select onValueChange={(value) => form.setValue("tipoContrato", value as any)}>
                     <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                       <SelectValue placeholder="Selecione o tipo de contrato" className="placeholder-gray-400" />
@@ -566,7 +568,7 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div>
-                  <Label htmlFor="dataAdmissao" className="text-gray-200">Data de Admissão *</Label>
+                  <Label htmlFor="dataAdmissao" className="text-gray-200">Data de Admissão</Label>
                   <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="dataAdmissao"
@@ -619,7 +621,7 @@ export default function ContratacaoFuncionarios() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="banco" className="text-gray-200">Banco *</Label>
+                  <Label htmlFor="banco" className="text-gray-200">Banco</Label>
                   <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="banco"
@@ -634,7 +636,7 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div>
-                  <Label htmlFor="agencia" className="text-gray-200">Agência *</Label>
+                  <Label htmlFor="agencia" className="text-gray-200">Agência</Label>
                   <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="agencia"
@@ -649,7 +651,7 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div>
-                  <Label htmlFor="conta" className="text-gray-200">Conta *</Label>
+                  <Label htmlFor="conta" className="text-gray-200">Conta</Label>
                   <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="conta"
@@ -664,7 +666,7 @@ export default function ContratacaoFuncionarios() {
                 </div>
 
                 <div>
-                  <Label>Tipo de Conta *</Label>
+                  <Label>Tipo de Conta</Label>
                   <RadioGroup
                     onValueChange={(value) => form.setValue("tipoConta", value as any)}
                     className="flex space-x-4 mt-2"
@@ -695,7 +697,7 @@ export default function ContratacaoFuncionarios() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label>Possui Carteira de Trabalho? *</Label>
+                <Label>Possui Carteira de Trabalho?</Label>
                 <RadioGroup
                   onValueChange={(value) => form.setValue("possuiCarteira", value as any)}
                   className="flex space-x-4 mt-2"
@@ -767,7 +769,7 @@ export default function ContratacaoFuncionarios() {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
-                        <Label className="text-gray-200">Nome Completo *</Label>
+                        <Label className="text-gray-200">Nome Completo</Label>
                         <Input
                           className="bg-gray-600 border-gray-500 text-white placeholder-gray-400"
                           value={dependente.nomeCompleto}
@@ -780,7 +782,7 @@ export default function ContratacaoFuncionarios() {
                         />
                       </div>
                       <div>
-                        <Label className="text-gray-200">Data de Nascimento *</Label>
+                        <Label className="text-gray-200">Data de Nascimento</Label>
                         <Input
                           type="date"
                           className="bg-gray-600 border-gray-500 text-white placeholder-gray-400"
@@ -793,7 +795,7 @@ export default function ContratacaoFuncionarios() {
                         />
                       </div>
                       <div>
-                        <Label className="text-gray-200">CPF *</Label>
+                        <Label className="text-gray-200">CPF</Label>
                         <Input
                           className="bg-gray-600 border-gray-500 text-white placeholder-gray-400"
                           value={dependente.cpf}
