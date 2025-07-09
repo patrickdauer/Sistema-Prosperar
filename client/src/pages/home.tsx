@@ -404,7 +404,7 @@ export default function Home() {
               border: '1px solid #333',
               borderRadius: '8px'
             }}
-            onClick={() => window.location.href = '/gerador-faturamento'}>
+            onClick={() => window.open('https://prosperarcontabilidade.com.br/relatoriogeral/', '_blank')}>
             <CardHeader style={{ borderBottom: '1px solid #333' }}>
               <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
                 <Receipt className="h-5 w-5" style={{ color: '#ff8c42' }} />
@@ -428,7 +428,7 @@ export default function Home() {
               border: '1px solid #333',
               borderRadius: '8px'
             }}
-            onClick={() => window.location.href = '/drive-prosperar'}>
+            onClick={() => window.open('https://prosperarcontabilidade.com.br/juroscompostos/', '_blank')}>
             <CardHeader style={{ borderBottom: '1px solid #333' }}>
               <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
                 <HardDrive className="h-5 w-5" style={{ color: '#ff8c42' }} />
@@ -452,7 +452,7 @@ export default function Home() {
               border: '1px solid #333',
               borderRadius: '8px'
             }}
-            onClick={() => window.location.href = '/calculadora-fator-r'}>
+            onClick={() => window.open('https://prosperarcontabilidade.com.br/fatorr/', '_blank')}>
             <CardHeader style={{ borderBottom: '1px solid #333' }}>
               <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
                 <Calculator className="h-5 w-5" style={{ color: '#ff8c42' }} />
@@ -476,7 +476,7 @@ export default function Home() {
               border: '1px solid #333',
               borderRadius: '8px'
             }}
-            onClick={() => window.location.href = '/calculadora-juros-compostos'}>
+            onClick={() => window.open('https://prosperarcontabilidade.com.br/juroscompostos/', '_blank')}>
             <CardHeader style={{ borderBottom: '1px solid #333' }}>
               <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
                 <TrendingUp className="h-5 w-5" style={{ color: '#ff8c42' }} />
@@ -500,7 +500,7 @@ export default function Home() {
               border: '1px solid #333',
               borderRadius: '8px'
             }}
-            onClick={() => window.location.href = '/consulta-cnaes'}>
+            onClick={() => window.open('https://prosperarcontabilidade.com.br/consultarcnaes/', '_blank')}>
             <CardHeader style={{ borderBottom: '1px solid #333' }}>
               <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
                 <Search className="h-5 w-5" style={{ color: '#ff8c42' }} />
@@ -524,7 +524,7 @@ export default function Home() {
               border: '1px solid #333',
               borderRadius: '8px'
             }}
-            onClick={() => window.location.href = '/gerador-contratos'}>
+            onClick={() => window.open('https://prosperarcontabilidade.com.br/gerarcontratos/', '_blank')}>
             <CardHeader style={{ borderBottom: '1px solid #333' }}>
               <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
                 <FileText className="h-5 w-5" style={{ color: '#ff8c42' }} />
