@@ -380,7 +380,7 @@ export default function Home() {
               border: '1px solid #333',
               borderRadius: '8px'
             }}
-            onClick={() => window.location.href = '/relatorio-havan'}>
+            onClick={() => window.open('https://prosperarcontabilidade.com.br/relatoriohavan/', '_blank')}>
             <CardHeader style={{ borderBottom: '1px solid #333' }}>
               <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
                 <BarChart3 className="h-5 w-5" style={{ color: '#ff8c42' }} />
