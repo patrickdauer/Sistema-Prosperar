@@ -241,7 +241,6 @@ export default function SistemaNovo() {
                 </div>
               )}
             </div>
-            </h1>
           </div>
           <button
             onClick={logout}
