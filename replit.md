@@ -146,6 +146,31 @@ The system uses a `business_registrations` table with:
 
 ## Recent Changes
 
+### January 09, 2025 - Sistema de Perfil de Usuário com Endpoints Seguros
+- **Endpoints de Perfil**: Criados endpoints seguros para gerenciamento de perfil do usuário
+  - GET /api/user/profile - Recupera dados do perfil de forma segura
+  - PUT /api/user/profile - Atualiza informações do perfil com validação
+  - Autenticação JWT obrigatória com verificação de usuário ativo
+  - Validação de senha atual para alterações de senha
+  - Dados sensíveis nunca retornados nas respostas
+- **Hooks React**: Desenvolvidos hooks personalizados para gerenciamento de perfil
+  - useUserProfile() - Hook para buscar dados do perfil
+  - useUpdateProfile() - Hook para atualizar perfil com cache invalidation
+  - useCanEditProfile() - Hook para verificar permissões de edição
+- **Componentes React**: Criados componentes completos para interface de perfil
+  - UserProfileCard - Exibe informações do perfil com opção de edição
+  - UserProfileForm - Formulário completo com validação e alteração de senha
+  - Exemplo de uso completo em user-profile-example.tsx
+- **Recursos de Segurança**: Implementada proteção completa de dados
+  - Hash seguro de senhas com bcrypt
+  - Verificação de usuário ativo antes de operações
+  - Validação de dados de entrada com mensagens específicas
+  - Campos editáveis limitados para auto-edição (nome, email, departamento, senha)
+- **Documentação**: Criada documentação completa em API_PROFILE_ENDPOINTS.md
+  - Exemplos de uso em JavaScript/TypeScript e cURL
+  - Descrição detalhada de segurança e validações
+  - Lista de campos editáveis e restrições
+
 ### January 05, 2025 - Sistema Completo de Status de Dívidas Tributárias e Observações de Mensalidade
 - **Status Dívidas Tributárias**: Criado sistema completo para gerenciamento de status de dívidas tributárias
   - Seção organizada em três subsistemas: Débitos, Parcelamentos e Dívida Ativa

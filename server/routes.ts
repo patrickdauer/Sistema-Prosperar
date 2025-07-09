@@ -81,6 +81,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User profile endpoint - secure route for profile data
+  app.get('/api/user/profile', authenticateToken, async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: 'Usuário não autenticado' });
+      }
+
+      // Get fresh user data from database
+      const user = await storage.getUser(req.user.id);
+      
+      if (!user) {
+        return res.status(404).json({ message: 'Usuário não encontrado' });
+      }
+
+      if (!user.isActive) {
+        return res.status(403).json({ message: 'Usuário inativo' });
+      }
+
+      // Return user profile without sensitive data
+      const userProfile = {
+        id: user.id,
+        username: user.username,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        department: user.department,
+        isActive: user.isActive,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      };
+
+      res.json(userProfile);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      res.status(500).json({ message: "Erro ao buscar perfil do usuário" });
+    }
+  });
+
+  // Update user profile endpoint - secure route for profile updates
+  app.put('/api/user/profile', authenticateToken, async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: 'Usuário não autenticado' });
+      }
+
+      const { name, email, department, currentPassword, newPassword } = req.body;
+      
+      // Validate input
+      if (!name || !email) {
+        return res.status(400).json({ message: 'Nome e email são obrigatórios' });
+      }
+
+      // Get current user data
+      const currentUser = await storage.getUser(req.user.id);
+      if (!currentUser) {
+        return res.status(404).json({ message: 'Usuário não encontrado' });
+      }
+
+      // Prepare update data
+      const updateData: any = {
+        name: name.trim(),
+        email: email.trim(),
+        department: department?.trim()
+      };
+
+      // Handle password change if provided
+      if (newPassword) {
+        if (!currentPassword) {
+          return res.status(400).json({ message: 'Senha atual é obrigatória para alterar a senha' });
+        }
+
+        // Verify current password
+        const isValidPassword = await bcrypt.compare(currentPassword, currentUser.password);
+        if (!isValidPassword) {
+          return res.status(400).json({ message: 'Senha atual incorreta' });
+        }
+
+        // Validate new password
+        if (newPassword.length < 6) {
+          return res.status(400).json({ message: 'Nova senha deve ter pelo menos 6 caracteres' });
+        }
+
+        // Hash new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        updateData.password = hashedPassword;
+      }
+
+      // Update user
+      const updatedUser = await storage.updateUser(req.user.id, updateData);
+      
+      // Return updated profile without sensitive data
+      const userProfile = {
+        id: updatedUser.id,
+        username: updatedUser.username,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        department: updatedUser.department,
+        isActive: updatedUser.isActive,
+        createdAt: updatedUser.createdAt,
+        updatedAt: updatedUser.updatedAt
+      };
+
+      res.json(userProfile);
+    } catch (error) {
+      console.error("Error updating user profile:", error);
+      res.status(500).json({ message: "Erro ao atualizar perfil do usuário" });
+    }
+  });
+
   // Protected route example
   app.get("/api/protected", authenticateToken, async (req, res) => {
     const userId = req.user?.id;
