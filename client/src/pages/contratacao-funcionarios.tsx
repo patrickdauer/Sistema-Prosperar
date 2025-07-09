@@ -61,6 +61,7 @@ const contratacaoSchema = z.object({
   tipoConta: z.enum(["corrente", "poupanca"]),
   
   // Informações Adicionais
+  possuiCarteira: z.enum(["sim", "nao"]),
   numeroPis: z.string().optional(),
   observacoes: z.string().optional(),
   
@@ -661,6 +662,28 @@ export default function ContratacaoFuncionarios() {
               <CardTitle className="text-white">Informações Adicionais</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div>
+                <Label>Possui Carteira de Trabalho? *</Label>
+                <RadioGroup
+                  onValueChange={(value) => form.setValue("possuiCarteira", value as any)}
+                  className="flex space-x-4 mt-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="sim" id="carteira_sim" />
+                    <Label htmlFor="carteira_sim" className="text-gray-200">Sim</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="nao" id="carteira_nao" />
+                    <Label htmlFor="carteira_nao" className="text-gray-200">Não</Label>
+                  </div>
+                </RadioGroup>
+                {form.formState.errors.possuiCarteira && (
+                  <p className="text-sm text-red-400 mt-1">
+                    {form.formState.errors.possuiCarteira.message}
+                  </p>
+                )}
+              </div>
+
               <div>
                 <Label htmlFor="numeroPis" className="text-gray-200">Número do PIS</Label>
                 <Input

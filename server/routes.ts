@@ -9,6 +9,9 @@ import { z } from "zod";
 import { generateBusinessRegistrationPDF } from "./services/pdf";
 import { sendConfirmationEmail } from "./services/email";
 import { googleDriveService } from "./services/googledrive";
+import { sendContratacaoEmails } from "./services/contratacao-email";
+import { webhookService } from "./services/webhook";
+import { generateContratacaoPDF } from "./services/contratacao-pdf";
 import { authenticateToken, generateToken } from "./auth";
 import bcrypt from "bcrypt";
 import { seedTaskTemplates, createAdminUser } from "./seedData";
@@ -814,6 +817,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Contratação de Funcionários route
   app.post("/api/contratacao-funcionarios", upload.array('documento', 10), async (req, res) => {
     try {
+      console.log("Processing contratacao funcionarios request...");
+      
       // Parse and validate the form data
       const formData = { ...req.body };
       
@@ -830,17 +835,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Create the contratacao record
       const contratacao = await storage.createContratacaoFuncionario(validatedData);
+      console.log("Contratacao record created with ID:", contratacao.id);
       
-      // Handle file uploads if any
+      // Create Google Drive folder
+      console.log("Creating Google Drive folder...");
+      const parentFolderId = "1bGzY-dEAevVafaAwF_hjLj0g--_A9o_e"; // ID da pasta pai fornecida
+      const folderName = `${contratacao.razaoSocial} - Contratação ${contratacao.nomeFuncionario} - ID${contratacao.id}`;
+      const folderId = await googleDriveService.createFolder(folderName, parentFolderId);
+      console.log("Google Drive folder created:", folderId);
+      
+      // Generate folder link
+      const folderLink = `https://drive.google.com/drive/folders/${folderId}`;
+      
+      // Update contratacao with Google Drive link
+      await storage.updateContratacaoFuncionario(contratacao.id, { googleDriveLink: folderLink });
+      
+      // Handle file uploads to Google Drive
       const files = req.files as Express.Multer.File[];
       if (files && files.length > 0) {
-        // You can add file handling logic here if needed
-        console.log(`Received ${files.length} files for contratacao ${contratacao.id}`);
+        console.log(`Uploading ${files.length} files to Google Drive...`);
+        
+        const uploadPromises = files.map(async (file, index) => {
+          const fileName = `${contratacao.nomeFuncionario}_Documento_${index + 1}.${file.originalname.split('.').pop()}`;
+          return googleDriveService.uploadFile(
+            fileName,
+            file.buffer,
+            file.mimetype,
+            folderId
+          );
+        });
+        
+        await Promise.all(uploadPromises);
+        console.log("All files uploaded to Google Drive");
       }
-
+      
+      // Generate PDF
+      console.log("Generating PDF...");
+      const pdfBuffer = await generateContratacaoPDF(contratacao);
+      
+      // Upload PDF to Google Drive
+      const pdfFileName = `${contratacao.razaoSocial}_Contratacao_${contratacao.nomeFuncionario}.pdf`;
+      await googleDriveService.uploadPDF(pdfFileName, pdfBuffer, folderId);
+      console.log("PDF uploaded to Google Drive");
+      
+      // Send emails
+      console.log("Sending emails...");
+      await sendContratacaoEmails(contratacao, folderLink);
+      
+      // Send webhook
+      console.log("Sending webhook...");
+      await webhookService.sendContratacaoData(contratacao, folderLink);
+      
       res.json({ 
         message: "Solicitação de contratação enviada com sucesso!", 
-        id: contratacao.id 
+        id: contratacao.id,
+        googleDriveLink: folderLink
       });
     } catch (error) {
       console.error("Error creating contratacao:", error);

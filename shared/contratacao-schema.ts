@@ -51,6 +51,9 @@ export const contratacaoFuncionarios = pgTable("contratacao_funcionarios", {
   conta: varchar("conta", { length: 20 }).notNull(),
   tipoConta: varchar("tipo_conta", { length: 10 }).notNull(),
   
+  // Google Drive
+  googleDriveLink: varchar("google_drive_link", { length: 500 }),
+  
   // Metadados
   createdAt: timestamp("created_at").defaultNow(),
   status: varchar("status", { length: 20 }).default("pending")

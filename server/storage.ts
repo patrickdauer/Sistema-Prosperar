@@ -80,6 +80,7 @@ export interface IStorage {
   
   // Contratação de funcionários
   createContratacaoFuncionario(contratacao: InsertContratacaoFuncionario): Promise<ContratacaoFuncionario>;
+  updateContratacaoFuncionario(id: number, data: Partial<ContratacaoFuncionario>): Promise<ContratacaoFuncionario>;
   
   // Gerenciamento de clientes
   createCliente(cliente: InsertCliente): Promise<Cliente>;
@@ -453,6 +454,15 @@ export class DatabaseStorage implements IStorage {
   async createContratacaoFuncionario(contratacao: InsertContratacaoFuncionario): Promise<ContratacaoFuncionario> {
     const [created] = await db.insert(contratacaoFuncionarios).values(contratacao).returning();
     return created;
+  }
+
+  async updateContratacaoFuncionario(id: number, data: Partial<ContratacaoFuncionario>): Promise<ContratacaoFuncionario> {
+    const [updated] = await db
+      .update(contratacaoFuncionarios)
+      .set(data)
+      .where(eq(contratacaoFuncionarios.id, id))
+      .returning();
+    return updated;
   }
 
   // Métodos de gerenciamento de clientes
