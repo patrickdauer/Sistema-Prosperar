@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Users, FileText, Settings, LogOut, User, Copy, Zap, Link, Scissors, BarChart3, Receipt, HardDrive, Calculator, TrendingUp, Search } from "lucide-react";
+import { Building2, Users, FileText, Settings, LogOut, User, Copy, Zap, Link, Scissors, BarChart3, Receipt, HardDrive, Calculator, TrendingUp, Search, CreditCard } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useLocation } from "wouter";
 
@@ -537,6 +537,30 @@ export default function Home() {
             <CardContent>
               <p className="text-sm text-white">
                 Gere contratos personalizados automaticamente
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl" 
+            style={{ 
+              background: '#1a1a1a', 
+              border: '1px solid #333',
+              borderRadius: '8px'
+            }}
+            onClick={() => window.open('https://prosperarcontabilidade.com.br/pix/', '_blank')}>
+            <CardHeader style={{ borderBottom: '1px solid #333' }}>
+              <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
+                <CreditCard className="h-5 w-5" style={{ color: '#ff8c42' }} />
+                PIX
+              </CardTitle>
+              <CardDescription style={{ color: '#888' }}>
+                Sistema de pagamentos instantâneos
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-white">
+                Gerencie chaves PIX e pagamentos instantâneos
               </p>
             </CardContent>
           </Card>
