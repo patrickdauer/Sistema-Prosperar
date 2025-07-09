@@ -14,6 +14,8 @@ import bcrypt from "bcrypt";
 import { seedTaskTemplates, createAdminUser } from "./seedData";
 import XLSX from "xlsx";
 import puppeteer from "puppeteer";
+import express from "express";
+import path from "path";
 
 // Configure multer for file uploads
 const upload = multer({
@@ -32,6 +34,10 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Serve static files from public directory
+  const publicPath = path.resolve(process.cwd(), "public");
+  app.use(express.static(publicPath));
+
   // Initialize seed data
   await seedTaskTemplates();
   await createAdminUser();
