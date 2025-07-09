@@ -171,10 +171,15 @@ export default function NovoCliente() {
 
   const handleInputChange = (field: string, value: string) => {
     console.log(`Atualizando campo ${field} para:`, value);
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    console.log('Estado atual antes da atualização:', formData);
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [field]: value
+      };
+      console.log('Novo estado após atualização:', newData);
+      return newData;
+    });
   };
 
   const handleAddSocio = () => {
@@ -431,7 +436,10 @@ export default function NovoCliente() {
                   <Label className="text-gray-200">Regime Tributário</Label>
                   <select
                     value={formData.regime_tributario}
-                    onChange={(e) => handleInputChange('regime_tributario', e.target.value)}
+                    onChange={(e) => {
+                      console.log('Select onChange disparado com valor:', e.target.value);
+                      handleInputChange('regime_tributario', e.target.value);
+                    }}
                     className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500"
                     style={{ backgroundColor: '#374151', borderColor: '#4b5563', color: '#ffffff' }}
                   >
@@ -441,6 +449,9 @@ export default function NovoCliente() {
                     <option value="LUCRO_PRESUMIDO" style={{ backgroundColor: '#374151', color: '#ffffff' }}>Lucro Presumido</option>
                     <option value="LUCRO_REAL" style={{ backgroundColor: '#374151', color: '#ffffff' }}>Lucro Real</option>
                   </select>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Valor atual: "{formData.regime_tributario || 'vazio'}"
+                  </p>
                   {formData.regime_tributario && (
                     <p className="text-xs text-green-400 mt-1">
                       Regime selecionado: {formData.regime_tributario}
