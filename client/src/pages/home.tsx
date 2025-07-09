@@ -392,7 +392,7 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-white">
-                Acesse relatórios e dashboards da Havan
+                Gere relatório de faturamento diário padrão Havan
               </p>
             </CardContent>
           </Card>
