@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Users, FileText, Settings, LogOut, User, Copy, Zap, Link, Scissors } from "lucide-react";
+import { Building2, Users, FileText, Settings, LogOut, User, Copy, Zap, Link, Scissors, BarChart3 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useLocation } from "wouter";
 
@@ -369,6 +369,30 @@ export default function Home() {
             <CardContent>
               <p className="text-sm text-white">
                 Gerencie contratos e serviços de salão
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl" 
+            style={{ 
+              background: '#1a1a1a', 
+              border: '1px solid #333',
+              borderRadius: '8px'
+            }}
+            onClick={() => window.location.href = '/relatorio-havan'}>
+            <CardHeader style={{ borderBottom: '1px solid #333' }}>
+              <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
+                <BarChart3 className="h-5 w-5" style={{ color: '#ff8c42' }} />
+                Relatório Havan
+              </CardTitle>
+              <CardDescription style={{ color: '#888' }}>
+                Relatórios e análises específicas
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-white">
+                Acesse relatórios e dashboards da Havan
               </p>
             </CardContent>
           </Card>
