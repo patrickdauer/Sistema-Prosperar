@@ -169,26 +169,21 @@ export default function NovoCliente() {
 
   const [socios, setSocios] = useState<Socio[]>([]);
 
-  const handleInputChange = useCallback((field: string, value: string) => {
+  const handleInputChange = (field: string, value: string) => {
     console.log(`Atualizando campo ${field} para:`, value);
-    console.log('Estado atual antes da atualização:', formData);
-    setFormData(prev => {
-      const newData = {
-        ...prev,
-        [field]: value
-      };
-      console.log('Novo estado após atualização:', newData);
-      return newData;
-    });
-  }, [formData]);
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
 
-  const handleRegimeTributarioChange = useCallback((value: string) => {
+  const handleRegimeTributarioChange = (value: string) => {
     console.log('Regime tributário mudando para:', value);
     setFormData(prev => ({
       ...prev,
       regime_tributario: value
     }));
-  }, []);
+  };
 
   const handleAddSocio = () => {
     const novoSocio: Socio = {
@@ -741,47 +736,6 @@ export default function NovoCliente() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-gray-200">Regime Tributário</Label>
-                  <Select value={formData.regime_tributario} onValueChange={(value) => handleInputChange('regime_tributario', value)}>
-                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                      <SelectValue placeholder="Selecione o regime" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-600">
-                      <SelectItem value="simples">Simples Nacional</SelectItem>
-                      <SelectItem value="presumido">Lucro Presumido</SelectItem>
-                      <SelectItem value="real">Lucro Real</SelectItem>
-                      <SelectItem value="mei">MEI</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="text-gray-200">Atividade Principal</Label>
-                  <Input
-                    value={formData.atividade_principal}
-                    onChange={(e) => handleInputChange('atividade_principal', e.target.value)}
-                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                    placeholder="Atividade principal"
-                  />
-                </div>
-                <div>
-                  <Label className="text-gray-200">Atividades Secundárias</Label>
-                  <Input
-                    value={formData.atividades_secundarias}
-                    onChange={(e) => handleInputChange('atividades_secundarias', e.target.value)}
-                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                    placeholder="Atividades secundárias"
-                  />
-                </div>
-                <div>
-                  <Label className="text-gray-200">Capital Social</Label>
-                  <Input
-                    value={formData.capital_social}
-                    onChange={(e) => handleInputChange('capital_social', e.target.value)}
-                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                    placeholder="R$ 0,00"
-                  />
-                </div>
                 <div>
                   <Label className="text-gray-200">Metragem Ocupada</Label>
                   <Input
