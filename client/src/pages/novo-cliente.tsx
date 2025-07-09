@@ -429,17 +429,23 @@ export default function NovoCliente() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label className="text-gray-200">Regime Tributário</Label>
-                  <Select value={formData.regime_tributario} onValueChange={(value) => handleInputChange('regime_tributario', value)}>
-                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                      <SelectValue placeholder="Selecione o regime" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-600 max-h-60 overflow-y-auto" style={{ backgroundColor: '#1f2937', borderColor: '#374151' }}>
-                      <SelectItem value="MEI" className="text-white hover:bg-gray-600 focus:bg-gray-600" style={{ color: '#ffffff' }}>MEI</SelectItem>
-                      <SelectItem value="SIMPLES" className="text-white hover:bg-gray-600 focus:bg-gray-600" style={{ color: '#ffffff' }}>Simples Nacional</SelectItem>
-                      <SelectItem value="LUCRO_PRESUMIDO" className="text-white hover:bg-gray-600 focus:bg-gray-600" style={{ color: '#ffffff' }}>Lucro Presumido</SelectItem>
-                      <SelectItem value="LUCRO_REAL" className="text-white hover:bg-gray-600 focus:bg-gray-600" style={{ color: '#ffffff' }}>Lucro Real</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <select
+                    value={formData.regime_tributario}
+                    onChange={(e) => handleInputChange('regime_tributario', e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                    style={{ backgroundColor: '#374151', borderColor: '#4b5563', color: '#ffffff' }}
+                  >
+                    <option value="" style={{ backgroundColor: '#374151', color: '#ffffff' }}>Selecione o regime</option>
+                    <option value="MEI" style={{ backgroundColor: '#374151', color: '#ffffff' }}>MEI</option>
+                    <option value="SIMPLES" style={{ backgroundColor: '#374151', color: '#ffffff' }}>Simples Nacional</option>
+                    <option value="LUCRO_PRESUMIDO" style={{ backgroundColor: '#374151', color: '#ffffff' }}>Lucro Presumido</option>
+                    <option value="LUCRO_REAL" style={{ backgroundColor: '#374151', color: '#ffffff' }}>Lucro Real</option>
+                  </select>
+                  {formData.regime_tributario && (
+                    <p className="text-xs text-green-400 mt-1">
+                      Regime selecionado: {formData.regime_tributario}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <Label className="text-gray-200">Capital Social</Label>
