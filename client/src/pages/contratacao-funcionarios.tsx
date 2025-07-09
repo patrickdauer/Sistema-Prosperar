@@ -62,7 +62,12 @@ const contratacaoSchema = z.object({
   
   // Informações Adicionais
   numeroPis: z.string().optional(),
-  observacoes: z.string().optional()
+  observacoes: z.string().optional(),
+  
+  // Termo de Ciência
+  termoCiencia: z.boolean().refine(val => val === true, {
+    message: "Você deve marcar esta caixa para concordar com as obrigações legais."
+  })
 });
 
 type ContratacaoForm = z.infer<typeof contratacaoSchema>;
@@ -81,6 +86,7 @@ export default function ContratacaoFuncionarios() {
       planoSaude: false,
       planoDental: false,
       seguroVida: false,
+      termoCiencia: false,
     }
   });
 
@@ -703,6 +709,60 @@ export default function ContratacaoFuncionarios() {
                   className="bg-gray-700 border-gray-600"
                 />
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Termo de Ciência */}
+          <Card className="bg-gray-800 border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white">Declaração de Ciência de Obrigações Trabalhistas</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-sm text-gray-300 space-y-3">
+                <p>
+                  Declaro estar ciente de que toda empresa que contrata funcionários é obrigada, por lei, a contratar uma empresa especializada para a elaboração dos seguintes laudos obrigatórios:
+                </p>
+                
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li><strong>LTCAT</strong> (Laudo Técnico das Condições Ambientais de Trabalho)</li>
+                  <li><strong>PCMSO</strong> (Programa de Controle Médico de Saúde Ocupacional)</li>
+                  <li><strong>PPRA</strong> (Programa de Prevenção de Riscos Ambientais)</li>
+                  <li><strong>PPP</strong> (Perfil Profissiográfico Previdenciário)</li>
+                  <li>Outros laudos e programas que possam ser exigidos conforme a atividade da empresa.</li>
+                </ul>
+                
+                <p>
+                  Além disso, reconheço que é necessário garantir a correta entrega dessas informações ao eSocial, conforme a legislação vigente.
+                </p>
+                
+                <p>
+                  Estou ciente de que o descumprimento dessas obrigações pode gerar multas e outras penalidades por parte dos órgãos fiscalizadores.
+                </p>
+                
+                <div className="bg-yellow-900/20 border border-yellow-600 rounded-lg p-4 mt-4">
+                  <p className="text-yellow-200">
+                    <strong>Observação:</strong> Muitos empresários, por decisão própria, optam por não cumprir integralmente essas exigências e assumem o risco, mesmo que aparentemente nada esteja acontecendo no momento. No entanto, essa conduta não elimina o risco de autuações futuras e possíveis prejuízos. Ressaltamos que a responsabilidade pela contratação dos laudos e pelo envio das informações ao eSocial é exclusiva da empresa contratante, não sendo responsabilidade da contabilidade.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-start space-x-3 mt-6">
+                <Checkbox
+                  id="termoCiencia"
+                  checked={form.watch("termoCiencia")}
+                  onCheckedChange={(checked) => form.setValue("termoCiencia", checked as boolean)}
+                  className="mt-1"
+                />
+                <Label htmlFor="termoCiencia" className="text-gray-200 text-sm leading-5">
+                  Li e estou ciente das obrigações legais descritas acima.
+                </Label>
+              </div>
+              
+              {form.formState.errors.termoCiencia && (
+                <p className="text-sm text-red-400 mt-2">
+                  {form.formState.errors.termoCiencia.message}
+                </p>
+              )}
             </CardContent>
           </Card>
 
