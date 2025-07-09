@@ -58,7 +58,11 @@ const contratacaoSchema = z.object({
   banco: z.string().min(1, "Banco é obrigatório"),
   agencia: z.string().min(1, "Agência é obrigatória"),
   conta: z.string().min(1, "Conta é obrigatória"),
-  tipoConta: z.enum(["corrente", "poupanca"])
+  tipoConta: z.enum(["corrente", "poupanca"]),
+  
+  // Informações Adicionais
+  numeroPis: z.string().optional(),
+  observacoes: z.string().optional()
 });
 
 type ContratacaoForm = z.infer<typeof contratacaoSchema>;
@@ -641,6 +645,35 @@ export default function ContratacaoFuncionarios() {
                     </p>
                   )}
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Informações Adicionais */}
+          <Card className="bg-gray-800 border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white">Informações Adicionais</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="numeroPis" className="text-gray-200">Número do PIS</Label>
+                <Input
+                  className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                  id="numeroPis"
+                  {...form.register("numeroPis")}
+                  placeholder="000.00000.00-0"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="observacoes" className="text-gray-200">Observações</Label>
+                <Textarea
+                  className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                  id="observacoes"
+                  {...form.register("observacoes")}
+                  placeholder="Informações adicionais relevantes"
+                  rows={4}
+                />
               </div>
             </CardContent>
           </Card>
