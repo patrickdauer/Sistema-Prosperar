@@ -170,6 +170,7 @@ export default function NovoCliente() {
   const [socios, setSocios] = useState<Socio[]>([]);
 
   const handleInputChange = (field: string, value: string) => {
+    console.log(`Atualizando campo ${field} para:`, value);
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -432,11 +433,11 @@ export default function NovoCliente() {
                     <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                       <SelectValue placeholder="Selecione o regime" />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-600">
-                      <SelectItem value="MEI">MEI</SelectItem>
-                      <SelectItem value="SIMPLES">Simples Nacional</SelectItem>
-                      <SelectItem value="LUCRO_PRESUMIDO">Lucro Presumido</SelectItem>
-                      <SelectItem value="LUCRO_REAL">Lucro Real</SelectItem>
+                    <SelectContent className="bg-gray-800 border-gray-600 max-h-60 overflow-y-auto" style={{ backgroundColor: '#1f2937', borderColor: '#374151' }}>
+                      <SelectItem value="MEI" className="text-white hover:bg-gray-600 focus:bg-gray-600" style={{ color: '#ffffff' }}>MEI</SelectItem>
+                      <SelectItem value="SIMPLES" className="text-white hover:bg-gray-600 focus:bg-gray-600" style={{ color: '#ffffff' }}>Simples Nacional</SelectItem>
+                      <SelectItem value="LUCRO_PRESUMIDO" className="text-white hover:bg-gray-600 focus:bg-gray-600" style={{ color: '#ffffff' }}>Lucro Presumido</SelectItem>
+                      <SelectItem value="LUCRO_REAL" className="text-white hover:bg-gray-600 focus:bg-gray-600" style={{ color: '#ffffff' }}>Lucro Real</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
