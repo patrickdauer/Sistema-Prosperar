@@ -843,6 +843,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Rota para promover registro para cliente (novo endpoint)
+  app.post('/api/business-registration/:id/promote-to-client', async (req, res) => {
+    try {
+      const registrationId = parseInt(req.params.id);
+      const cliente = await storage.promoverClienteFromRegistration(registrationId, {
+        origem: 'dashboard',
+        status: 'ativo'
+      });
+      
+      // Criar tarefas para o novo cliente
+      await storage.createTasksForClient(cliente.id);
+      
+      res.json({ 
+        message: 'Cliente criado com sucesso!',
+        cliente: cliente 
+      });
+    } catch (error) {
+      console.error('Erro ao promover cliente:', error);
+      res.status(400).json({ error: 'Erro ao promover cliente' });
+    }
+  });
+
   // Rotas para histórico de IR
   app.get('/api/clientes/:id/ir-history', async (req, res) => {
     try {

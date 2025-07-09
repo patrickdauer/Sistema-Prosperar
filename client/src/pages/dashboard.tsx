@@ -20,7 +20,8 @@ import {
   AlertCircle,
   Edit,
   Trash2,
-  Plus
+  Plus,
+  UserPlus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -97,6 +98,22 @@ export default function Dashboard() {
     },
   });
 
+  const promoteToClientMutation = useMutation({
+    mutationFn: async (registrationId: number) => {
+      const response = await fetch(`/api/business-registration/${registrationId}/promote-to-client`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) throw new Error('Failed to promote to client');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/business-registrations'] });
+    },
+  });
+
   const filteredRegistrations = registrations?.filter(reg => {
     const matchesSearch = reg.razaoSocial.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          reg.nomeFantasia.toLowerCase().includes(searchTerm.toLowerCase());
@@ -135,6 +152,12 @@ export default function Dashboard() {
 
   const updateRegistration = (id: number, data: Partial<BusinessRegistration>) => {
     updateRegistrationMutation.mutate({ id, data });
+  };
+
+  const promoteToClient = (registrationId: number) => {
+    if (window.confirm('Promover esta empresa para cliente? Isso criará um registro de cliente e gerará tarefas automáticas.')) {
+      promoteToClientMutation.mutate(registrationId);
+    }
   };
 
   const getStatusBadge = (status: string | null) => {
@@ -468,7 +491,7 @@ export default function Dashboard() {
 
                           {/* Action buttons - organized in two rows for better space */}
                           <div className="flex flex-col gap-2">
-                            {/* First row: Edit and Delete */}
+                            {/* First row: Edit, Delete and Promote to Client */}
                             <div className="flex items-center gap-2">
                               <Button
                                 variant="outline"
@@ -504,6 +527,24 @@ export default function Dashboard() {
                               >
                                 <Trash2 className="h-3 w-3 mr-1" />
                                 Deletar
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => promoteToClient(registration.id)}
+                                disabled={promoteToClientMutation.isPending}
+                                style={{ 
+                                  background: '#8b5cf6', 
+                                  border: '1px solid #8b5cf6', 
+                                  color: '#ffffff',
+                                  fontSize: '11px',
+                                  padding: '4px 8px',
+                                  height: '28px'
+                                }}
+                                title="Promover para Cliente"
+                              >
+                                <UserPlus className="h-3 w-3 mr-1" />
+                                Virar Cliente
                               </Button>
                             </div>
                             
