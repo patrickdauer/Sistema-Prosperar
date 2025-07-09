@@ -178,11 +178,19 @@ export default function NovoCliente() {
   };
 
   const handleRegimeTributarioChange = (value: string) => {
-    console.log('Regime tributário mudando para:', value);
-    setFormData(prev => ({
-      ...prev,
-      regime_tributario: value
-    }));
+    console.log('=== REGIME TRIBUTÁRIO CHANGE ===');
+    console.log('Valor recebido:', value);
+    console.log('Estado atual completo:', formData);
+    
+    setFormData(prev => {
+      console.log('Estado anterior:', prev);
+      const newState = {
+        ...prev,
+        regime_tributario: value
+      };
+      console.log('Novo estado:', newState);
+      return newState;
+    });
   };
 
   const handleAddSocio = () => {
