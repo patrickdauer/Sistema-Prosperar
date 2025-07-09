@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -169,7 +169,7 @@ export default function NovoCliente() {
 
   const [socios, setSocios] = useState<Socio[]>([]);
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = useCallback((field: string, value: string) => {
     console.log(`Atualizando campo ${field} para:`, value);
     console.log('Estado atual antes da atualização:', formData);
     setFormData(prev => {
@@ -180,7 +180,15 @@ export default function NovoCliente() {
       console.log('Novo estado após atualização:', newData);
       return newData;
     });
-  };
+  }, [formData]);
+
+  const handleRegimeTributarioChange = useCallback((value: string) => {
+    console.log('Regime tributário mudando para:', value);
+    setFormData(prev => ({
+      ...prev,
+      regime_tributario: value
+    }));
+  }, []);
 
   const handleAddSocio = () => {
     const novoSocio: Socio = {
@@ -435,10 +443,11 @@ export default function NovoCliente() {
                 <div>
                   <Label className="text-gray-200">Regime Tributário</Label>
                   <select
-                    value={formData.regime_tributario}
+                    value={formData.regime_tributario || ''}
                     onChange={(e) => {
-                      console.log('Select onChange disparado com valor:', e.target.value);
-                      handleInputChange('regime_tributario', e.target.value);
+                      const selectedValue = e.target.value;
+                      console.log('Select onChange disparado com valor:', selectedValue);
+                      handleRegimeTributarioChange(selectedValue);
                     }}
                     className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500"
                     style={{ backgroundColor: '#374151', borderColor: '#4b5563', color: '#ffffff' }}
