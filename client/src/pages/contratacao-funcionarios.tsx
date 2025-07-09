@@ -54,11 +54,6 @@ const contratacaoSchema = z.object({
   planoDental: z.boolean().default(false),
   seguroVida: z.boolean().default(false),
   
-  // Documentos e Observações
-  possuiCarteira: z.enum(["sim", "nao"]),
-  numeroPis: z.string().optional(),
-  observacoes: z.string().optional(),
-  
   // Dados Bancários
   banco: z.string().min(1, "Banco é obrigatório"),
   agencia: z.string().min(1, "Agência é obrigatória"),
@@ -673,56 +668,6 @@ export default function ContratacaoFuncionarios() {
                   label="Documentos do Funcionário"
                   description="Envie até 10 arquivos (PDF, JPG, PNG). Máximo 10MB por arquivo."
                   className="bg-gray-700 border-gray-600"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Informações Adicionais */}
-          <Card className="bg-gray-800 border-gray-700">
-            <CardHeader>
-              <CardTitle className="text-white">Informações Adicionais</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label>Possui Carteira de Trabalho? *</Label>
-                <RadioGroup
-                  onValueChange={(value) => form.setValue("possuiCarteira", value as any)}
-                  className="flex space-x-4 mt-2"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="sim" id="sim" />
-                    <Label htmlFor="sim" className="text-gray-200">Sim</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="nao" id="nao" />
-                    <Label htmlFor="nao" className="text-gray-200">Não</Label>
-                  </div>
-                </RadioGroup>
-                {form.formState.errors.possuiCarteira && (
-                  <p className="text-sm text-red-400 mt-1">
-                    {form.formState.errors.possuiCarteira.message}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="numeroPis" className="text-gray-200">Número do PIS</Label>
-                <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                  id="numeroPis"
-                  {...form.register("numeroPis")}
-                  placeholder="000.00000.00-0"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="observacoes" className="text-gray-200">Observações</Label>
-                <Textarea
-                  id="observacoes"
-                  {...form.register("observacoes")}
-                  placeholder="Informações adicionais relevantes"
-                  rows={4}
                 />
               </div>
             </CardContent>
