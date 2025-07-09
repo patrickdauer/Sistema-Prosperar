@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Users, FileText, Settings, LogOut, User, Copy, Zap, Link, Scissors, BarChart3 } from "lucide-react";
+import { Building2, Users, FileText, Settings, LogOut, User, Copy, Zap, Link, Scissors, BarChart3, Receipt, HardDrive, Calculator, TrendingUp, Search } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useLocation } from "wouter";
 
@@ -393,6 +393,150 @@ export default function Home() {
             <CardContent>
               <p className="text-sm text-white">
                 Gere relatório de faturamento diário padrão Havan
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl" 
+            style={{ 
+              background: '#1a1a1a', 
+              border: '1px solid #333',
+              borderRadius: '8px'
+            }}
+            onClick={() => window.location.href = '/gerador-faturamento'}>
+            <CardHeader style={{ borderBottom: '1px solid #333' }}>
+              <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
+                <Receipt className="h-5 w-5" style={{ color: '#ff8c42' }} />
+                Gerador de Faturamento Geral
+              </CardTitle>
+              <CardDescription style={{ color: '#888' }}>
+                Sistema de geração de faturas
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-white">
+                Gere faturas e documentos fiscais automaticamente
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl" 
+            style={{ 
+              background: '#1a1a1a', 
+              border: '1px solid #333',
+              borderRadius: '8px'
+            }}
+            onClick={() => window.location.href = '/drive-prosperar'}>
+            <CardHeader style={{ borderBottom: '1px solid #333' }}>
+              <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
+                <HardDrive className="h-5 w-5" style={{ color: '#ff8c42' }} />
+                Drive Prosperar
+              </CardTitle>
+              <CardDescription style={{ color: '#888' }}>
+                Acesso ao sistema de arquivos
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-white">
+                Gerencie documentos e arquivos da empresa
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl" 
+            style={{ 
+              background: '#1a1a1a', 
+              border: '1px solid #333',
+              borderRadius: '8px'
+            }}
+            onClick={() => window.location.href = '/calculadora-fator-r'}>
+            <CardHeader style={{ borderBottom: '1px solid #333' }}>
+              <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
+                <Calculator className="h-5 w-5" style={{ color: '#ff8c42' }} />
+                Calculadora Fator R
+              </CardTitle>
+              <CardDescription style={{ color: '#888' }}>
+                Cálculo do fator R para empresas
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-white">
+                Calcule o fator R para enquadramento tributário
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl" 
+            style={{ 
+              background: '#1a1a1a', 
+              border: '1px solid #333',
+              borderRadius: '8px'
+            }}
+            onClick={() => window.location.href = '/calculadora-juros-compostos'}>
+            <CardHeader style={{ borderBottom: '1px solid #333' }}>
+              <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
+                <TrendingUp className="h-5 w-5" style={{ color: '#ff8c42' }} />
+                Calculadora de Juros Compostos
+              </CardTitle>
+              <CardDescription style={{ color: '#888' }}>
+                Cálculos financeiros avançados
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-white">
+                Calcule juros compostos e projeções financeiras
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl" 
+            style={{ 
+              background: '#1a1a1a', 
+              border: '1px solid #333',
+              borderRadius: '8px'
+            }}
+            onClick={() => window.location.href = '/consulta-cnaes'}>
+            <CardHeader style={{ borderBottom: '1px solid #333' }}>
+              <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
+                <Search className="h-5 w-5" style={{ color: '#ff8c42' }} />
+                Consulta de CNAEs
+              </CardTitle>
+              <CardDescription style={{ color: '#888' }}>
+                Busca de códigos de atividade
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-white">
+                Consulte códigos CNAE e atividades econômicas
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl" 
+            style={{ 
+              background: '#1a1a1a', 
+              border: '1px solid #333',
+              borderRadius: '8px'
+            }}
+            onClick={() => window.location.href = '/gerador-contratos'}>
+            <CardHeader style={{ borderBottom: '1px solid #333' }}>
+              <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
+                <FileText className="h-5 w-5" style={{ color: '#ff8c42' }} />
+                Gerador de Contratos
+              </CardTitle>
+              <CardDescription style={{ color: '#888' }}>
+                Criação automática de contratos
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-white">
+                Gere contratos personalizados automaticamente
               </p>
             </CardContent>
           </Card>
