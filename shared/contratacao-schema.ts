@@ -2,6 +2,15 @@ import { pgTable, text, varchar, timestamp, integer, boolean } from "drizzle-orm
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Schema para dependentes
+export const dependenteSchema = z.object({
+  nomeCompleto: z.string().min(2, "Nome completo é obrigatório"),
+  dataNascimento: z.string().min(1, "Data de nascimento é obrigatória"),
+  cpf: z.string().min(11, "CPF deve ter 11 dígitos").max(14, "CPF inválido")
+});
+
+export type Dependente = z.infer<typeof dependenteSchema>;
+
 export const contratacaoFuncionarios = pgTable("contratacao_funcionarios", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   
@@ -15,6 +24,7 @@ export const contratacaoFuncionarios = pgTable("contratacao_funcionarios", {
   
   // Dados do Funcionário
   nomeFuncionario: varchar("nome_funcionario", { length: 255 }).notNull(),
+  nomeMae: varchar("nome_mae", { length: 255 }).notNull(),
   cpfFuncionario: varchar("cpf_funcionario", { length: 14 }).notNull(),
   rgFuncionario: varchar("rg_funcionario", { length: 20 }).notNull(),
   dataNascimento: varchar("data_nascimento", { length: 10 }).notNull(),
@@ -51,6 +61,9 @@ export const contratacaoFuncionarios = pgTable("contratacao_funcionarios", {
   conta: varchar("conta", { length: 20 }).notNull(),
   tipoConta: varchar("tipo_conta", { length: 10 }).notNull(),
   
+  // Dependentes (JSON)
+  dependentes: text("dependentes"),
+  
   // Google Drive
   googleDriveLink: varchar("google_drive_link", { length: 500 }),
   
@@ -63,6 +76,8 @@ export const insertContratacaoSchema = createInsertSchema(contratacaoFuncionario
   id: true,
   createdAt: true,
   status: true
+}).extend({
+  dependentes: z.string().optional()
 });
 
 export type ContratacaoFuncionario = typeof contratacaoFuncionarios.$inferSelect;

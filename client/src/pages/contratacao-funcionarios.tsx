@@ -17,6 +17,13 @@ import { useToast } from '@/hooks/use-toast';
 import { Building2, UserPlus, FileText, ArrowLeft, Upload, Calculator } from 'lucide-react';
 import { Link } from 'wouter';
 
+// Schema para dependentes
+const dependenteSchema = z.object({
+  nomeCompleto: z.string().min(2, "Nome completo é obrigatório"),
+  dataNascimento: z.string().min(1, "Data de nascimento é obrigatória"),
+  cpf: z.string().min(11, "CPF deve ter 11 dígitos").max(14, "CPF inválido")
+});
+
 // Schema de validação
 const contratacaoSchema = z.object({
   // Dados da Empresa
@@ -29,6 +36,7 @@ const contratacaoSchema = z.object({
   
   // Dados do Funcionário
   nomeFuncionario: z.string().min(2, "Nome do funcionário é obrigatório"),
+  nomeMae: z.string().min(2, "Nome da mãe é obrigatório"),
   cpfFuncionario: z.string().min(11, "CPF deve ter 11 dígitos").max(14, "CPF inválido"),
   rgFuncionario: z.string().min(7, "RG é obrigatório"),
   dataNascimento: z.string().min(1, "Data de nascimento é obrigatória"),
@@ -37,6 +45,9 @@ const contratacaoSchema = z.object({
   endereco_funcionario: z.string().min(5, "Endereço do funcionário é obrigatório"),
   telefone_funcionario: z.string().min(10, "Telefone do funcionário é obrigatório"),
   email_funcionario: z.string().email("Email do funcionário inválido"),
+  
+  // Dependentes
+  dependentes: z.array(dependenteSchema).optional(),
   
   // Dados do Cargo
   cargo: z.string().min(2, "Cargo é obrigatório"),
@@ -73,10 +84,13 @@ const contratacaoSchema = z.object({
 
 type ContratacaoForm = z.infer<typeof contratacaoSchema>;
 
+type Dependente = z.infer<typeof dependenteSchema>;
+
 export default function ContratacaoFuncionarios() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [documentos, setDocumentos] = useState<File[]>([]);
+  const [dependentes, setDependentes] = useState<Dependente[]>([]);
 
   const form = useForm<ContratacaoForm>({
     resolver: zodResolver(contratacaoSchema),
@@ -102,6 +116,11 @@ export default function ContratacaoFuncionarios() {
           formData.append(key, value.toString());
         }
       });
+      
+      // Adicionar dependentes
+      if (dependentes.length > 0) {
+        formData.append('dependentes', JSON.stringify(dependentes));
+      }
       
       // Adicionar documentos
       documentos.forEach((file, index) => {
@@ -288,7 +307,6 @@ export default function ContratacaoFuncionarios() {
                 <div>
                   <Label htmlFor="nomeFuncionario" className="text-gray-200">Nome Completo *</Label>
                   <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="nomeFuncionario"
                     {...form.register("nomeFuncionario")}
                     placeholder="Nome completo do funcionário"
@@ -296,6 +314,20 @@ export default function ContratacaoFuncionarios() {
                   {form.formState.errors.nomeFuncionario && (
                     <p className="text-sm text-red-400 mt-1">
                       {form.formState.errors.nomeFuncionario.message}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="nomeMae" className="text-gray-200">Nome da Mãe *</Label>
+                  <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    id="nomeMae"
+                    {...form.register("nomeMae")}
+                    placeholder="Nome completo da mãe"
+                  />
+                  {form.formState.errors.nomeMae && (
+                    <p className="text-sm text-red-400 mt-1">
+                      {form.formState.errors.nomeMae.message}
                     </p>
                   )}
                 </div>
@@ -703,6 +735,91 @@ export default function ContratacaoFuncionarios() {
                   placeholder="Informações adicionais relevantes"
                   rows={4}
                 />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Dependentes */}
+          <Card className="bg-gray-800 border-gray-700">
+            <CardHeader>
+              <CardTitle className="flex items-center text-white">
+                <UserPlus className="h-5 w-5 mr-2 text-green-500" />
+                Dependentes (Filhos)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-4">
+                {dependentes.map((dependente, index) => (
+                  <div key={index} className="border border-gray-600 rounded-lg p-4 bg-gray-700">
+                    <div className="flex justify-between items-center mb-4">
+                      <h4 className="text-lg font-semibold text-white">Dependente {index + 1}</h4>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                          const newDependentes = dependentes.filter((_, i) => i !== index);
+                          setDependentes(newDependentes);
+                        }}
+                      >
+                        Remover
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <Label className="text-gray-200">Nome Completo *</Label>
+                        <Input
+                          className="bg-gray-600 border-gray-500 text-white placeholder-gray-400"
+                          value={dependente.nomeCompleto}
+                          onChange={(e) => {
+                            const newDependentes = [...dependentes];
+                            newDependentes[index].nomeCompleto = e.target.value;
+                            setDependentes(newDependentes);
+                          }}
+                          placeholder="Nome completo do dependente"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-gray-200">Data de Nascimento *</Label>
+                        <Input
+                          type="date"
+                          className="bg-gray-600 border-gray-500 text-white placeholder-gray-400"
+                          value={dependente.dataNascimento}
+                          onChange={(e) => {
+                            const newDependentes = [...dependentes];
+                            newDependentes[index].dataNascimento = e.target.value;
+                            setDependentes(newDependentes);
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-gray-200">CPF *</Label>
+                        <Input
+                          className="bg-gray-600 border-gray-500 text-white placeholder-gray-400"
+                          value={dependente.cpf}
+                          onChange={(e) => {
+                            const newDependentes = [...dependentes];
+                            newDependentes[index].cpf = e.target.value;
+                            setDependentes(newDependentes);
+                          }}
+                          placeholder="000.000.000-00"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setDependentes([...dependentes, { nomeCompleto: '', dataNascimento: '', cpf: '' }]);
+                  }}
+                  className="w-full bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Adicionar Dependente
+                </Button>
               </div>
             </CardContent>
           </Card>

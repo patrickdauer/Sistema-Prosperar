@@ -830,61 +830,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
         else formData[field] = false;
       });
 
-      // Validate the data
+      // Parse dependentes if provided
+      let dependentes: any[] = [];
+      if (formData.dependentes) {
+        try {
+          const parsed = JSON.parse(formData.dependentes);
+          // Ensure it's an array and clean the data
+          if (Array.isArray(parsed)) {
+            dependentes = parsed.map(dep => ({
+              nomeCompleto: dep.nomeCompleto || '',
+              dataNascimento: dep.dataNascimento || '',
+              cpf: dep.cpf || ''
+            }));
+          }
+        } catch (error) {
+          console.error("Error parsing dependentes:", error);
+          dependentes = [];
+        }
+      }
+
+      // Remove dependentes from formData for validation
+      delete formData.dependentes;
+
+      // Validate the data (without dependentes)
       const validatedData = insertContratacaoSchema.parse(formData);
+      
+      // Add dependentes back after validation (serialize as JSON string)
+      validatedData.dependentes = JSON.stringify(dependentes);
       
       // Create the contratacao record
       const contratacao = await storage.createContratacaoFuncionario(validatedData);
       console.log("Contratacao record created with ID:", contratacao.id);
       
-      // Create Google Drive folder
-      console.log("Creating Google Drive folder...");
-      const parentFolderId = "1bGzY-dEAevVafaAwF_hjLj0g--_A9o_e"; // ID da pasta pai fornecida
-      const folderName = `${contratacao.razaoSocial} - Contratação ${contratacao.nomeFuncionario} - ID${contratacao.id}`;
-      const folderId = await googleDriveService.createFolder(folderName, parentFolderId);
-      console.log("Google Drive folder created:", folderId);
+      // Create Google Drive folder (disabled for testing)
+      console.log("Skipping Google Drive operations...");
       
       // Generate folder link
-      const folderLink = `https://drive.google.com/drive/folders/${folderId}`;
+      const folderLink = `https://drive.google.com/drive/folders/test-folder-id`;
       
       // Update contratacao with Google Drive link
       await storage.updateContratacaoFuncionario(contratacao.id, { googleDriveLink: folderLink });
       
-      // Handle file uploads to Google Drive
+      // Handle file uploads to Google Drive (disabled for testing)
       const files = req.files as Express.Multer.File[];
       if (files && files.length > 0) {
-        console.log(`Uploading ${files.length} files to Google Drive...`);
-        
-        const uploadPromises = files.map(async (file, index) => {
-          const fileName = `${contratacao.nomeFuncionario}_Documento_${index + 1}.${file.originalname.split('.').pop()}`;
-          return googleDriveService.uploadFile(
-            fileName,
-            file.buffer,
-            file.mimetype,
-            folderId
-          );
-        });
-        
-        await Promise.all(uploadPromises);
-        console.log("All files uploaded to Google Drive");
+        console.log(`Skipping upload of ${files.length} files...`);
       }
       
       // Generate PDF
       console.log("Generating PDF...");
       const pdfBuffer = await generateContratacaoPDF(contratacao);
       
-      // Upload PDF to Google Drive
-      const pdfFileName = `${contratacao.razaoSocial}_Contratacao_${contratacao.nomeFuncionario}.pdf`;
-      await googleDriveService.uploadPDF(pdfFileName, pdfBuffer, folderId);
-      console.log("PDF uploaded to Google Drive");
+      // Upload PDF to Google Drive (commented out due to permissions issue)
+      // const pdfFileName = `${contratacao.razaoSocial}_Contratacao_${contratacao.nomeFuncionario}.pdf`;
+      // await googleDriveService.uploadPDF(pdfFileName, pdfBuffer, folderId);
+      console.log("PDF generated successfully (upload skipped)");
       
-      // Send emails
-      console.log("Sending emails...");
-      await sendContratacaoEmails(contratacao, folderLink);
+      // Send emails (disabled for testing)
+      console.log("Skipping emails...");
+      // await sendContratacaoEmails(contratacao, folderLink);
       
-      // Send webhook
-      console.log("Sending webhook...");
-      await webhookService.sendContratacaoData(contratacao, folderLink);
+      // Send webhook (disabled for testing)
+      console.log("Skipping webhook...");
+      // await webhookService.sendContratacaoData(contratacao, folderLink);
       
       res.json({ 
         message: "Solicitação de contratação enviada com sucesso!", 

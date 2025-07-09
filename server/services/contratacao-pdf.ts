@@ -72,6 +72,7 @@ export async function generateContratacaoPDF(contratacao: ContratacaoFuncionario
 
     const funcionarioData = [
       ['Nome:', contratacao.nomeFuncionario],
+      ['Nome da Mãe:', contratacao.nomeMae],
       ['CPF:', contratacao.cpfFuncionario],
       ['RG:', contratacao.rgFuncionario],
       ['Data de Nascimento:', contratacao.dataNascimento],
@@ -160,6 +161,45 @@ export async function generateContratacaoPDF(contratacao: ContratacaoFuncionario
       doc.font('Helvetica').text(value || '', 150, yPosition);
       yPosition += 15;
     });
+
+    // Dependentes
+    if (contratacao.dependentes) {
+      let dependentes: any[] = [];
+      try {
+        dependentes = JSON.parse(contratacao.dependentes);
+      } catch (error) {
+        console.error('Error parsing dependentes in PDF:', error);
+        dependentes = [];
+      }
+      
+      if (dependentes.length > 0) {
+        yPosition += 10;
+        doc.fontSize(16)
+           .font('Helvetica-Bold')
+           .text('DEPENDENTES (FILHOS)', 50, yPosition);
+        
+        yPosition += 25;
+        doc.fontSize(10)
+           .font('Helvetica');
+
+        dependentes.forEach((dependente: any, index: number) => {
+          doc.font('Helvetica-Bold').text(`Dependente ${index + 1}:`, 50, yPosition);
+          yPosition += 15;
+          
+          doc.font('Helvetica-Bold').text('Nome:', 70, yPosition);
+          doc.font('Helvetica').text(dependente.nomeCompleto || '', 150, yPosition);
+          yPosition += 15;
+          
+          doc.font('Helvetica-Bold').text('Data de Nascimento:', 70, yPosition);
+          doc.font('Helvetica').text(dependente.dataNascimento || '', 200, yPosition);
+          yPosition += 15;
+          
+          doc.font('Helvetica-Bold').text('CPF:', 70, yPosition);
+          doc.font('Helvetica').text(dependente.cpf || '', 150, yPosition);
+          yPosition += 20;
+        });
+      }
+    }
 
     // Informações Adicionais
     if (contratacao.numeroPis || contratacao.observacoes) {
