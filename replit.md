@@ -146,6 +146,30 @@ The system uses a `business_registrations` table with:
 
 ## Recent Changes
 
+### July 10, 2025 - Sistema de Contratação de Funcionários Completo
+- **Banco de Dados**: Criado sistema completo para armazenar todas as informações do formulário de contratação
+  - Tabela `contratacao_funcionarios` com todos os campos do formulário
+  - Apenas checkbox "Li e estou ciente" é obrigatório, todos outros campos opcionais
+  - Suporte a dependentes (filhos) armazenados como JSON
+  - Sistema de status para acompanhar o progresso das contratações
+- **Formulário Corrigido**: Resolvidos problemas de envio e validação
+  - Pergunta sobre carteira de trabalho removida conforme solicitado
+  - Upload de arquivos funcionando corretamente
+  - Validação simplificada focando apenas no consentimento obrigatório
+- **APIs Completas**: Implementadas rotas para gerenciar contratações
+  - POST /api/contratacao-funcionarios - Criar nova contratação
+  - GET /api/contratacao-funcionarios - Listar todas as contratações
+  - GET /api/contratacao-funcionarios/:id - Buscar contratação específica
+- **Integração Externa**: Configurado envio automático
+  - Emails para contato@prosperarcontabilidade.com.br e empresasdp01@gmail.com
+  - Webhook para https://webhook.aquiprospera.com.br/webhook/515d783f-ebad-4f9b-bdfe-dd9c214525a9
+  - Upload de arquivos para Google Drive (configurado mas temporariamente desabilitado)
+- **Geração de PDF**: Sistema funcional para gerar relatórios das contratações
+  - Informações da empresa, funcionário, benefícios e dados bancários
+  - Dependentes incluídos no relatório quando presentes
+
+## Recent Changes
+
 ### January 09, 2025 - Sistema de Perfil de Usuário com Endpoints Seguros
 - **Endpoints de Perfil**: Criados endpoints seguros para gerenciamento de perfil do usuário
   - GET /api/user/profile - Recupera dados do perfil de forma segura

@@ -865,39 +865,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Add dependentes back after validation (serialize as JSON string)
       validatedData.dependentes = JSON.stringify(dependentes);
       
-      // Prepare data for insertion - ensure all required fields have values or null
+      // Prepare data for insertion - map fields correctly
       const insertData = {
-        ...validatedData,
-        // Ensure basic fields are present (can be null/empty)
-        razaoSocial: validatedData.razaoSocial || '',
-        cnpj: validatedData.cnpj || '',
-        endereco: validatedData.endereco || '',
-        telefone: validatedData.telefone || '',
-        email: validatedData.email || '',
-        responsavel: validatedData.responsavel || '',
-        nomeFuncionario: validatedData.nomeFuncionario || '',
-        nomeMae: validatedData.nomeMae || '',
-        cpfFuncionario: validatedData.cpfFuncionario || '',
-        rgFuncionario: validatedData.rgFuncionario || '',
-        dataNascimento: validatedData.dataNascimento || '',
-        estadoCivil: validatedData.estadoCivil || '',
-        escolaridade: validatedData.escolaridade || '',
-        endereco_funcionario: validatedData.endereco_funcionario || '',
-        telefone_funcionario: validatedData.telefone_funcionario || '',
-        email_funcionario: validatedData.email_funcionario || '',
-        cargo: validatedData.cargo || '',
-        setor: validatedData.setor || '',
-        salario: validatedData.salario || '',
-        cargaHoraria: validatedData.cargaHoraria || '',
-        tipoContrato: validatedData.tipoContrato || '',
-        dataAdmissao: validatedData.dataAdmissao || '',
-        possuiCarteira: '',
-        banco: validatedData.banco || '',
-        agencia: validatedData.agencia || '',
-        conta: validatedData.conta || '',
-        tipoConta: validatedData.tipoConta || '',
-        // Remove termoCiencia as it's not in the database table
-        termoCiencia: undefined
+        razaoSocial: validatedData.razaoSocial || null,
+        cnpj: validatedData.cnpj || null,
+        endereco: validatedData.endereco || null,
+        telefone: validatedData.telefone || null,
+        email: validatedData.email || null,
+        responsavel: validatedData.responsavel || null,
+        nomeFuncionario: validatedData.nomeFuncionario || null,
+        nomeMae: validatedData.nomeMae || null,
+        cpfFuncionario: validatedData.cpfFuncionario || null,
+        rgFuncionario: validatedData.rgFuncionario || null,
+        dataNascimento: validatedData.dataNascimento || null,
+        estadoCivil: validatedData.estadoCivil || null,
+        escolaridade: validatedData.escolaridade || null,
+        endereco_funcionario: validatedData.endereco_funcionario || null,
+        telefone_funcionario: validatedData.telefone_funcionario || null,
+        email_funcionario: validatedData.email_funcionario || null,
+        cargo: validatedData.cargo || null,
+        setor: validatedData.setor || null,
+        salario: validatedData.salario || null,
+        cargaHoraria: validatedData.cargaHoraria || null,
+        tipoContrato: validatedData.tipoContrato || null,
+        dataAdmissao: validatedData.dataAdmissao || null,
+        valeTransporte: validatedData.valeTransporte || false,
+        valeRefeicao: validatedData.valeRefeicao || false,
+        valeAlimentacao: validatedData.valeAlimentacao || false,
+        planoSaude: validatedData.planoSaude || false,
+        planoDental: validatedData.planoDental || false,
+        seguroVida: validatedData.seguroVida || false,
+        possuiCarteira: null,
+        banco: validatedData.banco || null,
+        agencia: validatedData.agencia || null,
+        conta: validatedData.conta || null,
+        tipoConta: validatedData.tipoConta || null,
+        numeroPis: validatedData.numeroPis || null,
+        observacoes: validatedData.observacoes || null,
+        dependentes: validatedData.dependentes || null,
+        googleDriveLink: null,
+        status: 'pending'
       };
 
       // Create the contratacao record
@@ -928,13 +935,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // await googleDriveService.uploadPDF(pdfFileName, pdfBuffer, folderId);
       console.log("PDF generated successfully (upload skipped)");
       
-      // Send emails (disabled for testing)
-      console.log("Skipping emails...");
-      // await sendContratacaoEmails(contratacao, folderLink);
+      // Send emails
+      try {
+        console.log("Sending emails...");
+        await sendContratacaoEmails(contratacao, folderLink);
+        console.log("Emails sent successfully");
+      } catch (error) {
+        console.error("Error sending emails:", error);
+      }
       
-      // Send webhook (disabled for testing)
-      console.log("Skipping webhook...");
-      // await webhookService.sendContratacaoData(contratacao, folderLink);
+      // Send webhook
+      try {
+        console.log("Sending webhook...");
+        await webhookService.sendContratacaoData(contratacao, folderLink);
+        console.log("Webhook sent successfully");
+      } catch (error) {
+        console.error("Error sending webhook:", error);
+      }
       
       res.json({ 
         message: "Solicitação de contratação enviada com sucesso!", 
@@ -950,6 +967,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       res.status(500).json({ message: "Erro interno do servidor" });
+    }
+  });
+
+  // Route to get all contratacao records
+  app.get("/api/contratacao-funcionarios", async (req, res) => {
+    try {
+      const contratacoes = await storage.getAllContratacoes();
+      res.json(contratacoes);
+    } catch (error) {
+      console.error("Error fetching contratacoes:", error);
+      res.status(500).json({ message: "Erro ao buscar contratações" });
+    }
+  });
+
+  // Route to get specific contratacao record
+  app.get("/api/contratacao-funcionarios/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const contratacao = await storage.getContratacao(id);
+      
+      if (!contratacao) {
+        return res.status(404).json({ message: "Contratação não encontrada" });
+      }
+      
+      res.json(contratacao);
+    } catch (error) {
+      console.error("Error fetching contratacao:", error);
+      res.status(500).json({ message: "Erro ao buscar contratação" });
     }
   });
 

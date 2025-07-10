@@ -92,8 +92,15 @@ export default function ContratacaoFuncionarios() {
   const [documentos, setDocumentos] = useState<File[]>([]);
   const [dependentes, setDependentes] = useState<Dependente[]>([]);
 
-  const form = useForm<ContratacaoForm>({
-    resolver: zodResolver(contratacaoSchema),
+  // Simplified schema - only termoCiencia is required
+  const formSchema = z.object({
+    termoCiencia: z.boolean().refine(val => val === true, {
+      message: "Você deve marcar esta caixa para concordar com as obrigações legais."
+    })
+  }).passthrough();
+
+  const form = useForm<any>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       valeTransporte: false,
       valeRefeicao: false,
@@ -106,12 +113,12 @@ export default function ContratacaoFuncionarios() {
   });
 
   const submitMutation = useMutation({
-    mutationFn: async (data: ContratacaoForm) => {
+    mutationFn: async (data: any) => {
       const formData = new FormData();
       
       // Adicionar dados do formulário
       Object.keys(data).forEach(key => {
-        const value = data[key as keyof ContratacaoForm];
+        const value = data[key];
         if (value !== undefined && value !== null) {
           formData.append(key, value.toString());
         }
