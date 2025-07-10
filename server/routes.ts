@@ -918,38 +918,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const contratacao = await storage.createContratacaoFuncionario(insertData);
       console.log("Contratacao record created with ID:", contratacao.id);
       
-      // Create Google Drive folder
-      console.log("Creating Google Drive folder...");
-      const folderName = `${contratacao.razaoSocial || 'Empresa'} - Contratação ${contratacao.nomeFuncionario || 'Funcionário'} - ID ${contratacao.id}`;
-      const parentFolderId = '1bGzY-dEAevVafaAwF_hjLj0g--_A9o_e'; // Folder ID from user requirements
+      // Use existing shared Google Drive folder - DO NOT CREATE NEW FOLDERS
+      console.log("Using existing shared Google Drive folder...");
+      const SHARED_FOLDER_ID = '1bGzY-dEAevVafaAwF_hjLj0g--_A9o_e';
+      const folderLink = `https://drive.google.com/drive/folders/${SHARED_FOLDER_ID}`;
       
-      let folderId: string;
-      let folderLink: string;
-      
-      try {
-        folderId = await googleDriveService.createFolder(folderName, parentFolderId);
-        folderLink = `https://drive.google.com/drive/folders/${folderId}`;
-        console.log(`Created Google Drive folder: ${folderName} (ID: ${folderId})`);
-      } catch (error) {
-        console.error("Error creating Google Drive folder:", error);
-        // Fallback to parent folder if creation fails
-        folderId = parentFolderId;
-        folderLink = `https://drive.google.com/drive/folders/${parentFolderId}`;
-      }
+      console.log(`Using shared Google Drive folder: ${folderLink}`);
       
       // Update contratacao with Google Drive link
       await storage.updateContratacaoFuncionario(contratacao.id, { googleDriveLink: folderLink });
       
-      // Handle file uploads to Google Drive using alternative service
+      // Handle file uploads to Google Drive - directly to shared folder
       const files = req.files as Express.Multer.File[];
       if (files && files.length > 0) {
-        console.log(`Processing ${files.length} files for upload...`);
+        console.log(`Processing ${files.length} files for upload to shared folder...`);
         try {
-          const prefix = contratacao.nomeFuncionario || 'Funcionário';
-          const uploadResult = await alternativeUploadService.saveAndUploadFiles(files, folderId, prefix);
+          // Create file prefix with ID and employee name for organization
+          const prefix = `${contratacao.id}_${contratacao.nomeFuncionario || 'Funcionario'}`;
           
-          console.log(`Upload Results: ${uploadResult.uploaded} uploaded, ${uploadResult.failed} failed`);
-          uploadResult.details.forEach(detail => console.log(detail));
+          for (const file of files) {
+            const fileName = `${prefix}_${file.originalname}`;
+            console.log(`Uploading file: ${fileName} to shared folder: ${SHARED_FOLDER_ID}`);
+            
+            try {
+              const result = await googleDriveService.uploadFile(fileName, file.buffer, file.mimetype, SHARED_FOLDER_ID);
+              console.log(`✓ File uploaded: ${fileName}`);
+            } catch (error) {
+              console.error(`Error uploading file ${fileName}:`, error);
+            }
+          }
         } catch (error) {
           console.error("Error processing file uploads:", error);
         }
@@ -959,11 +956,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Generating PDF...");
       const pdfBuffer = await generateContratacaoPDF(contratacao);
       
-      // Upload PDF to Google Drive using alternative service
+      // Upload PDF to Google Drive - directly to shared folder
       try {
-        const pdfFileName = `${contratacao.razaoSocial || 'Empresa'}_Contratacao_${contratacao.nomeFuncionario || 'Funcionário'}.pdf`;
-        const pdfResult = await alternativeUploadService.uploadPDFWithRetry(pdfFileName, pdfBuffer, folderId);
-        console.log("PDF upload result:", pdfResult);
+        const pdfFileName = `${contratacao.id}_${contratacao.razaoSocial || 'Empresa'}_Contratacao_${contratacao.nomeFuncionario || 'Funcionario'}.pdf`;
+        console.log(`Uploading PDF: ${pdfFileName} to shared folder: ${SHARED_FOLDER_ID}`);
+        
+        const pdfResult = await googleDriveService.uploadPDF(pdfFileName, pdfBuffer, SHARED_FOLDER_ID);
+        console.log("✓ PDF uploaded successfully");
       } catch (error) {
         console.error("Error uploading PDF to Google Drive:", error);
         console.log("PDF generated successfully (upload failed)");
