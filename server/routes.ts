@@ -943,15 +943,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const files = req.files as Express.Multer.File[];
       if (files && files.length > 0) {
         console.log(`Uploading ${files.length} files to Google Drive...`);
-        try {
-          for (const file of files) {
+        let uploadedFiles = 0;
+        for (const file of files) {
+          try {
             const fileName = `${contratacao.nomeFuncionario || 'Funcionário'}_${file.originalname}`;
-            await googleDriveService.uploadFile(fileName, file.buffer, folderId);
-            console.log(`Uploaded file: ${fileName}`);
+            const result = await googleDriveService.uploadFile(fileName, file.buffer, file.mimetype, folderId);
+            if (!result.includes('quota/permission issue')) {
+              uploadedFiles++;
+              console.log(`✓ Uploaded file: ${fileName}`);
+            } else {
+              console.log(`⚠️  File upload skipped due to quota: ${fileName}`);
+            }
+          } catch (error) {
+            console.error(`Error uploading file ${file.originalname}:`, error);
           }
-        } catch (error) {
-          console.error("Error uploading files to Google Drive:", error);
         }
+        console.log(`File upload summary: ${uploadedFiles}/${files.length} files uploaded successfully`);
       }
       
       // Generate PDF
@@ -961,8 +968,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Upload PDF to Google Drive
       try {
         const pdfFileName = `${contratacao.razaoSocial || 'Empresa'}_Contratacao_${contratacao.nomeFuncionario || 'Funcionário'}.pdf`;
-        await googleDriveService.uploadPDF(pdfFileName, pdfBuffer, folderId);
-        console.log("PDF generated and uploaded successfully");
+        const pdfResult = await googleDriveService.uploadPDF(pdfFileName, pdfBuffer, folderId);
+        if (!pdfResult.includes('quota/permission issue')) {
+          console.log("✓ PDF generated and uploaded successfully");
+        } else {
+          console.log("⚠️  PDF generated but upload skipped due to quota limitations");
+        }
       } catch (error) {
         console.error("Error uploading PDF to Google Drive:", error);
         console.log("PDF generated successfully (upload failed)");

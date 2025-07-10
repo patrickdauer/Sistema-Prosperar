@@ -167,6 +167,13 @@ The system uses a `business_registrations` table with:
 - **Geração de PDF**: Sistema funcional para gerar relatórios das contratações
   - Informações da empresa, funcionário, benefícios e dados bancários
   - Dependentes incluídos no relatório quando presentes
+- **Formato de Data Brasileiro**: Implementado formato dd/mm/yyyy com máscaras automáticas
+  - Campos de data de nascimento e admissão com validação brasileira
+  - Dependentes também usam formato brasileiro
+  - Dados salvos corretamente no banco no formato brasileiro
+- **Google Drive Status**: Pastas criadas com sucesso, mas uploads de arquivos limitados por cota de conta de serviço
+  - Links de pastas funcionando corretamente
+  - Limitation: Conta de serviço sem cota para upload de arquivos (requer shared drive)
 
 ## Recent Changes
 

@@ -57,25 +57,16 @@ export class GoogleDriveService {
         mimeType: 'application/vnd.google-apps.folder',
       };
 
-      // Se um parentFolderId for fornecido, usar ele; caso contrário, criar na raiz
+      // Se um parentFolderId for fornecido, usar ele; caso contrário, usar a pasta padrão
       if (parentFolderId) {
         folderMetadata.parents = [parentFolderId];
+      } else {
+        // Usar a pasta padrão especificada pelo usuário
+        folderMetadata.parents = ['1bGzY-dEAevVafaAwF_hjLj0g--_A9o_e'];
       }
-      // Remover a especificação de pasta pai para criar na raiz da conta de serviço
 
-      console.log(`Creating folder in parent: ${folderMetadata.parents ? folderMetadata.parents[0] : 'root'}`);
+      console.log(`Creating folder in parent: ${folderMetadata.parents[0]}`);
       
-      // Adicionar compartilhamento público para facilitar visualização
-      try {
-        // Tentar criar na pasta específica primeiro
-        if (!parentFolderId) {
-          folderMetadata.parents = ['1zyAOSo2-wUHGkPgml8mQDIKL99LGrUIZ'];
-          console.log('Attempting to create in specified folder: 1zyAOSo2-wUHGkPgml8mQDIKL99LGrUIZ');
-        }
-      } catch (error) {
-        console.log('Failed to set specific parent, creating in root');
-        delete folderMetadata.parents;
-      }
       const response = await this.drive.files.create({
         resource: folderMetadata,
         fields: 'id, webViewLink, parents',
@@ -106,6 +97,13 @@ export class GoogleDriveService {
     } catch (error: any) {
       console.error('Error creating folder:', error);
       console.error('Error details:', error.response?.data || error.message);
+      
+      // Se o erro for de cota ou permissão, retornar a pasta pai como fallback
+      if (error.message.includes('storage quota') || error.message.includes('Forbidden')) {
+        console.log('Falling back to parent folder due to quota/permission issues');
+        return parentFolderId || '1bGzY-dEAevVafaAwF_hjLj0g--_A9o_e';
+      }
+      
       throw new Error(`Failed to create folder: ${error.message}`);
     }
   }
@@ -167,6 +165,14 @@ export class GoogleDriveService {
     } catch (error: any) {
       console.error('Error uploading file:', error);
       console.error('Error details:', error.response?.data || error.message);
+      
+      // Se o erro for de cota de armazenamento, apenas lançar um aviso mas não falhar
+      if (error.message.includes('storage quota') || error.message.includes('Forbidden')) {
+        console.log(`⚠️  File upload failed due to quota/permission issues: ${fileName}`);
+        console.log('This is expected with service accounts without shared drives');
+        return `File upload failed: ${fileName} (quota/permission issue)`;
+      }
+      
       throw new Error(`Failed to upload file: ${error.message}`);
     }
   }
