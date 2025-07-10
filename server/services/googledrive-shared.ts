@@ -59,9 +59,14 @@ export class GoogleDriveSharedService {
         console.log(`Target: Shared Drive root (${this.SHARED_DRIVE_ID})`);
       }
 
+      const { Readable } = require('stream');
+      const stream = new Readable();
+      stream.push(buffer);
+      stream.push(null);
+      
       const media = {
         mimeType: mimeType,
-        body: buffer,
+        body: stream,
       };
 
       const response = await this.drive.files.create({
@@ -69,7 +74,6 @@ export class GoogleDriveSharedService {
         media: media,
         fields: 'id,parents',
         supportsAllDrives: true,
-        enforceUserOwnership: false,
       });
 
       console.log(`✅ SUCCESS! File uploaded: ${fileName}`);
@@ -88,27 +92,67 @@ export class GoogleDriveSharedService {
     return this.uploadFile(fileName, buffer, 'application/pdf', useSharedFolder);
   }
 
-  async createFolderInSharedDrive(folderName: string): Promise<string> {
+  async createFolderInSharedDrive(folderName: string, parentId?: string): Promise<string> {
     try {
       console.log(`Creating folder in Shared Drive: ${folderName}`);
       
       const fileMetadata = {
         name: folderName,
         mimeType: 'application/vnd.google-apps.folder',
-        parents: [this.SHARED_DRIVE_ID],
+        parents: [parentId || this.SHARED_DRIVE_ID],
       };
 
       const response = await this.drive.files.create({
         resource: fileMetadata,
         fields: 'id',
         supportsAllDrives: true,
-        enforceUserOwnership: false,
       });
 
       console.log(`✅ Folder created in Shared Drive: ${folderName} (ID: ${response.data.id})`);
       return response.data.id;
     } catch (error) {
       console.error(`❌ Folder creation failed: ${folderName}`);
+      console.error('Error details:', error);
+      throw error;
+    }
+  }
+
+  async uploadFileToFolder(fileName: string, buffer: Buffer, mimeType: string, folderId: string): Promise<any> {
+    try {
+      console.log(`Uploading file: ${fileName} to folder: ${folderId}`);
+      
+      const fileMetadata = {
+        name: fileName,
+        parents: [folderId],
+      };
+
+      // Create temporary file and use MediaFileUpload  
+      const tempFilePath = path.join(__dirname, `temp_${Date.now()}_${fileName}`);
+      fs.writeFileSync(tempFilePath, buffer);
+      
+      const media = {
+        mimeType: mimeType,
+        uploadType: 'media',
+        body: fs.createReadStream(tempFilePath)
+      };
+
+      const response = await this.drive.files.create({
+        resource: fileMetadata,
+        media: media,
+        fields: 'id,parents',
+        supportsAllDrives: true,
+      });
+
+      // Clean up temp file
+      fs.unlinkSync(tempFilePath);
+
+      console.log(`✅ File uploaded to folder: ${fileName}`);
+      console.log(`File ID: ${response.data.id}`);
+      console.log(`Parents: ${response.data.parents}`);
+      
+      return response.data;
+    } catch (error) {
+      console.error(`❌ Upload failed to folder: ${fileName}`);
       console.error('Error details:', error);
       throw error;
     }

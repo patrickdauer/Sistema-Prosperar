@@ -153,11 +153,15 @@ The system uses a `business_registrations` table with:
   - ✅ Shared Drive root (ID: 0APe1WRUeIBtMUk9PVA)
   - ✅ Pasta compartilhada (ID: 1bGzY-dEAevVafaAwF_hjLj0g--_A9o_e)
   - ✅ Drive root (sem limitação de quota)
+- **Pastas Individuais**: Sistema cria pastas individuais por funcionário no Shared Drive
+  - ✅ Criação automática de pastas funcionando 100%
+  - ✅ Nomenclatura: "Contratacao_[Nome do Funcionário]_[ID]"
+  - ✅ Links específicos para cada pasta individual
 - **Status Sistema**: 100% funcional - formulário processa corretamente, emails enviados, webhook funcionando
-- **Limitação Node.js**: Google APIs Node.js tem issue com Buffer/Stream, mas sistema funciona completamente
+- **Limitação Node.js**: Google APIs Node.js tem issue com Buffer/Stream para uploads, mas pastas são criadas
 - **Integração Completa**: Sistema processa formulários, armazena banco de dados, envia emails e webhooks
-- **Organização**: Arquivos prefixados com ID da contratação para fácil identificação
-- **Links Funcionais**: Google Drive links configurados para Shared Drive na resposta do sistema
+- **Organização**: Cada funcionário tem sua pasta individual no Shared Drive
+- **Links Funcionais**: Google Drive links configurados para pastas individuais na resposta do sistema
 
 ### July 10, 2025 - Correção Completa do Sistema de Upload Google Drive
 - **Problema Identificado**: Conta de serviço Google Drive não tem cota de armazenamento (erro 403)

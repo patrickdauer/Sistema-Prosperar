@@ -920,39 +920,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const contratacao = await storage.createContratacaoFuncionario(insertData);
       console.log("Contratacao record created with ID:", contratacao.id);
       
-      // Use Shared Drive for file uploads
-      console.log("Configuring Google Drive links...");
-      const sharedDriveLink = googleDriveSharedService.getSharedDriveLink();
-      const sharedFolderLink = googleDriveSharedService.getSharedFolderLink();
+      // Create individual folder for employee in Shared Drive
+      console.log("Creating individual folder for employee in Shared Drive...");
+      const folderName = `${contratacao.id}_${contratacao.nomeFuncionario || 'Funcionario'}_${contratacao.razaoSocial || 'Empresa'}`;
+      let employeeFolderId: string;
+      let employeeFolderLink: string;
       
-      console.log(`Shared Drive link: ${sharedDriveLink}`);
-      console.log(`Shared Folder link: ${sharedFolderLink}`);
+      try {
+        employeeFolderId = await googleDriveSharedService.createFolderInSharedDrive(folderName);
+        employeeFolderLink = `https://drive.google.com/drive/folders/${employeeFolderId}`;
+        console.log(`✅ Employee folder created: ${folderName} (ID: ${employeeFolderId})`);
+        
+        // Update contratacao with employee folder link
+        await storage.updateContratacaoFuncionario(contratacao.id, { googleDriveLink: employeeFolderLink });
+      } catch (error) {
+        console.error("❌ Error creating employee folder:", error);
+        // Fallback to Shared Drive root
+        const sharedDriveLink = googleDriveSharedService.getSharedDriveLink();
+        await storage.updateContratacaoFuncionario(contratacao.id, { googleDriveLink: sharedDriveLink });
+        employeeFolderId = googleDriveSharedService.getSharedDriveId();
+        employeeFolderLink = sharedDriveLink;
+      }
       
-      // Update contratacao with Google Drive link (using Shared Drive)
-      await storage.updateContratacaoFuncionario(contratacao.id, { googleDriveLink: sharedDriveLink });
-      
-      // Handle file uploads to Google Drive - directly to shared folder
+      // Handle file uploads to Google Drive - upload to employee folder
       const files = req.files as Express.Multer.File[];
       if (files && files.length > 0) {
-        console.log(`Processing ${files.length} files for upload to shared folder...`);
+        console.log(`Processing ${files.length} files for upload to employee folder: ${folderName}`);
+        
         try {
-          // Create file prefix with ID and employee name for organization
-          const prefix = `${contratacao.id}_${contratacao.nomeFuncionario || 'Funcionario'}`;
-          
           for (const file of files) {
-            const fileName = `${prefix}_${file.originalname}`;
-            console.log(`Uploading file: ${fileName}`);
+            const fileName = `${file.originalname}`;
+            console.log(`Uploading file: ${fileName} to employee folder`);
             
             try {
-              // Try with Shared Drive (root)
-              const result = await googleDriveNewService.uploadFile(fileName, file.buffer, file.mimetype, googleDriveSharedService.getSharedDriveId());
-              console.log(`✅ File uploaded successfully to Shared Drive: ${fileName}`);
+              // Try uploading to employee folder
+              const result = await googleDriveSharedService.uploadFileToFolder(fileName, file.buffer, file.mimetype, employeeFolderId);
+              console.log(`✅ File uploaded to employee folder: ${fileName}`);
             } catch (error) {
-              console.error(`❌ Upload failed to Shared Drive: ${fileName}`, error);
-              // Try fallback to shared folder
+              console.error(`❌ Upload failed to employee folder: ${fileName}`, error);
+              // Try fallback to Shared Drive root with prefix
               try {
-                const result = await googleDriveNewService.uploadFile(fileName, file.buffer, file.mimetype, '1bGzY-dEAevVafaAwF_hjLj0g--_A9o_e');
-                console.log(`✅ File uploaded to shared folder: ${fileName}`);
+                const prefixedFileName = `${contratacao.id}_${contratacao.nomeFuncionario || 'Funcionario'}_${fileName}`;
+                const result = await googleDriveNewService.uploadFile(prefixedFileName, file.buffer, file.mimetype, googleDriveSharedService.getSharedDriveId());
+                console.log(`✅ File uploaded to Shared Drive root: ${prefixedFileName}`);
               } catch (fallbackError) {
                 console.error(`❌ All uploads failed: ${fileName}`, fallbackError);
               }
@@ -967,21 +977,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Generating PDF...");
       const pdfBuffer = await generateContratacaoPDF(contratacao);
       
-      // Upload PDF to Google Drive
+      // Upload PDF to Google Drive - upload to employee folder
       try {
-        const pdfFileName = `${contratacao.id}_${contratacao.razaoSocial || 'Empresa'}_Contratacao_${contratacao.nomeFuncionario || 'Funcionario'}.pdf`;
-        console.log(`Uploading PDF: ${pdfFileName}`);
+        const pdfFileName = `Contratacao_${contratacao.nomeFuncionario || 'Funcionario'}.pdf`;
+        console.log(`Uploading PDF: ${pdfFileName} to employee folder`);
         
         try {
-          // Try with Shared Drive (root)
-          const pdfResult = await googleDriveNewService.uploadPDF(pdfFileName, pdfBuffer, googleDriveSharedService.getSharedDriveId());
-          console.log("✅ PDF uploaded successfully to Shared Drive");
+          // Try uploading to employee folder using Python script
+          console.log(`Uploading PDF using Python script to folder: ${employeeFolderId}`);
+          
+          // Save PDF to temporary file
+          const tempPdfPath = `temp_${Date.now()}_${pdfFileName}`;
+          fs.writeFileSync(tempPdfPath, pdfBuffer);
+          
+          // Execute Python script to upload PDF
+          const { spawn } = require('child_process');
+          const pythonProcess = spawn('python', [
+            'upload_pdf_to_folder.py',
+            tempPdfPath,
+            employeeFolderId,
+            pdfFileName
+          ]);
+          
+          let pythonOutput = '';
+          let pythonError = '';
+          
+          pythonProcess.stdout.on('data', (data: Buffer) => {
+            pythonOutput += data.toString();
+          });
+          
+          pythonProcess.stderr.on('data', (data: Buffer) => {
+            pythonError += data.toString();
+          });
+          
+          const pythonResult = await new Promise<number>((resolve) => {
+            pythonProcess.on('close', (code) => {
+              resolve(code);
+            });
+          });
+          
+          // Clean up temp file
+          fs.unlinkSync(tempPdfPath);
+          
+          if (pythonResult === 0) {
+            console.log(`✅ PDF uploaded successfully to employee folder using Python!`);
+            console.log(`Python output: ${pythonOutput}`);
+          } else {
+            console.error(`❌ Python PDF upload failed:`, pythonError);
+            throw new Error(`Python upload failed: ${pythonError}`);
+          }
         } catch (error) {
-          console.error("❌ PDF upload failed to Shared Drive:", error);
-          // Try fallback to shared folder
+          console.error("❌ PDF upload failed to employee folder:", error);
+          // Try fallback to Shared Drive root with prefix
           try {
-            const pdfResult = await googleDriveNewService.uploadPDF(pdfFileName, pdfBuffer, '1bGzY-dEAevVafaAwF_hjLj0g--_A9o_e');
-            console.log("✅ PDF uploaded successfully to shared folder");
+            const prefixedPdfFileName = `${contratacao.id}_${contratacao.razaoSocial || 'Empresa'}_Contratacao_${contratacao.nomeFuncionario || 'Funcionario'}.pdf`;
+            const pdfResult = await googleDriveNewService.uploadPDF(prefixedPdfFileName, pdfBuffer, googleDriveSharedService.getSharedDriveId());
+            console.log("✅ PDF uploaded successfully to Shared Drive root");
           } catch (fallbackError) {
             console.error("❌ All PDF uploads failed:", fallbackError);
           }
@@ -994,7 +1045,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send emails
       try {
         console.log("Sending emails...");
-        await sendContratacaoEmails(contratacao, sharedDriveLink);
+        await sendContratacaoEmails(contratacao, employeeFolderLink);
         console.log("Emails sent successfully");
       } catch (error) {
         console.error("Error sending emails:", error);
@@ -1003,7 +1054,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send webhook
       try {
         console.log("Sending webhook...");
-        await webhookService.sendContratacaoData(contratacao, sharedDriveLink);
+        await webhookService.sendContratacaoData(contratacao, employeeFolderLink);
         console.log("Webhook sent successfully");
       } catch (error) {
         console.error("Error sending webhook:", error);
@@ -1012,7 +1063,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ 
         message: "Solicitação de contratação enviada com sucesso!", 
         id: contratacao.id,
-        googleDriveLink: sharedDriveLink
+        googleDriveLink: employeeFolderLink
       });
     } catch (error) {
       console.error("Error creating contratacao:", error);
