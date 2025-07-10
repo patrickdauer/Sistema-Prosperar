@@ -815,7 +815,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Contratação de Funcionários route
-  app.post("/api/contratacao-funcionarios", upload.array('documento', 10), async (req, res) => {
+  app.post("/api/contratacao-funcionarios", upload.any(), async (req, res) => {
     try {
       console.log("Processing contratacao funcionarios request...");
       
@@ -891,7 +891,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         cargaHoraria: validatedData.cargaHoraria || '',
         tipoContrato: validatedData.tipoContrato || '',
         dataAdmissao: validatedData.dataAdmissao || '',
-        possuiCarteira: validatedData.possuiCarteira || '',
+        possuiCarteira: '',
         banco: validatedData.banco || '',
         agencia: validatedData.agencia || '',
         conta: validatedData.conta || '',
