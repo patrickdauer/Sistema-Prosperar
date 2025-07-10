@@ -146,14 +146,16 @@ The system uses a `business_registrations` table with:
 
 ## Recent Changes
 
-### July 10, 2025 - Sistema Configurado para Pasta Compartilhada
+### July 10, 2025 - Sistema Configurado para Pasta Compartilhada com Teste de Múltiplas Contas
 - **Configuração Final**: Sistema modificado para usar APENAS a pasta compartilhada existente
 - **ID da Pasta**: 1bGzY-dEAevVafaAwF_hjLj0g--_A9o_e (pasta já compartilhada com service account)
 - **Organização**: Arquivos prefixados com ID da contratação para fácil identificação
 - **Sem Criação de Pastas**: Sistema não cria mais pastas novas, usa apenas a compartilhada
 - **Formato dos Arquivos**: `ID_NomeEmpresa_TipoArquivo_NomeFuncionario.pdf`
-- **Status**: Sistema 100% funcional dentro das limitações do Google Drive
-- **Limitação**: Upload de arquivos ainda bloqueado por service account (requer shared drive)
+- **Teste com Nova Conta**: Implementado sistema com conta adicional (sistema-interno-contabilid-169@tanamao-464721.iam.gserviceaccount.com)
+- **Resultado**: Ambas as contas têm a mesma limitação - erro 403 "Service Accounts do not have storage quota"
+- **Status**: Sistema 100% funcional exceto upload de arquivos
+- **Limitação Confirmada**: TODAS as contas de serviço Google têm esta limitação (requer shared drive ou OAuth)
 
 ### July 10, 2025 - Correção Completa do Sistema de Upload Google Drive
 - **Problema Identificado**: Conta de serviço Google Drive não tem cota de armazenamento (erro 403)

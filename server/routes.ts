@@ -9,6 +9,7 @@ import { z } from "zod";
 import { generateBusinessRegistrationPDF } from "./services/pdf";
 import { sendConfirmationEmail } from "./services/email";
 import { googleDriveService } from "./services/googledrive";
+import { googleDriveNewService } from "./services/googledrive-new";
 import { sendContratacaoEmails } from "./services/contratacao-email";
 import { webhookService } from "./services/webhook";
 import { generateContratacaoPDF } from "./services/contratacao-pdf";
@@ -941,10 +942,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log(`Uploading file: ${fileName} to shared folder: ${SHARED_FOLDER_ID}`);
             
             try {
-              const result = await googleDriveService.uploadFile(fileName, file.buffer, file.mimetype, SHARED_FOLDER_ID);
-              console.log(`✓ File uploaded: ${fileName}`);
+              // First try with NEW service account
+              const result = await googleDriveNewService.uploadFile(fileName, file.buffer, file.mimetype, SHARED_FOLDER_ID);
+              console.log(`✓ File uploaded with NEW account: ${fileName}`);
             } catch (error) {
-              console.error(`Error uploading file ${fileName}:`, error);
+              console.error(`Error uploading file ${fileName} with NEW account:`, error);
+              // Fallback to original service account
+              try {
+                const result = await googleDriveService.uploadFile(fileName, file.buffer, file.mimetype, SHARED_FOLDER_ID);
+                console.log(`✓ File uploaded with OLD account: ${fileName}`);
+              } catch (fallbackError) {
+                console.error(`Error uploading file ${fileName} with OLD account:`, fallbackError);
+              }
             }
           }
         } catch (error) {
@@ -961,8 +970,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const pdfFileName = `${contratacao.id}_${contratacao.razaoSocial || 'Empresa'}_Contratacao_${contratacao.nomeFuncionario || 'Funcionario'}.pdf`;
         console.log(`Uploading PDF: ${pdfFileName} to shared folder: ${SHARED_FOLDER_ID}`);
         
-        const pdfResult = await googleDriveService.uploadPDF(pdfFileName, pdfBuffer, SHARED_FOLDER_ID);
-        console.log("✓ PDF uploaded successfully");
+        try {
+          // First try with NEW service account
+          const pdfResult = await googleDriveNewService.uploadPDF(pdfFileName, pdfBuffer, SHARED_FOLDER_ID);
+          console.log("✓ PDF uploaded successfully with NEW account");
+        } catch (error) {
+          console.error("Error uploading PDF with NEW account:", error);
+          // Fallback to original service account
+          const pdfResult = await googleDriveService.uploadPDF(pdfFileName, pdfBuffer, SHARED_FOLDER_ID);
+          console.log("✓ PDF uploaded successfully with OLD account");
+        }
       } catch (error) {
         console.error("Error uploading PDF to Google Drive:", error);
         console.log("PDF generated successfully (upload failed)");

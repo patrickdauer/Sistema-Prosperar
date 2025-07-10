@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "tanamao-464721",
+  "private_key_id": "fabfbca1450ecd180552c1e558da0299f146c802",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCwI6wdHsDFau2z\nppbsuOkP1oyUL/xyQOCiNdlCfj6ltC7F2+Ct7fCnwAbJAhUR84jY8/yrdcs1OX2v\nXW7r/7gpnQU162EaZGqcjpNHm3Wact7azBC885TrpqOY14r89Axmfn2NZ6Kd+yyH\nDhBec7ZmaT26k8nEwm2h+7ZlgWMEJXzJyY/c7s/DcdP45Xu3CchMb9TudjCcJdk8\n+k0/p2n7QGvHbM2cl5AVqXv2jXK2nU3IVal5c78tlV5nbofkKbYsI/mLZzHsPNk8\nmF7doxDx62NUNqp2nxPLeDJbl767TVl2bjN1SzlCsrpHJrKMrvAKE9nDGJ/sImiD\nIz7HkS55AgMBAAECggEAA7RPr+Hte1wSdp6PKm3AnrVGygKLgv0fjvXGNWZpi6Ct\n7PoWSsjNZf/Ckhq7EKBgLUeOAFlMY44LbpiEJyPe2Vwx/PvFFDyj+9nT7zPN0z3Y\nIelHBFb0l7NOrz3AO0M9hAXOvukHg95MO0+7HdC97NUzh8TI1RHNjl8DIOB0hu9N\nyOtLdfPmaMEIlEicWg0gIT2lG4lNVn1vaC1F7dSZQyc8EclbGMskccBGGTlIvL01\nTUyCoLXeqE3ySxvbOwHyPvWIkWJHShM9A7SKV8h+Lf8UQ+K+KLJwyLukdC3x59CL\ng9iSacXaFKr0KtR/KjbseiVaWRIGFKL1LZ8zm8ZuoQKBgQDf6FtG6xEVENPNS6Zc\nFu4ETU9oI+MwQwRLc/cZSIbZ/h+mE6/o5pFBdpDOuccEmo33kKGsjVz01WL+fSd4\n7+sPoxwJGsfBenGnds98SNwo3Jjd1JdjxGi4xxBGvWoZw3Njp7h/Wsva43BS0fZh\nK5Q2xHJLcAhN87jmHiXwBOXqYQKBgQDJYpih0gu5kfYeo8z0hRCQhJ7izyBHISKA\nbhV8dgLxgByq+6PHVD5m6TIqhnr7S+e0ijCVtkOvms2OLTk2TydJIoGheHXFXnrK\n0qELEtxxidzwoQPCaIShvEDBzlGJrbKB17Ouk2DxU0Pjw4oTiTj+hgc/iiqY4G/r\ntUn5bR8rGQKBgQCuGu9e5coSp1MKf5iMYwgRMExengk6reHZCgNKFatGNuRFL2nJ\nn/+y948CMFMgsU1TA5OzqPhvKL4hRRA8adJOBnb2XWyWda+KmEgeTEllPKNhWr2d\nRkxn4eI2H3MxNVm0U+aSoPeC7Peabsk2JbzKGVcGcccDVlCgHzFAwY5GAQKBgBil\ntZKQl5jFsX68g3gl1QorARs3SHcMKiHX109dTizqhhezJq9dsyl7PwWPYfvhpWEm\nTJ32KcCTTLcq98aa128PBxiRGrDmSFcMgmNNkqdevSjCPCiODDWTScWuj7IvDRrx\nIG+sYAAJNdTpeLu9XrlgBAEV0vLU/T22+W/KmDb5AoGAK7o5kzk+fRFZ+8COWZX2\nnVvcQyfz5fQYxGxNwkWtSUOxqa35YbIHGPAxSgricct8a756cwPNgU8kL/krKsIb\nOqJEQPTGdcD9dAmrvnOPC5L0ImRHoHe1CEUuNcJs6QFEcLdHUnGOGTDs4a4bTRLy\nSkxuACzRfbuLVyrin8s6uwA=\n-----END PRIVATE KEY-----\n",
+  "client_email": "sistema-interno-contabilid-169@tanamao-464721.iam.gserviceaccount.com",
+  "client_id": "104651677505413293977",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/sistema-interno-contabilid-169%40tanamao-464721.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
