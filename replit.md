@@ -149,7 +149,7 @@ The system uses a `business_registrations` table with:
 ### July 10, 2025 - Sistema Configurado com Shared Drive - SOLUÇÃO FINAL FUNCIONAL
 - **Configuração Final**: Sistema configurado para usar Shared Drive (ID: 0APe1WRUeIBtMUk9PVA)
 - **Nova Conta de Serviço**: Implementada conta tanamao-464721 com sistema-interno-contabilid-169@tanamao-464721.iam.gserviceaccount.com
-- **Teste Python Confirmado**: Upload 100% funcional em todas as modalidades:
+- **Teste Python Confirmado**: Upload 100% funcional usando scripts Python individuais:
   - ✅ Shared Drive root (ID: 0APe1WRUeIBtMUk9PVA)
   - ✅ Pasta compartilhada (ID: 1bGzY-dEAevVafaAwF_hjLj0g--_A9o_e)
   - ✅ Drive root (sem limitação de quota)
@@ -157,11 +157,12 @@ The system uses a `business_registrations` table with:
   - ✅ Criação automática de pastas funcionando 100%
   - ✅ Nomenclatura: "Contratacao_[Nome do Funcionário]_[ID]"
   - ✅ Links específicos para cada pasta individual
-- **Status Sistema**: 100% funcional - formulário processa corretamente, emails enviados, webhook funcionando
-- **Limitação Node.js**: Google APIs Node.js tem issue com Buffer/Stream para uploads, mas pastas são criadas
+- **Status Sistema**: 95% funcional - formulário processa corretamente, emails enviados, webhook funcionando
+- **Limitação Node.js**: Google APIs Node.js tem issue com Buffer/Stream para uploads (erro: part.body.pipe is not a function)
 - **Integração Completa**: Sistema processa formulários, armazena banco de dados, envia emails e webhooks
 - **Organização**: Cada funcionário tem sua pasta individual no Shared Drive
 - **Links Funcionais**: Google Drive links configurados para pastas individuais na resposta do sistema
+- **Arquivos**: Documentos anexados são enviados via email como attachments para os endereços especificados
 
 ### July 10, 2025 - Correção Completa do Sistema de Upload Google Drive
 - **Problema Identificado**: Conta de serviço Google Drive não tem cota de armazenamento (erro 403)

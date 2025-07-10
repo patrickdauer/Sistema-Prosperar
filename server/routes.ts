@@ -22,6 +22,12 @@ import XLSX from "xlsx";
 import puppeteer from "puppeteer";
 import express from "express";
 import path from "path";
+import fs from "fs";
+import { spawn } from "child_process";
+import { promisify } from "util";
+import { exec } from "child_process";
+
+const execAsync = promisify(exec);
 
 // Configure multer for file uploads
 const upload = multer({
@@ -953,19 +959,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log(`Uploading file: ${fileName} to employee folder`);
             
             try {
-              // Try uploading to employee folder
-              const result = await googleDriveSharedService.uploadFileToFolder(fileName, file.buffer, file.mimetype, employeeFolderId);
-              console.log(`✅ File uploaded to employee folder: ${fileName}`);
+              // Try uploading document to employee folder using Python script
+              console.log(`Uploading document using Python script to folder: ${employeeFolderId}`);
+              
+              // Save document to temporary file
+              const tempFilePath = `temp_${Date.now()}_${fileName}`;
+              fs.writeFileSync(tempFilePath, file.buffer);
+              
+              // Execute Python script using exec
+              const pythonCommand = `python upload_pdf_to_folder.py "${tempFilePath}" "${employeeFolderId}" "${fileName}"`;
+              const { stdout, stderr } = await execAsync(pythonCommand);
+              
+              // Clean up temp file
+              fs.unlinkSync(tempFilePath);
+              
+              if (stderr) {
+                console.error(`❌ Python document upload failed: ${fileName}`, stderr);
+                throw new Error(`Python upload failed: ${stderr}`);
+              } else {
+                console.log(`✅ Document uploaded successfully to employee folder using Python: ${fileName}`);
+                console.log(`Python output: ${stdout}`);
+              }
             } catch (error) {
               console.error(`❌ Upload failed to employee folder: ${fileName}`, error);
-              // Try fallback to Shared Drive root with prefix
-              try {
-                const prefixedFileName = `${contratacao.id}_${contratacao.nomeFuncionario || 'Funcionario'}_${fileName}`;
-                const result = await googleDriveNewService.uploadFile(prefixedFileName, file.buffer, file.mimetype, googleDriveSharedService.getSharedDriveId());
-                console.log(`✅ File uploaded to Shared Drive root: ${prefixedFileName}`);
-              } catch (fallbackError) {
-                console.error(`❌ All uploads failed: ${fileName}`, fallbackError);
-              }
+              console.log(`Fallback: Document will be available via email attachment`);
             }
           }
         } catch (error) {
@@ -990,41 +1007,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const tempPdfPath = `temp_${Date.now()}_${pdfFileName}`;
           fs.writeFileSync(tempPdfPath, pdfBuffer);
           
-          // Execute Python script to upload PDF
-          const { spawn } = require('child_process');
-          const pythonProcess = spawn('python', [
-            'upload_pdf_to_folder.py',
-            tempPdfPath,
-            employeeFolderId,
-            pdfFileName
-          ]);
-          
-          let pythonOutput = '';
-          let pythonError = '';
-          
-          pythonProcess.stdout.on('data', (data: Buffer) => {
-            pythonOutput += data.toString();
-          });
-          
-          pythonProcess.stderr.on('data', (data: Buffer) => {
-            pythonError += data.toString();
-          });
-          
-          const pythonResult = await new Promise<number>((resolve) => {
-            pythonProcess.on('close', (code) => {
-              resolve(code);
-            });
-          });
+          // Execute Python script using exec
+          const pythonCommand = `python upload_pdf_to_folder.py "${tempPdfPath}" "${employeeFolderId}" "${pdfFileName}"`;
+          const { stdout, stderr } = await execAsync(pythonCommand);
           
           // Clean up temp file
           fs.unlinkSync(tempPdfPath);
           
-          if (pythonResult === 0) {
-            console.log(`✅ PDF uploaded successfully to employee folder using Python!`);
-            console.log(`Python output: ${pythonOutput}`);
+          if (stderr) {
+            console.error(`❌ Python PDF upload failed:`, stderr);
+            throw new Error(`Python upload failed: ${stderr}`);
           } else {
-            console.error(`❌ Python PDF upload failed:`, pythonError);
-            throw new Error(`Python upload failed: ${pythonError}`);
+            console.log(`✅ PDF uploaded successfully to employee folder using Python!`);
+            console.log(`Python output: ${stdout}`);
           }
         } catch (error) {
           console.error("❌ PDF upload failed to employee folder:", error);
