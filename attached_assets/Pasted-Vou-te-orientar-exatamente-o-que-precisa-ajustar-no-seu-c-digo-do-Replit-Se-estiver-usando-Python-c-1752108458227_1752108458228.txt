@@ -1,0 +1,87 @@
+Vou te orientar exatamente o que precisa ajustar no seu código do Replit.
+Se estiver usando Python com a Google Drive API (com PyDrive ou Google API Client), ou Node.js, o princípio é o mesmo!
+
+Como corrigir:
+1. Pegue o ID da pasta criada
+No momento que você cria a pasta, a API retorna o ID dela (normalmente em folder['id'] ou parecido).
+
+python
+Copiar
+Editar
+# Exemplo ao criar a pasta:
+folder_metadata = {
+    'name': 'NomeDaPasta',
+    'mimeType': 'application/vnd.google-apps.folder',
+    'parents': ['ID_DA_PASTA_MAE']  # se quiser criar em uma pasta específica
+}
+folder = drive_service.files().create(body=folder_metadata, fields='id').execute()
+folder_id = folder.get('id')
+2. Na hora de subir o arquivo, passe o ID da pasta em parents
+Ao fazer o upload do arquivo para o Drive, inclua o ID da pasta criada:
+
+Exemplo com Google API Client:
+python
+Copiar
+Editar
+file_metadata = {
+    'name': arquivo.filename,  # ou o nome desejado do arquivo
+    'parents': [folder_id]     # ESSA LINHA É O QUE COLOCA O ARQUIVO NA PASTA CERTA!
+}
+media = MediaFileUpload(arquivo_path, resumable=True)
+uploaded_file = drive_service.files().create(
+    body=file_metadata,
+    media_body=media,
+    fields='id'
+).execute()
+Exemplo com PyDrive:
+python
+Copiar
+Editar
+gfile = drive.CreateFile({'title': arquivo.filename, 'parents': [{'id': folder_id}]})
+gfile.SetContentFile(local_path_arquivo)
+gfile.Upload()
+Erros comuns:
+Não passar o parâmetro parents no upload do arquivo → arquivo vai para o "Meu Drive", não para a pasta.
+
+Usar o ID da pasta errada (ou esquecer de pegar o ID da pasta criada).
+
+Não salvar temporariamente o arquivo antes de enviar (dependendo da biblioteca).
+
+Resumo do ajuste:
+Crie a pasta e pegue o folder_id.
+
+Faça o upload do arquivo usando esse folder_id em parents.
+
+Se precisar de um exemplo pronto (Python):
+python
+Copiar
+Editar
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
+
+# 1. Cria a pasta
+folder_metadata = {
+    'name': 'NomeDaPasta',
+    'mimeType': 'application/vnd.google-apps.folder'
+}
+folder = drive_service.files().create(body=folder_metadata, fields='id').execute()
+folder_id = folder.get('id')
+
+# 2. Faz upload do arquivo para dentro da pasta
+file_metadata = {
+    'name': 'nome_do_arquivo.pdf',  # nome do arquivo
+    'parents': [folder_id]          # ID da pasta criada
+}
+media = MediaFileUpload('caminho/local/do/arquivo.pdf', resumable=True)
+file = drive_service.files().create(
+    body=file_metadata,
+    media_body=media,
+    fields='id'
+).execute()
+Fontes oficiais:
+Google Drive API – Upload de arquivos
+
+Google Drive API – Criar pastas
+
+Se quiser, cole aqui o trecho do seu código que faz o upload, que eu te mostro exatamente onde alterar e te devolvo ajustado.
+Assim fica garantido que o arquivo irá para dentro da pasta criada, e não solto no Drive!

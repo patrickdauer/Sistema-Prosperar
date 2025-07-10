@@ -145,9 +145,10 @@ export class GoogleDriveService {
       console.log(`Uploading file "${fileName}" to folder: ${folderId}`);
       console.log(`File size: ${fileBuffer.length} bytes, MIME type: ${mimeType}`);
       
+      // Configurar metadados do arquivo EXATAMENTE como na documentação
       const fileMetadata = {
         name: fileName,
-        parents: [folderId],
+        parents: [folderId]  // ID da pasta criada - FUNDAMENTAL!
       };
 
       const media = {
@@ -155,24 +156,27 @@ export class GoogleDriveService {
         body: Readable.from(fileBuffer),
       };
 
-      // Tentar upload com suporte a shared drives
+      console.log(`File metadata:`, fileMetadata);
+
+      // Upload do arquivo para dentro da pasta
       const response = await this.drive.files.create({
         resource: fileMetadata,
         media: media,
-        fields: 'id',
+        fields: 'id,parents',
         supportsAllDrives: true,
       });
 
       const fileUrl = `https://drive.google.com/file/d/${response.data.id}/view`;
-      console.log(`File uploaded successfully: ${fileUrl}`);
+      console.log(`✓ File uploaded successfully: ${fileUrl}`);
+      console.log(`✓ File is now in folder:`, response.data.parents);
       return fileUrl;
     } catch (error: any) {
       console.error('Error uploading file:', error);
       console.error('Error details:', error.response?.data || error.message);
       
-      // Se o erro for de cota de armazenamento, tentar uma abordagem alternativa
-      if (error.message.includes('storage quota') || error.message.includes('Forbidden')) {
-        console.log(`⚠️  Standard upload failed, trying alternative approach for: ${fileName}`);
+      // Se o erro for de cota de armazenamento, tentar upload direto
+      if (error.response?.status === 403 && error.response?.data?.error?.message?.includes('storage quota')) {
+        console.log(`⚠️  Service account quota issue, trying direct upload for: ${fileName}`);
         return await this.uploadFileToSharedDrive(fileName, fileBuffer, mimeType, folderId);
       }
       
@@ -187,18 +191,21 @@ export class GoogleDriveService {
     folderId: string
   ): Promise<string> {
     try {
-      console.log(`Attempting shared drive upload for: ${fileName}`);
+      console.log(`Attempting direct upload for: ${fileName} to folder: ${folderId}`);
       
-      // Primeiro, verificar se a pasta está em um shared drive
+      // Verificar se a pasta existe e obter informações
       const folderInfo = await this.drive.files.get({
         fileId: folderId,
-        fields: 'parents,driveId',
+        fields: 'id,name,parents,driveId',
         supportsAllDrives: true,
       });
 
+      console.log(`Target folder info:`, folderInfo.data);
+
+      // Configurar metadados do arquivo EXATAMENTE como sugerido
       const fileMetadata = {
         name: fileName,
-        parents: [folderId],
+        parents: [folderId]  // ESSA LINHA É O QUE COLOCA O ARQUIVO NA PASTA CERTA!
       };
 
       const media = {
@@ -206,23 +213,26 @@ export class GoogleDriveService {
         body: Readable.from(fileBuffer),
       };
 
-      // Tentar upload com configurações específicas para shared drives
+      console.log(`Uploading file with metadata:`, fileMetadata);
+
+      // Upload do arquivo para dentro da pasta
       const response = await this.drive.files.create({
         resource: fileMetadata,
         media: media,
-        fields: 'id',
+        fields: 'id,parents',
         supportsAllDrives: true,
         enforceUserOwnership: false,
       });
 
       const fileUrl = `https://drive.google.com/file/d/${response.data.id}/view`;
-      console.log(`✓ File uploaded to shared drive: ${fileUrl}`);
+      console.log(`✓ File uploaded successfully: ${fileUrl}`);
+      console.log(`✓ File parents:`, response.data.parents);
       return fileUrl;
     } catch (error: any) {
-      console.error('Shared drive upload also failed:', error);
+      console.error('Direct upload failed:', error);
       console.log(`⚠️  File upload completely failed: ${fileName}`);
-      console.log('This indicates the service account needs proper shared drive access');
-      return `File upload failed: ${fileName} (requires shared drive access)`;
+      console.log('Error details:', error.response?.data?.error || error.message);
+      return `File upload failed: ${fileName} (${error.response?.data?.error?.message || error.message})`;
     }
   }
 

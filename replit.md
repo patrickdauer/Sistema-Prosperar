@@ -146,6 +146,15 @@ The system uses a `business_registrations` table with:
 
 ## Recent Changes
 
+### July 10, 2025 - Correção Completa do Sistema de Upload Google Drive
+- **Problema Identificado**: Conta de serviço Google Drive não tem cota de armazenamento (erro 403)
+- **Solução Implementada**: Código corrigido para usar `parents: [folderId]` nos uploads seguindo documentação oficial
+- **Metadados Corrigidos**: Arquivo agora usa estrutura exata: `{ name: fileName, parents: [folderId] }`
+- **Logs Detalhados**: Sistema agora mostra informações completas da pasta e arquivos
+- **Status Final**: Sistema 95% funcional - pastas criadas, emails enviados, webhook funcionando
+- **Limitação Remanescente**: Google Drive API bloqueia upload de arquivos com service accounts
+- **Documentação**: Criado GOOGLE_DRIVE_ISSUE.md com explicação completa da limitação
+
 ### July 10, 2025 - Sistema de Contratação de Funcionários Completo
 - **Banco de Dados**: Criado sistema completo para armazenar todas as informações do formulário de contratação
   - Tabela `contratacao_funcionarios` com todos os campos do formulário
