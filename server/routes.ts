@@ -852,6 +852,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Remove dependentes from formData for validation
       delete formData.dependentes;
 
+      // Convert termoCiencia from string to boolean if needed
+      if (formData.termoCiencia === 'true') formData.termoCiencia = true;
+      if (formData.termoCiencia === 'false') formData.termoCiencia = false;
+      if (formData.termoCiencia === 'on') formData.termoCiencia = true; // HTML checkbox often sends 'on'
+      if (!formData.termoCiencia) formData.termoCiencia = false;
+
       // Create custom validation schema - only termoCiencia is required
       const customValidationSchema = z.object({
         termoCiencia: z.boolean().refine(val => val === true, {
