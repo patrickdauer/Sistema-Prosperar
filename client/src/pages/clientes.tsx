@@ -64,7 +64,9 @@ export default function Clientes() {
     dataAberturaInicio: '',
     dataAberturaFim: '',
     clienteDesdeInicio: '',
-    clienteDesdeFim: ''
+    clienteDesdeFim: '',
+    possuiFuncionarios: '',
+    possuiProLabore: ''
   });
 
   // Função para buscar clientes
@@ -101,6 +103,14 @@ export default function Clientes() {
       
       if (filters.clienteDesdeFim) {
         params.append('clienteDesdeFim', filters.clienteDesdeFim);
+      }
+      
+      if (filters.possuiFuncionarios) {
+        params.append('possuiFuncionarios', filters.possuiFuncionarios);
+      }
+      
+      if (filters.possuiProLabore) {
+        params.append('possuiProLabore', filters.possuiProLabore);
       }
       
       const url = `/api/clientes${params.toString() ? `?${params.toString()}` : ''}`;
@@ -428,7 +438,9 @@ export default function Clientes() {
                       dataAberturaInicio: '',
                       dataAberturaFim: '',
                       clienteDesdeInicio: '',
-                      clienteDesdeFim: ''
+                      clienteDesdeFim: '',
+                      possuiFuncionarios: '',
+                      possuiProLabore: ''
                     });
                   }}
                   variant="ghost"
@@ -513,6 +525,40 @@ export default function Clientes() {
                     onChange={(e) => setFilters(prev => ({ ...prev, clienteDesdeFim: e.target.value }))}
                     className="bg-gray-700 border-gray-600 text-white"
                   />
+                </div>
+
+                {/* Filtro por Funcionários */}
+                <div>
+                  <label className="text-sm text-gray-300 mb-1 block">Possui Funcionários</label>
+                  <Select
+                    value={filters.possuiFuncionarios}
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, possuiFuncionarios: value }))}
+                  >
+                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-700 border-gray-600">
+                      <SelectItem value="true">Sim</SelectItem>
+                      <SelectItem value="false">Não</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Filtro por Pró-labore */}
+                <div>
+                  <label className="text-sm text-gray-300 mb-1 block">Possui Pró-labore</label>
+                  <Select
+                    value={filters.possuiProLabore}
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, possuiProLabore: value }))}
+                  >
+                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-700 border-gray-600">
+                      <SelectItem value="true">Sim</SelectItem>
+                      <SelectItem value="false">Não</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </CardContent>

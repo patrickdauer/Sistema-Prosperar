@@ -181,7 +181,13 @@ export const clientes = pgTable("clientes", {
   // Observações específicas
   observacoesGerais: text("observacoes_gerais"),
   observacoesGoogleDrive: text("observacoes_google_drive"),
-  observacoesAtividades: text("observacoes_atividades")
+  observacoesAtividades: text("observacoes_atividades"),
+  
+  // Informações sobre funcionários e pró-labore
+  possuiFuncionarios: boolean("possui_funcionarios").default(false),
+  quantidadeFuncionarios: integer("quantidade_funcionarios"),
+  observacoesFuncionarios: text("observacoes_funcionarios"),
+  possuiProLabore: boolean("possui_pro_labore").default(false)
 });
 
 // Schema de inserção - apenas razão social obrigatória

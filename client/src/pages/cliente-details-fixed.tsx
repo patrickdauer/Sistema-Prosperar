@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Building, MapPin, Phone, Mail, CreditCard, DollarSign, User, Calendar, Plus, Edit, Save, X, Trash2, Settings, Copy } from 'lucide-react';
+import { ArrowLeft, Building, MapPin, Phone, Mail, CreditCard, DollarSign, User, Users, Calendar, Plus, Edit, Save, X, Trash2, Settings, Copy } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
@@ -91,6 +91,12 @@ interface ClienteCompleto {
   email: string | null;
   telefone_comercial: string | null;
   socios: any[];
+  
+  // Funcionários e Pró-labore
+  possui_funcionarios: boolean | null;
+  quantidade_funcionarios: number | null;
+  observacoes_funcionarios: string | null;
+  possui_pro_labore: boolean | null;
   
   // Para suportar campos customizados adicionais
   [key: string]: any;
@@ -699,6 +705,102 @@ export default function ClienteDetailsFix() {
                 <p className="text-white py-2">{cliente.atividades_secundarias || 'N/A'}</p>
               )}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Funcionários e Pró-labore */}
+        <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-white">
+              <Users className="h-5 w-5 text-green-500" />
+              Funcionários e Pró-labore
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            
+            {/* Funcionários */}
+            <div className="border border-gray-600 rounded-lg p-4">
+              <h4 className="text-white font-semibold mb-4">Funcionários</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-gray-300">Possui Funcionários</Label>
+                  {editing ? (
+                    <div className="flex items-center space-x-2 py-2">
+                      <input
+                        type="checkbox"
+                        id="possui_funcionarios"
+                        checked={formData?.possui_funcionarios || false}
+                        onChange={(e) => handleInputChange('possui_funcionarios', e.target.checked)}
+                        className="w-4 h-4 text-green-600 bg-gray-700 border-gray-600 rounded focus:ring-green-500"
+                      />
+                      <Label htmlFor="possui_funcionarios" className="text-gray-200">
+                        Sim
+                      </Label>
+                    </div>
+                  ) : (
+                    <p className="text-white py-2">{cliente.possui_funcionarios ? 'Sim' : 'Não'}</p>
+                  )}
+                </div>
+                
+                {(editing ? formData?.possui_funcionarios : cliente.possui_funcionarios) && (
+                  <>
+                    <div>
+                      <Label className="text-gray-300">Quantidade de Funcionários</Label>
+                      {editing ? (
+                        <Input
+                          type="number"
+                          min="1"
+                          value={formData?.quantidade_funcionarios || ''}
+                          onChange={(e) => handleInputChange('quantidade_funcionarios', e.target.value)}
+                          className="bg-gray-700 border-gray-600 text-white"
+                        />
+                      ) : (
+                        <p className="text-white py-2">{cliente.quantidade_funcionarios || 'N/A'}</p>
+                      )}
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label className="text-gray-300">Observações sobre Funcionários</Label>
+                      {editing ? (
+                        <Textarea
+                          value={formData?.observacoes_funcionarios || ''}
+                          onChange={(e) => handleInputChange('observacoes_funcionarios', e.target.value)}
+                          className="bg-gray-700 border-gray-600 text-white"
+                          placeholder="Observações sobre funcionários, turnover, contratações, etc..."
+                          rows={3}
+                        />
+                      ) : (
+                        <p className="text-white py-2 whitespace-pre-wrap">{cliente.observacoes_funcionarios || 'N/A'}</p>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Pró-labore */}
+            <div className="border border-gray-600 rounded-lg p-4">
+              <h4 className="text-white font-semibold mb-4">Pró-labore</h4>
+              <div>
+                <Label className="text-gray-300">Possui Pró-labore</Label>
+                {editing ? (
+                  <div className="flex items-center space-x-2 py-2">
+                    <input
+                      type="checkbox"
+                      id="possui_pro_labore"
+                      checked={formData?.possui_pro_labore || false}
+                      onChange={(e) => handleInputChange('possui_pro_labore', e.target.checked)}
+                      className="w-4 h-4 text-green-600 bg-gray-700 border-gray-600 rounded focus:ring-green-500"
+                    />
+                    <Label htmlFor="possui_pro_labore" className="text-gray-200">
+                      Sim
+                    </Label>
+                  </div>
+                ) : (
+                  <p className="text-white py-2">{cliente.possui_pro_labore ? 'Sim' : 'Não'}</p>
+                )}
+              </div>
+            </div>
+
           </CardContent>
         </Card>
 

@@ -658,6 +658,16 @@ export class DatabaseStorage implements IStorage {
       whereConditions.push(`cliente_desde IS NOT NULL AND cliente_desde <= '${filters.clienteDesdeFim}'`);
     }
     
+    if (filters?.possuiFuncionarios) {
+      console.log('👥 Possui funcionários:', filters.possuiFuncionarios);
+      whereConditions.push(`possui_funcionarios = ${filters.possuiFuncionarios}`);
+    }
+    
+    if (filters?.possuiProLabore) {
+      console.log('💰 Possui pró-labore:', filters.possuiProLabore);
+      whereConditions.push(`possui_pro_labore = ${filters.possuiProLabore}`);
+    }
+    
     const whereClause = whereConditions.length > 0 
       ? `WHERE ${whereConditions.join(' AND ')}`
       : '';
@@ -665,7 +675,8 @@ export class DatabaseStorage implements IStorage {
     const query = `
       SELECT id, razao_social, nome_fantasia, cnpj, email_empresa, telefone_empresa, 
              contato, celular, status, created_at, cidade, regime_tributario, 
-             data_abertura, cliente_desde
+             data_abertura, cliente_desde, possui_funcionarios, quantidade_funcionarios,
+             observacoes_funcionarios, possui_pro_labore
       FROM clientes 
       ${whereClause}
       ORDER BY created_at DESC

@@ -152,6 +152,12 @@ export default function NovoCliente() {
     // Link Google Drive
     link_google_drive: '',
     
+    // Funcionários e Pró-labore
+    possui_funcionarios: false,
+    quantidade_funcionarios: '',
+    observacoes_funcionarios: '',
+    possui_pro_labore: false,
+    
     // Certificado Digital
     tem_certificado_digital: 'nao',
     data_vencimento_certificado: '',
@@ -1560,6 +1566,78 @@ export default function NovoCliente() {
                 <p className="text-gray-400">Nenhum campo personalizado adicionado ainda.</p>
                 <p className="text-gray-500 text-sm mt-2">Esta seção ficará disponível para campos customizados no futuro.</p>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Funcionários e Pró-labore */}
+          <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+            <CardHeader>
+              <CardTitle className="text-white">Funcionários e Pró-labore</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              
+              {/* Funcionários */}
+              <div className="border border-gray-600 rounded-lg p-4">
+                <h4 className="text-white font-semibold mb-4">Funcionários</h4>
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="possui_funcionarios"
+                      checked={formData.possui_funcionarios}
+                      onChange={(e) => handleInputChange('possui_funcionarios', e.target.checked)}
+                      className="w-4 h-4 text-green-600 bg-gray-700 border-gray-600 rounded focus:ring-green-500"
+                    />
+                    <Label htmlFor="possui_funcionarios" className="text-gray-200">
+                      Possui Funcionários?
+                    </Label>
+                  </div>
+                  
+                  {formData.possui_funcionarios && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                      <div>
+                        <Label className="text-gray-200">Quantidade de Funcionários</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          value={formData.quantidade_funcionarios}
+                          onChange={(e) => handleInputChange('quantidade_funcionarios', e.target.value)}
+                          className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                          placeholder="0"
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <Label className="text-gray-200">Observações sobre Funcionários</Label>
+                        <Textarea
+                          value={formData.observacoes_funcionarios}
+                          onChange={(e) => handleInputChange('observacoes_funcionarios', e.target.value)}
+                          className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                          placeholder="Observações sobre funcionários, turnover, contratações, etc..."
+                          rows={3}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Pró-labore */}
+              <div className="border border-gray-600 rounded-lg p-4">
+                <h4 className="text-white font-semibold mb-4">Pró-labore</h4>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="possui_pro_labore"
+                    checked={formData.possui_pro_labore}
+                    onChange={(e) => handleInputChange('possui_pro_labore', e.target.checked)}
+                    className="w-4 h-4 text-green-600 bg-gray-700 border-gray-600 rounded focus:ring-green-500"
+                  />
+                  <Label htmlFor="possui_pro_labore" className="text-gray-200">
+                    Possui Pró-labore?
+                  </Label>
+                </div>
+              </div>
+
             </CardContent>
           </Card>
 
