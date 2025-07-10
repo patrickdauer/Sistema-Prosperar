@@ -917,29 +917,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const contratacao = await storage.createContratacaoFuncionario(insertData);
       console.log("Contratacao record created with ID:", contratacao.id);
       
-      // Create Google Drive folder (disabled for testing)
-      console.log("Skipping Google Drive operations...");
+      // Create Google Drive folder
+      console.log("Creating Google Drive folder...");
+      const folderName = `${contratacao.razaoSocial || 'Empresa'} - Contratação ${contratacao.nomeFuncionario || 'Funcionário'} - ID ${contratacao.id}`;
+      const parentFolderId = '1bGzY-dEAevVafaAwF_hjLj0g--_A9o_e'; // Folder ID from user requirements
       
-      // Generate folder link
-      const folderLink = `https://drive.google.com/drive/folders/test-folder-id`;
+      let folderId: string;
+      let folderLink: string;
+      
+      try {
+        folderId = await googleDriveService.createFolder(folderName, parentFolderId);
+        folderLink = `https://drive.google.com/drive/folders/${folderId}`;
+        console.log(`Created Google Drive folder: ${folderName} (ID: ${folderId})`);
+      } catch (error) {
+        console.error("Error creating Google Drive folder:", error);
+        // Fallback to parent folder if creation fails
+        folderId = parentFolderId;
+        folderLink = `https://drive.google.com/drive/folders/${parentFolderId}`;
+      }
       
       // Update contratacao with Google Drive link
       await storage.updateContratacaoFuncionario(contratacao.id, { googleDriveLink: folderLink });
       
-      // Handle file uploads to Google Drive (disabled for testing)
+      // Handle file uploads to Google Drive
       const files = req.files as Express.Multer.File[];
       if (files && files.length > 0) {
-        console.log(`Skipping upload of ${files.length} files...`);
+        console.log(`Uploading ${files.length} files to Google Drive...`);
+        try {
+          for (const file of files) {
+            const fileName = `${contratacao.nomeFuncionario || 'Funcionário'}_${file.originalname}`;
+            await googleDriveService.uploadFile(fileName, file.buffer, folderId);
+            console.log(`Uploaded file: ${fileName}`);
+          }
+        } catch (error) {
+          console.error("Error uploading files to Google Drive:", error);
+        }
       }
       
       // Generate PDF
       console.log("Generating PDF...");
       const pdfBuffer = await generateContratacaoPDF(contratacao);
       
-      // Upload PDF to Google Drive (commented out due to permissions issue)
-      // const pdfFileName = `${contratacao.razaoSocial}_Contratacao_${contratacao.nomeFuncionario}.pdf`;
-      // await googleDriveService.uploadPDF(pdfFileName, pdfBuffer, folderId);
-      console.log("PDF generated successfully (upload skipped)");
+      // Upload PDF to Google Drive
+      try {
+        const pdfFileName = `${contratacao.razaoSocial || 'Empresa'}_Contratacao_${contratacao.nomeFuncionario || 'Funcionário'}.pdf`;
+        await googleDriveService.uploadPDF(pdfFileName, pdfBuffer, folderId);
+        console.log("PDF generated and uploaded successfully");
+      } catch (error) {
+        console.error("Error uploading PDF to Google Drive:", error);
+        console.log("PDF generated successfully (upload failed)");
+      }
       
       // Send emails
       try {

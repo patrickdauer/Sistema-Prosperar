@@ -374,10 +374,25 @@ export default function ContratacaoFuncionarios() {
                 <div>
                   <Label htmlFor="dataNascimento" className="text-gray-200">Data de Nascimento</Label>
                   <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="dataNascimento"
-                    type="date"
+                    type="text"
+                    placeholder="dd/mm/aaaa"
                     {...form.register("dataNascimento")}
+                    onChange={(e) => {
+                      // Máscara para formato brasileiro
+                      let value = e.target.value.replace(/\D/g, '');
+                      if (value.length >= 2) {
+                        value = value.replace(/(\d{2})(\d)/, '$1/$2');
+                      }
+                      if (value.length >= 5) {
+                        value = value.replace(/(\d{2})\/(\d{2})(\d)/, '$1/$2/$3');
+                      }
+                      if (value.length > 10) {
+                        value = value.substring(0, 10);
+                      }
+                      e.target.value = value;
+                      form.setValue("dataNascimento", value);
+                    }}
                   />
                   {form.formState.errors.dataNascimento && (
                     <p className="text-sm text-red-400 mt-1">
@@ -577,10 +592,25 @@ export default function ContratacaoFuncionarios() {
                 <div>
                   <Label htmlFor="dataAdmissao" className="text-gray-200">Data de Admissão</Label>
                   <Input className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     id="dataAdmissao"
-                    type="date"
+                    type="text"
+                    placeholder="dd/mm/aaaa"
                     {...form.register("dataAdmissao")}
+                    onChange={(e) => {
+                      // Máscara para formato brasileiro
+                      let value = e.target.value.replace(/\D/g, '');
+                      if (value.length >= 2) {
+                        value = value.replace(/(\d{2})(\d)/, '$1/$2');
+                      }
+                      if (value.length >= 5) {
+                        value = value.replace(/(\d{2})\/(\d{2})(\d)/, '$1/$2/$3');
+                      }
+                      if (value.length > 10) {
+                        value = value.substring(0, 10);
+                      }
+                      e.target.value = value;
+                      form.setValue("dataAdmissao", value);
+                    }}
                   />
                   {form.formState.errors.dataAdmissao && (
                     <p className="text-sm text-red-400 mt-1">
@@ -769,12 +799,25 @@ export default function ContratacaoFuncionarios() {
                       <div>
                         <Label className="text-gray-200">Data de Nascimento</Label>
                         <Input
-                          type="date"
+                          type="text"
+                          placeholder="dd/mm/aaaa"
                           className="bg-gray-600 border-gray-500 text-white placeholder-gray-400"
                           value={dependente.dataNascimento}
                           onChange={(e) => {
+                            // Máscara para formato brasileiro
+                            let value = e.target.value.replace(/\D/g, '');
+                            if (value.length >= 2) {
+                              value = value.replace(/(\d{2})(\d)/, '$1/$2');
+                            }
+                            if (value.length >= 5) {
+                              value = value.replace(/(\d{2})\/(\d{2})(\d)/, '$1/$2/$3');
+                            }
+                            if (value.length > 10) {
+                              value = value.substring(0, 10);
+                            }
+                            e.target.value = value;
                             const newDependentes = [...dependentes];
-                            newDependentes[index].dataNascimento = e.target.value;
+                            newDependentes[index].dataNascimento = value;
                             setDependentes(newDependentes);
                           }}
                         />
