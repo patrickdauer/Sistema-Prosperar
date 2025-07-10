@@ -12,6 +12,7 @@ import { googleDriveService } from "./services/googledrive";
 import { sendContratacaoEmails } from "./services/contratacao-email";
 import { webhookService } from "./services/webhook";
 import { generateContratacaoPDF } from "./services/contratacao-pdf";
+import { alternativeUploadService } from "./services/alternative-upload";
 import { authenticateToken, generateToken } from "./auth";
 import bcrypt from "bcrypt";
 import { seedTaskTemplates, createAdminUser } from "./seedData";
@@ -939,41 +940,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update contratacao with Google Drive link
       await storage.updateContratacaoFuncionario(contratacao.id, { googleDriveLink: folderLink });
       
-      // Handle file uploads to Google Drive
+      // Handle file uploads to Google Drive using alternative service
       const files = req.files as Express.Multer.File[];
       if (files && files.length > 0) {
-        console.log(`Uploading ${files.length} files to Google Drive...`);
-        let uploadedFiles = 0;
-        for (const file of files) {
-          try {
-            const fileName = `${contratacao.nomeFuncionario || 'Funcionário'}_${file.originalname}`;
-            const result = await googleDriveService.uploadFile(fileName, file.buffer, file.mimetype, folderId);
-            if (!result.includes('quota/permission issue')) {
-              uploadedFiles++;
-              console.log(`✓ Uploaded file: ${fileName}`);
-            } else {
-              console.log(`⚠️  File upload skipped due to quota: ${fileName}`);
-            }
-          } catch (error) {
-            console.error(`Error uploading file ${file.originalname}:`, error);
-          }
+        console.log(`Processing ${files.length} files for upload...`);
+        try {
+          const prefix = contratacao.nomeFuncionario || 'Funcionário';
+          const uploadResult = await alternativeUploadService.saveAndUploadFiles(files, folderId, prefix);
+          
+          console.log(`Upload Results: ${uploadResult.uploaded} uploaded, ${uploadResult.failed} failed`);
+          uploadResult.details.forEach(detail => console.log(detail));
+        } catch (error) {
+          console.error("Error processing file uploads:", error);
         }
-        console.log(`File upload summary: ${uploadedFiles}/${files.length} files uploaded successfully`);
       }
       
       // Generate PDF
       console.log("Generating PDF...");
       const pdfBuffer = await generateContratacaoPDF(contratacao);
       
-      // Upload PDF to Google Drive
+      // Upload PDF to Google Drive using alternative service
       try {
         const pdfFileName = `${contratacao.razaoSocial || 'Empresa'}_Contratacao_${contratacao.nomeFuncionario || 'Funcionário'}.pdf`;
-        const pdfResult = await googleDriveService.uploadPDF(pdfFileName, pdfBuffer, folderId);
-        if (!pdfResult.includes('quota/permission issue')) {
-          console.log("✓ PDF generated and uploaded successfully");
-        } else {
-          console.log("⚠️  PDF generated but upload skipped due to quota limitations");
-        }
+        const pdfResult = await alternativeUploadService.uploadPDFWithRetry(pdfFileName, pdfBuffer, folderId);
+        console.log("PDF upload result:", pdfResult);
       } catch (error) {
         console.error("Error uploading PDF to Google Drive:", error);
         console.log("PDF generated successfully (upload failed)");
