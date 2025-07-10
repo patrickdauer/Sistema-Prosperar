@@ -10,6 +10,7 @@ import { generateBusinessRegistrationPDF } from "./services/pdf";
 import { sendConfirmationEmail } from "./services/email";
 import { googleDriveService } from "./services/googledrive";
 import { googleDriveNewService } from "./services/googledrive-new";
+import { googleDriveSharedService } from "./services/googledrive-shared";
 import { sendContratacaoEmails } from "./services/contratacao-email";
 import { webhookService } from "./services/webhook";
 import { generateContratacaoPDF } from "./services/contratacao-pdf";
@@ -919,15 +920,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const contratacao = await storage.createContratacaoFuncionario(insertData);
       console.log("Contratacao record created with ID:", contratacao.id);
       
-      // Use existing shared Google Drive folder - DO NOT CREATE NEW FOLDERS
-      console.log("Using existing shared Google Drive folder...");
-      const SHARED_FOLDER_ID = '1bGzY-dEAevVafaAwF_hjLj0g--_A9o_e';
-      const folderLink = `https://drive.google.com/drive/folders/${SHARED_FOLDER_ID}`;
+      // Use Shared Drive for file uploads
+      console.log("Configuring Google Drive links...");
+      const sharedDriveLink = googleDriveSharedService.getSharedDriveLink();
+      const sharedFolderLink = googleDriveSharedService.getSharedFolderLink();
       
-      console.log(`Using shared Google Drive folder: ${folderLink}`);
+      console.log(`Shared Drive link: ${sharedDriveLink}`);
+      console.log(`Shared Folder link: ${sharedFolderLink}`);
       
-      // Update contratacao with Google Drive link
-      await storage.updateContratacaoFuncionario(contratacao.id, { googleDriveLink: folderLink });
+      // Update contratacao with Google Drive link (using Shared Drive)
+      await storage.updateContratacaoFuncionario(contratacao.id, { googleDriveLink: sharedDriveLink });
       
       // Handle file uploads to Google Drive - directly to shared folder
       const files = req.files as Express.Multer.File[];
@@ -939,20 +941,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           for (const file of files) {
             const fileName = `${prefix}_${file.originalname}`;
-            console.log(`Uploading file: ${fileName} to shared folder: ${SHARED_FOLDER_ID}`);
+            console.log(`Uploading file: ${fileName}`);
             
             try {
-              // First try with NEW service account
-              const result = await googleDriveNewService.uploadFile(fileName, file.buffer, file.mimetype, SHARED_FOLDER_ID);
-              console.log(`✓ File uploaded with NEW account: ${fileName}`);
+              // Try with Shared Drive (root)
+              const result = await googleDriveNewService.uploadFile(fileName, file.buffer, file.mimetype, googleDriveSharedService.getSharedDriveId());
+              console.log(`✅ File uploaded successfully to Shared Drive: ${fileName}`);
             } catch (error) {
-              console.error(`Error uploading file ${fileName} with NEW account:`, error);
-              // Fallback to original service account
+              console.error(`❌ Upload failed to Shared Drive: ${fileName}`, error);
+              // Try fallback to shared folder
               try {
-                const result = await googleDriveService.uploadFile(fileName, file.buffer, file.mimetype, SHARED_FOLDER_ID);
-                console.log(`✓ File uploaded with OLD account: ${fileName}`);
+                const result = await googleDriveNewService.uploadFile(fileName, file.buffer, file.mimetype, '1bGzY-dEAevVafaAwF_hjLj0g--_A9o_e');
+                console.log(`✅ File uploaded to shared folder: ${fileName}`);
               } catch (fallbackError) {
-                console.error(`Error uploading file ${fileName} with OLD account:`, fallbackError);
+                console.error(`❌ All uploads failed: ${fileName}`, fallbackError);
               }
             }
           }
@@ -965,20 +967,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Generating PDF...");
       const pdfBuffer = await generateContratacaoPDF(contratacao);
       
-      // Upload PDF to Google Drive - directly to shared folder
+      // Upload PDF to Google Drive
       try {
         const pdfFileName = `${contratacao.id}_${contratacao.razaoSocial || 'Empresa'}_Contratacao_${contratacao.nomeFuncionario || 'Funcionario'}.pdf`;
-        console.log(`Uploading PDF: ${pdfFileName} to shared folder: ${SHARED_FOLDER_ID}`);
+        console.log(`Uploading PDF: ${pdfFileName}`);
         
         try {
-          // First try with NEW service account
-          const pdfResult = await googleDriveNewService.uploadPDF(pdfFileName, pdfBuffer, SHARED_FOLDER_ID);
-          console.log("✓ PDF uploaded successfully with NEW account");
+          // Try with Shared Drive (root)
+          const pdfResult = await googleDriveNewService.uploadPDF(pdfFileName, pdfBuffer, googleDriveSharedService.getSharedDriveId());
+          console.log("✅ PDF uploaded successfully to Shared Drive");
         } catch (error) {
-          console.error("Error uploading PDF with NEW account:", error);
-          // Fallback to original service account
-          const pdfResult = await googleDriveService.uploadPDF(pdfFileName, pdfBuffer, SHARED_FOLDER_ID);
-          console.log("✓ PDF uploaded successfully with OLD account");
+          console.error("❌ PDF upload failed to Shared Drive:", error);
+          // Try fallback to shared folder
+          try {
+            const pdfResult = await googleDriveNewService.uploadPDF(pdfFileName, pdfBuffer, '1bGzY-dEAevVafaAwF_hjLj0g--_A9o_e');
+            console.log("✅ PDF uploaded successfully to shared folder");
+          } catch (fallbackError) {
+            console.error("❌ All PDF uploads failed:", fallbackError);
+          }
         }
       } catch (error) {
         console.error("Error uploading PDF to Google Drive:", error);
@@ -988,7 +994,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send emails
       try {
         console.log("Sending emails...");
-        await sendContratacaoEmails(contratacao, folderLink);
+        await sendContratacaoEmails(contratacao, sharedDriveLink);
         console.log("Emails sent successfully");
       } catch (error) {
         console.error("Error sending emails:", error);
@@ -997,7 +1003,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send webhook
       try {
         console.log("Sending webhook...");
-        await webhookService.sendContratacaoData(contratacao, folderLink);
+        await webhookService.sendContratacaoData(contratacao, sharedDriveLink);
         console.log("Webhook sent successfully");
       } catch (error) {
         console.error("Error sending webhook:", error);
@@ -1006,7 +1012,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ 
         message: "Solicitação de contratação enviada com sucesso!", 
         id: contratacao.id,
-        googleDriveLink: folderLink
+        googleDriveLink: sharedDriveLink
       });
     } catch (error) {
       console.error("Error creating contratacao:", error);
