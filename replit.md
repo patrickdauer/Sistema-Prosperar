@@ -152,10 +152,11 @@ The system uses a `business_registrations` table with:
 - **Dashboard Atualizado**: Reorganizado com 5 cards de estatísticas separadas (Total, Ativo, Bloqueado, Inativo, Baixado)
 - **Correção Crítica**: Resolvido problema de criação de clientes com tratamento adequado de campos de data vazios
 - **Validação de Dados**: Implementada conversão correta de strings vazias para null em campos de data e inteiros
+- **Campo Número**: Corrigido problema do campo "numero" do endereço que não estava sendo salvo (alterado tipo de varchar para text no schema)
 - **Interface Completa**: Botões de status com cores específicas e tooltips informativos
 - **Estilos CSS**: Implementados estilos específicos para cada status com força nuclear (!important)
 - **Página de Detalhes**: Atualizada com suporte completo ao novo sistema de 4 status
-- **Funcionalidade Testada**: Sistema totalmente funcional com criação, edição e alternância de status
+- **Funcionalidade Testada**: Sistema totalmente funcional com criação, edição e alternância de status, todos os campos sendo salvos corretamente
 
 ### July 10, 2025 - Sistema Configurado com Shared Drive - SOLUÇÃO FINAL FUNCIONAL
 - **Configuração Final**: Sistema configurado para usar Shared Drive (ID: 0APe1WRUeIBtMUk9PVA)

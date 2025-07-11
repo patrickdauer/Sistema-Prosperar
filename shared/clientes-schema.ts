@@ -16,6 +16,7 @@ export const clientes = pgTable("clientes", {
   
   // Endereço
   endereco: text("endereco"),
+  numero: text("numero"),
   cidade: varchar("cidade", { length: 100 }),
   estado: varchar("estado", { length: 2 }),
   cep: varchar("cep", { length: 10 }),
