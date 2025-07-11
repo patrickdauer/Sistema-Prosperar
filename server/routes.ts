@@ -1174,7 +1174,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Informações contratuais
         valorMensalidade: req.body.valor_mensalidade ? parseFloat(req.body.valor_mensalidade) : null,
-        diaVencimento: req.body.data_vencimento,
+        diaVencimento: req.body.data_vencimento ? parseInt(req.body.data_vencimento) : null,
         observacoesMensalidade: req.body.observacoes_mensalidade,
         
         // Status dívidas
