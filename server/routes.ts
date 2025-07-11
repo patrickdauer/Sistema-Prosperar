@@ -1134,10 +1134,113 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/clientes', async (req, res) => {
     try {
-      const cliente = await storage.createCliente(req.body);
+      console.log('📝 Dados recebidos do frontend:', req.body);
+      
+      // Mapear campos do snake_case (frontend) para camelCase (schema)
+      const clienteData = {
+        // Informações básicas
+        razaoSocial: req.body.razao_social,
+        nomeFantasia: req.body.nome_fantasia,
+        cnpj: req.body.cnpj,
+        inscricaoEstadual: req.body.inscricao_estadual,
+        inscricaoMunicipal: req.body.inscricao_municipal,
+        nire: req.body.nire,
+        
+        // Endereço
+        endereco: req.body.endereco,
+        numero: req.body.numero,
+        complemento: req.body.complemento,
+        bairro: req.body.bairro,
+        cidade: req.body.cidade,
+        estado: req.body.estado,
+        cep: req.body.cep,
+        
+        // Contato
+        telefoneComercial: req.body.telefone_comercial,
+        telefoneEmpresa: req.body.telefone_empresa,
+        email: req.body.email,
+        emailEmpresa: req.body.email_empresa,
+        contato: req.body.contato,
+        celular: req.body.celular,
+        contato2: req.body.contato_2,
+        celular2: req.body.celular_2,
+        
+        // Informações fiscais
+        regimeTributario: req.body.regime_tributario,
+        atividadePrincipal: req.body.atividade_principal,
+        atividadesSecundarias: req.body.atividades_secundarias,
+        capitalSocial: req.body.capital_social ? parseFloat(req.body.capital_social) : null,
+        metragemOcupada: req.body.metragem_ocupada,
+        
+        // Informações contratuais
+        valorMensalidade: req.body.valor_mensalidade ? parseFloat(req.body.valor_mensalidade) : null,
+        diaVencimento: req.body.data_vencimento,
+        observacoesMensalidade: req.body.observacoes_mensalidade,
+        
+        // Status dívidas
+        temDebitos: req.body.tem_debitos,
+        observacoesDebitos: req.body.observacoes_debitos,
+        temParcelamentos: req.body.tem_parcelamentos,
+        observacoesParcelamentos: req.body.observacoes_parcelamentos,
+        temDividaAtiva: req.body.tem_divida_ativa,
+        observacoesDividaAtiva: req.body.observacoes_divida_ativa,
+        
+        // Certificados
+        temCertificadoDigital: req.body.tem_certificado_digital,
+        dataVencimentoCertificado: req.body.data_vencimento_certificado,
+        emissorCertificado: req.body.emissor_certificado,
+        observacoesCertificado: req.body.observacoes_certificado,
+        
+        // Procurações
+        temProcuracaoPj: req.body.tem_procuracao_pj,
+        dataVencimentoProcuracaoPj: req.body.data_vencimento_procuracao_pj,
+        observacoesProcuracaoPj: req.body.observacoes_procuracao_pj,
+        temProcuracaoPf: req.body.tem_procuracao_pf,
+        dataVencimentoProcuracaoPf: req.body.data_vencimento_procuracao_pf,
+        observacoesProcuracaoPf: req.body.observacoes_procuracao_pf,
+        
+        // Funcionários e Pró-labore
+        possuiFuncionarios: req.body.possui_funcionarios,
+        quantidadeFuncionarios: req.body.quantidade_funcionarios ? parseInt(req.body.quantidade_funcionarios) : null,
+        observacoesFuncionarios: req.body.observacoes_funcionarios,
+        possuiProLabore: req.body.possui_pro_labore,
+        
+        // Datas
+        dataAbertura: req.body.data_abertura,
+        clienteDesde: req.body.cliente_desde,
+        
+        // Notas e observações
+        notaServico: req.body.nota_servico,
+        notaVenda: req.body.nota_venda,
+        observacoes: req.body.observacoes,
+        
+        // Status
+        status: req.body.status || 'ativo',
+        
+        // Sócios
+        socios: req.body.socios || [],
+        
+        // Imposto de renda
+        impostoRenda: req.body.imposto_renda,
+        irAnoReferencia: req.body.ir_ano_referencia,
+        irStatus: req.body.ir_status,
+        irDataEntrega: req.body.ir_data_entrega,
+        irValorPagar: req.body.ir_valor_pagar,
+        irValorRestituir: req.body.ir_valor_restituir,
+        irObservacoes: req.body.ir_observacoes,
+        
+        // Origem
+        origem: 'website'
+      };
+      
+      console.log('🔄 Dados mapeados para o schema:', clienteData);
+      
+      const cliente = await storage.createCliente(clienteData);
+      console.log('✅ Cliente criado com sucesso:', cliente.id);
+      
       res.json(cliente);
     } catch (error) {
-      console.error('Erro ao criar cliente:', error);
+      console.error('❌ Erro ao criar cliente:', error);
       res.status(400).json({ error: 'Dados inválidos' });
     }
   });
