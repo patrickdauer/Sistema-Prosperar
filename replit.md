@@ -146,6 +146,17 @@ The system uses a `business_registrations` table with:
 
 ## Recent Changes
 
+### July 11, 2025 - Sistema de 4 Status de Clientes Completo e Funcional
+- **Sistema de Status Completo**: Implementados 4 status para clientes: ATIVO (verde), BLOQUEADO (vermelho), INATIVO (cinza) e BAIXADO (laranja)
+- **Lógica de Alternância**: Sistema de alternância cíclica entre status: ativo → bloqueado → inativo → baixado → ativo
+- **Dashboard Atualizado**: Reorganizado com 5 cards de estatísticas separadas (Total, Ativo, Bloqueado, Inativo, Baixado)
+- **Correção Crítica**: Resolvido problema de criação de clientes com tratamento adequado de campos de data vazios
+- **Validação de Dados**: Implementada conversão correta de strings vazias para null em campos de data e inteiros
+- **Interface Completa**: Botões de status com cores específicas e tooltips informativos
+- **Estilos CSS**: Implementados estilos específicos para cada status com força nuclear (!important)
+- **Página de Detalhes**: Atualizada com suporte completo ao novo sistema de 4 status
+- **Funcionalidade Testada**: Sistema totalmente funcional com criação, edição e alternância de status
+
 ### July 10, 2025 - Sistema Configurado com Shared Drive - SOLUÇÃO FINAL FUNCIONAL
 - **Configuração Final**: Sistema configurado para usar Shared Drive (ID: 0APe1WRUeIBtMUk9PVA)
 - **Nova Conta de Serviço**: Implementada conta tanamao-464721 com sistema-interno-contabilid-169@tanamao-464721.iam.gserviceaccount.com

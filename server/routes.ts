@@ -1187,16 +1187,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Certificados
         temCertificadoDigital: req.body.tem_certificado_digital,
-        dataVencimentoCertificado: req.body.data_vencimento_certificado,
+        dataVencimentoCertificado: req.body.data_vencimento_certificado ? req.body.data_vencimento_certificado : null,
         emissorCertificado: req.body.emissor_certificado,
         observacoesCertificado: req.body.observacoes_certificado,
         
         // Procurações
         temProcuracaoPj: req.body.tem_procuracao_pj,
-        dataVencimentoProcuracaoPj: req.body.data_vencimento_procuracao_pj,
+        dataVencimentoProcuracaoPj: req.body.data_vencimento_procuracao_pj ? req.body.data_vencimento_procuracao_pj : null,
         observacoesProcuracaoPj: req.body.observacoes_procuracao_pj,
         temProcuracaoPf: req.body.tem_procuracao_pf,
-        dataVencimentoProcuracaoPf: req.body.data_vencimento_procuracao_pf,
+        dataVencimentoProcuracaoPf: req.body.data_vencimento_procuracao_pf ? req.body.data_vencimento_procuracao_pf : null,
         observacoesProcuracaoPf: req.body.observacoes_procuracao_pf,
         
         // Funcionários e Pró-labore
@@ -1206,8 +1206,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         possuiProLabore: req.body.possui_pro_labore,
         
         // Datas
-        dataAbertura: req.body.data_abertura,
-        clienteDesde: req.body.cliente_desde,
+        dataAbertura: req.body.data_abertura ? req.body.data_abertura : null,
+        clienteDesde: req.body.cliente_desde ? req.body.cliente_desde : null,
         
         // Notas e observações
         notaServico: req.body.nota_servico,
@@ -1224,7 +1224,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         impostoRenda: req.body.imposto_renda,
         irAnoReferencia: req.body.ir_ano_referencia,
         irStatus: req.body.ir_status,
-        irDataEntrega: req.body.ir_data_entrega,
+        irDataEntrega: req.body.ir_data_entrega ? req.body.ir_data_entrega : null,
         irValorPagar: req.body.ir_valor_pagar,
         irValorRestituir: req.body.ir_valor_restituir,
         irObservacoes: req.body.ir_observacoes,
