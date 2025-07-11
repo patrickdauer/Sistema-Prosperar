@@ -98,6 +98,12 @@ button[data-status="inativo"] {
   color: white !important;
 }
 
+button[data-status="baixado"] {
+  background-color: #ea580c !important;
+  border-color: #ea580c !important;
+  color: white !important;
+}
+
 /* Green buttons specifically */
 .bg-green-600, .bg-green-700 {
   background-color: #22c55e !important;

@@ -136,7 +136,7 @@ export default function Clientes() {
     fetchClientes();
   }, [searchTerm, filters]);
 
-  // Função para alternar status: ativo -> bloqueado -> inativo -> ativo
+  // Função para alternar status: ativo -> bloqueado -> inativo -> baixado -> ativo
   const toggleClienteStatus = async (id: number, currentStatus: string | null) => {
     try {
       let newStatus;
@@ -144,6 +144,8 @@ export default function Clientes() {
         newStatus = 'bloqueado';
       } else if (currentStatus === 'bloqueado') {
         newStatus = 'inativo';
+      } else if (currentStatus === 'inativo') {
+        newStatus = 'baixado';
       } else {
         newStatus = 'ativo';
       }
@@ -227,6 +229,7 @@ export default function Clientes() {
   const clientesAtivos = clientes.filter(c => c.status === 'ativo').length;
   const clientesBloqueados = clientes.filter(c => c.status === 'bloqueado').length;
   const clientesInativos = clientes.filter(c => c.status === 'inativo').length;
+  const clientesBaixados = clientes.filter(c => c.status === 'baixado').length;
 
   // Função para editar cliente
   const handleEditCliente = (cliente: Cliente) => {
@@ -353,39 +356,63 @@ export default function Clientes() {
 
       <main className="container mx-auto px-4 py-8">
         {/* Header com estatísticas */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
-            <CardContent className="p-6">
+            <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-400">Total de Clientes</p>
-                  <p className="text-2xl font-bold text-white">{clientes.length}</p>
+                  <p className="text-sm text-gray-400">Total</p>
+                  <p className="text-xl font-bold text-white">{clientes.length}</p>
                 </div>
-                <Users className="h-8 w-8 text-green-500" />
+                <Users className="h-6 w-6 text-blue-500" />
               </div>
             </CardContent>
           </Card>
           
           <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
-            <CardContent className="p-6">
+            <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-400">Clientes Ativos</p>
-                  <p className="text-2xl font-bold text-white">{clientesAtivos}</p>
+                  <p className="text-sm text-gray-400">Ativos</p>
+                  <p className="text-xl font-bold text-green-500">{clientesAtivos}</p>
                 </div>
-                <Building2 className="h-8 w-8 text-green-500" />
+                <Building2 className="h-6 w-6 text-green-500" />
               </div>
             </CardContent>
           </Card>
           
           <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
-            <CardContent className="p-6">
+            <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-400">Taxa de Retenção</p>
-                  <p className="text-2xl font-bold text-white">95%</p>
+                  <p className="text-sm text-gray-400">Bloqueados</p>
+                  <p className="text-xl font-bold text-red-500">{clientesBloqueados}</p>
                 </div>
-                <Building2 className="h-8 w-8 text-orange-500" />
+                <Building2 className="h-6 w-6 text-red-500" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-400">Inativos</p>
+                  <p className="text-xl font-bold text-gray-500">{clientesInativos}</p>
+                </div>
+                <Building2 className="h-6 w-6 text-gray-500" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card style={{ background: '#1f2937', border: '1px solid #374151' }}>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-400">Baixados</p>
+                  <p className="text-xl font-bold text-orange-500">{clientesBaixados}</p>
+                </div>
+                <Building2 className="h-6 w-6 text-orange-500" />
               </div>
             </CardContent>
           </Card>
@@ -650,7 +677,8 @@ export default function Clientes() {
                       >
                         {cliente.status === 'ativo' ? 'ATIVO' : 
                          cliente.status === 'bloqueado' ? 'BLOQUEADO' : 
-                         cliente.status === 'inativo' ? 'INATIVO' : 'N/A'}
+                         cliente.status === 'inativo' ? 'INATIVO' : 
+                         cliente.status === 'baixado' ? 'BAIXADO' : 'N/A'}
                       </button>
                     </div>
 

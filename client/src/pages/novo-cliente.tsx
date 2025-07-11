@@ -174,6 +174,11 @@ export default function NovoCliente() {
   });
 
   const [socios, setSocios] = useState<Socio[]>([]);
+  const [customFields, setCustomFields] = useState<{ [key: string]: string }>({});
+  const [showCustomFieldModal, setShowCustomFieldModal] = useState(false);
+  const [newFieldName, setNewFieldName] = useState('');
+  const [newFieldValue, setNewFieldValue] = useState('');
+  const [editingFieldName, setEditingFieldName] = useState<string | null>(null);
 
   const handleInputChange = (field: string, value: string) => {
     console.log(`Atualizando campo ${field} para:`, value);
@@ -228,6 +233,64 @@ export default function NovoCliente() {
     setSocios(socios.map((socio, i) => 
       i === index ? { ...socio, [field]: value } : socio
     ));
+  };
+
+  // Funções para gerenciar campos personalizados
+  const handleAddCustomField = () => {
+    if (newFieldName.trim() && newFieldValue.trim()) {
+      const cleanFieldName = newFieldName.trim().toLowerCase().replace(/\s+/g, '_');
+      setCustomFields(prev => ({
+        ...prev,
+        [cleanFieldName]: newFieldValue.trim()
+      }));
+      setNewFieldName('');
+      setNewFieldValue('');
+      setShowCustomFieldModal(false);
+    }
+  };
+
+  const handleEditCustomField = (fieldName: string) => {
+    setEditingFieldName(fieldName);
+    setNewFieldName(fieldName);
+    setNewFieldValue(customFields[fieldName]);
+    setShowCustomFieldModal(true);
+  };
+
+  const handleUpdateCustomField = () => {
+    if (editingFieldName && newFieldName.trim() && newFieldValue.trim()) {
+      const cleanFieldName = newFieldName.trim().toLowerCase().replace(/\s+/g, '_');
+      
+      // Se o nome do campo mudou, remove o antigo
+      if (editingFieldName !== cleanFieldName) {
+        const { [editingFieldName]: _, ...remainingFields } = customFields;
+        setCustomFields({
+          ...remainingFields,
+          [cleanFieldName]: newFieldValue.trim()
+        });
+      } else {
+        setCustomFields(prev => ({
+          ...prev,
+          [cleanFieldName]: newFieldValue.trim()
+        }));
+      }
+      
+      setEditingFieldName(null);
+      setNewFieldName('');
+      setNewFieldValue('');
+      setShowCustomFieldModal(false);
+    }
+  };
+
+  const handleDeleteCustomField = (fieldName: string) => {
+    const { [fieldName]: _, ...remainingFields } = customFields;
+    setCustomFields(remainingFields);
+  };
+
+  const handleCancelCustomField = () => {
+    setEditingFieldName(null);
+    setNewFieldName('');
+    setNewFieldValue('');
+    setShowCustomFieldModal(false);
   };
 
   const copyToClipboard = async (text: string, label: string) => {

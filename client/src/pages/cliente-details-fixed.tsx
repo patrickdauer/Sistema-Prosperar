@@ -1168,6 +1168,7 @@ export default function ClienteDetailsFix() {
                     <SelectItem value="ativo">Ativo</SelectItem>
                     <SelectItem value="bloqueado">Bloqueado</SelectItem>
                     <SelectItem value="inativo">Inativo</SelectItem>
+                    <SelectItem value="baixado">Baixado</SelectItem>
                   </SelectContent>
                 </Select>
               ) : (
@@ -1176,16 +1177,19 @@ export default function ClienteDetailsFix() {
                     className="px-4 py-2 rounded-lg text-sm font-semibold uppercase tracking-wide"
                     style={{
                       backgroundColor: cliente.status === 'ativo' ? '#16a34a' : 
-                                     cliente.status === 'bloqueado' ? '#dc2626' : '#6b7280',
+                                     cliente.status === 'bloqueado' ? '#dc2626' : 
+                                     cliente.status === 'baixado' ? '#ea580c' : '#6b7280',
                       color: 'white',
                       boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                       border: `2px solid ${cliente.status === 'ativo' ? '#22c55e' : 
-                                         cliente.status === 'bloqueado' ? '#ef4444' : '#9ca3af'}`
+                                         cliente.status === 'bloqueado' ? '#ef4444' : 
+                                         cliente.status === 'baixado' ? '#f97316' : '#9ca3af'}`
                     }}
                   >
                     {cliente.status === 'ativo' ? 'ATIVO' : 
                      cliente.status === 'bloqueado' ? 'BLOQUEADO' : 
-                     cliente.status === 'inativo' ? 'INATIVO' : cliente.status || 'N/A'}
+                     cliente.status === 'inativo' ? 'INATIVO' : 
+                     cliente.status === 'baixado' ? 'BAIXADO' : cliente.status || 'N/A'}
                   </span>
                 </p>
               )}
