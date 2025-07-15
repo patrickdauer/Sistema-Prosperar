@@ -125,6 +125,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/home" component={Home} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/business-registration" component={BusinessRegistration} />
       <Route path="/contratacao-funcionarios" component={ContratacaoFuncionarios} />

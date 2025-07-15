@@ -31,7 +31,7 @@ export default function Login() {
     onSuccess: (data) => {
       localStorage.setItem('token', data.token);
       queryClient.setQueryData(['/api/user'], data.user);
-      window.location.href = "/interno";
+      window.location.href = "/home";
     },
     onError: (err: any) => {
       setError(err.message || "Erro no login");
