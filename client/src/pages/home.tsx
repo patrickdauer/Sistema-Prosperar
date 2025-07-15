@@ -314,10 +314,10 @@ export default function Home() {
             <CardHeader style={{ borderBottom: '1px solid #333' }}>
               <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
                 <Link className="h-5 w-5" style={{ color: '#ff8c42' }} />
-                Link Hub Pro
+                Central de Links
               </CardTitle>
               <CardDescription style={{ color: '#888' }}>
-                Central de links e recursos
+                Encontro rapidamente o link que você precisa
               </CardDescription>
             </CardHeader>
             <CardContent>
