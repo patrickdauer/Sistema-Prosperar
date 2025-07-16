@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Fundo circular verde -->
+  <circle cx="50" cy="50" r="45" fill="#22c55e"/>
+  
+  <!-- Letra P estilizada -->
+  <text x="50" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="45" font-weight="bold" fill="#ffffff">P</text>
+  
+  <!-- Seta pequena no canto -->
+  <path d="M65 25 L75 35 L70 35 L70 40 L65 40 L65 35 L60 35 Z" fill="#ff8c42"/>
+</svg>
