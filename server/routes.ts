@@ -1365,6 +1365,236 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ====== ROTAS DAS-MEI ======
+  // Importar serviços DAS
+  const { dasStorage } = await import('./das-storage');
+  const { dasProviderManager, DASProviderFactory } = await import('./services/das-provider');
+  const { messageManager, EvolutionWhatsAppService: DASEvolutionWhatsApp, SendGridEmailService } = await import('./services/messaging');
+  const { dasScheduler } = await import('./services/das-scheduler');
+
+  // Configurações de API
+  app.get('/api/das/configuracoes', authenticateToken, async (req, res) => {
+    try {
+      const configs = await dasStorage.getAllApiConfigurations();
+      res.json(configs);
+    } catch (error) {
+      console.error('Erro ao buscar configurações:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.post('/api/das/configuracoes', authenticateToken, async (req, res) => {
+    try {
+      const userId = req.user?.id;
+      const config = await dasStorage.createApiConfiguration({
+        ...req.body,
+        createdBy: userId,
+        updatedBy: userId
+      });
+      res.json(config);
+    } catch (error) {
+      console.error('Erro ao criar configuração:', error);
+      res.status(400).json({ error: 'Dados inválidos' });
+    }
+  });
+
+  app.put('/api/das/configuracoes/:id', authenticateToken, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const userId = req.user?.id;
+      const config = await dasStorage.updateApiConfiguration(id, {
+        ...req.body,
+        updatedBy: userId
+      });
+      res.json(config);
+    } catch (error) {
+      console.error('Erro ao atualizar configuração:', error);
+      res.status(400).json({ error: 'Dados inválidos' });
+    }
+  });
+
+  app.post('/api/das/configuracoes/:id/ativar', authenticateToken, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const userId = req.user?.id;
+      const config = await dasStorage.activateApiConfiguration(id, userId);
+      
+      // Reconfigurar provedores com nova configuração
+      if (config.type === 'das_provider') {
+        const provider = DASProviderFactory.create(config.name, config.credentials);
+        dasProviderManager.setProvider(provider);
+      } else if (config.type === 'whatsapp') {
+        const whatsapp = new DASEvolutionWhatsApp(config.credentials);
+        messageManager.setWhatsAppService(whatsapp);
+      } else if (config.type === 'email') {
+        const email = new SendGridEmailService(config.credentials);
+        messageManager.setEmailService(email);
+      }
+      
+      res.json(config);
+    } catch (error) {
+      console.error('Erro ao ativar configuração:', error);
+      res.status(400).json({ error: 'Dados inválidos' });
+    }
+  });
+
+  app.delete('/api/das/configuracoes/:id', authenticateToken, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await dasStorage.deleteApiConfiguration(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Erro ao deletar configuração:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Clientes MEI
+  app.get('/api/das/clientes', authenticateToken, async (req, res) => {
+    try {
+      const clientes = await dasStorage.getAllClientesMei();
+      res.json(clientes);
+    } catch (error) {
+      console.error('Erro ao buscar clientes MEI:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.post('/api/das/clientes', authenticateToken, async (req, res) => {
+    try {
+      const cliente = await dasStorage.createClienteMei(req.body);
+      res.json(cliente);
+    } catch (error) {
+      console.error('Erro ao criar cliente MEI:', error);
+      res.status(400).json({ error: 'Dados inválidos' });
+    }
+  });
+
+  app.put('/api/das/clientes/:id', authenticateToken, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const cliente = await dasStorage.updateClienteMei(id, req.body);
+      res.json(cliente);
+    } catch (error) {
+      console.error('Erro ao atualizar cliente MEI:', error);
+      res.status(400).json({ error: 'Dados inválidos' });
+    }
+  });
+
+  app.delete('/api/das/clientes/:id', authenticateToken, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await dasStorage.deleteClienteMei(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Erro ao deletar cliente MEI:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // DAS Guias
+  app.get('/api/das/guias', authenticateToken, async (req, res) => {
+    try {
+      const guias = await dasStorage.getAllDasGuias();
+      res.json(guias);
+    } catch (error) {
+      console.error('Erro ao buscar guias DAS:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.get('/api/das/clientes/:id/guias', authenticateToken, async (req, res) => {
+    try {
+      const clienteId = parseInt(req.params.id);
+      const guias = await dasStorage.getDasGuiasByCliente(clienteId);
+      res.json(guias);
+    } catch (error) {
+      console.error('Erro ao buscar guias do cliente:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.post('/api/das/download-manual', authenticateToken, async (req, res) => {
+    try {
+      const { cnpj, mesAno } = req.body;
+      
+      if (!dasProviderManager.isConfigured()) {
+        return res.status(400).json({ error: 'Provedor DAS não configurado' });
+      }
+
+      const result = await dasProviderManager.downloadDAS(cnpj, mesAno);
+      res.json(result);
+    } catch (error) {
+      console.error('Erro no download manual:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Logs de envio
+  app.get('/api/das/logs', authenticateToken, async (req, res) => {
+    try {
+      const logs = await dasStorage.getAllEnvioLogs();
+      res.json(logs);
+    } catch (error) {
+      console.error('Erro ao buscar logs:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.get('/api/das/guias/:id/logs', authenticateToken, async (req, res) => {
+    try {
+      const guiaId = parseInt(req.params.id);
+      const logs = await dasStorage.getEnvioLogsByGuia(guiaId);
+      res.json(logs);
+    } catch (error) {
+      console.error('Erro ao buscar logs da guia:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Controle do scheduler
+  app.post('/api/das/scheduler/start', authenticateToken, async (req, res) => {
+    try {
+      dasScheduler.start();
+      res.json({ message: 'Scheduler iniciado com sucesso' });
+    } catch (error) {
+      console.error('Erro ao iniciar scheduler:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.post('/api/das/scheduler/stop', authenticateToken, async (req, res) => {
+    try {
+      dasScheduler.stop();
+      res.json({ message: 'Scheduler parado com sucesso' });
+    } catch (error) {
+      console.error('Erro ao parar scheduler:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Status do sistema
+  app.get('/api/das/status', authenticateToken, async (req, res) => {
+    try {
+      const status = {
+        dasProvider: {
+          configured: dasProviderManager.isConfigured(),
+          name: dasProviderManager.getProviderName()
+        },
+        whatsapp: {
+          configured: messageManager.isWhatsAppConfigured()
+        },
+        email: {
+          configured: messageManager.isEmailConfigured()
+        }
+      };
+      res.json(status);
+    } catch (error) {
+      console.error('Erro ao buscar status:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

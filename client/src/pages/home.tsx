@@ -149,6 +149,30 @@ export default function Home() {
             </CardContent>
           </Card>
 
+          <Card 
+            className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl" 
+            style={{ 
+              background: '#1a1a1a', 
+              border: '1px solid #333',
+              borderRadius: '8px'
+            }}
+            onClick={() => window.location.href = '/das-mei'}>
+            <CardHeader style={{ borderBottom: '1px solid #333' }}>
+              <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
+                <FileText className="h-5 w-5" style={{ color: '#ff8c42' }} />
+                DAS-MEI Automático
+              </CardTitle>
+              <CardDescription style={{ color: '#888' }}>
+                Sistema de envio automático de DAS-MEI
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-white">
+                Gerencie o envio automático de guias DAS-MEI para clientes
+              </p>
+            </CardContent>
+          </Card>
+
 
 
           {user?.role === 'admin' && (

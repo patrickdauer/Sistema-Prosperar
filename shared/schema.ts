@@ -234,3 +234,5 @@ export type TaskTemplate = typeof taskTemplates.$inferSelect;
 // Re-export clients schema
 export * from './clientes-schema';
 export * from './ir-historico-schema';
+export * from './contratacao-schema';
+export * from './das-schema';

@@ -1,0 +1,127 @@
+
+
+## Prompt Completo para Desenvolvedor no Replit
+
+### Objetivo
+
+Desenvolver um **painel de gerenciamento para envio automático de DAS-MEI** dos clientes cadastrados, integrado inicialmente com a InfoSimples, mas totalmente preparado para troca futura do fornecedor da API.
+
+---
+
+### FUNCIONALIDADES PRINCIPAIS
+
+#### 1. Download e Armazenamento Automático de DAS
+
+* **Todo dia 1º de cada mês**, baixar automaticamente a guia DAS-MEI de cada cliente MEI, usando a API do fornecedor (inicialmente InfoSimples) através do CNPJ.
+* Armazenar o arquivo PDF em local seguro, organizado por cliente e competência/mês.
+* Permitir download manual de qualquer guia pelo painel.
+
+#### 2. Programação e Envio
+
+* O envio das guias DAS NÃO será imediato após o download.
+* O painel deve permitir programar a data de envio (ex: dia 10, 15, 18...), padrão ou individual por cliente.
+* Na data agendada, o sistema deve:
+
+  * Enviar o PDF da DAS por **WhatsApp** (Evolution API) e por **e-mail** (via serviço robusto como SendGrid, SMTP, etc).
+  * Mensagem personalizada, contendo nome do cliente, mês/ano e data de vencimento.
+
+#### 3. Lembrete no Dia do Vencimento
+
+* No dia do vencimento da DAS (ex: dia 20), enviar lembrete simples por WhatsApp e e-mail, informando que a guia **vence hoje** (sem reenvio do PDF, só lembrete de texto).
+
+#### 4. Painel de Gerenciamento e Logs
+
+* Listar todos os clientes MEI, mostrando nome, CNPJ, telefone(s), e-mail(s), status do download, status do envio, datas agendadas e realizadas.
+* Permitir envio manual/reenvio, se desejado.
+* Exibir log detalhado de cada envio e lembrete, com resposta das APIs.
+
+---
+
+### 5. **Aba de Gerenciamento de APIs Integradas**
+
+> Incluir no painel uma **aba específica para Gerenciamento das APIs** utilizadas no sistema, com recursos para:
+>
+> * **Visualizar e editar** informações das APIs ativas (ex: InfoSimples, Evolution API, SendGrid/SMTP, ou outras).
+> * **Cadastrar e armazenar** de forma segura as **chaves de acesso, tokens, URLs, logins, senhas** e demais credenciais necessárias para cada integração.
+> * Permitir **trocar a API ativa** de forma prática, escolhendo qual provedor será usado para buscar as DAS (usando um menu ou dropdown).
+> * Exibir informações úteis sobre cada API cadastrada: nome, status, último uso, validade dos tokens, data da última alteração, e link para a documentação.
+> * Disponibilizar **campos customizáveis** para possíveis integrações futuras.
+> * **Registrar logs** de alterações feitas nas configurações das APIs (quem alterou, o que foi alterado, data/hora).
+> * Garantir que somente usuários autorizados tenham acesso a essa aba.
+
+---
+
+### ARQUITETURA FLEXÍVEL PARA TROCA DE API DE DAS
+
+> **O sistema deve ser projetado com arquitetura desacoplada (padrão Adapter ou Interface de Serviço), para permitir troca fácil do fornecedor da API de DAS-MEI (atualmente InfoSimples), sem necessidade de refatorar toda a lógica.**
+>
+> * Crie interface genérica (`DASProviderService`).
+> * Implemente um módulo InfoSimples e futuros módulos conforme a mesma interface.
+> * Centralize a escolha do provedor via configuração (.env ou painel de APIs).
+> * Documente e oriente como adicionar novos provedores.
+
+---
+
+### MODELOS DE MENSAGEM
+
+**Mensagem principal (com anexo):**
+
+```
+Olá, [NOME DO CLIENTE]! 👋
+
+Segue em anexo sua Guia DAS-MEI referente ao mês de [MÊS/ANO].
+
+🗓️ Data de vencimento: [DATA DE VENCIMENTO]
+
+Por favor, realize o pagamento até a data informada para evitar multas.
+
+Qualquer dúvida, estamos à disposição!
+
+Abraços,  
+[Nome do Escritório]
+```
+
+**Lembrete do vencimento:**
+
+```
+Olá, [NOME DO CLIENTE]! ⚠️
+
+Lembrete: sua guia DAS-MEI **vence hoje**.
+
+Se ainda não pagou, utilize a guia que enviamos anteriormente.
+
+Conte conosco para o que precisar!
+
+Abraços,  
+[Nome do Escritório]
+```
+
+---
+
+### OBSERVAÇÕES TÉCNICAS
+
+* O armazenamento dos PDFs deve ser seguro e facilmente acessível pelo painel.
+* O envio de WhatsApp e e-mail deve ser confiável.
+* O painel precisa ser responsivo, intuitivo e com filtros.
+* Código documentado, limpo, modular, com testes.
+* Sempre usar apenas a interface genérica de provedor de DAS em toda a lógica do sistema.
+
+---
+
+### INTEGRAÇÕES SUGERIDAS
+
+* **InfoSimples API**: [https://api.infosimples.com.br/docs/](https://api.infosimples.com.br/docs/)
+* **Evolution API (WhatsApp)**: [https://evolutionapi.com.br/docs/](https://evolutionapi.com.br/docs/)
+* **E-mail API (ex: SendGrid)**: [https://docs.sendgrid.com/for-developers/sending-email/api-getting-started](https://docs.sendgrid.com/for-developers/sending-email/api-getting-started)
+
+---
+
+### FLUXO RESUMIDO
+
+1. **Dia 1º:** Download automático e armazenamento das guias DAS-MEI usando a API selecionada (inicialmente InfoSimples).
+2. **Data programada (ex: dia 10):** Envio do PDF da DAS por WhatsApp e e-mail, com mensagem personalizada.
+3. **Dia do vencimento:** Apenas lembrete de que a DAS vence hoje, sem reenvio do arquivo.
+4. Todo o controle, programação, logs e **gerenciamento de APIs** podem ser realizados pelo painel.
+5. Caso o fornecedor da API mude no futuro, basta implementar novo módulo seguindo a interface genérica, sem alterar as demais funções do sistema.
+
+

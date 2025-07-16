@@ -37,6 +37,15 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Inicializar o scheduler DAS-MEI
+  try {
+    const { dasScheduler } = await import('./services/das-scheduler');
+    dasScheduler.start();
+    console.log('✓ Scheduler DAS-MEI iniciado com sucesso');
+  } catch (error) {
+    console.error('⚠ Erro ao inicializar scheduler DAS-MEI:', error);
+  }
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
