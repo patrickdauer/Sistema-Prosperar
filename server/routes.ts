@@ -1655,6 +1655,216 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // WhatsApp Evolution API routes
+  app.post('/api/whatsapp/test', authenticateToken, async (req, res) => {
+    try {
+      const { serverUrl, apiKey, instance } = req.body;
+      
+      if (!serverUrl || !apiKey || !instance) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Todos os campos são obrigatórios' 
+        });
+      }
+
+      // Teste de conexão com Evolution API
+      const testUrl = `${serverUrl}/instance/fetchInstance/${instance}`;
+      const response = await fetch(testUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': apiKey
+        }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        res.json({ 
+          success: true, 
+          message: 'Conexão testada com sucesso',
+          instanceInfo: result 
+        });
+      } else {
+        res.json({ 
+          success: false, 
+          message: `Erro na conexão: ${response.status} ${response.statusText}` 
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao testar WhatsApp:', error);
+      res.json({ 
+        success: false, 
+        message: 'Erro de conexão com o servidor' 
+      });
+    }
+  });
+
+  app.post('/api/whatsapp/configure', authenticateToken, async (req, res) => {
+    try {
+      const { serverUrl, apiKey, instance, defaultDelay, linkPreview, mentionsEveryOne } = req.body;
+      
+      if (!serverUrl || !apiKey || !instance) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Todos os campos obrigatórios devem ser preenchidos' 
+        });
+      }
+
+      // Salvar configuração no banco de dados
+      const configData = {
+        name: 'WhatsApp Evolution API',
+        type: 'whatsapp' as const,
+        credentials: {
+          serverUrl,
+          apiKey,
+          instance
+        },
+        configuration: {
+          defaultDelay: defaultDelay || 1000,
+          linkPreview: linkPreview || true,
+          mentionsEveryOne: mentionsEveryOne || false
+        },
+        isActive: true
+      };
+
+      await dasStorage.createApiConfiguration(configData);
+      
+      res.json({ 
+        success: true, 
+        message: 'Configuração salva com sucesso' 
+      });
+    } catch (error) {
+      console.error('Erro ao salvar configuração WhatsApp:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Erro ao salvar configuração' 
+      });
+    }
+  });
+
+  app.post('/api/whatsapp/send/text', authenticateToken, async (req, res) => {
+    try {
+      const { number, text, delay } = req.body;
+      
+      if (!number || !text) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Número e texto são obrigatórios' 
+        });
+      }
+
+      // Buscar configuração ativa do WhatsApp
+      const config = await dasStorage.getApiConfigurationByType('whatsapp');
+      if (!config || !config.isActive) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'WhatsApp não configurado' 
+        });
+      }
+
+      const { serverUrl, apiKey, instance } = config.credentials;
+      const { defaultDelay, linkPreview, mentionsEveryOne } = config.configuration;
+
+      // Enviar mensagem via Evolution API
+      const sendUrl = `${serverUrl}/message/sendText/${instance}`;
+      const response = await fetch(sendUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': apiKey
+        },
+        body: JSON.stringify({
+          number,
+          text,
+          delay: delay || defaultDelay,
+          linkPreview,
+          mentionsEveryOne
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        res.json({ 
+          success: true, 
+          message: 'Mensagem enviada com sucesso',
+          result 
+        });
+      } else {
+        res.json({ 
+          success: false, 
+          message: `Erro ao enviar mensagem: ${response.status} ${response.statusText}` 
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao enviar mensagem WhatsApp:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Erro interno do servidor' 
+      });
+    }
+  });
+
+  app.post('/api/whatsapp/send/media', authenticateToken, async (req, res) => {
+    try {
+      const { number, media, caption, delay } = req.body;
+      
+      if (!number || !media) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Número e arquivo são obrigatórios' 
+        });
+      }
+
+      // Buscar configuração ativa do WhatsApp
+      const config = await dasStorage.getApiConfigurationByType('whatsapp');
+      if (!config || !config.isActive) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'WhatsApp não configurado' 
+        });
+      }
+
+      const { serverUrl, apiKey, instance } = config.credentials;
+      const { defaultDelay } = config.configuration;
+
+      // Enviar arquivo via Evolution API
+      const sendUrl = `${serverUrl}/message/sendMedia/${instance}`;
+      const response = await fetch(sendUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': apiKey
+        },
+        body: JSON.stringify({
+          number,
+          media,
+          caption,
+          delay: delay || defaultDelay
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        res.json({ 
+          success: true, 
+          message: 'Arquivo enviado com sucesso',
+          result 
+        });
+      } else {
+        res.json({ 
+          success: false, 
+          message: `Erro ao enviar arquivo: ${response.status} ${response.statusText}` 
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao enviar arquivo WhatsApp:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Erro interno do servidor' 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

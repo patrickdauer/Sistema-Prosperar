@@ -39,6 +39,15 @@ const apiConfigSchema = z.object({
   documentation: z.string().optional()
 });
 
+const whatsappConfigSchema = z.object({
+  serverUrl: z.string().url("URL do servidor inválida"),
+  apiKey: z.string().min(1, "API Key é obrigatória"),
+  instance: z.string().min(1, "Nome da instância é obrigatório"),
+  defaultDelay: z.number().min(0).max(30000).default(1000),
+  linkPreview: z.boolean().default(true),
+  mentionsEveryOne: z.boolean().default(false)
+});
+
 type ClienteMei = z.infer<typeof clienteMeiSchema>;
 type ApiConfig = z.infer<typeof apiConfigSchema>;
 
@@ -75,6 +84,18 @@ export default function DASMEIPage() {
       token: ''
     }
   });
+
+  const [whatsappConfig, setWhatsappConfig] = useState({
+    serverUrl: '',
+    apiKey: '',
+    instance: '',
+    defaultDelay: 1000,
+    linkPreview: true,
+    mentionsEveryOne: false
+  });
+
+  const [isWhatsappModalOpen, setIsWhatsappModalOpen] = useState(false);
+  const [isTestingWhatsapp, setIsTestingWhatsapp] = useState(false);
 
   // Queries
   const { data: status } = useQuery({
@@ -301,6 +322,78 @@ export default function DASMEIPage() {
       toast({ title: "Configuração ativada com sucesso!" });
     }
   });
+
+  // Função para testar conexão WhatsApp
+  const testWhatsappConnection = async () => {
+    if (!whatsappConfig.serverUrl || !whatsappConfig.apiKey || !whatsappConfig.instance) {
+      toast({
+        title: "Erro",
+        description: "Por favor, preencha todos os campos obrigatórios.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsTestingWhatsapp(true);
+    try {
+      const response = await fetch('/api/whatsapp/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(whatsappConfig)
+      });
+
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        toast({
+          title: "Sucesso",
+          description: "Conexão com WhatsApp testada com sucesso!",
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: result.message || "Falha ao testar conexão com WhatsApp",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao testar conexão com WhatsApp",
+        variant: "destructive",
+      });
+    } finally {
+      setIsTestingWhatsapp(false);
+    }
+  };
+
+  // Função para salvar configuração do WhatsApp
+  const saveWhatsappConfig = async () => {
+    try {
+      const response = await fetch('/api/whatsapp/configure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(whatsappConfig)
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Sucesso",
+          description: "Configuração do WhatsApp salva com sucesso!",
+        });
+        setIsWhatsappModalOpen(false);
+        queryClient.invalidateQueries({ queryKey: ['/api/das/configuracoes'] });
+      } else {
+        throw new Error('Erro ao salvar configuração');
+      }
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao salvar configuração do WhatsApp",
+        variant: "destructive",
+      });
+    }
+  };
 
   const startSchedulerMutation = useMutation({
     mutationFn: async () => {
@@ -912,6 +1005,7 @@ export default function DASMEIPage() {
                         <Button 
                           variant="outline" 
                           className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                          onClick={() => setIsWhatsappModalOpen(true)}
                         >
                           Configurar WhatsApp
                         </Button>
@@ -1286,6 +1380,132 @@ export default function DASMEIPage() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Modal de Configuração do WhatsApp */}
+        <Dialog open={isWhatsappModalOpen} onOpenChange={setIsWhatsappModalOpen}>
+          <DialogContent className="bg-gray-800 border-gray-700 max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-green-400 flex items-center gap-2">
+                <MessageSquare className="w-5 h-5" />
+                Configuração do WhatsApp - Evolution API
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-6">
+              {/* Configurações Básicas */}
+              <div className="space-y-4">
+                <h3 className="text-white font-medium">Configurações Básicas</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-gray-300">URL do Servidor *</Label>
+                    <Input
+                      placeholder="https://api.evolution.com"
+                      value={whatsappConfig.serverUrl}
+                      onChange={(e) => setWhatsappConfig({...whatsappConfig, serverUrl: e.target.value})}
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label className="text-gray-300">API Key *</Label>
+                    <Input
+                      type="password"
+                      placeholder="Sua API Key"
+                      value={whatsappConfig.apiKey}
+                      onChange={(e) => setWhatsappConfig({...whatsappConfig, apiKey: e.target.value})}
+                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <Label className="text-gray-300">Nome da Instância *</Label>
+                  <Input
+                    placeholder="minha-instancia"
+                    value={whatsappConfig.instance}
+                    onChange={(e) => setWhatsappConfig({...whatsappConfig, instance: e.target.value})}
+                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                  />
+                </div>
+              </div>
+
+              {/* Configurações Avançadas */}
+              <div className="space-y-4">
+                <h3 className="text-white font-medium">Configurações Avançadas</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-gray-300">Delay Padrão (ms)</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="30000"
+                      value={whatsappConfig.defaultDelay}
+                      onChange={(e) => setWhatsappConfig({...whatsappConfig, defaultDelay: parseInt(e.target.value) || 1000})}
+                      className="bg-gray-700 border-gray-600 text-white"
+                    />
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-gray-300">Preview de Links</Label>
+                      <Switch
+                        checked={whatsappConfig.linkPreview}
+                        onCheckedChange={(checked) => setWhatsappConfig({...whatsappConfig, linkPreview: checked})}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <Label className="text-gray-300">Mencionar Todos</Label>
+                      <Switch
+                        checked={whatsappConfig.mentionsEveryOne}
+                        onCheckedChange={(checked) => setWhatsappConfig({...whatsappConfig, mentionsEveryOne: checked})}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Informações da API */}
+              <div className="bg-gray-700 p-4 rounded-lg">
+                <h4 className="text-white font-medium mb-2">Evolution API - Endpoints</h4>
+                <div className="space-y-2 text-sm text-gray-300">
+                  <p><strong>Envio de Texto:</strong> POST /message/sendText/{`{instance}`}</p>
+                  <p><strong>Envio de Arquivo:</strong> POST /message/sendMedia/{`{instance}`}</p>
+                  <p><strong>Headers:</strong> Content-Type: application/json, apikey: {`<api-key>`}</p>
+                </div>
+              </div>
+
+              {/* Botões de Ação */}
+              <div className="flex gap-3 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={testWhatsappConnection}
+                  disabled={isTestingWhatsapp}
+                  className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                >
+                  {isTestingWhatsapp ? 'Testando...' : 'Testar Conexão'}
+                </Button>
+                
+                <Button
+                  onClick={saveWhatsappConfig}
+                  className="bg-green-600 hover:bg-green-700 flex-1"
+                >
+                  Salvar Configuração
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  onClick={() => setIsWhatsappModalOpen(false)}
+                  className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
