@@ -1673,48 +1673,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Codificar a instância para URL
       const encodedInstance = encodeURIComponent(instance);
       
-      // Primeiro, tentar listar todas as instâncias para diagnóstico
-      const listUrl = `${baseUrl}/instances`;
-      console.log('Listando instâncias disponíveis:', listUrl);
+      // Testar conexão usando endpoint de envio de texto (método correto)
+      const testUrl = `${baseUrl}/message/sendText/${encodedInstance}`;
+      console.log('Testando conexão com endpoint sendText:', testUrl);
       
-      let availableInstances = [];
-      try {
-        const listResponse = await fetch(listUrl, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': apiKey
-          }
-        });
-
-        if (listResponse.ok) {
-          const listResult = await listResponse.json();
-          availableInstances = Array.isArray(listResult) ? listResult : (listResult.instances || []);
-          console.log('Instâncias disponíveis:', availableInstances.map((inst: any) => inst.name || inst.instance || inst.instanceName));
-        }
-      } catch (e) {
-        console.log('Erro ao listar instâncias:', e);
-      }
-
-      // Agora testar o endpoint fetchInstance
-      const testUrl = `${baseUrl}/instance/fetchInstance/${encodedInstance}`;
-      console.log('Testando fetchInstance:', testUrl);
-      
+      // Fazer uma requisição POST de teste (sem enviar mensagem real)
       const response = await fetch(testUrl, {
-        method: 'GET',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'apikey': apiKey
-        }
+        },
+        body: JSON.stringify({
+          number: '5511999999999', // Número fictício para teste
+          text: 'Teste de conexão - ignorar',
+          delay: 0
+        })
       });
 
       if (response.ok) {
         const result = await response.json();
         res.json({ 
           success: true, 
-          message: 'Conexão testada com sucesso com fetchInstance',
-          instanceInfo: result,
-          availableInstances: availableInstances
+          message: 'Conexão testada com sucesso! Endpoint sendText está funcionando.',
+          responseData: result
         });
       } else {
         const errorText = await response.text();
@@ -1724,19 +1706,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           errorMessage += ` - ${errorText}`;
         }
         
-        if (response.status === 404) {
-          errorMessage += `\n\nInstância "${instance}" não encontrada no servidor.`;
-          if (availableInstances.length > 0) {
-            errorMessage += `\nInstâncias disponíveis: ${availableInstances.map((inst: any) => inst.name || inst.instance || inst.instanceName).join(', ')}`;
-          }
+        // Alguns erros específicos podem indicar que a API está funcionando
+        if (response.status === 400) {
+          errorMessage += '\n\nA API está respondendo, mas pode haver problema com os dados enviados. Verifique se a instância está ativa.';
+        } else if (response.status === 404) {
+          errorMessage += `\n\nInstância "${instance}" não encontrada no servidor Evolution API.`;
         } else if (response.status === 401 || response.status === 403) {
-          errorMessage += '\nVerifique se a API Key está correta.';
+          errorMessage += '\n\nVerifique se a API Key está correta.';
         }
         
         res.json({ 
           success: false, 
-          message: errorMessage,
-          availableInstances: availableInstances
+          message: errorMessage
         });
       }
     } catch (error) {
