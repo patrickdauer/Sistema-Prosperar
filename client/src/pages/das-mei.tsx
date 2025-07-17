@@ -336,9 +336,14 @@ export default function DASMEIPage() {
 
     setIsTestingWhatsapp(true);
     try {
+      const token = localStorage.getItem('auth_token');
+      
       const response = await fetch('/api/whatsapp/test', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(whatsappConfig)
       });
 
@@ -370,9 +375,14 @@ export default function DASMEIPage() {
   // Função para salvar configuração do WhatsApp
   const saveWhatsappConfig = async () => {
     try {
+      const token = localStorage.getItem('auth_token');
+      
       const response = await fetch('/api/whatsapp/configure', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(whatsappConfig)
       });
 
@@ -383,6 +393,7 @@ export default function DASMEIPage() {
         });
         setIsWhatsappModalOpen(false);
         queryClient.invalidateQueries({ queryKey: ['/api/das/configuracoes'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/das/status'] });
       } else {
         throw new Error('Erro ao salvar configuração');
       }
@@ -1383,13 +1394,17 @@ export default function DASMEIPage() {
 
         {/* Modal de Configuração do WhatsApp */}
         <Dialog open={isWhatsappModalOpen} onOpenChange={setIsWhatsappModalOpen}>
-          <DialogContent className="bg-gray-800 border-gray-700 max-w-2xl">
+          <DialogContent className="bg-gray-800 border-gray-700 max-w-2xl" aria-describedby="whatsapp-config-description">
             <DialogHeader>
               <DialogTitle className="text-green-400 flex items-center gap-2">
                 <MessageSquare className="w-5 h-5" />
                 Configuração do WhatsApp - Evolution API
               </DialogTitle>
             </DialogHeader>
+            
+            <div id="whatsapp-config-description" className="sr-only">
+              Configure sua integração com Evolution API para envio de mensagens WhatsApp automáticas do sistema DAS-MEI.
+            </div>
             
             <div className="space-y-6">
               {/* Configurações Básicas */}
