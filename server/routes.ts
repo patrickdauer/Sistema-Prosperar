@@ -1675,6 +1675,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Teste de conexão com Evolution API
       const testUrl = `${baseUrl}/instance/fetchInstance/${encodedInstance}`;
+      
+      console.log('Testando URL:', testUrl);
+      console.log('Headers:', {
+        'Content-Type': 'application/json',
+        'apikey': apiKey ? '***' : 'undefined'
+      });
+      
       const response = await fetch(testUrl, {
         method: 'GET',
         headers: {
@@ -1691,9 +1698,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
           instanceInfo: result 
         });
       } else {
+        let errorMessage = `Erro HTTP ${response.status}: ${response.statusText}`;
+        
+        // Tentar obter mais detalhes do erro
+        try {
+          const errorData = await response.text();
+          if (errorData) {
+            errorMessage += ` - ${errorData}`;
+          }
+        } catch (e) {
+          // Ignorar erro ao ler resposta
+        }
+        
+        if (response.status === 404) {
+          errorMessage += '. Verifique se a instância existe no servidor Evolution API.';
+        } else if (response.status === 401 || response.status === 403) {
+          errorMessage += '. Verifique se a API Key está correta.';
+        }
+        
         res.json({ 
           success: false, 
-          message: `Erro na conexão: ${response.status} ${response.statusText}` 
+          message: errorMessage
         });
       }
     } catch (error) {
