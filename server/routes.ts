@@ -1673,52 +1673,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Codificar a instância para URL
       const encodedInstance = encodeURIComponent(instance);
       
-      // Teste de conexão com Evolution API
-      const testUrl = `${baseUrl}/instance/fetchInstance/${encodedInstance}`;
+      // Tentar diferentes endpoints da Evolution API
+      const possibleEndpoints = [
+        `/instance/fetchInstance/${encodedInstance}`,
+        `/instance/connect/${encodedInstance}`,
+        `/instance/status/${encodedInstance}`,
+        `/instance/${encodedInstance}/status`,
+        `/instance/${encodedInstance}`,
+        `/instances`
+      ];
       
-      console.log('Testando URL:', testUrl);
-      console.log('Headers:', {
-        'Content-Type': 'application/json',
-        'apikey': apiKey ? '***' : 'undefined'
-      });
+      let lastError = '';
+      let testSuccess = false;
       
-      const response = await fetch(testUrl, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': apiKey
-        }
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        res.json({ 
-          success: true, 
-          message: 'Conexão testada com sucesso',
-          instanceInfo: result 
-        });
-      } else {
-        let errorMessage = `Erro HTTP ${response.status}: ${response.statusText}`;
+      for (const endpoint of possibleEndpoints) {
+        const testUrl = `${baseUrl}${endpoint}`;
         
-        // Tentar obter mais detalhes do erro
+        console.log('Testando endpoint:', testUrl);
+        
         try {
-          const errorData = await response.text();
-          if (errorData) {
-            errorMessage += ` - ${errorData}`;
+          const response = await fetch(testUrl, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': apiKey
+            }
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            
+            // Se for o endpoint de listagem, verificar se a instância existe
+            if (endpoint === '/instances') {
+              const instances = Array.isArray(result) ? result : (result.instances || []);
+              const instanceExists = instances.some((inst: any) => 
+                inst.name === instance || inst.instance === instance || inst.instanceName === instance
+              );
+              
+              if (instanceExists) {
+                res.json({ 
+                  success: true, 
+                  message: `Instância encontrada via endpoint ${endpoint}`,
+                  instanceInfo: result,
+                  endpoint: endpoint
+                });
+                testSuccess = true;
+                break;
+              } else {
+                lastError = `Instância "${instance}" não encontrada na lista de instâncias.`;
+                continue;
+              }
+            } else {
+              res.json({ 
+                success: true, 
+                message: `Conexão testada com sucesso via endpoint ${endpoint}`,
+                instanceInfo: result,
+                endpoint: endpoint
+              });
+              testSuccess = true;
+              break;
+            }
+          } else {
+            const errorText = await response.text();
+            lastError = `${endpoint}: HTTP ${response.status} - ${errorText}`;
+            continue;
           }
-        } catch (e) {
-          // Ignorar erro ao ler resposta
+        } catch (error) {
+          lastError = `${endpoint}: ${error}`;
+          continue;
         }
-        
-        if (response.status === 404) {
-          errorMessage += '. Verifique se a instância existe no servidor Evolution API.';
-        } else if (response.status === 401 || response.status === 403) {
-          errorMessage += '. Verifique se a API Key está correta.';
-        }
-        
+      }
+      
+      if (!testSuccess) {
         res.json({ 
           success: false, 
-          message: errorMessage
+          message: `Nenhum endpoint funcionou. Último erro: ${lastError}. Verifique se a instância "${instance}" existe no servidor Evolution API.`
         });
       }
     } catch (error) {
