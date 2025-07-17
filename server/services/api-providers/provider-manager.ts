@@ -130,6 +130,7 @@ export class ApiProviderManager {
       type: type,
       name: this.getProviderInfo(type)?.displayName || type,
       credentials: JSON.stringify(credentials),
+      configuration: JSON.stringify({}), // Configuração vazia por padrão
       is_active: true,
       created_by: userId,
     });
