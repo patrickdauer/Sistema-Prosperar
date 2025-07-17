@@ -263,12 +263,7 @@ export default function DASMEIPage() {
 
   const testProviderMutation = useMutation({
     mutationFn: async ({ type, credentials }: { type: string; credentials: any }) => {
-      const response = await fetch(`/api/${type}/test`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials)
-      });
-      if (!response.ok) throw new Error('Erro ao testar provedor');
+      const response = await apiRequest('POST', `/api/${type}/test`, credentials);
       return response.json();
     },
     onSuccess: (data) => {
@@ -289,12 +284,7 @@ export default function DASMEIPage() {
 
   const configureProviderMutation = useMutation({
     mutationFn: async ({ type, credentials }: { type: string; credentials: any }) => {
-      const response = await fetch(`/api/${type}/configure`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials)
-      });
-      if (!response.ok) throw new Error('Erro ao configurar provedor');
+      const response = await apiRequest('POST', `/api/${type}/configure`, credentials);
       return response.json();
     },
     onSuccess: () => {
@@ -330,12 +320,7 @@ export default function DASMEIPage() {
 
   const generateDASMutation = useMutation({
     mutationFn: async ({ cnpj, mesAno }: { cnpj: string; mesAno?: string }) => {
-      const response = await fetch('/api/infosimples/gerar-das', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cnpj, mesAno })
-      });
-      if (!response.ok) throw new Error('Erro ao gerar DAS');
+      const response = await apiRequest('POST', '/api/infosimples/gerar-das', { cnpj, mesAno });
       return response.json();
     },
     onSuccess: (data) => {
