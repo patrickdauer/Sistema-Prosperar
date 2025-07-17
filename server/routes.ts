@@ -1576,13 +1576,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Status do sistema
   app.get('/api/das/status', authenticateToken, async (req, res) => {
     try {
+      // Testar conexão WhatsApp se configurado
+      let whatsappConnected = false;
+      if (messageManager.isWhatsAppConfigured()) {
+        try {
+          const whatsappProvider = await dasStorage.getApiConfigurationByType('whatsapp');
+          if (whatsappProvider && whatsappProvider.isActive) {
+            const { serverUrl, apiKey } = whatsappProvider.credentials;
+            const baseUrl = serverUrl.startsWith('http') ? serverUrl : `https://${serverUrl}`;
+            
+            const response = await fetch(`${baseUrl}/instance/fetchInstances`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                'apikey': apiKey
+              }
+            });
+            
+            whatsappConnected = response.ok;
+          }
+        } catch (error) {
+          whatsappConnected = false;
+        }
+      }
+
       const status = {
         dasProvider: {
           configured: dasProviderManager.isConfigured(),
           name: dasProviderManager.getProviderName()
         },
         whatsapp: {
-          configured: messageManager.isWhatsAppConfigured()
+          configured: messageManager.isWhatsAppConfigured(),
+          connected: whatsappConnected
         },
         email: {
           configured: messageManager.isEmailConfigured()

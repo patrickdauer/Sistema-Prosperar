@@ -992,9 +992,21 @@ export default function DASMEIPage() {
                         <div className="flex items-center gap-2 mb-2">
                           <MessageSquare className="w-5 h-5 text-green-400" />
                           <h4 className="text-white font-medium">WhatsApp</h4>
-                          <div className={`w-3 h-3 rounded-full ${status?.whatsapp?.configured ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                          <div className={`w-3 h-3 rounded-full ${
+                            status?.whatsapp?.connected ? 'bg-green-500' : 
+                            status?.whatsapp?.configured ? 'bg-yellow-500' : 'bg-red-500'
+                          }`}></div>
                         </div>
-                        <p className="text-gray-300 text-sm mb-3">Notificações via WhatsApp</p>
+                        <p className="text-gray-300 text-sm mb-3">
+                          Notificações via WhatsApp
+                          <span className={`ml-2 text-xs ${
+                            status?.whatsapp?.connected ? 'text-green-400' : 
+                            status?.whatsapp?.configured ? 'text-yellow-400' : 'text-red-400'
+                          }`}>
+                            {status?.whatsapp?.connected ? '(Conectado)' : 
+                             status?.whatsapp?.configured ? '(Configurado)' : '(Desconectado)'}
+                          </span>
+                        </p>
                         <Button 
                           variant="outline" 
                           className="border-gray-600 text-gray-300 hover:bg-gray-700"
