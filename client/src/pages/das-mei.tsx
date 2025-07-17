@@ -82,9 +82,13 @@ export default function DASMEIPage() {
 
   const [apiConfig, setApiConfig] = useState({
     infosimples: {
-      token: ''
+      token: '',
+      baseUrl: '',
+      timeout: 600
     }
   });
+
+  const [testDasCnpj, setTestDasCnpj] = useState('');
 
   const [whatsappConfig, setWhatsappConfig] = useState({
     serverUrl: '',
@@ -259,10 +263,10 @@ export default function DASMEIPage() {
 
   const testProviderMutation = useMutation({
     mutationFn: async ({ type, credentials }: { type: string; credentials: any }) => {
-      const response = await fetch('/api/das/providers/test', {
+      const response = await fetch(`/api/${type}/test`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type, credentials })
+        body: JSON.stringify(credentials)
       });
       if (!response.ok) throw new Error('Erro ao testar provedor');
       return response.json();
@@ -285,10 +289,10 @@ export default function DASMEIPage() {
 
   const configureProviderMutation = useMutation({
     mutationFn: async ({ type, credentials }: { type: string; credentials: any }) => {
-      const response = await fetch('/api/das/providers/configure', {
+      const response = await fetch(`/api/${type}/configure`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type, credentials })
+        body: JSON.stringify(credentials)
       });
       if (!response.ok) throw new Error('Erro ao configurar provedor');
       return response.json();
@@ -321,6 +325,33 @@ export default function DASMEIPage() {
       queryClient.invalidateQueries({ queryKey: ['/api/das/configuracoes'] });
       queryClient.invalidateQueries({ queryKey: ['/api/das/status'] });
       toast({ title: "Configuração ativada com sucesso!" });
+    }
+  });
+
+  const generateDASMutation = useMutation({
+    mutationFn: async ({ cnpj, mesAno }: { cnpj: string; mesAno?: string }) => {
+      const response = await fetch('/api/infosimples/gerar-das', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cnpj, mesAno })
+      });
+      if (!response.ok) throw new Error('Erro ao gerar DAS');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: data.success ? "Sucesso" : "Erro",
+        description: data.success ? "DAS gerado com sucesso!" : data.error || "Falha ao gerar DAS",
+        variant: data.success ? "default" : "destructive",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/das/guias'] });
+    },
+    onError: () => {
+      toast({
+        title: "Erro",
+        description: "Erro ao gerar DAS.",
+        variant: "destructive",
+      });
     }
   });
 
@@ -639,6 +670,35 @@ export default function DASMEIPage() {
           </Card>
         </div>
 
+        {/* Test DAS Generation */}
+        {status?.dasProvider?.configured && (
+          <div className="mb-8">
+            <Card className="bg-gray-800 border-gray-700">
+              <CardHeader>
+                <CardTitle className="text-green-400">Testar Geração DAS</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-4 items-center">
+                  <Input
+                    placeholder="Digite o CNPJ para teste..."
+                    value={testDasCnpj}
+                    onChange={(e) => setTestDasCnpj(e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white max-w-xs"
+                  />
+                  <Button
+                    onClick={() => generateDASMutation.mutate({ cnpj: testDasCnpj })}
+                    disabled={generateDASMutation.isPending || !testDasCnpj}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    {generateDASMutation.isPending ? 'Gerando...' : 'Gerar DAS'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {/* Tabs */}
         <Tabs value={selectedTab} onValueChange={setSelectedTab}>
           <TabsList className="grid w-full grid-cols-5 bg-gray-800">
@@ -905,7 +965,7 @@ export default function DASMEIPage() {
                           <Label className="text-gray-300">Token da API:</Label>
                           <Input
                             type="password"
-                            placeholder="Digite o token da InfoSimples..."
+                            placeholder="jPxhuUwoTl474Vg1QrYIiktfvFFJplCb2V9zxXbG"
                             value={apiConfig.infosimples.token}
                             onChange={(e) => setApiConfig({
                               ...apiConfig,
@@ -913,6 +973,36 @@ export default function DASMEIPage() {
                             })}
                             className="bg-gray-700 border-gray-600 text-white"
                           />
+                        </div>
+                        <div>
+                          <Label className="text-gray-300">Base URL (opcional):</Label>
+                          <Input
+                            placeholder="https://api.infosimples.com/api/v2"
+                            value={apiConfig.infosimples.baseUrl}
+                            onChange={(e) => setApiConfig({
+                              ...apiConfig,
+                              infosimples: { ...apiConfig.infosimples, baseUrl: e.target.value }
+                            })}
+                            className="bg-gray-700 border-gray-600 text-white"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-gray-300">Timeout (segundos):</Label>
+                          <Input
+                            type="number"
+                            placeholder="600"
+                            value={apiConfig.infosimples.timeout}
+                            onChange={(e) => setApiConfig({
+                              ...apiConfig,
+                              infosimples: { ...apiConfig.infosimples, timeout: Number(e.target.value) }
+                            })}
+                            className="bg-gray-700 border-gray-600 text-white"
+                          />
+                        </div>
+                        <div className="text-sm text-gray-400 p-3 bg-gray-700 rounded">
+                          <strong>Endpoint:</strong> /consultas/receita-federal/simples-das<br/>
+                          <strong>Período:</strong> MM/YYYY (mês anterior automático)<br/>
+                          <strong>CNPJ:</strong> Somente números (14 dígitos)
                         </div>
                         <div className="flex gap-2">
                           <Button 

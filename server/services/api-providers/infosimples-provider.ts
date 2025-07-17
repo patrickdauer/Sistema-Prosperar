@@ -2,6 +2,8 @@ import { BaseApiProvider, ApiResponse, ApiCredentials, ApiProviderConfig } from 
 
 export interface InfoSimplesCredentials extends ApiCredentials {
   token: string;
+  baseUrl?: string;
+  timeout?: number;
 }
 
 export interface DasGuiaResponse {
@@ -20,26 +22,35 @@ export interface InfoSimplesApiResponse {
   data?: any;
   message?: string;
   error?: string;
+  boleto?: {
+    url: string;
+    codigo_barras: string;
+    valor: number;
+    vencimento: string;
+  };
 }
 
 export class InfoSimplesProvider extends BaseApiProvider {
+  private apiTimeout: number;
+
   constructor(credentials: InfoSimplesCredentials) {
     const config: ApiProviderConfig = {
       name: 'infosimples',
       displayName: 'InfoSimples',
       description: 'Geração automática de guias DAS-MEI via InfoSimples API',
       requiredCredentials: ['token'],
-      baseUrl: 'https://api.infosimples.com/api/v2/',
+      baseUrl: credentials.baseUrl || 'https://api.infosimples.com/api/v2',
       rateLimitPerMinute: 60,
-      timeout: 30000,
+      timeout: credentials.timeout || 30000,
     };
 
     super(config, credentials);
+    this.apiTimeout = credentials.timeout || 600;
   }
 
   protected getAuthHeaders(): Record<string, string> {
     return {
-      'Authorization': `Bearer ${this.credentials.token}`,
+      'Content-Type': 'application/json',
     };
   }
 
@@ -53,93 +64,166 @@ export class InfoSimplesProvider extends BaseApiProvider {
   }
 
   async testConnection(): Promise<ApiResponse> {
-    return this.makeRequest('/user/balance');
-  }
+    try {
+      // Teste com CNPJ fictício para verificar se a API responde
+      const testCnpj = '11222333000181';
+      const currentDate = new Date();
+      const previousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1);
+      const periodo = `${String(previousMonth.getMonth() + 1).padStart(2, '0')}/${previousMonth.getFullYear()}`;
 
-  async getBalance(): Promise<ApiResponse<{ balance: number }>> {
-    return this.makeRequest('/user/balance');
-  }
+      const response = await fetch(`${this.config.baseUrl}/consultas/receita-federal/simples-das`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({
+          token: this.credentials.token,
+          cnpj: testCnpj,
+          periodo: periodo,
+          timeout: this.apiTimeout,
+          ignore_site_receipt: null
+        })
+      });
 
-  async generateDasGuia(cnpj: string, mesAno: string): Promise<ApiResponse<DasGuiaResponse>> {
-    const endpoint = '/mei/das/generate';
-    const payload = {
-      cnpj: cnpj.replace(/\D/g, ''), // Remove formatação
-      mes_ano: mesAno,
-    };
-
-    return this.makeRequest(endpoint, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
-  }
-
-  async getGuiaStatus(guiaId: string): Promise<ApiResponse<DasGuiaResponse>> {
-    const endpoint = `/mei/das/status/${guiaId}`;
-    return this.makeRequest(endpoint);
-  }
-
-  async downloadGuia(guiaId: string): Promise<ApiResponse<{ downloadUrl: string }>> {
-    const endpoint = `/mei/das/download/${guiaId}`;
-    return this.makeRequest(endpoint);
-  }
-
-  async listGuias(cnpj?: string, mesAno?: string): Promise<ApiResponse<DasGuiaResponse[]>> {
-    let endpoint = '/mei/das/list';
-    const params = new URLSearchParams();
-    
-    if (cnpj) params.append('cnpj', cnpj.replace(/\D/g, ''));
-    if (mesAno) params.append('mes_ano', mesAno);
-    
-    if (params.toString()) {
-      endpoint += `?${params.toString()}`;
+      // Aceitar 200, 400 ou 422 como sinais de que a API está funcionando
+      const isWorking = response.status === 200 || response.status === 400 || response.status === 422;
+      
+      return {
+        success: isWorking,
+        data: { status: response.status, statusText: response.statusText }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erro desconhecido'
+      };
     }
-
-    return this.makeRequest(endpoint);
   }
 
-  async bulkGenerateGuias(requests: Array<{cnpj: string, mesAno: string}>): Promise<ApiResponse<DasGuiaResponse[]>> {
-    const endpoint = '/mei/das/bulk-generate';
-    const payload = {
-      requests: requests.map(req => ({
-        cnpj: req.cnpj.replace(/\D/g, ''),
-        mes_ano: req.mesAno,
-      })),
-    };
+  async gerarDAS(cnpj: string, mesAno?: string): Promise<InfoSimplesApiResponse> {
+    try {
+      // Se não foi fornecido período, usar o mês anterior
+      let periodo = mesAno;
+      if (!periodo) {
+        const currentDate = new Date();
+        const previousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1);
+        periodo = `${String(previousMonth.getMonth() + 1).padStart(2, '0')}/${previousMonth.getFullYear()}`;
+      }
 
-    return this.makeRequest(endpoint, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
+      // Validar formato do período (MM/YYYY)
+      const periodoRegex = /^(0[1-9]|1[0-2])\/\d{4}$/;
+      if (!periodoRegex.test(periodo)) {
+        throw new Error('Período deve estar no formato MM/YYYY');
+      }
+
+      // Limpar CNPJ (remover pontos e barras)
+      const cnpjLimpo = cnpj.replace(/[^\d]/g, '');
+      
+      if (cnpjLimpo.length !== 14) {
+        throw new Error('CNPJ deve ter 14 dígitos');
+      }
+
+      const requestData = {
+        token: this.credentials.token,
+        cnpj: cnpjLimpo,
+        periodo: periodo,
+        timeout: this.apiTimeout,
+        ignore_site_receipt: null
+      };
+
+      console.log('Enviando requisição para InfoSimples:', {
+        url: `${this.config.baseUrl}/consultas/receita-federal/simples-das`,
+        cnpj: cnpjLimpo,
+        periodo: periodo
+      });
+
+      const response = await fetch(`${this.config.baseUrl}/consultas/receita-federal/simples-das`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(requestData)
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        console.error('Erro na resposta da InfoSimples:', responseData);
+        return {
+          success: false,
+          error: responseData.message || `Erro HTTP ${response.status}: ${response.statusText}`
+        };
+      }
+
+      // Processar resposta da API
+      const result: InfoSimplesApiResponse = {
+        success: true,
+        data: responseData
+      };
+
+      // Extrair informações do boleto se disponível
+      if (responseData.boleto || responseData.dados_boleto || responseData.data) {
+        const boletoData = responseData.boleto || responseData.dados_boleto || responseData.data;
+        result.boleto = {
+          url: boletoData.url || boletoData.link_boleto || boletoData.link,
+          codigo_barras: boletoData.codigo_barras || boletoData.linha_digitavel || boletoData.barcode,
+          valor: parseFloat(boletoData.valor || boletoData.value || '0'),
+          vencimento: boletoData.vencimento || boletoData.data_vencimento || boletoData.due_date
+        };
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Erro ao gerar DAS:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erro desconhecido'
+      };
+    }
   }
 
-  // Métodos específicos para MEI
-  async consultarSituacaoMei(cnpj: string): Promise<ApiResponse> {
-    const endpoint = '/mei/situacao';
-    const payload = { cnpj: cnpj.replace(/\D/g, '') };
-
-    return this.makeRequest(endpoint, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
+  // Método para obter período anterior automaticamente
+  getPeriodoAnterior(): string {
+    const currentDate = new Date();
+    const previousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1);
+    return `${String(previousMonth.getMonth() + 1).padStart(2, '0')}/${previousMonth.getFullYear()}`;
   }
 
-  async consultarDebitos(cnpj: string): Promise<ApiResponse> {
-    const endpoint = '/mei/debitos';
-    const payload = { cnpj: cnpj.replace(/\D/g, '') };
-
-    return this.makeRequest(endpoint, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
+  // Método para validar CNPJ
+  validarCNPJ(cnpj: string): boolean {
+    const cnpjLimpo = cnpj.replace(/[^\d]/g, '');
+    return cnpjLimpo.length === 14;
   }
 
-  async consultarHistoricoDeclaracoes(cnpj: string): Promise<ApiResponse> {
-    const endpoint = '/mei/declaracoes';
-    const payload = { cnpj: cnpj.replace(/\D/g, '') };
+  // Método para validar formato de período
+  validarPeriodo(periodo: string): boolean {
+    const periodoRegex = /^(0[1-9]|1[0-2])\/\d{4}$/;
+    return periodoRegex.test(periodo);
+  }
 
-    return this.makeRequest(endpoint, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
+  // Método para limpar CNPJ
+  limparCNPJ(cnpj: string): string {
+    return cnpj.replace(/[^\d]/g, '');
+  }
+
+  // Método para processar geração em lote
+  async gerarDASLote(clientes: Array<{id: number, cnpj: string, nome: string}>, mesAno?: string): Promise<Array<{cliente: any, resultado: InfoSimplesApiResponse}>> {
+    const resultados = [];
+    
+    for (const cliente of clientes) {
+      try {
+        const resultado = await this.gerarDAS(cliente.cnpj, mesAno);
+        resultados.push({ cliente, resultado });
+        
+        // Aguardar um pouco entre requisições para evitar rate limiting
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      } catch (error) {
+        resultados.push({ 
+          cliente, 
+          resultado: { 
+            success: false, 
+            error: error instanceof Error ? error.message : 'Erro desconhecido' 
+          } 
+        });
+      }
+    }
+    
+    return resultados;
   }
 }

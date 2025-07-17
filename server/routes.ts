@@ -18,6 +18,7 @@ import { alternativeUploadService } from "./services/alternative-upload";
 import { authenticateToken, generateToken } from "./auth";
 import bcrypt from "bcrypt";
 import { seedTaskTemplates, createAdminUser } from "./seedData";
+import { providerManager } from "./services/api-providers/provider-manager";
 import XLSX from "xlsx";
 import puppeteer from "puppeteer";
 import express from "express";
@@ -1944,6 +1945,130 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false, 
         message: 'Erro interno do servidor' 
+      });
+    }
+  });
+
+  // InfoSimples API routes
+  app.post('/api/infosimples/configure', authenticateToken, async (req, res) => {
+    try {
+      const { token, baseUrl, timeout } = req.body;
+      
+      if (!token) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Token é obrigatório' 
+        });
+      }
+
+      const credentials = {
+        token,
+        baseUrl: baseUrl || 'https://api.infosimples.com/api/v2',
+        timeout: timeout || 600
+      };
+
+      // Testar conexão antes de configurar
+      const testResult = await providerManager.testProvider('infosimples', credentials);
+      if (!testResult) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Erro ao testar conexão com InfoSimples' 
+        });
+      }
+
+      // Ativar o provedor
+      await providerManager.switchProvider('infosimples', credentials, req.user.userId);
+      
+      res.json({ 
+        success: true, 
+        message: 'InfoSimples configurado com sucesso' 
+      });
+    } catch (error) {
+      console.error('Erro ao configurar InfoSimples:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Erro ao configurar InfoSimples' 
+      });
+    }
+  });
+
+  app.post('/api/infosimples/test', authenticateToken, async (req, res) => {
+    try {
+      const { token, baseUrl, timeout } = req.body;
+      
+      if (!token) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Token é obrigatório' 
+        });
+      }
+
+      const credentials = {
+        token,
+        baseUrl: baseUrl || 'https://api.infosimples.com/api/v2',
+        timeout: timeout || 600
+      };
+
+      const testResult = await providerManager.testProvider('infosimples', credentials);
+      
+      res.json({ 
+        success: testResult,
+        message: testResult ? 'Conexão testada com sucesso' : 'Erro ao testar conexão'
+      });
+    } catch (error) {
+      console.error('Erro ao testar InfoSimples:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Erro ao testar conexão' 
+      });
+    }
+  });
+
+  app.post('/api/infosimples/gerar-das', authenticateToken, async (req, res) => {
+    try {
+      const { cnpj, mesAno } = req.body;
+      
+      if (!cnpj) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'CNPJ é obrigatório' 
+        });
+      }
+
+      const resultado = await providerManager.gerarDAS(cnpj, mesAno);
+      
+      res.json(resultado);
+    } catch (error) {
+      console.error('Erro ao gerar DAS:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Erro ao gerar DAS' 
+      });
+    }
+  });
+
+  app.post('/api/infosimples/gerar-das-lote', authenticateToken, async (req, res) => {
+    try {
+      const { clientes, mesAno } = req.body;
+      
+      if (!clientes || !Array.isArray(clientes)) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Lista de clientes é obrigatória' 
+        });
+      }
+
+      const resultados = await providerManager.gerarDASLote(clientes, mesAno);
+      
+      res.json({ 
+        success: true, 
+        resultados 
+      });
+    } catch (error) {
+      console.error('Erro ao gerar DAS em lote:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Erro ao gerar DAS em lote' 
       });
     }
   });

@@ -178,6 +178,53 @@ export class ApiProviderManager {
       lastTest: new Date(),
     };
   }
+
+  async gerarDAS(cnpj: string, mesAno?: string): Promise<any> {
+    if (!this.activeProvider) {
+      throw new Error('Nenhum provedor DAS configurado');
+    }
+
+    // Usar o método específico da InfoSimples se disponível
+    if (this.activeProvider instanceof InfoSimplesProvider) {
+      return this.activeProvider.gerarDAS(cnpj, mesAno);
+    }
+
+    // Fallback para outros provedores que possam implementar generateDasGuia
+    if ('generateDasGuia' in this.activeProvider) {
+      return (this.activeProvider as any).generateDasGuia(cnpj, mesAno);
+    }
+
+    throw new Error('Provedor atual não suporta geração de DAS');
+  }
+
+  async gerarDASLote(clientes: Array<{id: number, cnpj: string, nome: string}>, mesAno?: string): Promise<any> {
+    if (!this.activeProvider) {
+      throw new Error('Nenhum provedor DAS configurado');
+    }
+
+    // Usar o método específico da InfoSimples se disponível
+    if (this.activeProvider instanceof InfoSimplesProvider) {
+      return this.activeProvider.gerarDASLote(clientes, mesAno);
+    }
+
+    // Fallback para processamento sequencial
+    const resultados = [];
+    for (const cliente of clientes) {
+      try {
+        const resultado = await this.gerarDAS(cliente.cnpj, mesAno);
+        resultados.push({ cliente, resultado });
+      } catch (error) {
+        resultados.push({ 
+          cliente, 
+          resultado: { 
+            success: false, 
+            error: error instanceof Error ? error.message : 'Erro desconhecido' 
+          } 
+        });
+      }
+    }
+    return resultados;
+  }
 }
 
 export const providerManager = ApiProviderManager.getInstance();
