@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -336,17 +337,7 @@ export default function DASMEIPage() {
 
     setIsTestingWhatsapp(true);
     try {
-      const token = localStorage.getItem('auth_token');
-      
-      const response = await fetch('/api/whatsapp/test', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(whatsappConfig)
-      });
-
+      const response = await apiRequest('POST', '/api/whatsapp/test', whatsappConfig);
       const result = await response.json();
       
       if (response.ok && result.success) {
@@ -375,17 +366,8 @@ export default function DASMEIPage() {
   // Função para salvar configuração do WhatsApp
   const saveWhatsappConfig = async () => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const response = await apiRequest('POST', '/api/whatsapp/configure', whatsappConfig);
       
-      const response = await fetch('/api/whatsapp/configure', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(whatsappConfig)
-      });
-
       if (response.ok) {
         toast({
           title: "Sucesso",
