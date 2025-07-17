@@ -334,7 +334,7 @@ export default function Home() {
               border: '1px solid #333',
               borderRadius: '8px'
             }}
-            onClick={() => window.open('https://link-hub-pro-patrickdauer.replit.app/', '_blank')}>
+            onClick={() => window.location.href = '/links'}>
             <CardHeader style={{ borderBottom: '1px solid #333' }}>
               <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
                 <Link className="h-5 w-5" style={{ color: '#ff8c42' }} />

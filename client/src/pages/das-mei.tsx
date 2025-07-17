@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { CalendarDays, Download, Settings, Users, FileText, Play, Square, Eye, Trash2, Edit, Plus, Filter, Calendar } from 'lucide-react';
+import { CalendarDays, Download, Settings, Users, FileText, Play, Square, Eye, Trash2, Edit, Plus, Filter, Calendar, Mail, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -68,6 +68,12 @@ export default function DASMEIPage() {
     status: 'todos', // 'success', 'error', 'pending', 'todos'
     startDate: '',
     endDate: ''
+  });
+
+  const [apiConfig, setApiConfig] = useState({
+    infosimples: {
+      token: ''
+    }
   });
 
   // Queries
@@ -229,6 +235,58 @@ export default function DASMEIPage() {
     }
   });
 
+  const testProviderMutation = useMutation({
+    mutationFn: async ({ type, credentials }: { type: string; credentials: any }) => {
+      const response = await fetch('/api/das/providers/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, credentials })
+      });
+      if (!response.ok) throw new Error('Erro ao testar provedor');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: data.success ? "Sucesso" : "Erro",
+        description: data.success ? "Conexão testada com sucesso!" : "Falha na conexão com o provedor",
+        variant: data.success ? "default" : "destructive",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Erro",
+        description: "Erro ao testar provedor.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const configureProviderMutation = useMutation({
+    mutationFn: async ({ type, credentials }: { type: string; credentials: any }) => {
+      const response = await fetch('/api/das/providers/configure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, credentials })
+      });
+      if (!response.ok) throw new Error('Erro ao configurar provedor');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/das/status'] });
+      toast({
+        title: "Sucesso",
+        description: "Provedor configurado com sucesso!",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Erro",
+        description: "Erro ao configurar provedor.",
+        variant: "destructive",
+      });
+    }
+  });
+
   const activateConfigMutation = useMutation({
     mutationFn: async (id: number) => {
       const response = await fetch(`/api/das/configuracoes/${id}/ativar`, {
@@ -306,6 +364,16 @@ export default function DASMEIPage() {
 
   const handleConfigSubmit = (data: ApiConfig) => {
     createConfigMutation.mutate(data);
+  };
+
+  const testProvider = (type: string) => {
+    const credentials = apiConfig[type as keyof typeof apiConfig];
+    testProviderMutation.mutate({ type, credentials });
+  };
+
+  const configureProvider = (type: string) => {
+    const credentials = apiConfig[type as keyof typeof apiConfig];
+    configureProviderMutation.mutate({ type, credentials });
   };
 
   const getStatusBadge = (status: string) => {
@@ -723,10 +791,141 @@ export default function DASMEIPage() {
           </TabsContent>
 
           <TabsContent value="configuracoes">
-            <Card className="bg-gray-800 border-gray-700">
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle className="text-green-400">Configurações de API</CardTitle>
+            <div className="space-y-6">
+              {/* Configuração de Provedores de API */}
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-green-400">Provedores de API</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1">
+                        <Label className="text-gray-300">Provedor Atual:</Label>
+                        <p className="text-white font-medium">{status?.dasProvider?.name || 'Nenhum'}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className={`w-3 h-3 rounded-full ${status?.dasProvider?.configured ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                        <span className={status?.dasProvider?.configured ? 'text-green-400' : 'text-red-400'}>
+                          {status?.dasProvider?.configured ? 'Configurado' : 'Não configurado'}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="border-t border-gray-600 pt-4">
+                      <h4 className="text-white font-medium mb-3">Configurar InfoSimples</h4>
+                      <div className="space-y-3">
+                        <div>
+                          <Label className="text-gray-300">Token da API:</Label>
+                          <Input
+                            type="password"
+                            placeholder="Digite o token da InfoSimples..."
+                            value={apiConfig.infosimples.token}
+                            onChange={(e) => setApiConfig({
+                              ...apiConfig,
+                              infosimples: { ...apiConfig.infosimples, token: e.target.value }
+                            })}
+                            className="bg-gray-700 border-gray-600 text-white"
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <Button 
+                            onClick={() => testProvider('infosimples')}
+                            variant="outline"
+                            className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                            disabled={!apiConfig.infosimples.token || testProviderMutation.isPending}
+                          >
+                            {testProviderMutation.isPending ? 'Testando...' : 'Testar Conexão'}
+                          </Button>
+                          <Button 
+                            onClick={() => configureProvider('infosimples')}
+                            className="bg-green-600 hover:bg-green-700"
+                            disabled={!apiConfig.infosimples.token || configureProviderMutation.isPending}
+                          >
+                            {configureProviderMutation.isPending ? 'Configurando...' : 'Configurar'}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-gray-600 pt-4">
+                      <h4 className="text-white font-medium mb-3">Outros Provedores</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="p-3 bg-gray-700 rounded-lg">
+                          <h5 className="text-white font-medium">Receita Federal</h5>
+                          <p className="text-gray-400 text-sm">Integração direta com APIs da Receita Federal</p>
+                          <Button 
+                            variant="outline" 
+                            disabled
+                            className="mt-2 border-gray-600 text-gray-500"
+                          >
+                            Em breve
+                          </Button>
+                        </div>
+                        <div className="p-3 bg-gray-700 rounded-lg">
+                          <h5 className="text-white font-medium">SERPRO</h5>
+                          <p className="text-gray-400 text-sm">Integração com APIs do SERPRO</p>
+                          <Button 
+                            variant="outline" 
+                            disabled
+                            className="mt-2 border-gray-600 text-gray-500"
+                          >
+                            Em breve
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Configurações de Envio */}
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-green-400">Configurações de Envio</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-4 bg-gray-700 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Mail className="w-5 h-5 text-blue-400" />
+                          <h4 className="text-white font-medium">Email</h4>
+                          <div className={`w-3 h-3 rounded-full ${status?.email?.configured ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                        </div>
+                        <p className="text-gray-300 text-sm mb-3">Envio automático de guias DAS via email</p>
+                        <Button 
+                          variant="outline" 
+                          className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                        >
+                          Configurar Email
+                        </Button>
+                      </div>
+                      
+                      <div className="p-4 bg-gray-700 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <MessageSquare className="w-5 h-5 text-green-400" />
+                          <h4 className="text-white font-medium">WhatsApp</h4>
+                          <div className={`w-3 h-3 rounded-full ${status?.whatsapp?.configured ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                        </div>
+                        <p className="text-gray-300 text-sm mb-3">Notificações via WhatsApp</p>
+                        <Button 
+                          variant="outline" 
+                          className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                        >
+                          Configurar WhatsApp
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Configurações de API - Tabela existente */}
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="text-green-400">Configurações de API</CardTitle>
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button className="bg-green-600 hover:bg-green-700">
@@ -838,6 +1037,7 @@ export default function DASMEIPage() {
                 </Table>
               </CardContent>
             </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="guias">

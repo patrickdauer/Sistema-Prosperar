@@ -1595,6 +1595,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Rotas para configuração de provedores de API
+  app.get('/api/das/providers', authenticateToken, async (req, res) => {
+    try {
+      const { providerManager } = await import('./services/api-providers/provider-manager');
+      const providers = providerManager.getAvailableProviders();
+      res.json(providers);
+    } catch (error) {
+      res.status(500).json({ error: 'Erro ao obter provedores disponíveis' });
+    }
+  });
+
+  app.post('/api/das/providers/test', authenticateToken, async (req, res) => {
+    try {
+      const { type, credentials } = req.body;
+      const { providerManager } = await import('./services/api-providers/provider-manager');
+      const isValid = await providerManager.testProvider(type, credentials);
+      res.json({ success: isValid });
+    } catch (error) {
+      res.status(500).json({ error: 'Erro ao testar provedor' });
+    }
+  });
+
+  app.post('/api/das/providers/configure', authenticateToken, async (req, res) => {
+    try {
+      const { type, credentials } = req.body;
+      const { providerManager } = await import('./services/api-providers/provider-manager');
+      
+      await providerManager.switchProvider(type, credentials, req.user!.userId);
+      await dasProvider.refreshProvider();
+      
+      res.json({ success: true, message: 'Provedor configurado com sucesso' });
+    } catch (error) {
+      res.status(500).json({ error: 'Erro ao configurar provedor' });
+    }
+  });
+
+  app.get('/api/das/providers/balance', authenticateToken, async (req, res) => {
+    try {
+      if (!dasProvider.configured) {
+        return res.status(400).json({ error: 'Nenhum provedor configurado' });
+      }
+
+      // Verificar se é InfoSimples
+      if (dasProvider.name === 'infosimples') {
+        const provider = (dasProvider as any).activeProvider;
+        const result = await provider.getBalance();
+        
+        if (result.success) {
+          res.json(result.data);
+        } else {
+          res.status(400).json({ error: result.error });
+        }
+      } else {
+        res.status(400).json({ error: 'Provedor não suporta consulta de saldo' });
+      }
+    } catch (error) {
+      res.status(500).json({ error: 'Erro ao consultar saldo' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

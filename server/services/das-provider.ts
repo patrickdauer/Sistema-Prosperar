@@ -1,9 +1,15 @@
-// Interface genérica para provedores de DAS-MEI
-export interface DASProviderService {
-  getName(): string;
-  downloadDAS(cnpj: string, mesAno: string): Promise<DASDownloadResult>;
-  isConfigured(): boolean;
-  validateCredentials(): Promise<boolean>;
+import { dasStorage } from '../das-storage';
+import { providerManager } from './api-providers/provider-manager';
+import { BaseApiProvider } from './api-providers/base-provider';
+
+export interface DasProvider {
+  configured: boolean;
+  name: string;
+  displayName: string;
+  testConnection(): Promise<boolean>;
+  generateGuia(cnpj: string, mesAno: string): Promise<any>;
+  getGuiaStatus(guiaId: string): Promise<any>;
+  downloadGuia(guiaId: string): Promise<any>;
 }
 
 export interface DASDownloadResult {
@@ -15,141 +21,180 @@ export interface DASDownloadResult {
   error?: string;
 }
 
-// Implementação para InfoSimples
-export class InfoSimplesProvider implements DASProviderService {
-  private apiKey: string;
-  private baseUrl: string;
+class DasProviderService implements DasProvider {
+  private activeProvider: BaseApiProvider | null = null;
 
-  constructor(credentials: any) {
-    this.apiKey = credentials.apiKey;
-    this.baseUrl = credentials.baseUrl || 'https://api.infosimples.com.br';
+  constructor() {
+    this.initializeProvider();
   }
 
-  getName(): string {
-    return 'InfoSimples';
-  }
-
-  isConfigured(): boolean {
-    return !!(this.apiKey && this.baseUrl);
-  }
-
-  async validateCredentials(): Promise<boolean> {
+  private async initializeProvider(): Promise<void> {
     try {
-      const response = await fetch(`${this.baseUrl}/test`, {
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      return response.ok;
+      this.activeProvider = await providerManager.loadActiveProvider();
     } catch (error) {
-      console.error('Erro ao validar credenciais InfoSimples:', error);
+      console.error('Erro ao inicializar provedor DAS:', error);
+    }
+  }
+
+  get configured(): boolean {
+    return this.activeProvider?.isConfigured() ?? false;
+  }
+
+  get name(): string {
+    return this.activeProvider?.getName() ?? 'Nenhum';
+  }
+
+  get displayName(): string {
+    return this.activeProvider?.getDisplayName() ?? 'Nenhum provedor configurado';
+  }
+
+  async testConnection(): Promise<boolean> {
+    if (!this.activeProvider) {
+      return false;
+    }
+
+    try {
+      const result = await this.activeProvider.testConnection();
+      return result.success;
+    } catch (error) {
+      console.error('Erro ao testar conexão:', error);
       return false;
     }
   }
 
+  async generateGuia(cnpj: string, mesAno: string): Promise<any> {
+    if (!this.activeProvider) {
+      throw new Error('Nenhum provedor configurado');
+    }
+
+    // Verificar se é InfoSimples
+    if (this.activeProvider.getName() === 'infosimples') {
+      const infosimplesProvider = this.activeProvider as any;
+      const result = await infosimplesProvider.generateDasGuia(cnpj, mesAno);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Erro ao gerar guia DAS');
+      }
+
+      return result.data;
+    }
+
+    throw new Error('Provedor não suporta geração de guias DAS');
+  }
+
+  async getGuiaStatus(guiaId: string): Promise<any> {
+    if (!this.activeProvider) {
+      throw new Error('Nenhum provedor configurado');
+    }
+
+    if (this.activeProvider.getName() === 'infosimples') {
+      const infosimplesProvider = this.activeProvider as any;
+      const result = await infosimplesProvider.getGuiaStatus(guiaId);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Erro ao consultar status da guia');
+      }
+
+      return result.data;
+    }
+
+    throw new Error('Provedor não suporta consulta de status');
+  }
+
+  async downloadGuia(guiaId: string): Promise<any> {
+    if (!this.activeProvider) {
+      throw new Error('Nenhum provedor configurado');
+    }
+
+    if (this.activeProvider.getName() === 'infosimples') {
+      const infosimplesProvider = this.activeProvider as any;
+      const result = await infosimplesProvider.downloadGuia(guiaId);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Erro ao baixar guia');
+      }
+
+      return result.data;
+    }
+
+    throw new Error('Provedor não suporta download de guias');
+  }
+
   async downloadDAS(cnpj: string, mesAno: string): Promise<DASDownloadResult> {
     try {
-      if (!this.isConfigured()) {
+      if (!this.activeProvider) {
         return {
           success: false,
-          error: 'InfoSimples não configurado corretamente'
+          error: 'Nenhum provedor configurado'
         };
       }
 
-      const response = await fetch(`${this.baseUrl}/das-mei`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          cnpj: cnpj,
-          mes_ano: mesAno
-        })
-      });
-
-      if (!response.ok) {
-        return {
-          success: false,
-          error: `Erro HTTP ${response.status}: ${response.statusText}`
-        };
-      }
-
-      const data = await response.json();
-      
-      if (data.success && data.pdf_url) {
-        // Baixar o PDF
-        const pdfResponse = await fetch(data.pdf_url);
-        const pdfBuffer = Buffer.from(await pdfResponse.arrayBuffer());
+      if (this.activeProvider.getName() === 'infosimples') {
+        const infosimplesProvider = this.activeProvider as any;
         
+        // Primeiro gera a guia
+        const guiaResult = await infosimplesProvider.generateDasGuia(cnpj, mesAno);
+        if (!guiaResult.success) {
+          return {
+            success: false,
+            error: guiaResult.error || 'Erro ao gerar guia DAS'
+          };
+        }
+
+        // Depois baixa o PDF
+        const downloadResult = await infosimplesProvider.downloadGuia(guiaResult.data.id);
+        if (!downloadResult.success) {
+          return {
+            success: false,
+            error: downloadResult.error || 'Erro ao baixar guia DAS'
+          };
+        }
+
+        // Baixar o arquivo PDF
+        const pdfResponse = await fetch(downloadResult.data.downloadUrl);
+        const pdfBuffer = Buffer.from(await pdfResponse.arrayBuffer());
+
         return {
           success: true,
           pdfBuffer,
           fileName: `DAS_MEI_${cnpj}_${mesAno}.pdf`,
-          valor: data.valor,
-          dataVencimento: data.data_vencimento ? new Date(data.data_vencimento) : undefined
+          valor: guiaResult.data.valor?.toString(),
+          dataVencimento: guiaResult.data.dataVencimento ? new Date(guiaResult.data.dataVencimento) : undefined
         };
       }
 
       return {
         success: false,
-        error: data.error || 'Erro desconhecido ao baixar DAS'
+        error: 'Provedor não suporta download de DAS'
       };
 
     } catch (error) {
-      console.error('Erro ao baixar DAS via InfoSimples:', error);
+      console.error('Erro ao baixar DAS:', error);
       return {
         success: false,
         error: `Erro de conexão: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
       };
     }
   }
-}
 
-// Factory para criar instâncias dos provedores
-export class DASProviderFactory {
-  static create(providerType: string, credentials: any): DASProviderService {
-    switch (providerType.toLowerCase()) {
-      case 'infosimples':
-        return new InfoSimplesProvider(credentials);
-      default:
-        throw new Error(`Provedor DAS não suportado: ${providerType}`);
-    }
-  }
-}
-
-// Serviço principal para gerenciar provedores
-export class DASProviderManager {
-  private currentProvider: DASProviderService | null = null;
-
-  setProvider(provider: DASProviderService): void {
-    this.currentProvider = provider;
+  async refreshProvider(): Promise<void> {
+    await this.initializeProvider();
   }
 
-  getCurrentProvider(): DASProviderService | null {
-    return this.currentProvider;
-  }
-
-  async downloadDAS(cnpj: string, mesAno: string): Promise<DASDownloadResult> {
-    if (!this.currentProvider) {
-      return {
-        success: false,
-        error: 'Nenhum provedor DAS configurado'
-      };
-    }
-
-    return await this.currentProvider.downloadDAS(cnpj, mesAno);
+  getProviderStatus(): any {
+    return providerManager.getProviderStatus();
   }
 
   isConfigured(): boolean {
-    return this.currentProvider?.isConfigured() || false;
+    return this.configured;
   }
 
   getProviderName(): string {
-    return this.currentProvider?.getName() || 'Nenhum';
+    return this.name;
   }
 }
 
-// Instância singleton
-export const dasProviderManager = new DASProviderManager();
+export const dasProvider = new DasProviderService();
+
+// Compatibilidade com código existente
+export const dasProviderManager = dasProvider;
