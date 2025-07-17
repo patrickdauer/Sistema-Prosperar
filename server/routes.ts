@@ -1667,8 +1667,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Garantir que a URL tenha protocolo
+      const baseUrl = serverUrl.startsWith('http') ? serverUrl : `https://${serverUrl}`;
+      
+      // Codificar a instância para URL
+      const encodedInstance = encodeURIComponent(instance);
+      
       // Teste de conexão com Evolution API
-      const testUrl = `${serverUrl}/instance/fetchInstance/${instance}`;
+      const testUrl = `${baseUrl}/instance/fetchInstance/${encodedInstance}`;
       const response = await fetch(testUrl, {
         method: 'GET',
         headers: {
@@ -1765,8 +1771,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { serverUrl, apiKey, instance } = config.credentials;
       const { defaultDelay, linkPreview, mentionsEveryOne } = config.configuration;
 
+      // Garantir que a URL tenha protocolo e codificar instância
+      const baseUrl = serverUrl.startsWith('http') ? serverUrl : `https://${serverUrl}`;
+      const encodedInstance = encodeURIComponent(instance);
+
       // Enviar mensagem via Evolution API
-      const sendUrl = `${serverUrl}/message/sendText/${instance}`;
+      const sendUrl = `${baseUrl}/message/sendText/${encodedInstance}`;
       const response = await fetch(sendUrl, {
         method: 'POST',
         headers: {
@@ -1827,8 +1837,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { serverUrl, apiKey, instance } = config.credentials;
       const { defaultDelay } = config.configuration;
 
+      // Garantir que a URL tenha protocolo e codificar instância
+      const baseUrl = serverUrl.startsWith('http') ? serverUrl : `https://${serverUrl}`;
+      const encodedInstance = encodeURIComponent(instance);
+
       // Enviar arquivo via Evolution API
-      const sendUrl = `${serverUrl}/message/sendMedia/${instance}`;
+      const sendUrl = `${baseUrl}/message/sendMedia/${encodedInstance}`;
       const response = await fetch(sendUrl, {
         method: 'POST',
         headers: {
