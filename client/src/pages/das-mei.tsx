@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { CalendarDays, Download, Settings, Users, FileText, Play, Square, Eye, Trash2, Edit, Plus } from 'lucide-react';
+import { CalendarDays, Download, Settings, Users, FileText, Play, Square, Eye, Trash2, Edit, Plus, Filter, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -48,6 +48,27 @@ export default function DASMEIPage() {
   const [selectedTab, setSelectedTab] = useState("dashboard");
   const [editingClient, setEditingClient] = useState<ClienteMei | null>(null);
   const [editingConfig, setEditingConfig] = useState<ApiConfig | null>(null);
+  
+  // Estados para filtros por data
+  const [dateFilter, setDateFilter] = useState({
+    startDate: '',
+    endDate: '',
+    period: 'todos' // 'hoje', 'semana', 'mes', 'todos'
+  });
+  
+  const [guiasFilter, setGuiasFilter] = useState({
+    status: 'todos', // 'pending', 'downloaded', 'error', 'todos'
+    cliente: '',
+    startDate: '',
+    endDate: ''
+  });
+  
+  const [logsFilter, setLogsFilter] = useState({
+    tipo: 'todos', // 'email', 'whatsapp', 'todos'
+    status: 'todos', // 'success', 'error', 'pending', 'todos'
+    startDate: '',
+    endDate: ''
+  });
 
   // Queries
   const { data: status } = useQuery({
@@ -70,6 +91,77 @@ export default function DASMEIPage() {
   const { data: configuracoes = [] } = useQuery({
     queryKey: ['/api/das/configuracoes']
   });
+
+  // Funções para filtros por data
+  const filterByDate = (items: any[], startDate: string, endDate: string, dateField: string = 'created_at') => {
+    if (!startDate && !endDate) return items;
+    
+    return items.filter(item => {
+      const itemDate = new Date(item[dateField]);
+      const start = startDate ? new Date(startDate) : null;
+      const end = endDate ? new Date(endDate) : null;
+      
+      if (start && end) {
+        return itemDate >= start && itemDate <= end;
+      }
+      if (start) {
+        return itemDate >= start;
+      }
+      if (end) {
+        return itemDate <= end;
+      }
+      return true;
+    });
+  };
+
+  const applyPeriodFilter = (items: any[], period: string, dateField: string = 'created_at') => {
+    if (period === 'todos') return items;
+    
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    return items.filter(item => {
+      const itemDate = new Date(item[dateField]);
+      
+      switch (period) {
+        case 'hoje':
+          return itemDate >= today;
+        case 'semana':
+          const weekAgo = new Date(today);
+          weekAgo.setDate(today.getDate() - 7);
+          return itemDate >= weekAgo;
+        case 'mes':
+          const monthAgo = new Date(today);
+          monthAgo.setMonth(today.getMonth() - 1);
+          return itemDate >= monthAgo;
+        default:
+          return true;
+      }
+    });
+  };
+
+  // Dados filtrados
+  const filteredGuias = filterByDate(
+    guias.filter(g => 
+      (guiasFilter.status === 'todos' || g.download_status === guiasFilter.status) &&
+      (guiasFilter.cliente === '' || g.cliente_nome?.toLowerCase().includes(guiasFilter.cliente.toLowerCase()))
+    ),
+    guiasFilter.startDate,
+    guiasFilter.endDate,
+    'data_vencimento'
+  );
+
+  const filteredLogs = filterByDate(
+    logs.filter(l => 
+      (logsFilter.tipo === 'todos' || l.tipo_envio === logsFilter.tipo) &&
+      (logsFilter.status === 'todos' || l.status === logsFilter.status)
+    ),
+    logsFilter.startDate,
+    logsFilter.endDate,
+    'created_at'
+  );
+
+  const dashboardData = applyPeriodFilter(guias, dateFilter.period, 'data_vencimento');
 
   // Mutations
   const createClienteMutation = useMutation({
@@ -237,6 +329,67 @@ export default function DASMEIPage() {
           </p>
         </div>
 
+        {/* Filtros de Data para Dashboard */}
+        <div className="mb-6">
+          <Card className="bg-gray-800 border-gray-700">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                <Filter className="h-4 w-4" />
+                Filtros de Período
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-4 items-center">
+                <div className="flex items-center gap-2">
+                  <Label className="text-gray-300">Período:</Label>
+                  <Select 
+                    value={dateFilter.period} 
+                    onValueChange={(value) => setDateFilter({...dateFilter, period: value})}
+                  >
+                    <SelectTrigger className="w-40 bg-gray-700 border-gray-600">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-700 border-gray-600">
+                      <SelectItem value="todos">Todos</SelectItem>
+                      <SelectItem value="hoje">Hoje</SelectItem>
+                      <SelectItem value="semana">Última semana</SelectItem>
+                      <SelectItem value="mes">Último mês</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Label className="text-gray-300">Data inicial:</Label>
+                  <Input
+                    type="date"
+                    value={dateFilter.startDate}
+                    onChange={(e) => setDateFilter({...dateFilter, startDate: e.target.value})}
+                    className="bg-gray-700 border-gray-600 text-white"
+                  />
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Label className="text-gray-300">Data final:</Label>
+                  <Input
+                    type="date"
+                    value={dateFilter.endDate}
+                    onChange={(e) => setDateFilter({...dateFilter, endDate: e.target.value})}
+                    className="bg-gray-700 border-gray-600 text-white"
+                  />
+                </div>
+                
+                <Button 
+                  onClick={() => setDateFilter({startDate: '', endDate: '', period: 'todos'})}
+                  variant="outline"
+                  className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                >
+                  Limpar Filtros
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Status Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card className="bg-gray-800 border-gray-700">
@@ -334,9 +487,10 @@ export default function DASMEIPage() {
 
         {/* Tabs */}
         <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-          <TabsList className="grid w-full grid-cols-4 bg-gray-800">
+          <TabsList className="grid w-full grid-cols-5 bg-gray-800">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="clientes">Clientes MEI</TabsTrigger>
+            <TabsTrigger value="guias">Guias DAS-MEI</TabsTrigger>
             <TabsTrigger value="configuracoes">Configurações</TabsTrigger>
             <TabsTrigger value="logs">Logs</TabsTrigger>
           </TabsList>
@@ -359,11 +513,11 @@ export default function DASMEIPage() {
                     </div>
                     <div className="flex justify-between">
                       <span>Guias Geradas:</span>
-                      <span className="font-bold">{guias.length}</span>
+                      <span className="font-bold">{dashboardData.length}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Envios Realizados:</span>
-                      <span className="font-bold">{logs.filter((l: any) => l.status === 'sent').length}</span>
+                      <span className="font-bold">{applyPeriodFilter(logs, dateFilter.period).filter((l: any) => l.status === 'sent').length}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -375,7 +529,7 @@ export default function DASMEIPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    {guias.slice(0, 5).map((guia: any) => (
+                    {dashboardData.slice(0, 5).map((guia: any) => (
                       <div key={guia.id} className="flex justify-between items-center p-2 bg-gray-700 rounded">
                         <div>
                           <div className="font-medium">{guia.mesAno}</div>
@@ -686,7 +840,211 @@ export default function DASMEIPage() {
             </Card>
           </TabsContent>
 
+          <TabsContent value="guias">
+            {/* Filtros para Guias DAS-MEI */}
+            <Card className="bg-gray-800 border-gray-700 mb-6">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                  <Filter className="h-4 w-4" />
+                  Filtros de Guias DAS-MEI
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-4 items-center">
+                  <div className="flex items-center gap-2">
+                    <Label className="text-gray-300">Cliente:</Label>
+                    <Input
+                      placeholder="Buscar por cliente..."
+                      value={guiasFilter.cliente}
+                      onChange={(e) => setGuiasFilter({...guiasFilter, cliente: e.target.value})}
+                      className="w-48 bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    />
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Label className="text-gray-300">Status:</Label>
+                    <Select 
+                      value={guiasFilter.status} 
+                      onValueChange={(value) => setGuiasFilter({...guiasFilter, status: value})}
+                    >
+                      <SelectTrigger className="w-40 bg-gray-700 border-gray-600">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-700 border-gray-600">
+                        <SelectItem value="todos">Todos</SelectItem>
+                        <SelectItem value="pending">Pendente</SelectItem>
+                        <SelectItem value="downloaded">Baixado</SelectItem>
+                        <SelectItem value="error">Erro</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Label className="text-gray-300">Data inicial:</Label>
+                    <Input
+                      type="date"
+                      value={guiasFilter.startDate}
+                      onChange={(e) => setGuiasFilter({...guiasFilter, startDate: e.target.value})}
+                      className="bg-gray-700 border-gray-600 text-white"
+                    />
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Label className="text-gray-300">Data final:</Label>
+                    <Input
+                      type="date"
+                      value={guiasFilter.endDate}
+                      onChange={(e) => setGuiasFilter({...guiasFilter, endDate: e.target.value})}
+                      className="bg-gray-700 border-gray-600 text-white"
+                    />
+                  </div>
+                  
+                  <Button 
+                    onClick={() => setGuiasFilter({status: 'todos', cliente: '', startDate: '', endDate: ''})}
+                    variant="outline"
+                    className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                  >
+                    Limpar Filtros
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Tabela de Guias DAS-MEI */}
+            <Card className="bg-gray-800 border-gray-700">
+              <CardHeader>
+                <CardTitle className="text-green-400">Guias DAS-MEI</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Cliente</TableHead>
+                      <TableHead>Mês/Ano</TableHead>
+                      <TableHead>Vencimento</TableHead>
+                      <TableHead>Valor</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredGuias.map((guia: any) => (
+                      <TableRow key={guia.id}>
+                        <TableCell className="font-medium">
+                          {guia.cliente_nome || 'Cliente não identificado'}
+                        </TableCell>
+                        <TableCell>{guia.mes_ano}</TableCell>
+                        <TableCell>
+                          {guia.data_vencimento ? format(new Date(guia.data_vencimento), 'dd/MM/yyyy', { locale: ptBR }) : '-'}
+                        </TableCell>
+                        <TableCell>{guia.valor || '-'}</TableCell>
+                        <TableCell>
+                          <Badge className={getStatusBadge(guia.download_status)}>
+                            {guia.download_status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" title="Visualizar">
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                            <Button size="sm" variant="outline" title="Baixar">
+                              <Download className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {filteredGuias.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center text-gray-400 py-8">
+                          Nenhuma guia encontrada com os filtros aplicados
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           <TabsContent value="logs">
+            {/* Filtros para Logs */}
+            <Card className="bg-gray-800 border-gray-700 mb-6">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                  <Filter className="h-4 w-4" />
+                  Filtros de Logs
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-4 items-center">
+                  <div className="flex items-center gap-2">
+                    <Label className="text-gray-300">Tipo:</Label>
+                    <Select 
+                      value={logsFilter.tipo} 
+                      onValueChange={(value) => setLogsFilter({...logsFilter, tipo: value})}
+                    >
+                      <SelectTrigger className="w-40 bg-gray-700 border-gray-600">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-700 border-gray-600">
+                        <SelectItem value="todos">Todos</SelectItem>
+                        <SelectItem value="email">Email</SelectItem>
+                        <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Label className="text-gray-300">Status:</Label>
+                    <Select 
+                      value={logsFilter.status} 
+                      onValueChange={(value) => setLogsFilter({...logsFilter, status: value})}
+                    >
+                      <SelectTrigger className="w-40 bg-gray-700 border-gray-600">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-700 border-gray-600">
+                        <SelectItem value="todos">Todos</SelectItem>
+                        <SelectItem value="success">Sucesso</SelectItem>
+                        <SelectItem value="error">Erro</SelectItem>
+                        <SelectItem value="pending">Pendente</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Label className="text-gray-300">Data inicial:</Label>
+                    <Input
+                      type="date"
+                      value={logsFilter.startDate}
+                      onChange={(e) => setLogsFilter({...logsFilter, startDate: e.target.value})}
+                      className="bg-gray-700 border-gray-600 text-white"
+                    />
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Label className="text-gray-300">Data final:</Label>
+                    <Input
+                      type="date"
+                      value={logsFilter.endDate}
+                      onChange={(e) => setLogsFilter({...logsFilter, endDate: e.target.value})}
+                      className="bg-gray-700 border-gray-600 text-white"
+                    />
+                  </div>
+                  
+                  <Button 
+                    onClick={() => setLogsFilter({tipo: 'todos', status: 'todos', startDate: '', endDate: ''})}
+                    variant="outline"
+                    className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                  >
+                    Limpar Filtros
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+            
             <Card className="bg-gray-800 border-gray-700">
               <CardHeader>
                 <CardTitle className="text-green-400">Logs de Envio</CardTitle>
@@ -703,7 +1061,7 @@ export default function DASMEIPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {logs.map((log: any) => (
+                    {filteredLogs.map((log: any) => (
                       <TableRow key={log.id}>
                         <TableCell>
                           {format(new Date(log.createdAt), 'dd/MM/yyyy HH:mm', { locale: ptBR })}

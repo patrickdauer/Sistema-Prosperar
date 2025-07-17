@@ -146,6 +146,17 @@ The system uses a `business_registrations` table with:
 
 ## Recent Changes
 
+### July 16, 2025 - Sistema DAS-MEI Completo com Filtros por Data
+- **Filtros Avançados**: Implementados filtros completos por data em todas as abas do sistema DAS-MEI
+- **Filtros de Dashboard**: Período pré-definido (hoje, semana, mês) e datas personalizáveis afetam estatísticas
+- **Nova Aba "Guias DAS-MEI"**: Aba dedicada para visualização de todas as guias com filtros específicos
+- **Filtros de Guias**: Busca por cliente, status (pendente, baixado, erro) e intervalo de datas
+- **Filtros de Logs**: Tipo de envio (email, WhatsApp), status (sucesso, erro, pendente) e datas
+- **Interface Responsiva**: Filtros organizados em cards com design consistente tema escuro
+- **Dados Filtrados**: Todas as tabelas e estatísticas respondem aos filtros aplicados
+- **Botão Limpar Filtros**: Facilita reset rápido dos filtros em todas as abas
+- **Navegação Melhorada**: Sistema de 5 abas com acesso dedicado para cada funcionalidade
+
 ### July 11, 2025 - Sistema de 4 Status de Clientes Completo e Funcional
 - **Sistema de Status Completo**: Implementados 4 status para clientes: ATIVO (verde), BLOQUEADO (vermelho), INATIVO (cinza) e BAIXADO (laranja)
 - **Lógica de Alternância**: Sistema de alternância cíclica entre status: ativo → bloqueado → inativo → baixado → ativo
