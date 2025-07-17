@@ -1673,81 +1673,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Codificar a instância para URL
       const encodedInstance = encodeURIComponent(instance);
       
-      // Tentar diferentes endpoints da Evolution API
-      const possibleEndpoints = [
-        `/instance/fetchInstance/${encodedInstance}`,
-        `/instance/connect/${encodedInstance}`,
-        `/instance/status/${encodedInstance}`,
-        `/instance/${encodedInstance}/status`,
-        `/instance/${encodedInstance}`,
-        `/instances`
-      ];
+      // Primeiro, tentar listar todas as instâncias para diagnóstico
+      const listUrl = `${baseUrl}/instances`;
+      console.log('Listando instâncias disponíveis:', listUrl);
       
-      let lastError = '';
-      let testSuccess = false;
-      
-      for (const endpoint of possibleEndpoints) {
-        const testUrl = `${baseUrl}${endpoint}`;
-        
-        console.log('Testando endpoint:', testUrl);
-        
-        try {
-          const response = await fetch(testUrl, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'apikey': apiKey
-            }
-          });
-
-          if (response.ok) {
-            const result = await response.json();
-            
-            // Se for o endpoint de listagem, verificar se a instância existe
-            if (endpoint === '/instances') {
-              const instances = Array.isArray(result) ? result : (result.instances || []);
-              const instanceExists = instances.some((inst: any) => 
-                inst.name === instance || inst.instance === instance || inst.instanceName === instance
-              );
-              
-              if (instanceExists) {
-                res.json({ 
-                  success: true, 
-                  message: `Instância encontrada via endpoint ${endpoint}`,
-                  instanceInfo: result,
-                  endpoint: endpoint
-                });
-                testSuccess = true;
-                break;
-              } else {
-                lastError = `Instância "${instance}" não encontrada na lista de instâncias.`;
-                continue;
-              }
-            } else {
-              res.json({ 
-                success: true, 
-                message: `Conexão testada com sucesso via endpoint ${endpoint}`,
-                instanceInfo: result,
-                endpoint: endpoint
-              });
-              testSuccess = true;
-              break;
-            }
-          } else {
-            const errorText = await response.text();
-            lastError = `${endpoint}: HTTP ${response.status} - ${errorText}`;
-            continue;
+      let availableInstances = [];
+      try {
+        const listResponse = await fetch(listUrl, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': apiKey
           }
-        } catch (error) {
-          lastError = `${endpoint}: ${error}`;
-          continue;
+        });
+
+        if (listResponse.ok) {
+          const listResult = await listResponse.json();
+          availableInstances = Array.isArray(listResult) ? listResult : (listResult.instances || []);
+          console.log('Instâncias disponíveis:', availableInstances.map((inst: any) => inst.name || inst.instance || inst.instanceName));
         }
+      } catch (e) {
+        console.log('Erro ao listar instâncias:', e);
       }
+
+      // Agora testar o endpoint fetchInstance
+      const testUrl = `${baseUrl}/instance/fetchInstance/${encodedInstance}`;
+      console.log('Testando fetchInstance:', testUrl);
       
-      if (!testSuccess) {
+      const response = await fetch(testUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': apiKey
+        }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        res.json({ 
+          success: true, 
+          message: 'Conexão testada com sucesso com fetchInstance',
+          instanceInfo: result,
+          availableInstances: availableInstances
+        });
+      } else {
+        const errorText = await response.text();
+        let errorMessage = `Erro HTTP ${response.status}: ${response.statusText}`;
+        
+        if (errorText) {
+          errorMessage += ` - ${errorText}`;
+        }
+        
+        if (response.status === 404) {
+          errorMessage += `\n\nInstância "${instance}" não encontrada no servidor.`;
+          if (availableInstances.length > 0) {
+            errorMessage += `\nInstâncias disponíveis: ${availableInstances.map((inst: any) => inst.name || inst.instance || inst.instanceName).join(', ')}`;
+          }
+        } else if (response.status === 401 || response.status === 403) {
+          errorMessage += '\nVerifique se a API Key está correta.';
+        }
+        
         res.json({ 
           success: false, 
-          message: `Nenhum endpoint funcionou. Último erro: ${lastError}. Verifique se a instância "${instance}" existe no servidor Evolution API.`
+          message: errorMessage,
+          availableInstances: availableInstances
         });
       }
     } catch (error) {
