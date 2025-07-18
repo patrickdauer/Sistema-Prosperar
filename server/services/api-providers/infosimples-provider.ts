@@ -114,6 +114,7 @@ export class InfoSimplesProvider extends BaseApiProvider {
         throw new Error('Período deve estar no formato MM/YYYY');
       }
 
+      // No método gerarDAS, linha 118-123:
       // Limpar CNPJ (remover pontos e barras)
       const cnpjLimpo = cnpj.replace(/[^\d]/g, '');
       
@@ -190,13 +191,7 @@ export class InfoSimplesProvider extends BaseApiProvider {
     const cnpjLimpo = cnpj.replace(/[^\d]/g, '');
     return cnpjLimpo.length === 14;
   }
-
-  // Método para validar formato de período
-  validarPeriodo(periodo: string): boolean {
-    const periodoRegex = /^(0[1-9]|1[0-2])\/\d{4}$/;
-    return periodoRegex.test(periodo);
-  }
-
+  
   // Método para limpar CNPJ
   limparCNPJ(cnpj: string): string {
     return cnpj.replace(/[^\d]/g, '');
