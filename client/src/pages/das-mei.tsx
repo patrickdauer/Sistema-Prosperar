@@ -305,10 +305,7 @@ export default function DASMEIPage() {
 
   const activateConfigMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await fetch(`/api/das/configuracoes/${id}/ativar`, {
-        method: 'POST'
-      });
-      if (!response.ok) throw new Error('Erro ao ativar configuração');
+      const response = await apiRequest('POST', `/api/das/configuracoes/${id}/ativar`, {});
       return response.json();
     },
     onSuccess: () => {
