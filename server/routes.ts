@@ -1421,9 +1421,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const config = await dasStorage.activateApiConfiguration(id, userId);
       
       // Reconfigurar provedores com nova configuração
-      if (config.type === 'das_provider') {
-        const provider = DASProviderFactory.create(config.name, config.credentials);
-        dasProviderManager.setProvider(provider);
+      if (config.type === 'das_provider' || config.type === 'infosimples') {
+        // Para InfoSimples, vamos usar o provider manager
+        if (config.name === 'InfoSimples' || config.type === 'infosimples') {
+          const { providerManager } = await import('./services/api-providers/provider-manager');
+          const credentials = typeof config.credentials === 'string' ? JSON.parse(config.credentials) : config.credentials;
+          await providerManager.switchProvider('infosimples', credentials, userId);
+        } else {
+          const provider = DASProviderFactory.create(config.name, config.credentials);
+          dasProviderManager.setProvider(provider);
+        }
       } else if (config.type === 'whatsapp') {
         const whatsapp = new DASEvolutionWhatsApp(config.credentials);
         messageManager.setWhatsAppService(whatsapp);
@@ -1601,10 +1608,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      // Verificar se há configuração ativa do InfoSimples
+      const infosimplesConfig = await dasStorage.getApiConfigurationByType('infosimples');
+      const isDasConfigured = infosimplesConfig && infosimplesConfig.isActive;
+      
       const status = {
         dasProvider: {
-          configured: dasProviderManager.isConfigured(),
-          name: dasProviderManager.getProviderName()
+          configured: isDasConfigured || dasProviderManager.isConfigured(),
+          name: isDasConfigured ? 'InfoSimples' : dasProviderManager.getProviderName()
         },
         whatsapp: {
           configured: messageManager.isWhatsAppConfigured(),
