@@ -137,10 +137,10 @@ export class ApiProviderManager {
 
     // Registrar mudança
     await dasStorage.createApiChangeLog({
-      api_id: newConfig.id,
-      changed_by: userId,
-      change_type: 'activation',
-      description: `Provedor ${type} ativado`,
+      apiId: newConfig.id,
+      userId: userId,
+      action: 'activation',
+      changes: { provider: type, status: 'activated' },
     });
 
     return await this.initializeProvider(type, credentials);
