@@ -1977,7 +1977,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Ativar o provedor
-      await providerManager.switchProvider('infosimples', credentials, req.user.userId);
+      await providerManager.switchProvider('infosimples', credentials, req.user.id);
       
       res.json({ 
         success: true, 
