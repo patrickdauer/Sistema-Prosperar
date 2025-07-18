@@ -337,6 +337,30 @@ export default function DASMEIPage() {
     }
   });
 
+  const generateIndividualDASMutation = useMutation({
+    mutationFn: async ({ cnpj, clienteNome }: { cnpj: string; clienteNome: string }) => {
+      const response = await apiRequest('POST', '/api/infosimples/gerar-das', { cnpj });
+      return response.json();
+    },
+    onSuccess: (data, variables) => {
+      toast({
+        title: data.success ? "Sucesso" : "Erro",
+        description: data.success ? 
+          `DAS gerado com sucesso para ${variables.clienteNome}!` : 
+          data.error || "Falha ao gerar DAS",
+        variant: data.success ? "default" : "destructive",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/das/guias'] });
+    },
+    onError: (error, variables) => {
+      toast({
+        title: "Erro",
+        description: `Erro ao gerar DAS para ${variables.clienteNome}.`,
+        variant: "destructive",
+      });
+    }
+  });
+
   // Função para testar conexão WhatsApp
   const testWhatsappConnection = async () => {
     if (!whatsappConfig.serverUrl || !whatsappConfig.apiKey || !whatsappConfig.instance) {
@@ -908,6 +932,21 @@ export default function DASMEIPage() {
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
+                            {status?.dasProvider?.configured && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => generateIndividualDASMutation.mutate({ 
+                                  cnpj: cliente.cnpj, 
+                                  clienteNome: cliente.nome 
+                                })}
+                                disabled={generateIndividualDASMutation.isPending}
+                                className="text-green-400 hover:text-green-300"
+                                title="Gerar DAS Individual"
+                              >
+                                <FileText className="w-4 h-4" />
+                              </Button>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>
