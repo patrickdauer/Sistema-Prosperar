@@ -109,43 +109,82 @@ function ProtectedSistemaDark() {
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
-  // Show landing page when loading or not authenticated
-  if (isLoading || !isAuthenticated) {
-    return (
-      <Switch>
-        <Route path="/" component={Landing} />
-        <Route path="/login" component={Login} />
-        <Route path="/business-registration" component={BusinessRegistration} />
-        <Route path="/contratacao-funcionarios" component={ContratacaoFuncionarios} />
-        <Route path="/simulador-custo" component={SimuladorCusto} />
-        <Route component={Landing} />
-      </Switch>
-    );
-  }
-
-  // Show authenticated routes
   return (
     <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/home" component={Home} />
-      <Route path="/dashboard" component={Dashboard} />
+      {/* Public routes - always accessible */}
       <Route path="/business-registration" component={BusinessRegistration} />
       <Route path="/contratacao-funcionarios" component={ContratacaoFuncionarios} />
       <Route path="/simulador-custo" component={SimuladorCusto} />
+      <Route path="/login" component={Login} />
       <Route path="/equipe" component={Login} />
+      
+      {/* Landing page for unauthenticated users at root and common URLs */}
+      <Route path="/">
+        {({ params }) => {
+          if (isLoading) {
+            return (
+              <div style={{ 
+                minHeight: '100vh', 
+                background: '#0a0a0a',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '16px'
+              }}>
+                Carregando...
+              </div>
+            );
+          }
+          
+          if (!isAuthenticated) {
+            return <Landing />;
+          }
+          
+          return <Home />;
+        }}
+      </Route>
+      
+      {/* Authenticated routes */}
+      <Route path="/home">
+        {() => isAuthenticated ? <Home /> : <Login />}
+      </Route>
+      <Route path="/dashboard">
+        {() => isAuthenticated ? <Dashboard /> : <Landing />}
+      </Route>
       <Route path="/dashboard-interno" component={ProtectedDashboardInterno} />
       <Route path="/interno" component={ProtectedDashboardInterno} />
       <Route path="/novo-sistema" component={ProtectedSistemaFinal} />
       <Route path="/sistema-final" component={ProtectedSistemaFinal} />
-      <Route path="/user-management" component={UserManagement} />
-      <Route path="/profile" component={Profile} />
-      <Route path="/clientes" component={Clientes} />
-      <Route path="/novo-cliente" component={NovoCliente} />
-      <Route path="/clientes/:id" component={ClienteDetails} />
-      <Route path="/cliente-tasks" component={ClienteTasks} />
-      <Route path="/das-mei" component={DASMEIAutomationPage} />
-      <Route path="/links" component={LinksPage} />
-      <Route component={Home} />
+      <Route path="/user-management">
+        {() => isAuthenticated ? <UserManagement /> : <Landing />}
+      </Route>
+      <Route path="/profile">
+        {() => isAuthenticated ? <Profile /> : <Landing />}
+      </Route>
+      <Route path="/clientes">
+        {() => isAuthenticated ? <Clientes /> : <Landing />}
+      </Route>
+      <Route path="/novo-cliente">
+        {() => isAuthenticated ? <NovoCliente /> : <Landing />}
+      </Route>
+      <Route path="/clientes/:id">
+        {() => isAuthenticated ? <ClienteDetails /> : <Landing />}
+      </Route>
+      <Route path="/cliente-tasks">
+        {() => isAuthenticated ? <ClienteTasks /> : <Landing />}
+      </Route>
+      <Route path="/das-mei">
+        {() => isAuthenticated ? <DASMEIAutomationPage /> : <Landing />}
+      </Route>
+      <Route path="/links">
+        {() => isAuthenticated ? <LinksPage /> : <Landing />}
+      </Route>
+      
+      {/* Fallback to Landing for unknown routes when not authenticated */}
+      <Route>
+        {() => isAuthenticated ? <Home /> : <Landing />}
+      </Route>
     </Switch>
   );
 }

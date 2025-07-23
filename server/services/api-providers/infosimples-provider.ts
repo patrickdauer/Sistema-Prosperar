@@ -65,32 +65,50 @@ export class InfoSimplesProvider extends BaseApiProvider {
 
   async testConnection(): Promise<ApiResponse> {
     try {
+      console.log('Testando conexão InfoSimples com token:', this.credentials.token?.substring(0, 10) + '...');
+      
       // Teste com CNPJ fictício para verificar se a API responde
       const testCnpj = '11222333000181';
       const currentDate = new Date();
       const previousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1);
       const periodo = `${String(previousMonth.getMonth() + 1).padStart(2, '0')}/${previousMonth.getFullYear()}`;
 
+      const requestData = {
+        token: this.credentials.token,
+        cnpj: testCnpj,
+        periodo: periodo,
+        timeout: this.apiTimeout,
+        ignore_site_receipt: null
+      };
+
+      console.log('Dados da requisição:', { ...requestData, token: requestData.token?.substring(0, 10) + '...' });
+
       const response = await fetch(`${this.config.baseUrl}/consultas/receita-federal/simples-das`, {
         method: 'POST',
         headers: this.getAuthHeaders(),
-        body: JSON.stringify({
-          token: this.credentials.token,
-          cnpj: testCnpj,
-          periodo: periodo,
-          timeout: this.apiTimeout,
-          ignore_site_receipt: null
-        })
+        body: JSON.stringify(requestData)
       });
+
+      console.log('Resposta da API InfoSimples - Status:', response.status);
+      
+      // Tentar ler o corpo da resposta para mais detalhes
+      let responseBody = '';
+      try {
+        responseBody = await response.text();
+        console.log('Corpo da resposta:', responseBody.substring(0, 200));
+      } catch (err) {
+        console.log('Erro ao ler corpo da resposta:', err);
+      }
 
       // Aceitar 200, 400 ou 422 como sinais de que a API está funcionando
       const isWorking = response.status === 200 || response.status === 400 || response.status === 422;
       
       return {
         success: isWorking,
-        data: { status: response.status, statusText: response.statusText }
+        data: { status: response.status, statusText: response.statusText, body: responseBody }
       };
     } catch (error) {
+      console.error('Erro no teste de conexão InfoSimples:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Erro desconhecido'

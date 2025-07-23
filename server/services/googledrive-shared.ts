@@ -117,6 +117,41 @@ export class GoogleDriveSharedService {
     }
   }
 
+  async createEmployeeFolderInSharedDrive(employeeName: string, employeeId: number): Promise<{ folderId: string, folderUrl: string }> {
+    try {
+      const folderName = `Contratacao_${employeeName.replace(/\s+/g, '_')}_${employeeId}`;
+      console.log(`Creating individual employee folder: ${folderName}`);
+      
+      const fileMetadata = {
+        name: folderName,
+        mimeType: 'application/vnd.google-apps.folder',
+        parents: [this.SHARED_DRIVE_ID],
+      };
+
+      const response = await this.drive.files.create({
+        resource: fileMetadata,
+        fields: 'id,webViewLink',
+        supportsAllDrives: true,
+      });
+
+      const folderId = response.data.id;
+      const folderUrl = `https://drive.google.com/drive/folders/${folderId}`;
+
+      console.log(`✅ Employee folder created: ${folderName}`);
+      console.log(`📁 Folder ID: ${folderId}`);
+      console.log(`🔗 Folder URL: ${folderUrl}`);
+
+      return {
+        folderId,
+        folderUrl
+      };
+    } catch (error) {
+      console.error(`❌ Employee folder creation failed for: ${employeeName}`);
+      console.error('Error details:', error);
+      throw error;
+    }
+  }
+
   async uploadFileToFolder(fileName: string, buffer: Buffer, mimeType: string, folderId: string): Promise<any> {
     try {
       console.log(`Uploading file: ${fileName} to folder: ${folderId}`);
