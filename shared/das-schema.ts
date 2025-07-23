@@ -2,6 +2,7 @@ import { pgTable, text, integer, timestamp, boolean, jsonb, serial } from "drizz
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { users } from "./schema";
 
 // Tabela para armazenar as configurações das APIs
 export const apiConfigurations = pgTable("api_configurations", {
@@ -74,21 +75,101 @@ export const envioLogs = pgTable("envio_logs", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Tabela para programação de envios
-export const programacaoEnvios = pgTable("programacao_envios", {
+// Tabela para templates de mensagens
+export const messageTemplates = pgTable("message_templates", {
   id: serial("id").primaryKey(),
-  dasGuiaId: integer("das_guia_id").references(() => dasGuias.id).notNull(),
-  dataAgendada: timestamp("data_agendada").notNull(),
-  tipoEnvio: text("tipo_envio").notNull(), // "das_envio", "lembrete_vencimento"
-  status: text("status").default("agendado"), // "agendado", "processado", "cancelado"
-  processadoEm: timestamp("processado_em"),
+  nome: text("nome").notNull(),
+  tipo: text("tipo").notNull(), // "boleto_disponivel", "boleto_pago", "lembrete_vencimento"
+  conteudo: text("conteudo").notNull(),
+  ativo: boolean("ativo").default(true),
+  variaveis: jsonb("variaveis"), // Lista de variáveis disponíveis
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Tabela para instâncias Evolution API
+export const evolutionInstances = pgTable("evolution_instances", {
+  id: serial("id").primaryKey(),
+  nome: text("nome").notNull(),
+  instanceName: text("instance_name").notNull(),
+  serverUrl: text("server_url").notNull(),
+  token: text("token").notNull(),
+  ativo: boolean("ativo").default(true),
+  configuracao: jsonb("configuracao"), // Configurações específicas
+  ultimoTeste: timestamp("ultimo_teste"),
+  statusTeste: text("status_teste"), // "success", "failed"
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Tabela para logs detalhados do sistema
+export const systemLogs = pgTable("system_logs", {
+  id: serial("id").primaryKey(),
+  tipoOperacao: text("tipo_operacao").notNull(), // "geracao_boleto", "envio_whatsapp", "retry", "agendamento"
+  clienteId: integer("cliente_id").references(() => clientesMei.id),
+  status: text("status").notNull(), // "success", "failed", "pending"
+  detalhes: jsonb("detalhes"),
+  periodo: text("periodo"), // YYYYMM
+  operador: text("operador"), // "automatico" ou user_id
+  timestamp: timestamp("timestamp").defaultNow(),
+});
+
+// Tabela para configurações do sistema de automação
+export const automationSettings = pgTable("automation_settings", {
+  id: serial("id").primaryKey(),
+  chave: text("chave").notNull().unique(), // "dia_geracao", "dia_envio", "dia_lembrete", etc.
+  valor: text("valor").notNull(),
+  descricao: text("descricao"),
+  tipo: text("tipo").default("string"), // "string", "number", "boolean", "json"
+  updatedAt: timestamp("updated_at").defaultNow(),
+  updatedBy: integer("updated_by").references(() => users.id),
+});
+
+// Tabela para feriados nacionais
+export const feriados = pgTable("feriados", {
+  id: serial("id").primaryKey(),
+  data: timestamp("data").notNull(),
+  descricao: text("descricao").notNull(),
+  nacional: boolean("nacional").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Importar users do sistema existente
-import { users } from "./schema";
+// Tabela de retry center para falhas
+export const retryQueue = pgTable("retry_queue", {
+  id: serial("id").primaryKey(),
+  tipoOperacao: text("tipo_operacao").notNull(), // "geracao_boleto", "envio_whatsapp"
+  clienteId: integer("cliente_id").references(() => clientesMei.id).notNull(),
+  dadosOriginals: jsonb("dados_originais").notNull(),
+  erro: text("erro"),
+  tentativas: integer("tentativas").default(0),
+  maxTentativas: integer("max_tentativas").default(3),
+  proximaTentativa: timestamp("proxima_tentativa"),
+  status: text("status").default("pending"), // "pending", "processing", "success", "failed"
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
 
-// Relações
+// Relações únicas
+export const clientesMeiDasRelations = relations(clientesMei, ({ many }) => ({
+  guias: many(dasGuias),
+}));
+
+export const dasGuiasDasRelations = relations(dasGuias, ({ one, many }) => ({
+  cliente: one(clientesMei, {
+    fields: [dasGuias.clienteMeiId],
+    references: [clientesMei.id],
+  }),
+  envioLogs: many(envioLogs),
+}));
+
+export const envioLogsDasRelations = relations(envioLogs, ({ one }) => ({
+  guia: one(dasGuias, {
+    fields: [envioLogs.dasGuiaId],
+    references: [dasGuias.id],
+  }),
+}));
+
+// Relações originais
 export const apiConfigurationsRelations = relations(apiConfigurations, ({ one, many }) => ({
   createdBy: one(users, { fields: [apiConfigurations.createdBy], references: [users.id] }),
   updatedBy: one(users, { fields: [apiConfigurations.updatedBy], references: [users.id] }),
@@ -100,29 +181,16 @@ export const apiChangeLogsRelations = relations(apiChangeLogs, ({ one }) => ({
   user: one(users, { fields: [apiChangeLogs.userId], references: [users.id] }),
 }));
 
-export const clientesMeiRelations = relations(clientesMei, ({ many }) => ({
-  guias: many(dasGuias),
-}));
-
-export const dasGuiasRelations = relations(dasGuias, ({ one, many }) => ({
-  clienteMei: one(clientesMei, { fields: [dasGuias.clienteMeiId], references: [clientesMei.id] }),
-  envioLogs: many(envioLogs),
-  programacaoEnvios: many(programacaoEnvios),
-}));
-
-export const envioLogsRelations = relations(envioLogs, ({ one }) => ({
-  dasGuia: one(dasGuias, { fields: [envioLogs.dasGuiaId], references: [dasGuias.id] }),
-}));
-
-export const programacaoEnviosRelations = relations(programacaoEnvios, ({ one }) => ({
-  dasGuia: one(dasGuias, { fields: [programacaoEnvios.dasGuiaId], references: [dasGuias.id] }),
-}));
-
 // Schemas para validação
 export const insertApiConfigurationSchema = createInsertSchema(apiConfigurations).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+});
+
+export const insertApiChangeLogSchema = createInsertSchema(apiChangeLogs).omit({
+  id: true,
+  timestamp: true,
 });
 
 export const insertClienteMeiSchema = createInsertSchema(clientesMei).omit({
@@ -141,17 +209,12 @@ export const insertEnvioLogSchema = createInsertSchema(envioLogs).omit({
   createdAt: true,
 });
 
-export const insertProgramacaoEnvioSchema = createInsertSchema(programacaoEnvios).omit({
-  id: true,
-  createdAt: true,
-});
-
 // Tipos TypeScript
 export type ApiConfiguration = typeof apiConfigurations.$inferSelect;
 export type InsertApiConfiguration = z.infer<typeof insertApiConfigurationSchema>;
 
 export type ApiChangeLog = typeof apiChangeLogs.$inferSelect;
-export type InsertApiChangeLog = typeof apiChangeLogs.$inferInsert;
+export type InsertApiChangeLog = z.infer<typeof insertApiChangeLogSchema>;
 
 export type ClienteMei = typeof clientesMei.$inferSelect;
 export type InsertClienteMei = z.infer<typeof insertClienteMeiSchema>;
@@ -161,6 +224,3 @@ export type InsertDasGuia = z.infer<typeof insertDasGuiaSchema>;
 
 export type EnvioLog = typeof envioLogs.$inferSelect;
 export type InsertEnvioLog = z.infer<typeof insertEnvioLogSchema>;
-
-export type ProgramacaoEnvio = typeof programacaoEnvios.$inferSelect;
-export type InsertProgramacaoEnvio = z.infer<typeof insertProgramacaoEnvioSchema>;

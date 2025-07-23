@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Users, FileText, Settings, LogOut, User, Copy, Zap, Link, Scissors, BarChart3, Receipt, HardDrive, Calculator, TrendingUp, Search, CreditCard } from "lucide-react";
+import { Building2, Users, FileText, Settings, LogOut, User, Copy, Zap, Link, Scissors, BarChart3, Receipt, HardDrive, Calculator, TrendingUp, Search, CreditCard, CalendarDays } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useLocation } from "wouter";
 
@@ -159,16 +159,16 @@ export default function Home() {
             onClick={() => window.location.href = '/das-mei'}>
             <CardHeader style={{ borderBottom: '1px solid #333' }}>
               <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
-                <FileText className="h-5 w-5" style={{ color: '#ff8c42' }} />
-                DAS-MEI Automático
+                <CalendarDays className="h-5 w-5" style={{ color: '#ff8c42' }} />
+                DASMEI Automação
               </CardTitle>
               <CardDescription style={{ color: '#888' }}>
-                Sistema de envio automático de DAS-MEI
+                Sistema completo de automação DAS-MEI
               </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-white">
-                Gerencie o envio automático de guias DAS-MEI para clientes
+                Geração automática, agendamento e envio multi-canal de guias DAS-MEI
               </p>
             </CardContent>
           </Card>

@@ -5,20 +5,17 @@ import {
   apiChangeLogs, 
   clientesMei, 
   dasGuias, 
-  envioLogs, 
-  programacaoEnvios,
+  envioLogs,
   InsertApiConfiguration,
   InsertApiChangeLog,
   InsertClienteMei,
   InsertDasGuia,
   InsertEnvioLog,
-  InsertProgramacaoEnvio,
   ApiConfiguration,
   ApiChangeLog,
   ClienteMei,
   DasGuia,
-  EnvioLog,
-  ProgramacaoEnvio
+  EnvioLog
 } from '../shared/das-schema';
 
 export class DASStorage {

@@ -1,0 +1,463 @@
+Vamos precisar criar um novo card lá no Home. Já tem um parecido, mas vai ser versão legacy. Vamos criar uma nova do zero.
+
+Crie um sistema completo de automação para geração e envio de boletos DASMEI para clientes MEI, integrando APIs externas com flexibilidade arquitetural e controle manual completo.
+
+Arquitetura Geral
+
+Estrutura Modular
+
+Camada de API: Interface abstrata que permite trocar facilmente entre InfoSimples e outras APIs
+
+Camada de Notificação: Interface abstrata para diferentes provedores de mensagem
+
+Camada de Dados: Gerenciamento centralizado do banco Replit
+
+Camada de Agendamento: Sistema de tarefas automáticas com verificação de dias úteis
+
+Interface Web: Dashboard para operações manuais e monitoramento
+
+Funcionalidades Principais
+
+1. Automação Central
+
+Fluxo Automático:
+
+Dia 1 (todo mês): Gerar boletos DASMEI para todos os clientes MEI ativos
+
+Dia 2 (se útil) ou próximo dia útil: Enviar boletos via WhatsApp
+
+Dia 20 (ou primeiro dia útil): Enviar lembrete de vencimento
+
+Regras de Período:
+
+Formato: YYYYMM (ex: 202506 para junho/2025)
+
+Sempre gerar para o mês anterior ao atual
+
+Julho/2025 = período 202506 (junho)
+
+2. Integração API InfoSimples
+
+Configuração:
+
+Endpoint: https://api.infosimples.com/api/v2/consultas/receita-federal/simples-das
+
+Método: POST
+
+Body: {
+
+cnpj: string,
+
+token: string,
+
+periodo: string (YYYYMM),
+
+timeout: 600,
+
+ignore_site_receipt: true
+
+}
+
+Dados Importantes a Extrair:
+
+data[0].periodos[periodo].url_das (link do boleto PDF)
+
+data[0].periodos[periodo].data_vencimento
+
+data[0].periodos[periodo].valor_total_das
+
+data[0].periodos[periodo].situacao
+
+data[0].razao_social
+
+Flexibilidade: Implementar padrão Strategy/Interface para permitir troca fácil de APIs
+
+3. Sistema de Notificação WhatsApp (Evolution API)
+
+Configuração:
+
+Cadastro de múltiplas instâncias/tokens Evolution API
+
+Seleção automática de instância disponível
+
+Templates personalizáveis de mensagens
+
+Templates de Mensagem:
+
+Boleto Disponível (Dia 2): Para clientes com situação "Devedor"
+
+Boleto Pago (Dia 2): Para clientes com situação "Pago"
+
+Lembrete Vencimento (Dia 20): Lembrete final
+
+4. Gestão de Clientes
+
+Funcionalidades:
+
+Listar clientes MEI do banco existente
+
+Ativar/desativar clientes para automação
+
+Status individual de cada cliente
+
+Histórico completo por cliente
+
+5. Operações Manuais
+
+Geração Manual:
+
+Gerar boleto individual por CNPJ
+
+Gerar boletos em lote para clientes selecionados
+
+Preview antes da geração
+
+Envio Manual:
+
+Enviar mensagem individual
+
+Envio em lote com preview
+
+Seleção de template de mensagem
+
+Retry System:
+
+Lista de falhas (API e WhatsApp)
+
+Retry individual por item
+
+Retry em lote para todos os falhados
+
+Histórico de tentativas
+
+6. Sistema de Logs e Monitoramento
+
+Log Detalhado:
+
+Timestamp de cada operação
+
+Status (sucesso/falha/pendente)
+
+Detalhes da falha quando aplicável
+
+Cliente, ação e resultado
+
+Dashboard:
+
+Estatísticas do mês atual
+
+Total de boletos gerados/enviados
+
+Taxa de sucesso API/WhatsApp
+
+Próximas execuções programadas
+
+Filtros e Busca:
+
+Por data, cliente, status, tipo de operação
+
+Exportação de logs
+
+Limpeza automática de logs antigos
+
+7. Configurações do Sistema
+
+APIs:
+
+Gerenciar tokens InfoSimples
+
+Cadastrar/editar instâncias Evolution API
+
+Testar conectividade das APIs
+
+Templates:
+
+Editor WYSIWYG para mensagens WhatsApp
+
+Variáveis dinâmicas: {nome}, {valor}, {vencimento}, {razao_social}
+
+Preview em tempo real
+
+Calendário:
+
+Configuração de feriados nacionais
+
+Verificação automática de dias úteis
+
+Agenda de próximas execuções
+
+Estrutura de Dados
+
+Tabelas Principais
+
+clientes_mei:
+
+id, cnpj, razao_social, telefone, ativo_automacao, created_at, updated_at
+
+boletos_gerados:
+
+id, cliente_id, periodo, url_boleto, valor, situacao, data_vencimento, data_geracao, status_api
+
+envios_whatsapp:
+
+id, cliente_id, boleto_id, tipo_mensagem, instancia_evolution, status_envio, data_envio, tentativas
+
+evolution_instances:
+
+id, nome, instance_name, token, ativo, created_at
+
+system_logs:
+
+id, tipo_operacao, cliente_id, status, detalhes, timestamp
+
+message_templates:
+
+id, nome, tipo, conteudo, ativo
+
+Interface Web
+
+Páginas Principais
+
+Dashboard: Visão geral e estatísticas
+
+Clientes: Listagem e gestão de clientes MEI
+
+Boletos: Histórico e geração manual
+
+Mensagens: Templates e envios manuais
+
+Configurações: APIs e configurações gerais
+
+Logs: Histórico detalhado e troubleshooting
+
+Retry Center: Gestão de falhas e reenvios
+
+Recursos da Interface
+
+Design responsivo e intuitivo
+
+Confirmações para ações críticas
+
+Feedback visual para operações assíncronas
+
+Filtros avançados em todas as listagens
+
+Exportação de dados (CSV/Excel)
+
+Considerações Técnicas
+
+Performance e Escalabilidade
+
+Processamento assíncrono para operações em lote
+
+Queue system para grandes volumes
+
+Cache inteligente para consultas frequentes
+
+Otimização de queries no banco
+
+Segurança
+
+Validação rigorosa de CNPJs
+
+Sanitização de inputs
+
+Logs de auditoria para ações sensíveis
+
+Backup automático dos dados críticos
+
+Manutenibilidade
+
+Código bem documentado e comentado
+
+Testes automatizados para funções críticas
+
+Estrutura modular e extensível
+
+Versionamento de templates e configurações
+
+Requisitos de Implementação
+
+Funcionalidades Obrigatórias
+
+✅ Sistema de agendamento automático (cron jobs)
+
+✅ Verificação de dias úteis brasileiros
+
+✅ Interface para todas as operações manuais
+
+✅ Sistema robusto de logs
+
+✅ Retry manual para falhas
+
+✅ Templates editáveis de mensagens
+
+✅ Gestão de múltiplas instâncias Evolution
+
+✅ Flexibilidade para trocar APIs
+
+Tratamento de Erros
+
+Captura e log de todas as exceções
+
+Mensagens de erro amigáveis para o usuário
+
+Sistema de alertas para falhas críticas
+
+Isolamento de falhas (uma falha não para o lote)
+
+Extensibilidade Futura
+
+Suporte a múltiplos provedores de API
+
+Sistema de plugins para novas funcionalidades
+
+API própria para integrações externas
+
+Webhooks para notificações externas
+
+Objetivo Final: Sistema robusto, confiável e fácil de usar que automatize completamente o processo de geração e envio de boletos DASMEI, com total controle manual quando necessário e flexibilidade para futuras expansões.
+
+Obs: [
+
+{
+
+"code": 200,
+
+"code_message": "A requisição foi processada com sucesso.",
+
+"header": {
+
+"api_version": "v2",
+
+"api_version_full": "2.2.28-20250723144819",
+
+"product": "Consultas",
+
+"service": "receita-federal/simples-das",
+
+"parameters": {
+
+"cnpj": "54646210000180",
+
+"data_pagamento": "",
+
+"periodo": "202506",
+
+"periodos": null,
+
+"periodos_ignorados": null
+
+},
+
+"client_name": "Contabilidade Prosperar Ltda",
+
+"token_name": "Contabilidade Prosperar Ltda",
+
+"billable": true,
+
+"price": "0.26",
+
+"requested_at": "2025-07-23T19:16:54.000-03:00",
+
+"elapsed_time_in_milliseconds": 14022,
+
+"remote_ip": "69.62.97.233",
+
+"signature": "U2FsdGVkX19HVrK8gLu4wPmJypA86GJWVK9oce3HTAyUv1brenVNbeLZV1dcw8DPPS28Iihmy3k2KC/jYZ88VA=="
+
+},
+
+"data_count": 1,
+
+"data": [
+
+{
+
+"cnpj": "54.646.210/0001-80",
+
+"normalizado_cnpj": "54646210000180",
+
+"periodos": {
+
+"202506": {
+
+"mensagem": "",
+
+"mensagem_site": "",
+
+"url_das": " https://us-central1-infosimples-data.cloudfunctions.net/infosimples-storage/5-0jw8JXWTV0vNOuDmnijG_McWCHYnszGDKKdIbgQZo=/1753913803/IRngzM/aHR0cHM6Ly9zdG9yYWdlLmdvb2dsZWFwaXMuY29tL2luZm9zaW1wbGVzLWFwaS10bXAvcmVjZWl0YS1mZWRlcmFsL3NpbXBsZXMtZGFzLzIwMjUwNzIzMTkxNjQzL3dnRXlIWE5vTGh2VGNpMzJzZnhab3JWRWRaeU9raDM4LzljNjA4ZTI1ODAzMjUzM2RlM2RlZTE5MjBmYTkwOGQxZjA4YjFmNjczODczMTVkNjUwMzUwMWI1Y2Q5OTNhM2E=.pdf ",
+
+"periodo": "Junho/2025",
+
+"apurado": "Sim",
+
+"situacao": "Devedor",
+
+"principal": "R$ 80,90",
+
+"multas": "R$ 0,53",
+
+"juros": "R$ 0,00",
+
+"total": "R$ 81,43",
+
+"data_vencimento": "21/07/2025",
+
+"data_acolhimento": "23/07/2025",
+
+"data_pagamento": "23/07/2025",
+
+"icms": "R$ 0,00",
+
+"iss": "R$ 5,00",
+
+"inss": "R$ 75,90",
+
+"numero_apuracao": "546462102025060003",
+
+"numero_das": "07.08.25204.5396144-7",
+
+"codigo_barras_das": "858500000002814303282526040708252043539614470940",
+
+"valor_total_das": "81,43",
+
+"normalizado_valor_total_das": 81.43,
+
+"normalizado_principal": 80.9,
+
+"normalizado_multas": 0.53,
+
+"normalizado_juros": 0,
+
+"normalizado_total": 81.43,
+
+"normalizado_icms": 0,
+
+"normalizado_iss": 5,
+
+"normalizado_inss": 75.9
+
+}
+
+},
+
+"razao_social": "54.646.210 ARIANE BRANCO DOS SANTOS",
+
+"site_receipt": " https://us-central1-infosimples-data.cloudfunctions.net/infosimples-storage/0RFr8128_jOl6IBxmZY5IZ5YEeBjxCMHkMyrZBkHRyw=/1753913814/Gul2ti/aHR0cHM6Ly9zdG9yYWdlLmdvb2dsZWFwaXMuY29tL2luZm9zaW1wbGVzLWFwaS10bXAvYXBpL3JlY2VpdGEtZmVkZXJhbC9zaW1wbGVzLWRhcy8yMDI1MDcyMzE5MTY1NC8tNTgyNE1sXzBIWWxSLV9JSkpjcl9NWFZ3WkJPZVdRTC82NWQwMTNjYTgwZWVmYzk0YmZhMzgwZTk2YTRkYjk1OV8wX2pYSQ==.html "
+
+}
+
+],
+
+"errors": [],
+
+"site_receipts": [
+
+" https://us-central1-infosimples-data.cloudfunctions.net/infosimples-storage/0RFr8128_jOl6IBxmZY5IZ5YEeBjxCMHkMyrZBkHRyw=/1753913814/Gul2ti/aHR0cHM6Ly9zdG9yYWdlLmdvb2dsZWFwaXMuY29tL2luZm9zaW1wbGVzLWFwaS10bXAvYXBpL3JlY2VpdGEtZmVkZXJhbC9zaW1wbGVzLWRhcy8yMDI1MDcyMzE5MTY1NC8tNTgyNE1sXzBIWWxSLV9JSkpjcl9NWFZ3WkJPZVdRTC82NWQwMTNjYTgwZWVmYzk0YmZhMzgwZTk2YTRkYjk1OV8wX2pYSQ==.html "
+
+]
+
+}
+
+]
