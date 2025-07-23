@@ -346,58 +346,434 @@ export default function DASMEIAutomationPage() {
             </Card>
           </TabsContent>
 
-          {/* Outras tabs serão implementadas posteriormente */}
-          <TabsContent value="clientes">
+          {/* Aba Clientes - Gerenciamento completo */}
+          <TabsContent value="clientes" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-green-400">Clientes MEI</h2>
+                <p className="text-gray-400">Gerenciar clientes do sistema DAS-MEI</p>
+              </div>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button className="bg-green-600 hover:bg-green-700">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Novo Cliente
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-gray-800 border-gray-700 text-white">
+                  <DialogHeader>
+                    <DialogTitle className="text-green-400">Adicionar Cliente MEI</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="nome">Nome</Label>
+                      <Input id="nome" className="bg-gray-700 border-gray-600" />
+                    </div>
+                    <div>
+                      <Label htmlFor="cnpj">CNPJ</Label>
+                      <Input id="cnpj" className="bg-gray-700 border-gray-600" />
+                    </div>
+                    <div>
+                      <Label htmlFor="telefone">Telefone</Label>
+                      <Input id="telefone" className="bg-gray-700 border-gray-600" />
+                    </div>
+                    <div>
+                      <Label htmlFor="email">Email</Label>
+                      <Input id="email" type="email" className="bg-gray-700 border-gray-600" />
+                    </div>
+                    <Button className="w-full bg-green-600 hover:bg-green-700">
+                      Salvar Cliente
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+
             <Card className="bg-gray-800 border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-green-400">Gerenciamento de Clientes</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-400">Em desenvolvimento...</p>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-gray-700">
+                      <TableHead className="text-gray-300">Nome</TableHead>
+                      <TableHead className="text-gray-300">CNPJ</TableHead>
+                      <TableHead className="text-gray-300">Telefone</TableHead>
+                      <TableHead className="text-gray-300">Email</TableHead>
+                      <TableHead className="text-gray-300">Status</TableHead>
+                      <TableHead className="text-gray-300">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {clientes?.map((cliente) => (
+                      <TableRow key={cliente.id} className="border-gray-700">
+                        <TableCell className="text-white">{cliente.nome}</TableCell>
+                        <TableCell className="text-gray-300">{cliente.cnpj}</TableCell>
+                        <TableCell className="text-gray-300">{cliente.telefone || '-'}</TableCell>
+                        <TableCell className="text-gray-300">{cliente.email || '-'}</TableCell>
+                        <TableCell>
+                          <Badge className={cliente.isActive ? 'bg-green-600' : 'bg-red-600'}>
+                            {cliente.isActive ? 'Ativo' : 'Inativo'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button size="sm" variant="outline" className="border-gray-600">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button size="sm" variant="outline" className="border-gray-600">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="guias">
+          {/* Aba Guias - Visualização de todas as guias */}
+          <TabsContent value="guias" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-green-400">Guias DAS-MEI</h2>
+                <p className="text-gray-400">Visualizar e gerenciar guias geradas</p>
+              </div>
+              <div className="flex space-x-2">
+                <Select>
+                  <SelectTrigger className="w-40 bg-gray-700 border-gray-600">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-700">
+                    <SelectItem value="todos">Todos</SelectItem>
+                    <SelectItem value="pending">Pendente</SelectItem>
+                    <SelectItem value="success">Gerada</SelectItem>
+                    <SelectItem value="failed">Erro</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Input 
+                  placeholder="Buscar cliente..." 
+                  className="w-64 bg-gray-700 border-gray-600"
+                />
+              </div>
+            </div>
+
             <Card className="bg-gray-800 border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-green-400">Guias DAS-MEI</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-400">Em desenvolvimento...</p>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-gray-700">
+                      <TableHead className="text-gray-300">Cliente</TableHead>
+                      <TableHead className="text-gray-300">Período</TableHead>
+                      <TableHead className="text-gray-300">Vencimento</TableHead>
+                      <TableHead className="text-gray-300">Valor</TableHead>
+                      <TableHead className="text-gray-300">Status</TableHead>
+                      <TableHead className="text-gray-300">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {guias?.map((guia) => (
+                      <TableRow key={guia.id} className="border-gray-700">
+                        <TableCell className="text-white">
+                          {clientes?.find(c => c.id === guia.clienteMeiId)?.nome || 'Cliente não encontrado'}
+                        </TableCell>
+                        <TableCell className="text-gray-300">{guia.mesAno}</TableCell>
+                        <TableCell className="text-gray-300">
+                          {format(new Date(guia.dataVencimento), 'dd/MM/yyyy', { locale: ptBR })}
+                        </TableCell>
+                        <TableCell className="text-gray-300">R$ {guia.valor}</TableCell>
+                        <TableCell>
+                          <Badge className={
+                            guia.downloadStatus === 'success' ? 'bg-green-600' :
+                            guia.downloadStatus === 'failed' ? 'bg-red-600' : 'bg-yellow-600'
+                          }>
+                            {guia.downloadStatus === 'success' ? 'Gerada' :
+                             guia.downloadStatus === 'failed' ? 'Erro' : 'Pendente'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            {guia.downloadStatus === 'success' && (
+                              <Button size="sm" variant="outline" className="border-gray-600">
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Button size="sm" variant="outline" className="border-gray-600">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="automacao">
+          {/* Aba Automação - Configurações do sistema */}
+          <TabsContent value="automacao" className="space-y-6">
+            <h2 className="text-2xl font-bold text-green-400">Configurações de Automação</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-green-400">Scheduler Automático</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-white">Status do Scheduler</span>
+                    <div className="flex items-center space-x-2">
+                      <div className={`h-3 w-3 rounded-full ${isSchedulerRunning ? 'bg-green-400' : 'bg-red-400'}`} />
+                      <span className="text-sm text-gray-300">
+                        {isSchedulerRunning ? 'Ativo' : 'Inativo'}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-gray-300">Horário de Execução</Label>
+                    <Input 
+                      defaultValue="08:00" 
+                      type="time" 
+                      className="bg-gray-700 border-gray-600"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-gray-300">Dia do Mês para Geração</Label>
+                    <Select>
+                      <SelectTrigger className="bg-gray-700 border-gray-600">
+                        <SelectValue placeholder="Dia 5" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 border-gray-700">
+                        {Array.from({length: 28}, (_, i) => i + 1).map(day => (
+                          <SelectItem key={day} value={day.toString()}>Dia {day}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-green-400">Configurações de Envio</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-white">WhatsApp</span>
+                    <Switch defaultChecked />
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-white">Email</span>
+                    <Switch defaultChecked />
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-white">Correios</span>
+                    <Switch />
+                  </div>
+                  <div>
+                    <Label className="text-gray-300">Delay entre envios (ms)</Label>
+                    <Input 
+                      defaultValue="1000" 
+                      type="number" 
+                      className="bg-gray-700 border-gray-600"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
             <Card className="bg-gray-800 border-gray-700">
               <CardHeader>
-                <CardTitle className="text-green-400">Configurações de Automação</CardTitle>
+                <CardTitle className="text-green-400">Teste de Configurações</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-400">Em desenvolvimento...</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Button className="bg-blue-600 hover:bg-blue-700">
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Testar WhatsApp
+                  </Button>
+                  <Button className="bg-purple-600 hover:bg-purple-700">
+                    <Mail className="h-4 w-4 mr-2" />
+                    Testar Email
+                  </Button>
+                  <Button className="bg-orange-600 hover:bg-orange-700">
+                    <Download className="h-4 w-4 mr-2" />
+                    Testar Geração DAS
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="logs">
+          {/* Aba Logs - Sistema de logs detalhado */}
+          <TabsContent value="logs" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-green-400">Logs do Sistema</h2>
+                <p className="text-gray-400">Monitoramento de atividades e erros</p>
+              </div>
+              <div className="flex space-x-2">
+                <Select>
+                  <SelectTrigger className="w-40 bg-gray-700 border-gray-600">
+                    <SelectValue placeholder="Tipo" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-700">
+                    <SelectItem value="todos">Todos</SelectItem>
+                    <SelectItem value="geracao_das">Geração DAS</SelectItem>
+                    <SelectItem value="envio_whatsapp">WhatsApp</SelectItem>
+                    <SelectItem value="envio_email">Email</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" className="border-gray-600">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Atualizar
+                </Button>
+              </div>
+            </div>
+
             <Card className="bg-gray-800 border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-green-400">Logs do Sistema</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-400">Em desenvolvimento...</p>
+              <CardContent className="p-6">
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {logs?.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Activity className="h-12 w-12 text-gray-500 mx-auto mb-4" />
+                      <p className="text-gray-400">Nenhum log encontrado</p>
+                    </div>
+                  ) : (
+                    logs?.map((log) => (
+                      <div key={log.id} className="flex items-start justify-between p-4 bg-gray-700 rounded-lg">
+                        <div className="flex items-start space-x-3">
+                          {log.status === 'success' ? (
+                            <CheckCircle className="h-5 w-5 text-green-400 mt-1" />
+                          ) : log.status === 'failed' ? (
+                            <AlertCircle className="h-5 w-5 text-red-400 mt-1" />
+                          ) : (
+                            <Clock className="h-5 w-5 text-yellow-400 mt-1" />
+                          )}
+                          <div>
+                            <p className="text-sm font-medium text-white">{log.tipoOperacao}</p>
+                            <p className="text-xs text-gray-400 mt-1">
+                              {format(new Date(log.timestamp), 'dd/MM/yyyy HH:mm:ss', { locale: ptBR })}
+                            </p>
+                            {log.detalhes && (
+                              <p className="text-xs text-gray-500 mt-1">
+                                {typeof log.detalhes === 'string' ? log.detalhes : JSON.stringify(log.detalhes)}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <Badge
+                          className={
+                            log.status === 'success' 
+                              ? 'bg-green-600' 
+                              : log.status === 'failed' 
+                              ? 'bg-red-600' 
+                              : 'bg-yellow-600'
+                          }
+                        >
+                          {log.status}
+                        </Badge>
+                      </div>
+                    ))
+                  )}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="configuracoes">
+          {/* Aba Configurações - Configurações gerais do sistema */}
+          <TabsContent value="configuracoes" className="space-y-6">
+            <h2 className="text-2xl font-bold text-green-400">Configurações do Sistema</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-green-400">API InfoSimples</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label className="text-gray-300">Token API</Label>
+                    <Input 
+                      type="password"
+                      placeholder="Seu token da InfoSimples"
+                      className="bg-gray-700 border-gray-600"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-gray-300">URL Base</Label>
+                    <Input 
+                      defaultValue="https://api.infosimples.com/api/v2"
+                      className="bg-gray-700 border-gray-600"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-gray-300">Timeout (segundos)</Label>
+                    <Input 
+                      type="number"
+                      defaultValue="600"
+                      className="bg-gray-700 border-gray-600"
+                    />
+                  </div>
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                    Testar Conexão
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-green-400">WhatsApp Evolution API</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label className="text-gray-300">URL do Servidor</Label>
+                    <Input 
+                      placeholder="https://evolution-api.com"
+                      className="bg-gray-700 border-gray-600"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-gray-300">API Key</Label>
+                    <Input 
+                      type="password"
+                      placeholder="Sua API Key"
+                      className="bg-gray-700 border-gray-600"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-gray-300">Instância</Label>
+                    <Input 
+                      placeholder="Nome da instância"
+                      className="bg-gray-700 border-gray-600"
+                    />
+                  </div>
+                  <Button className="w-full bg-green-600 hover:bg-green-700">
+                    Testar WhatsApp
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
             <Card className="bg-gray-800 border-gray-700">
               <CardHeader>
-                <CardTitle className="text-green-400">Configurações</CardTitle>
+                <CardTitle className="text-green-400">Backup e Manutenção</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-400">Em desenvolvimento...</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Button variant="outline" className="border-gray-600">
+                    <Download className="h-4 w-4 mr-2" />
+                    Exportar Dados
+                  </Button>
+                  <Button variant="outline" className="border-gray-600">
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Limpar Logs
+                  </Button>
+                  <Button variant="outline" className="border-gray-600">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Reset Sistema
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
