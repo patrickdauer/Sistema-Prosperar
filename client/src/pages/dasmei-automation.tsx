@@ -177,6 +177,51 @@ export default function DASMEIAutomationPage() {
     }
   });
 
+  // Mutation para gerar guia individual
+  const generateIndividualGuiaMutation = useMutation({
+    mutationFn: async ({ clienteId, cnpj }: { clienteId: number, cnpj: string }) => {
+      const currentMonth = new Date().getMonth() + 1;
+      const currentYear = new Date().getFullYear();
+      const periodo = `${currentMonth.toString().padStart(2, '0')}/${currentYear}`;
+      
+      const response = await fetch('/api/infosimples/gerar-das', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          cnpj: cnpj,
+          periodo: periodo
+        })
+      });
+      return response.json();
+    },
+    onSuccess: (data, variables) => {
+      if (data.success) {
+        toast({ 
+          title: 'Guia gerada com sucesso!', 
+          description: `DAS-MEI gerado para o cliente` 
+        });
+        queryClient.invalidateQueries({ queryKey: ['/api/dasmei/guias'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/dasmei/logs'] });
+      } else {
+        toast({ 
+          title: 'Erro ao gerar guia', 
+          description: data.error || 'Verifique se as APIs estão configuradas', 
+          variant: 'destructive' 
+        });
+      }
+    },
+    onError: (error) => {
+      toast({ 
+        title: 'Erro ao gerar guia', 
+        description: 'Verifique se InfoSimples API está configurada', 
+        variant: 'destructive' 
+      });
+    }
+  });
+
   // Mutation para testar InfoSimples
   const testInfosimplesMutation = useMutation({
     mutationFn: async (config: typeof infosimplesConfig) => {
@@ -545,6 +590,23 @@ export default function DASMEIAutomationPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="border-gray-600 hover:bg-green-700 hover:border-green-500"
+                              onClick={() => generateIndividualGuiaMutation.mutate({ 
+                                clienteId: cliente.id, 
+                                cnpj: cliente.cnpj 
+                              })}
+                              disabled={generateIndividualGuiaMutation.isPending}
+                              title="Gerar guia DAS-MEI individual"
+                            >
+                              {generateIndividualGuiaMutation.isPending ? (
+                                <Clock className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Download className="h-4 w-4" />
+                              )}
+                            </Button>
                             <Button size="sm" variant="outline" className="border-gray-600">
                               <Edit className="h-4 w-4" />
                             </Button>
