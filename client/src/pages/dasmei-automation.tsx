@@ -140,14 +140,20 @@ export default function DASMEIAutomationPage() {
 
   // Mutation para testar InfoSimples
   const testInfosimplesMutation = useMutation({
-    mutationFn: (config: typeof infosimplesConfig) => 
-      apiRequest('/api/infosimples/test', { 
+    mutationFn: async (config: typeof infosimplesConfig) => {
+      const response = await fetch('/api/infosimples/test', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         body: JSON.stringify(config)
-      }),
+      });
+      return response.json();
+    },
     onSuccess: (data) => {
       if (data.success) {
-        toast({ title: 'Conexão InfoSimples testada com sucesso!', variant: 'default' });
+        toast({ title: 'Conexão InfoSimples testada com sucesso!' });
       } else {
         toast({ title: 'Erro ao testar InfoSimples', description: data.message, variant: 'destructive' });
       }
@@ -159,11 +165,17 @@ export default function DASMEIAutomationPage() {
 
   // Mutation para configurar InfoSimples
   const configureInfosimplesMutation = useMutation({
-    mutationFn: (config: typeof infosimplesConfig) => 
-      apiRequest('/api/infosimples/configure', { 
+    mutationFn: async (config: typeof infosimplesConfig) => {
+      const response = await fetch('/api/infosimples/configure', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         body: JSON.stringify(config)
-      }),
+      });
+      return response.json();
+    },
     onSuccess: (data) => {
       if (data.success) {
         toast({ title: 'InfoSimples configurado com sucesso!' });
@@ -175,11 +187,17 @@ export default function DASMEIAutomationPage() {
 
   // Mutation para testar geração DAS
   const testDasGenerationMutation = useMutation({
-    mutationFn: () => 
-      apiRequest('/api/infosimples/gerar-das', { 
+    mutationFn: async () => {
+      const response = await fetch('/api/infosimples/gerar-das', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         body: JSON.stringify({ cnpj: '37136441000140', mesAno: '012025' })
-      }),
+      });
+      return response.json();
+    },
     onSuccess: (data) => {
       if (data.success) {
         toast({ title: 'Teste de geração DAS realizado com sucesso!' });
