@@ -592,3 +592,22 @@ export default function Home() {
     </div>
   );
 }
+
+// Adicionar novo card DASMEI no componente Home
+<Card className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 cursor-pointer" onClick={() => navigate('/dasmei-automation')}>
+  <CardHeader className="pb-3">
+    <CardTitle className="flex items-center gap-3 text-xl">
+      <FileText className="h-6 w-6" />
+      Automação DASMEI
+    </CardTitle>
+  </CardHeader>
+  <CardContent>
+    <p className="text-emerald-100 mb-4">
+      Sistema completo de automação para geração e envio de boletos DAS para clientes MEI
+    </p>
+    <div className="flex items-center gap-2 text-sm text-emerald-200">
+      <Calendar className="h-4 w-4" />
+      <span>Automação mensal • WhatsApp • Lembretes</span>
+    </div>
+  </CardContent>
+</Card>
