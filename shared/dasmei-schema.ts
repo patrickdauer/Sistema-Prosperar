@@ -54,6 +54,20 @@ export const automationSettings = pgTable("automation_settings", {
   updatedBy: integer("updated_by").references(() => users.id),
 });
 
+// Tabela para configurações persistentes das APIs
+export const apiConfigurations = pgTable("api_configurations", {
+  id: serial("id").primaryKey(),
+  provider: text("provider").notNull().unique(), // "infosimples", "whatsapp_evolution"
+  config: jsonb("config").notNull(), // Configurações específicas da API
+  isActive: boolean("is_active").default(true),
+  lastTest: timestamp("last_test"),
+  testStatus: text("test_status"), // "success", "failed", "pending"
+  testResult: jsonb("test_result"), // Resultado do último teste
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  updatedBy: integer("updated_by").references(() => users.id),
+});
+
 // Tabela para feriados nacionais
 export const feriados = pgTable("feriados", {
   id: serial("id").primaryKey(),
@@ -101,6 +115,12 @@ export const insertAutomationSettingSchema = createInsertSchema(automationSettin
   updatedAt: true,
 });
 
+export const insertApiConfigurationSchema = createInsertSchema(apiConfigurations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertFeriadoSchema = createInsertSchema(feriados).omit({
   id: true,
   createdAt: true,
@@ -124,6 +144,9 @@ export type InsertSystemLog = z.infer<typeof insertSystemLogSchema>;
 
 export type AutomationSetting = typeof automationSettings.$inferSelect;
 export type InsertAutomationSetting = z.infer<typeof insertAutomationSettingSchema>;
+
+export type ApiConfiguration = typeof apiConfigurations.$inferSelect;
+export type InsertApiConfiguration = z.infer<typeof insertApiConfigurationSchema>;
 
 export type Feriado = typeof feriados.$inferSelect;
 export type InsertFeriado = z.infer<typeof insertFeriadoSchema>;

@@ -99,6 +99,36 @@ export default function DASMEIAutomationPage() {
     refetchInterval: 60000
   });
 
+  // Query para carregar configurações persistentes das APIs
+  const { data: apiConfigurations } = useQuery({
+    queryKey: ['/api/configurations'],
+    refetchInterval: 60000,
+    onSuccess: (data) => {
+      // Atualizar os estados de configuração com dados do banco
+      if (data.infosimples) {
+        setInfosimplesConfig(data.infosimples.config);
+        setConnectionStatus(prev => ({
+          ...prev,
+          infosimples: { 
+            connected: data.infosimples.isActive,
+            lastTest: data.infosimples.lastTest ? new Date(data.infosimples.lastTest) : null
+          }
+        }));
+      }
+      
+      if (data.whatsapp_evolution) {
+        setWhatsappConfig(data.whatsapp_evolution.config);
+        setConnectionStatus(prev => ({
+          ...prev,
+          whatsapp: { 
+            connected: data.whatsapp_evolution.isActive,
+            lastTest: data.whatsapp_evolution.lastTest ? new Date(data.whatsapp_evolution.lastTest) : null
+          }
+        }));
+      }
+    }
+  });
+
   // Mutations
   const toggleSchedulerMutation = useMutation({
     mutationFn: (action: 'start' | 'stop') => 
@@ -164,6 +194,8 @@ export default function DASMEIAutomationPage() {
           whatsapp: { connected: true, lastTest: new Date() }
         }));
         toast({ title: 'WhatsApp Evolution API testado com sucesso!' });
+        // Invalidar cache das configurações para recarregar dados persistentes
+        queryClient.invalidateQueries({ queryKey: ['/api/configurations'] });
       } else {
         setConnectionStatus(prev => ({
           ...prev,
@@ -241,6 +273,8 @@ export default function DASMEIAutomationPage() {
           ...prev,
           infosimples: { connected: true, lastTest: new Date() }
         }));
+        // Invalidar cache das configurações para recarregar dados persistentes
+        queryClient.invalidateQueries({ queryKey: ['/api/configurations'] });
         toast({ title: 'Conexão InfoSimples testada com sucesso!' });
       } else {
         setConnectionStatus(prev => ({

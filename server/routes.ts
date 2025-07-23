@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { db } from "./db";
 import { insertBusinessRegistrationSchema } from "@shared/schema";
 import { insertContratacaoSchema } from "@shared/contratacao-schema";
+import { apiConfigurations } from "@shared/dasmei-schema";
 import multer from "multer";
 import { z } from "zod";
 import { generateBusinessRegistrationPDF } from "./services/pdf";
@@ -2022,6 +2023,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const testResult = await providerManager.testProvider('infosimples', credentials);
       
+      // Salvar configuração no banco de dados
+      await db.insert(apiConfigurations)
+        .values({
+          provider: 'infosimples',
+          config: credentials,
+          isActive: testResult,
+          lastTest: new Date(),
+          testStatus: testResult ? 'success' : 'failed',
+          testResult: { testResult },
+          updatedBy: req.user?.id
+        })
+        .onConflictDoUpdate({
+          target: apiConfigurations.provider,
+          set: {
+            config: credentials,
+            isActive: testResult,
+            lastTest: new Date(),
+            testStatus: testResult ? 'success' : 'failed',
+            testResult: { testResult },
+            updatedAt: new Date(),
+            updatedBy: req.user?.id
+          }
+        });
+      
       res.json({ 
         success: testResult,
         message: testResult ? 'Conexão testada com sucesso' : 'Erro ao testar conexão'
@@ -2199,12 +2224,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (response.ok) {
         const data = await response.json();
+        
+        // Save configuration to database
+        await db.insert(apiConfigurations)
+          .values({
+            provider: 'whatsapp_evolution',
+            config: { serverUrl, apiKey, instance },
+            isActive: true,
+            lastTest: new Date(),
+            testStatus: 'success',
+            testResult: data,
+            updatedBy: req.user?.id
+          })
+          .onConflictDoUpdate({
+            target: apiConfigurations.provider,
+            set: {
+              config: { serverUrl, apiKey, instance },
+              lastTest: new Date(),
+              testStatus: 'success',
+              testResult: data,
+              updatedAt: new Date(),
+              updatedBy: req.user?.id
+            }
+          });
+        
         res.json({ 
           success: true, 
           message: 'Conexão WhatsApp testada com sucesso',
           data: data
         });
       } else {
+        // Save failed test to database
+        await db.insert(apiConfigurations)
+          .values({
+            provider: 'whatsapp_evolution',
+            config: { serverUrl, apiKey, instance },
+            isActive: false,
+            lastTest: new Date(),
+            testStatus: 'failed',
+            testResult: { error: `${response.status} - ${response.statusText}` },
+            updatedBy: req.user?.id
+          })
+          .onConflictDoUpdate({
+            target: apiConfigurations.provider,
+            set: {
+              config: { serverUrl, apiKey, instance },
+              lastTest: new Date(),
+              testStatus: 'failed',
+              testResult: { error: `${response.status} - ${response.statusText}` },
+              updatedAt: new Date(),
+              updatedBy: req.user?.id
+            }
+          });
+          
         res.json({ 
           success: false, 
           message: `Erro na conexão: ${response.status} - ${response.statusText}` 
@@ -2216,6 +2288,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: false, 
         message: 'Erro ao conectar com Evolution API' 
       });
+    }
+  });
+
+  // API para carregar configurações salvas
+  app.get('/api/configurations', authenticateToken, async (req, res) => {
+    try {
+      const configurations = await db.select().from(apiConfigurations);
+      
+      const configMap: Record<string, any> = {};
+      configurations.forEach(config => {
+        configMap[config.provider] = {
+          config: config.config,
+          isActive: config.isActive,
+          lastTest: config.lastTest,
+          testStatus: config.testStatus
+        };
+      });
+      
+      res.json(configMap);
+    } catch (error) {
+      console.error('Erro ao carregar configurações:', error);
+      res.status(500).json({ error: 'Erro ao carregar configurações' });
     }
   });
 
