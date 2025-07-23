@@ -125,6 +125,70 @@ export default function DASMEIAutomationPage() {
     }
   });
 
+  // Estados para formulários de configuração
+  const [infosimplesConfig, setInfosimplesConfig] = useState({
+    token: '',
+    baseUrl: 'https://api.infosimples.com/api/v2',
+    timeout: '600'
+  });
+
+  const [whatsappConfig, setWhatsappConfig] = useState({
+    serverUrl: '',
+    apiKey: '',
+    instance: ''
+  });
+
+  // Mutation para testar InfoSimples
+  const testInfosimplesMutation = useMutation({
+    mutationFn: (config: typeof infosimplesConfig) => 
+      apiRequest('/api/infosimples/test', { 
+        method: 'POST',
+        body: JSON.stringify(config)
+      }),
+    onSuccess: (data) => {
+      if (data.success) {
+        toast({ title: 'Conexão InfoSimples testada com sucesso!', variant: 'default' });
+      } else {
+        toast({ title: 'Erro ao testar InfoSimples', description: data.message, variant: 'destructive' });
+      }
+    },
+    onError: (error) => {
+      toast({ title: 'Erro ao testar conexão', description: 'Verifique suas configurações', variant: 'destructive' });
+    }
+  });
+
+  // Mutation para configurar InfoSimples
+  const configureInfosimplesMutation = useMutation({
+    mutationFn: (config: typeof infosimplesConfig) => 
+      apiRequest('/api/infosimples/configure', { 
+        method: 'POST',
+        body: JSON.stringify(config)
+      }),
+    onSuccess: (data) => {
+      if (data.success) {
+        toast({ title: 'InfoSimples configurado com sucesso!' });
+      } else {
+        toast({ title: 'Erro ao configurar InfoSimples', description: data.message, variant: 'destructive' });
+      }
+    }
+  });
+
+  // Mutation para testar geração DAS
+  const testDasGenerationMutation = useMutation({
+    mutationFn: () => 
+      apiRequest('/api/infosimples/gerar-das', { 
+        method: 'POST',
+        body: JSON.stringify({ cnpj: '37136441000140', mesAno: '012025' })
+      }),
+    onSuccess: (data) => {
+      if (data.success) {
+        toast({ title: 'Teste de geração DAS realizado com sucesso!' });
+      } else {
+        toast({ title: 'Erro no teste de geração', description: data.message, variant: 'destructive' });
+      }
+    }
+  });
+
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       {/* Header */}
@@ -589,17 +653,27 @@ export default function DASMEIAutomationPage() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Button className="bg-blue-600 hover:bg-blue-700">
+                  <Button 
+                    className="bg-blue-600 hover:bg-blue-700"
+                    onClick={() => toast({ title: 'Teste WhatsApp', description: 'Funcionalidade em desenvolvimento' })}
+                  >
                     <MessageSquare className="h-4 w-4 mr-2" />
                     Testar WhatsApp
                   </Button>
-                  <Button className="bg-purple-600 hover:bg-purple-700">
+                  <Button 
+                    className="bg-purple-600 hover:bg-purple-700"
+                    onClick={() => toast({ title: 'Teste Email', description: 'Funcionalidade em desenvolvimento' })}
+                  >
                     <Mail className="h-4 w-4 mr-2" />
                     Testar Email
                   </Button>
-                  <Button className="bg-orange-600 hover:bg-orange-700">
+                  <Button 
+                    className="bg-orange-600 hover:bg-orange-700"
+                    onClick={() => testDasGenerationMutation.mutate()}
+                    disabled={testDasGenerationMutation.isPending}
+                  >
                     <Download className="h-4 w-4 mr-2" />
-                    Testar Geração DAS
+                    {testDasGenerationMutation.isPending ? 'Testando...' : 'Testar Geração DAS'}
                   </Button>
                 </div>
               </CardContent>
@@ -698,26 +772,43 @@ export default function DASMEIAutomationPage() {
                       type="password"
                       placeholder="Seu token da InfoSimples"
                       className="bg-gray-700 border-gray-600"
+                      value={infosimplesConfig.token}
+                      onChange={(e) => setInfosimplesConfig(prev => ({ ...prev, token: e.target.value }))}
                     />
                   </div>
                   <div>
                     <Label className="text-gray-300">URL Base</Label>
                     <Input 
-                      defaultValue="https://api.infosimples.com/api/v2"
                       className="bg-gray-700 border-gray-600"
+                      value={infosimplesConfig.baseUrl}
+                      onChange={(e) => setInfosimplesConfig(prev => ({ ...prev, baseUrl: e.target.value }))}
                     />
                   </div>
                   <div>
                     <Label className="text-gray-300">Timeout (segundos)</Label>
                     <Input 
                       type="number"
-                      defaultValue="600"
                       className="bg-gray-700 border-gray-600"
+                      value={infosimplesConfig.timeout}
+                      onChange={(e) => setInfosimplesConfig(prev => ({ ...prev, timeout: e.target.value }))}
                     />
                   </div>
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                    Testar Conexão
-                  </Button>
+                  <div className="space-y-2">
+                    <Button 
+                      className="w-full bg-blue-600 hover:bg-blue-700"
+                      onClick={() => testInfosimplesMutation.mutate(infosimplesConfig)}
+                      disabled={testInfosimplesMutation.isPending || !infosimplesConfig.token}
+                    >
+                      {testInfosimplesMutation.isPending ? 'Testando...' : 'Testar Conexão'}
+                    </Button>
+                    <Button 
+                      className="w-full bg-green-600 hover:bg-green-700"
+                      onClick={() => configureInfosimplesMutation.mutate(infosimplesConfig)}
+                      disabled={configureInfosimplesMutation.isPending || !infosimplesConfig.token}
+                    >
+                      {configureInfosimplesMutation.isPending ? 'Configurando...' : 'Salvar Configuração'}
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
 
