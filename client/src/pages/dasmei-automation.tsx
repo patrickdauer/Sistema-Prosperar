@@ -138,6 +138,12 @@ export default function DASMEIAutomationPage() {
     instance: ''
   });
 
+  // Estados de conexão
+  const [connectionStatus, setConnectionStatus] = useState({
+    infosimples: { connected: false, lastTest: null as Date | null },
+    whatsapp: { connected: false, lastTest: null as Date | null }
+  });
+
   // Mutation para testar WhatsApp Evolution API
   const testWhatsappMutation = useMutation({
     mutationFn: async (config: typeof whatsappConfig) => {
@@ -153,8 +159,16 @@ export default function DASMEIAutomationPage() {
     },
     onSuccess: (data) => {
       if (data.success) {
+        setConnectionStatus(prev => ({
+          ...prev,
+          whatsapp: { connected: true, lastTest: new Date() }
+        }));
         toast({ title: 'WhatsApp Evolution API testado com sucesso!' });
       } else {
+        setConnectionStatus(prev => ({
+          ...prev,
+          whatsapp: { connected: false, lastTest: new Date() }
+        }));
         toast({ title: 'Erro ao testar WhatsApp', description: data.message, variant: 'destructive' });
       }
     },
@@ -178,8 +192,16 @@ export default function DASMEIAutomationPage() {
     },
     onSuccess: (data) => {
       if (data.success) {
+        setConnectionStatus(prev => ({
+          ...prev,
+          infosimples: { connected: true, lastTest: new Date() }
+        }));
         toast({ title: 'Conexão InfoSimples testada com sucesso!' });
       } else {
+        setConnectionStatus(prev => ({
+          ...prev,
+          infosimples: { connected: false, lastTest: new Date() }
+        }));
         toast({ title: 'Erro ao testar InfoSimples', description: data.message, variant: 'destructive' });
       }
     },
@@ -806,7 +828,15 @@ export default function DASMEIAutomationPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="bg-gray-800 border-gray-700">
                 <CardHeader>
-                  <CardTitle className="text-green-400">API InfoSimples</CardTitle>
+                  <CardTitle className="text-green-400 flex items-center justify-between">
+                    API InfoSimples
+                    <div className="flex items-center space-x-2">
+                      <div className={`h-3 w-3 rounded-full ${connectionStatus.infosimples.connected ? 'bg-green-400' : 'bg-red-400'}`} />
+                      <span className="text-xs text-gray-300">
+                        {connectionStatus.infosimples.connected ? 'Conectado' : 'Desconectado'}
+                      </span>
+                    </div>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
@@ -852,12 +882,34 @@ export default function DASMEIAutomationPage() {
                       {configureInfosimplesMutation.isPending ? 'Configurando...' : 'Salvar Configuração'}
                     </Button>
                   </div>
+                  
+                  {connectionStatus.infosimples.connected && (
+                    <div className="mt-4 p-3 bg-green-900/20 border border-green-700 rounded-lg">
+                      <h4 className="text-green-400 font-semibold mb-2">🟢 Teste Prático Disponível</h4>
+                      <p className="text-gray-300 text-sm">
+                        InfoSimples conectado! Pode consultar dados de empresas MEI automaticamente.
+                      </p>
+                      {connectionStatus.infosimples.lastTest && (
+                        <p className="text-gray-400 text-xs mt-1">
+                          Último teste: {connectionStatus.infosimples.lastTest.toLocaleString('pt-BR')}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
               <Card className="bg-gray-800 border-gray-700">
                 <CardHeader>
-                  <CardTitle className="text-green-400">WhatsApp Evolution API</CardTitle>
+                  <CardTitle className="text-green-400 flex items-center justify-between">
+                    WhatsApp Evolution API
+                    <div className="flex items-center space-x-2">
+                      <div className={`h-3 w-3 rounded-full ${connectionStatus.whatsapp.connected ? 'bg-green-400' : 'bg-red-400'}`} />
+                      <span className="text-xs text-gray-300">
+                        {connectionStatus.whatsapp.connected ? 'Conectado' : 'Desconectado'}
+                      </span>
+                    </div>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
@@ -895,9 +947,72 @@ export default function DASMEIAutomationPage() {
                   >
                     {testWhatsappMutation.isPending ? 'Testando...' : 'Testar WhatsApp'}
                   </Button>
+                  
+                  {connectionStatus.whatsapp.connected && (
+                    <div className="mt-4 p-3 bg-green-900/20 border border-green-700 rounded-lg">
+                      <h4 className="text-green-400 font-semibold mb-2">🟢 Teste Prático Disponível</h4>
+                      <p className="text-gray-300 text-sm">
+                        WhatsApp conectado! Pode ser usado para envio automático de DAS-MEI.
+                      </p>
+                      {connectionStatus.whatsapp.lastTest && (
+                        <p className="text-gray-400 text-xs mt-1">
+                          Último teste: {connectionStatus.whatsapp.lastTest.toLocaleString('pt-BR')}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
+
+            {/* Status Geral das APIs */}
+            {(connectionStatus.infosimples.connected || connectionStatus.whatsapp.connected) && (
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-green-400">Status Geral das Integrações</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center space-x-3">
+                      <div className={`h-4 w-4 rounded-full ${connectionStatus.infosimples.connected ? 'bg-green-400' : 'bg-gray-600'}`} />
+                      <span className="text-gray-300">
+                        InfoSimples API - {connectionStatus.infosimples.connected ? 'Ativo' : 'Inativo'}
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className={`h-4 w-4 rounded-full ${connectionStatus.whatsapp.connected ? 'bg-green-400' : 'bg-gray-600'}`} />
+                      <span className="text-gray-300">
+                        WhatsApp Evolution - {connectionStatus.whatsapp.connected ? 'Ativo' : 'Inativo'}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {connectionStatus.infosimples.connected && connectionStatus.whatsapp.connected && (
+                    <div className="mt-4 p-4 bg-green-900/20 border border-green-700 rounded-lg">
+                      <h4 className="text-green-400 font-semibold mb-2">🚀 Sistema Completo Ativo</h4>
+                      <p className="text-gray-300 text-sm mb-3">
+                        Todas as APIs estão funcionando! O sistema pode operar em modo totalmente automático.
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-400">
+                        <div>✅ Consulta automática de dados MEI</div>
+                        <div>✅ Envio automático via WhatsApp</div>
+                        <div>✅ Dashboard em tempo real</div>
+                        <div>✅ Scheduler automático ativo</div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {(!connectionStatus.infosimples.connected || !connectionStatus.whatsapp.connected) && (
+                    <div className="mt-4 p-4 bg-yellow-900/20 border border-yellow-700 rounded-lg">
+                      <h4 className="text-yellow-400 font-semibold mb-2">⚠️ Configuração Parcial</h4>
+                      <p className="text-gray-300 text-sm">
+                        Para usar o sistema completo, configure ambas as APIs acima.
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             <Card className="bg-gray-800 border-gray-700">
               <CardHeader>
