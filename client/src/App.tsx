@@ -23,7 +23,7 @@ import Clientes from "@/pages/clientes";
 import ClienteDetails from "@/pages/cliente-details-fixed";
 import NovoCliente from "@/pages/novo-cliente";
 import ClienteTasks from "@/pages/cliente-tasks";
-import DASMEIPage from "@/pages/das-mei";
+import DASMEIAutomationPage from "@/pages/dasmei-automation";
 import LinksPage from "@/pages/links";
 
 function ProtectedDashboardInterno() {
@@ -143,7 +143,7 @@ function Router() {
       <Route path="/novo-cliente" component={NovoCliente} />
       <Route path="/clientes/:id" component={ClienteDetails} />
       <Route path="/cliente-tasks" component={ClienteTasks} />
-      <Route path="/das-mei" component={DASMEIPage} />
+      <Route path="/das-mei" component={DASMEIAutomationPage} />
       <Route path="/links" component={LinksPage} />
       <Route component={Home} />
     </Switch>

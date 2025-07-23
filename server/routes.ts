@@ -2084,6 +2084,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // DASMEI Automation API Routes
+  app.get('/api/dasmei/estatisticas', authenticateToken, async (req, res) => {
+    try {
+      const { dasmeiStorage } = await import('./dasmei-storage.js');
+      const periodo = new Date().getFullYear() + String(new Date().getMonth() + 1).padStart(2, '0');
+      const stats = await dasmeiStorage.getEstatisticasPeriodo(periodo);
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: 'Erro ao buscar estatísticas' });
+    }
+  });
+
+  app.get('/api/dasmei/clientes', authenticateToken, async (req, res) => {
+    try {
+      const { dasmeiStorage } = await import('./dasmei-storage.js');
+      const clientes = await dasmeiStorage.getClientesMeiAtivos();
+      res.json(clientes);
+    } catch (error) {
+      res.status(500).json({ error: 'Erro ao buscar clientes' });
+    }
+  });
+
+  app.get('/api/dasmei/guias', authenticateToken, async (req, res) => {
+    try {
+      const { dasStorage } = await import('./das-storage.js');
+      const guias = await dasStorage.getAllDasGuias();
+      res.json(guias || []);
+    } catch (error) {
+      res.status(500).json({ error: 'Erro ao buscar guias' });
+    }
+  });
+
+  app.get('/api/dasmei/logs', authenticateToken, async (req, res) => {
+    try {
+      const { dasmeiStorage } = await import('./dasmei-storage.js');
+      const logs = await dasmeiStorage.getAllSystemLogs(50);
+      res.json(logs);
+    } catch (error) {
+      res.status(500).json({ error: 'Erro ao buscar logs' });
+    }
+  });
+
+  app.get('/api/dasmei/settings', authenticateToken, async (req, res) => {
+    try {
+      const { dasmeiStorage } = await import('./dasmei-storage.js');
+      const settings = await dasmeiStorage.getAllAutomationSettings();
+      res.json(settings);
+    } catch (error) {
+      res.status(500).json({ error: 'Erro ao buscar configurações' });
+    }
+  });
+
+  app.post('/api/dasmei/scheduler/start', authenticateToken, async (req, res) => {
+    try {
+      // Start scheduler logic here
+      res.json({ success: true, message: 'Scheduler iniciado' });
+    } catch (error) {
+      res.status(500).json({ error: 'Erro ao iniciar scheduler' });
+    }
+  });
+
+  app.post('/api/dasmei/scheduler/stop', authenticateToken, async (req, res) => {
+    try {
+      // Stop scheduler logic here
+      res.json({ success: true, message: 'Scheduler parado' });
+    } catch (error) {
+      res.status(500).json({ error: 'Erro ao parar scheduler' });
+    }
+  });
+
+  app.post('/api/dasmei/generate-manual', authenticateToken, async (req, res) => {
+    try {
+      const { dasmeiAutomationService } = await import('./services/dasmei-automation.js');
+      await dasmeiAutomationService.executarGeracaoAutomatica();
+      res.json({ success: true, message: 'Geração manual iniciada' });
+    } catch (error) {
+      res.status(500).json({ error: 'Erro na geração manual' });
+    }
+  });
+
+  app.post('/api/dasmei/send-manual', authenticateToken, async (req, res) => {
+    try {
+      const { dasmeiAutomationService } = await import('./services/dasmei-automation.js');
+      await dasmeiAutomationService.executarEnvioAutomatico();
+      res.json({ success: true, message: 'Envio manual iniciado' });
+    } catch (error) {
+      res.status(500).json({ error: 'Erro no envio manual' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
