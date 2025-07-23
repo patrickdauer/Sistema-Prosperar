@@ -2174,6 +2174,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // WhatsApp Evolution API Test Route
+  app.post('/api/whatsapp/test', authenticateToken, async (req, res) => {
+    try {
+      const { serverUrl, apiKey, instance } = req.body;
+      
+      if (!serverUrl || !apiKey || !instance) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'URL do servidor, API Key e instância são obrigatórios' 
+        });
+      }
+
+      // Test WhatsApp Evolution API connection
+      const testUrl = `${serverUrl.replace(/\/$/, '')}/instance/connectionState/${instance}`;
+      
+      const response = await fetch(testUrl, {
+        method: 'GET',
+        headers: {
+          'apikey': apiKey,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        res.json({ 
+          success: true, 
+          message: 'Conexão WhatsApp testada com sucesso',
+          data: data
+        });
+      } else {
+        res.json({ 
+          success: false, 
+          message: `Erro na conexão: ${response.status} - ${response.statusText}` 
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao testar WhatsApp:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Erro ao conectar com Evolution API' 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

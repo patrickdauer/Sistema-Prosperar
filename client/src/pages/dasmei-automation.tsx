@@ -138,6 +138,31 @@ export default function DASMEIAutomationPage() {
     instance: ''
   });
 
+  // Mutation para testar WhatsApp Evolution API
+  const testWhatsappMutation = useMutation({
+    mutationFn: async (config: typeof whatsappConfig) => {
+      const response = await fetch('/api/whatsapp/test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(config)
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        toast({ title: 'WhatsApp Evolution API testado com sucesso!' });
+      } else {
+        toast({ title: 'Erro ao testar WhatsApp', description: data.message, variant: 'destructive' });
+      }
+    },
+    onError: (error) => {
+      toast({ title: 'Erro ao testar WhatsApp', description: 'Verifique suas configurações', variant: 'destructive' });
+    }
+  });
+
   // Mutation para testar InfoSimples
   const testInfosimplesMutation = useMutation({
     mutationFn: async (config: typeof infosimplesConfig) => {
@@ -840,6 +865,8 @@ export default function DASMEIAutomationPage() {
                     <Input 
                       placeholder="https://evolution-api.com"
                       className="bg-gray-700 border-gray-600"
+                      value={whatsappConfig.serverUrl}
+                      onChange={(e) => setWhatsappConfig(prev => ({ ...prev, serverUrl: e.target.value }))}
                     />
                   </div>
                   <div>
@@ -848,6 +875,8 @@ export default function DASMEIAutomationPage() {
                       type="password"
                       placeholder="Sua API Key"
                       className="bg-gray-700 border-gray-600"
+                      value={whatsappConfig.apiKey}
+                      onChange={(e) => setWhatsappConfig(prev => ({ ...prev, apiKey: e.target.value }))}
                     />
                   </div>
                   <div>
@@ -855,10 +884,16 @@ export default function DASMEIAutomationPage() {
                     <Input 
                       placeholder="Nome da instância"
                       className="bg-gray-700 border-gray-600"
+                      value={whatsappConfig.instance}
+                      onChange={(e) => setWhatsappConfig(prev => ({ ...prev, instance: e.target.value }))}
                     />
                   </div>
-                  <Button className="w-full bg-green-600 hover:bg-green-700">
-                    Testar WhatsApp
+                  <Button 
+                    className="w-full bg-green-600 hover:bg-green-700"
+                    onClick={() => testWhatsappMutation.mutate(whatsappConfig)}
+                    disabled={testWhatsappMutation.isPending || !whatsappConfig.serverUrl || !whatsappConfig.apiKey || !whatsappConfig.instance}
+                  >
+                    {testWhatsappMutation.isPending ? 'Testando...' : 'Testar WhatsApp'}
                   </Button>
                 </CardContent>
               </Card>
