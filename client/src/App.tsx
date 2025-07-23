@@ -25,7 +25,6 @@ import NovoCliente from "@/pages/novo-cliente";
 import ClienteTasks from "@/pages/cliente-tasks";
 import DASMEIPage from "@/pages/das-mei";
 import LinksPage from "@/pages/links";
-import DASMEIAutomationPage from "@/pages/dasmei-automation";
 
 function ProtectedDashboardInterno() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -146,8 +145,6 @@ function Router() {
       <Route path="/cliente-tasks" component={ClienteTasks} />
       <Route path="/das-mei" component={DASMEIPage} />
       <Route path="/links" component={LinksPage} />
-      // Na função Router, adicionar a nova rota:
-      <Route path="/dasmei-automation" component={DASMEIAutomationPage} />
       <Route component={Home} />
     </Switch>
   );
