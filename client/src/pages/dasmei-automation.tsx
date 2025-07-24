@@ -81,7 +81,11 @@ export default function DASMEIAutomationPage() {
     whatsappEnabled: true,
     emailEnabled: true,
     correiosEnabled: false,
-    delayBetweenSends: 1000
+    delayBetweenSends: 1000,
+    // Mensagens personalizadas para cada tipo de envio
+    whatsappMessage: "Olá {NOME_CLIENTE}!\n\n📋 Sua DAS-MEI da empresa {RAZAO_SOCIAL} (CNPJ: {CNPJ}) está disponível:\n\n💰 Valor: R$ {VALOR}\n📅 Vencimento: {DATA_VENCIMENTO}\n\nClique no link para baixar: {LINK_DOWNLOAD}\n\n✅ Prosperar Contabilidade",
+    emailMessage: "Prezado(a) {NOME_CLIENTE},\n\nSegue em anexo a DAS-MEI da sua empresa {RAZAO_SOCIAL} (CNPJ: {CNPJ}).\n\nValor: R$ {VALOR}\nVencimento: {DATA_VENCIMENTO}\n\nAtenciosamente,\nProsperara Contabilidade",
+    smsMessage: "DAS-MEI {RAZAO_SOCIAL}: R$ {VALOR}, venc. {DATA_VENCIMENTO}. Link: {LINK_DOWNLOAD} - Prosperar Contabilidade"
   });
 
   // Estados para campos de teste
@@ -1290,6 +1294,255 @@ export default function DASMEIAutomationPage() {
               </Card>
             </div>
 
+            {/* Card Mensagens Personalizadas */}
+            <Card className="bg-gray-800 border-gray-700">
+              <CardHeader>
+                <CardTitle className="text-green-400">Mensagens Personalizadas</CardTitle>
+                <p className="text-gray-400 text-sm">
+                  Configure as mensagens que serão enviadas para cada cliente. Use as variáveis:
+                  <span className="text-blue-400"> {'{NOME_CLIENTE}'} {'{RAZAO_SOCIAL}'} {'{CNPJ}'} {'{VALOR}'} {'{DATA_VENCIMENTO}'} {'{LINK_DOWNLOAD}'}</span>
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Mensagem WhatsApp */}
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <MessageSquare className="h-5 w-5 text-green-400" />
+                    <Label className="text-green-400 font-semibold">Mensagem WhatsApp</Label>
+                    <div className={`h-3 w-3 rounded-full ${automationSettings.whatsappEnabled ? 'bg-green-400' : 'bg-gray-600'}`} />
+                  </div>
+                  <Textarea
+                    placeholder="Digite a mensagem do WhatsApp..."
+                    className="bg-gray-700 border-gray-600 text-white min-h-[100px]"
+                    value={automationSettings.whatsappMessage}
+                    onChange={(e) => setAutomationSettings(prev => ({ ...prev, whatsappMessage: e.target.value }))}
+                  />
+                  <div className="text-xs text-gray-400">
+                    Caracteres: {automationSettings.whatsappMessage.length}/1000
+                  </div>
+                </div>
+
+                {/* Mensagem Email */}
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Mail className="h-5 w-5 text-blue-400" />
+                    <Label className="text-blue-400 font-semibold">Mensagem Email</Label>
+                    <div className={`h-3 w-3 rounded-full ${automationSettings.emailEnabled ? 'bg-green-400' : 'bg-gray-600'}`} />
+                  </div>
+                  <Textarea
+                    placeholder="Digite a mensagem do email..."
+                    className="bg-gray-700 border-gray-600 text-white min-h-[100px]"
+                    value={automationSettings.emailMessage}
+                    onChange={(e) => setAutomationSettings(prev => ({ ...prev, emailMessage: e.target.value }))}
+                  />
+                  <div className="text-xs text-gray-400">
+                    Caracteres: {automationSettings.emailMessage.length}/2000
+                  </div>
+                </div>
+
+                {/* Mensagem SMS */}
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Send className="h-5 w-5 text-yellow-400" />
+                    <Label className="text-yellow-400 font-semibold">Mensagem SMS</Label>
+                    <div className={`h-3 w-3 rounded-full ${automationSettings.correiosEnabled ? 'bg-green-400' : 'bg-gray-600'}`} />
+                  </div>
+                  <Textarea
+                    placeholder="Digite a mensagem do SMS..."
+                    className="bg-gray-700 border-gray-600 text-white min-h-[80px]"
+                    value={automationSettings.smsMessage}
+                    onChange={(e) => setAutomationSettings(prev => ({ ...prev, smsMessage: e.target.value }))}
+                  />
+                  <div className="text-xs text-gray-400">
+                    Caracteres: {automationSettings.smsMessage.length}/160 (SMS padrão)
+                  </div>
+                </div>
+
+                {/* Preview das Mensagens */}
+                <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
+                  <h4 className="text-green-400 font-semibold mb-3">Preview das Mensagens</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                    {/* Preview WhatsApp */}
+                    <div className="bg-green-900/20 border border-green-700 rounded p-3">
+                      <div className="text-green-400 font-semibold mb-2 flex items-center">
+                        <MessageSquare className="h-4 w-4 mr-1" />
+                        WhatsApp
+                      </div>
+                      <div className="text-gray-300 whitespace-pre-wrap">
+                        {automationSettings.whatsappMessage
+                          .replace(/{NOME_CLIENTE}/g, 'João Silva')
+                          .replace(/{RAZAO_SOCIAL}/g, 'SILVA SERVICOS LTDA')
+                          .replace(/{CNPJ}/g, '12.345.678/0001-90')
+                          .replace(/{VALOR}/g, '81,43')
+                          .replace(/{DATA_VENCIMENTO}/g, '20/08/2025')
+                          .replace(/{LINK_DOWNLOAD}/g, 'https://...')}
+                      </div>
+                    </div>
+
+                    {/* Preview Email */}
+                    <div className="bg-blue-900/20 border border-blue-700 rounded p-3">
+                      <div className="text-blue-400 font-semibold mb-2 flex items-center">
+                        <Mail className="h-4 w-4 mr-1" />
+                        Email
+                      </div>
+                      <div className="text-gray-300 whitespace-pre-wrap">
+                        {automationSettings.emailMessage
+                          .replace(/{NOME_CLIENTE}/g, 'João Silva')
+                          .replace(/{RAZAO_SOCIAL}/g, 'SILVA SERVICOS LTDA')
+                          .replace(/{CNPJ}/g, '12.345.678/0001-90')
+                          .replace(/{VALOR}/g, '81,43')
+                          .replace(/{DATA_VENCIMENTO}/g, '20/08/2025')
+                          .replace(/{LINK_DOWNLOAD}/g, 'https://...')}
+                      </div>
+                    </div>
+
+                    {/* Preview SMS */}
+                    <div className="bg-yellow-900/20 border border-yellow-700 rounded p-3">
+                      <div className="text-yellow-400 font-semibold mb-2 flex items-center">
+                        <Send className="h-4 w-4 mr-1" />
+                        SMS
+                      </div>
+                      <div className="text-gray-300 whitespace-pre-wrap">
+                        {automationSettings.smsMessage
+                          .replace(/{NOME_CLIENTE}/g, 'João Silva')
+                          .replace(/{RAZAO_SOCIAL}/g, 'SILVA SERVICOS LTDA')
+                          .replace(/{CNPJ}/g, '12.345.678/0001-90')
+                          .replace(/{VALOR}/g, '81,43')
+                          .replace(/{DATA_VENCIMENTO}/g, '20/08/2025')
+                          .replace(/{LINK_DOWNLOAD}/g, 'https://...')}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Botões de Ação */}
+            <div className="flex flex-col md:flex-row justify-between gap-4">
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline"
+                  className="border-gray-600 hover:bg-gray-700"
+                  onClick={() => {
+                    // Resetar mensagens para padrão
+                    setAutomationSettings(prev => ({
+                      ...prev,
+                      whatsappMessage: "Olá {NOME_CLIENTE}!\n\n📋 Sua DAS-MEI da empresa {RAZAO_SOCIAL} (CNPJ: {CNPJ}) está disponível:\n\n💰 Valor: R$ {VALOR}\n📅 Vencimento: {DATA_VENCIMENTO}\n\nClique no link para baixar: {LINK_DOWNLOAD}\n\n✅ Prosperar Contabilidade",
+                      emailMessage: "Prezado(a) {NOME_CLIENTE},\n\nSegue em anexo a DAS-MEI da sua empresa {RAZAO_SOCIAL} (CNPJ: {CNPJ}).\n\nValor: R$ {VALOR}\nVencimento: {DATA_VENCIMENTO}\n\nAtenciosamente,\nProsperara Contabilidade",
+                      smsMessage: "DAS-MEI {RAZAO_SOCIAL}: R$ {VALOR}, venc. {DATA_VENCIMENTO}. Link: {LINK_DOWNLOAD} - Prosperar Contabilidade"
+                    }));
+                    toast({
+                      title: 'Mensagens Restauradas',
+                      description: 'Mensagens padrão restauradas com sucesso!',
+                      duration: 3000
+                    });
+                  }}
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Restaurar Padrão
+                </Button>
+                <Button 
+                  variant="outline"
+                  className="border-blue-600 hover:bg-blue-700"
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('/api/dasmei/test-messages', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        },
+                        body: JSON.stringify({
+                          whatsappMessage: automationSettings.whatsappMessage,
+                          emailMessage: automationSettings.emailMessage,
+                          smsMessage: automationSettings.smsMessage,
+                          testData: {
+                            nomeCliente: 'João Silva (TESTE)',
+                            razaoSocial: 'SILVA SERVICOS LTDA',
+                            cnpj: '12.345.678/0001-90',
+                            valor: '81,43',
+                            dataVencimento: '20/08/2025',
+                            linkDownload: 'https://exemplo.com/das-teste.pdf'
+                          }
+                        })
+                      });
+                      
+                      const result = await response.json();
+                      
+                      if (result.success) {
+                        toast({
+                          title: 'Teste de Mensagens Realizado',
+                          description: 'Mensagens de teste enviadas com sucesso!',
+                          duration: 4000
+                        });
+                      } else {
+                        toast({
+                          title: 'Erro no Teste',
+                          description: result.message || 'Erro ao testar mensagens',
+                          variant: 'destructive',
+                          duration: 4000
+                        });
+                      }
+                    } catch (error) {
+                      toast({
+                        title: 'Erro de Conexão',
+                        description: 'Erro ao conectar com o servidor',
+                        variant: 'destructive',
+                        duration: 4000
+                      });
+                    }
+                  }}
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  Testar Mensagens
+                </Button>
+              </div>
+              
+              <Button 
+                className="bg-green-600 hover:bg-green-700 text-white px-8"
+                onClick={async () => {
+                  try {
+                    const response = await fetch('/api/dasmei/save-automation-settings', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                      },
+                      body: JSON.stringify(automationSettings)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                      toast({ 
+                        title: 'Configurações Salvas', 
+                        description: 'Todas as configurações de automação e mensagens foram salvas com sucesso!',
+                        duration: 3000 
+                      });
+                      queryClient.invalidateQueries({ queryKey: ['/api/dasmei/settings'] });
+                    } else {
+                      toast({
+                        title: 'Erro ao Salvar',
+                        description: result.message || 'Erro ao salvar configurações',
+                        variant: 'destructive',
+                        duration: 4000
+                      });
+                    }
+                  } catch (error) {
+                    toast({
+                      title: 'Erro de Conexão',
+                      description: 'Erro ao conectar com o servidor',
+                      variant: 'destructive',
+                      duration: 4000
+                    });
+                  }
+                }}
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Salvar Configurações
+              </Button>
+            </div>
+
             {/* Card Teste de Configurações */}
             <Card className="bg-gray-800 border-gray-700">
               <CardHeader>
@@ -1532,17 +1785,125 @@ export default function DASMEIAutomationPage() {
               </CardContent>
             </Card>
 
-            {/* Botão Salvar Configurações */}
-            <div className="flex justify-end">
+            {/* Botões de Ação */}
+            <div className="flex flex-col md:flex-row justify-between gap-4">
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline"
+                  className="border-gray-600 hover:bg-gray-700"
+                  onClick={() => {
+                    // Resetar mensagens para padrão
+                    setAutomationSettings(prev => ({
+                      ...prev,
+                      whatsappMessage: "Olá {NOME_CLIENTE}!\n\n📋 Sua DAS-MEI da empresa {RAZAO_SOCIAL} (CNPJ: {CNPJ}) está disponível:\n\n💰 Valor: R$ {VALOR}\n📅 Vencimento: {DATA_VENCIMENTO}\n\nClique no link para baixar: {LINK_DOWNLOAD}\n\n✅ Prosperar Contabilidade",
+                      emailMessage: "Prezado(a) {NOME_CLIENTE},\n\nSegue em anexo a DAS-MEI da sua empresa {RAZAO_SOCIAL} (CNPJ: {CNPJ}).\n\nValor: R$ {VALOR}\nVencimento: {DATA_VENCIMENTO}\n\nAtenciosamente,\nProsperara Contabilidade",
+                      smsMessage: "DAS-MEI {RAZAO_SOCIAL}: R$ {VALOR}, venc. {DATA_VENCIMENTO}. Link: {LINK_DOWNLOAD} - Prosperar Contabilidade"
+                    }));
+                    toast({
+                      title: 'Mensagens Restauradas',
+                      description: 'Mensagens padrão restauradas com sucesso!',
+                      duration: 3000
+                    });
+                  }}
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Restaurar Padrão
+                </Button>
+                <Button 
+                  variant="outline"
+                  className="border-blue-600 hover:bg-blue-700"
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('/api/dasmei/test-messages', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        },
+                        body: JSON.stringify({
+                          whatsappMessage: automationSettings.whatsappMessage,
+                          emailMessage: automationSettings.emailMessage,
+                          smsMessage: automationSettings.smsMessage,
+                          testData: {
+                            nomeCliente: 'João Silva (TESTE)',
+                            razaoSocial: 'SILVA SERVICOS LTDA',
+                            cnpj: '12.345.678/0001-90',
+                            valor: '81,43',
+                            dataVencimento: '20/08/2025',
+                            linkDownload: 'https://exemplo.com/das-teste.pdf'
+                          }
+                        })
+                      });
+                      
+                      const result = await response.json();
+                      
+                      if (result.success) {
+                        toast({
+                          title: 'Teste de Mensagens Realizado',
+                          description: 'Mensagens de teste enviadas com sucesso!',
+                          duration: 4000
+                        });
+                      } else {
+                        toast({
+                          title: 'Erro no Teste',
+                          description: result.message || 'Erro ao testar mensagens',
+                          variant: 'destructive',
+                          duration: 4000
+                        });
+                      }
+                    } catch (error) {
+                      toast({
+                        title: 'Erro de Conexão',
+                        description: 'Erro ao conectar com o servidor',
+                        variant: 'destructive',
+                        duration: 4000
+                      });
+                    }
+                  }}
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  Testar Mensagens
+                </Button>
+              </div>
+              
               <Button 
                 className="bg-green-600 hover:bg-green-700 text-white px-8"
-                onClick={() => {
-                  // Salvar configurações no backend
-                  toast({ 
-                    title: 'Configurações Salvas', 
-                    description: 'Todas as configurações de automação foram salvas com sucesso!',
-                    duration: 3000 
-                  });
+                onClick={async () => {
+                  try {
+                    const response = await fetch('/api/dasmei/save-automation-settings', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                      },
+                      body: JSON.stringify(automationSettings)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                      toast({ 
+                        title: 'Configurações Salvas', 
+                        description: 'Todas as configurações de automação e mensagens foram salvas com sucesso!',
+                        duration: 3000 
+                      });
+                      queryClient.invalidateQueries({ queryKey: ['/api/dasmei/settings'] });
+                    } else {
+                      toast({
+                        title: 'Erro ao Salvar',
+                        description: result.message || 'Erro ao salvar configurações',
+                        variant: 'destructive',
+                        duration: 4000
+                      });
+                    }
+                  } catch (error) {
+                    toast({
+                      title: 'Erro de Conexão',
+                      description: 'Erro ao conectar com o servidor',
+                      variant: 'destructive',
+                      duration: 4000
+                    });
+                  }
                 }}
               >
                 <Settings className="h-4 w-4 mr-2" />

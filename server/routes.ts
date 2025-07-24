@@ -2626,6 +2626,133 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Rota para salvar configurações de automação e mensagens personalizadas
+  app.post('/api/dasmei/save-automation-settings', authenticateToken, async (req, res) => {
+    try {
+      const {
+        schedulerTime,
+        schedulerDay,
+        whatsappEnabled,
+        emailEnabled,
+        correiosEnabled,
+        delayBetweenSends,
+        whatsappMessage,
+        emailMessage,
+        smsMessage
+      } = req.body;
+
+      const userId = req.user?.id || 1;
+      const settings = [
+        { chave: 'scheduler_time', valor: schedulerTime, descricao: 'Horário de execução do agendador', tipo: 'time' },
+        { chave: 'scheduler_day', valor: schedulerDay, descricao: 'Dia do mês para geração automática', tipo: 'number' },
+        { chave: 'whatsapp_enabled', valor: whatsappEnabled.toString(), descricao: 'WhatsApp habilitado', tipo: 'boolean' },
+        { chave: 'email_enabled', valor: emailEnabled.toString(), descricao: 'Email habilitado', tipo: 'boolean' },
+        { chave: 'sms_enabled', valor: correiosEnabled.toString(), descricao: 'SMS habilitado', tipo: 'boolean' },
+        { chave: 'delay_between_sends', valor: delayBetweenSends.toString(), descricao: 'Delay entre envios em ms', tipo: 'number' },
+        { chave: 'whatsapp_message', valor: whatsappMessage, descricao: 'Mensagem personalizada WhatsApp', tipo: 'text' },
+        { chave: 'email_message', valor: emailMessage, descricao: 'Mensagem personalizada Email', tipo: 'text' },
+        { chave: 'sms_message', valor: smsMessage, descricao: 'Mensagem personalizada SMS', tipo: 'text' }
+      ];
+
+      // Inserir ou atualizar configurações
+      for (const setting of settings) {
+        await db.execute(`
+          INSERT INTO automation_settings (chave, valor, descricao, tipo, updated_by, updated_at) 
+          VALUES ('${setting.chave}', '${setting.valor.replace(/'/g, "''")}', '${setting.descricao}', '${setting.tipo}', ${userId}, NOW())
+          ON CONFLICT (chave) DO UPDATE SET 
+            valor = '${setting.valor.replace(/'/g, "''")}',
+            descricao = '${setting.descricao}',
+            tipo = '${setting.tipo}',
+            updated_by = ${userId},
+            updated_at = NOW()
+        `);
+      }
+
+      res.json({
+        success: true,
+        message: 'Configurações de automação salvas com sucesso'
+      });
+    } catch (error) {
+      console.error('Erro ao salvar configurações de automação:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor'
+      });
+    }
+  });
+
+  // Rota para testar mensagens personalizadas
+  app.post('/api/dasmei/test-messages', authenticateToken, async (req, res) => {
+    try {
+      const { whatsappMessage, emailMessage, smsMessage, testData } = req.body;
+      
+      const results = {
+        whatsapp: { success: false, message: '', preview: '' },
+        email: { success: false, message: '', preview: '' },
+        sms: { success: false, message: '', preview: '' }
+      };
+
+      // Processar mensagens com dados de teste
+      const processMessage = (template: string, data: any) => {
+        return template
+          .replace(/{NOME_CLIENTE}/g, data.nomeCliente)
+          .replace(/{RAZAO_SOCIAL}/g, data.razaoSocial)
+          .replace(/{CNPJ}/g, data.cnpj)
+          .replace(/{VALOR}/g, data.valor)
+          .replace(/{DATA_VENCIMENTO}/g, data.dataVencimento)
+          .replace(/{LINK_DOWNLOAD}/g, data.linkDownload);
+      };
+
+      // Testar WhatsApp
+      try {
+        const processedWhatsApp = processMessage(whatsappMessage, testData);
+        results.whatsapp = {
+          success: true,
+          message: 'Mensagem WhatsApp processada com sucesso',
+          preview: processedWhatsApp
+        };
+      } catch (error) {
+        results.whatsapp.message = 'Erro ao processar mensagem WhatsApp';
+      }
+
+      // Testar Email
+      try {
+        const processedEmail = processMessage(emailMessage, testData);
+        results.email = {
+          success: true,
+          message: 'Mensagem Email processada com sucesso',
+          preview: processedEmail
+        };
+      } catch (error) {
+        results.email.message = 'Erro ao processar mensagem Email';
+      }
+
+      // Testar SMS
+      try {
+        const processedSMS = processMessage(smsMessage, testData);
+        results.sms = {
+          success: true,
+          message: 'Mensagem SMS processada com sucesso',
+          preview: processedSMS
+        };
+      } catch (error) {
+        results.sms.message = 'Erro ao processar mensagem SMS';
+      }
+
+      res.json({
+        success: true,
+        message: 'Teste de mensagens realizado com sucesso',
+        results
+      });
+    } catch (error) {
+      console.error('Erro ao testar mensagens:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor'
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

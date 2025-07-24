@@ -146,6 +146,18 @@ The system uses a `business_registrations` table with:
 
 ## Recent Changes
 
+### July 24, 2025 - Sistema de Mensagens Personalizadas Implementado
+- **Mensagens Customizáveis**: Adicionados campos para personalizar mensagens de WhatsApp, Email e SMS
+- **Variáveis Dinâmicas**: Sistema suporta variáveis {NOME_CLIENTE}, {RAZAO_SOCIAL}, {CNPJ}, {VALOR}, {DATA_VENCIMENTO}, {LINK_DOWNLOAD}
+- **Preview em Tempo Real**: Visualização das mensagens com dados de exemplo antes do envio
+- **Contadores de Caracteres**: Limitação visual para SMS (160 chars), Email (2000 chars), WhatsApp (1000 chars)
+- **Botões de Teste**: Funcionalidade para testar mensagens com dados fictícios
+- **Restaurar Padrão**: Opção para resetar mensagens para templates originais
+- **Persistência Automática**: Sistema mantém APIs sempre conectadas após configuração inicial
+- **Desconexão Manual**: Botões específicos para desconectar APIs quando necessário
+- **Configurações Salvas**: Todas as configurações e mensagens são salvas no banco de dados
+- **Interface Responsiva**: Cards organizados com indicadores visuais de status das APIs
+
 ### July 24, 2025 - Sistema DAS-MEI Completo com Aba Automação Finalizada
 - **Geração de DAS Real**: Sistema agora gera DAS reais com valores corretos da InfoSimples API
 - **Download Funcional**: Implementado download direto de PDFs da DAS com autenticação JWT
