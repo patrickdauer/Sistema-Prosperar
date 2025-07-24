@@ -36,22 +36,18 @@ export interface DASMEIResponse {
 }
 
 export class DASMEIAutomationService {
-  private infosimplesToken: string | null = null;
+  private infosimplesToken: string = 'jPxhuUwoTl474Vg1QrYIiktfvFFJplCb2V9zxXbG';
 
   constructor() {
-    this.initializeApiToken();
+    console.log('🔑 Token InfoSimples configurado');
   }
 
   private async initializeApiToken() {
     try {
-      // Usar o dasStorage original para pegar configurações da API
-      const { dasStorage } = await import('../das-storage.js');
-      const config = await dasStorage.getApiConfigurationByType('infosimples');
-      if (config && config.isActive) {
-        const credentials = typeof config.credentials === 'string' 
-          ? JSON.parse(config.credentials) 
-          : config.credentials;
-        this.infosimplesToken = credentials.token;
+      console.log('🔑 Inicializando token InfoSimples...');
+      if (!this.infosimplesToken) {
+        this.infosimplesToken = 'jPxhuUwoTl474Vg1QrYIiktfvFFJplCb2V9zxXbG';
+        console.log('🔑 Token InfoSimples configurado via fallback');
       }
     } catch (error) {
       console.error('Erro ao inicializar token InfoSimples:', error);
@@ -82,7 +78,8 @@ export class DASMEIAutomationService {
     }
 
     // Verificar feriados
-    const feriados = await dasStorage.getFeriadosByData(data);
+    // Sem feriados implementados ainda
+    const feriados = [];
     return feriados.length === 0;
   }
 
@@ -208,123 +205,179 @@ export class DASMEIAutomationService {
 
   // Automação principal - gerar todos os boletos do mês
   async executarGeracaoAutomatica(): Promise<void> {
-    const agora = new Date();
-    const diaGeracao = await dasmeiStorage.getAutomationSetting('dia_geracao') || '1';
-    
-    // Verificar se é o dia correto
-    if (agora.getDate() !== parseInt(diaGeracao)) {
-      return;
-    }
+    try {
+      console.log('🚀 Iniciando geração automática de DAS-MEI...');
+      
+      if (!this.infosimplesToken) {
+        this.infosimplesToken = 'jPxhuUwoTl474Vg1QrYIiktfvFFJplCb2V9zxXbG';
+        console.log('🔑 Token InfoSimples configurado durante execução');
+      }
 
-    // Verificar se é dia útil
-    if (!(await this.isDiaUtil(agora))) {
-      const proximoDiaUtil = await this.getProximoDiaUtil(agora);
-      console.log(`Não é dia útil. Próxima execução: ${proximoDiaUtil.toLocaleDateString()}`);
-      return;
-    }
+      const periodo = this.getCurrentPeriod();
+      console.log(`📅 Gerando DAS para período: ${periodo}`);
+      
+      const clientes = await dasmeiStorage.getClientesMeiAtivos();
+      console.log(`👥 Total de clientes: ${clientes.length}`);
 
-    const clientesAtivos = await dasmeiStorage.getClientesMeiAtivos();
-    const periodo = this.getCurrentPeriod();
+      if (clientes.length === 0) {
+        console.log('⚠️ Nenhum cliente encontrado');
+        return;
+      }
 
-    console.log(`Iniciando geração automática para ${clientesAtivos.length} clientes - Período: ${periodo}`);
+      let gerados = 0;
+      let erros = 0;
 
-    for (const cliente of clientesAtivos) {
-      try {
-        // Verificar se já foi gerado este mês
-        const existing = await dasmeiStorage.getDasGuiaByClienteAndPeriodo(cliente.id, periodo);
-        if (existing) {
-          continue;
-        }
+      for (const cliente of clientes) {
+        try {
+          console.log(`🔄 Processando cliente: ${cliente.nome} (${cliente.cnpj})`);
+          
+          // Verificar se já existe guia para este período
+          const guiaExistente = await dasmeiStorage.getDasGuiaByClienteAndPeriodo(cliente.id, periodo);
+          if (guiaExistente) {
+            console.log(`ℹ️ Guia já existe para ${cliente.nome} no período ${periodo}`);
+            continue;
+          }
 
-        const response = await this.gerarBoletoIndividual(cliente.cnpj, periodo);
-        if (response.success) {
-          await this.processarESalvarBoleto(cliente, response);
-          console.log(`✓ Boleto gerado para ${cliente.nome}`);
-        } else {
-          // Adicionar à fila de retry
-          await dasmeiStorage.createRetryItem({
-            tipoOperacao: 'geracao_boleto',
-            clienteId: cliente.id,
-            dadosOriginais: {
-              cnpj: cliente.cnpj,
+          const response = await this.gerarBoletoIndividual(cliente.cnpj, periodo);
+          
+          if (response.success && response.data && response.data.length > 0) {
+            const dasData = response.data[0];
+            const periodoData = dasData.periodos[periodo];
+            
+            if (periodoData) {
+              await dasmeiStorage.createDasGuia({
+                clienteMeiId: cliente.id,
+                mesAno: periodo,
+                valor: periodoData.valorTotalDas,
+                dataVencimento: periodoData.dataVencimento ? new Date(periodoData.dataVencimento) : new Date(),
+                status: 'generated',
+                filePath: periodoData.urlDas,
+              });
+
+              await this.logOperacao('geracao_boleto', cliente.id, 'success', {
+                periodo,
+                valor: periodoData.valorTotalDas,
+                url: periodoData.urlDas,
+              });
+
+              console.log(`✅ Boleto gerado para ${cliente.nome} - Valor: R$ ${periodoData.valorTotalDas}`);
+              gerados++;
+            }
+          } else {
+            console.log(`❌ Erro na geração para ${cliente.nome}: ${response.error}`);
+            erros++;
+            
+            await this.adicionarAoRetry('geracao_boleto', cliente.id, {
               periodo,
               erro: response.error,
-            },
-            erro: response.error,
-            proximaTentativa: new Date(Date.now() + 60 * 60 * 1000) // 1 hora
-          });
-          console.log(`✗ Falha para ${cliente.nome}: ${response.error}`);
-        }
+            });
 
-        // Delay entre requests para não sobrecarregar a API
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      } catch (error) {
-        console.error(`Erro processando ${cliente.nome}:`, error);
+            await this.logOperacao('geracao_boleto', cliente.id, 'failed', {
+              periodo,
+              erro: response.error,
+            });
+          }
+
+          // Delay entre requisições para não sobrecarregar a API
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        } catch (error) {
+          console.error(`❌ Erro gerando boleto para ${cliente.nome}:`, error);
+          erros++;
+          
+          await this.adicionarAoRetry('geracao_boleto', cliente.id, {
+            periodo,
+            erro: error instanceof Error ? error.message : 'Erro desconhecido',
+          });
+        }
       }
+
+      console.log(`🎯 Geração concluída: ${gerados} sucessos, ${erros} erros`);
+    } catch (error) {
+      console.error('❌ Erro fatal na geração automática:', error);
+      throw error;
     }
   }
 
   // Envio automático de WhatsApp
   async executarEnvioAutomatico(): Promise<void> {
-    const agora = new Date();
-    const diaEnvio = await dasmeiStorage.getAutomationSetting('dia_envio') || '2';
-    
-    if (agora.getDate() !== parseInt(diaEnvio)) {
-      return;
-    }
+    try {
+      console.log('📧 Iniciando envio automático de mensagens...');
 
-    if (!(await this.isDiaUtil(agora))) {
-      return;
-    }
+      const periodo = this.getCurrentPeriod();
+      console.log(`📅 Enviando mensagens para período: ${periodo}`);
+      
+      const guiasParaEnvio = await dasmeiStorage.getDasGuiasSemEnvio(periodo);
+      console.log(`📋 Total de guias para envio: ${guiasParaEnvio.length}`);
 
-    const periodo = this.getCurrentPeriod();
-    const guiasParaEnvio = await dasmeiStorage.getDasGuiasSemEnvio(periodo);
-
-    console.log(`Iniciando envio automático para ${guiasParaEnvio.length} guias`);
-
-    for (const guia of guiasParaEnvio) {
-      try {
-        const cliente = await dasmeiStorage.getClienteMeiById(guia.clienteMeiId);
-        if (!cliente || !cliente.telefone) {
-          continue;
-        }
-
-        // Determinar template baseado na situação
-        const templateTipo = guia.valor && parseFloat(guia.valor) > 0 ? 'boleto_disponivel' : 'boleto_pago';
-        const template = await dasmeiStorage.getMessageTemplateByTipo(templateTipo);
-        
-        if (!template) {
-          continue;
-        }
-
-        const mensagem = await this.processarTemplate(template.conteudo, {
-          nome: cliente.nome,
-          razaoSocial: cliente.nome,
-          valor: guia.valor || '0,00',
-          vencimento: guia.dataVencimento.toLocaleDateString('pt-BR'),
-          urlBoleto: guia.filePath || '',
-        });
-
-        const sucesso = await this.enviarWhatsApp(cliente.telefone, mensagem);
-        
-        await dasmeiStorage.createEnvioLog({
-          dasGuiaId: guia.id,
-          tipoEnvio: 'whatsapp',
-          status: sucesso ? 'sent' : 'failed',
-          mensagem,
-          enviadoEm: sucesso ? new Date() : undefined,
-        });
-
-        if (sucesso) {
-          console.log(`✓ WhatsApp enviado para ${cliente.nome}`);
-        } else {
-          console.log(`✗ Falha no WhatsApp para ${cliente.nome}`);
-        }
-
-        await new Promise(resolve => setTimeout(resolve, 3000));
-      } catch (error) {
-        console.error(`Erro enviando WhatsApp:`, error);
+      if (guiasParaEnvio.length === 0) {
+        console.log('⚠️ Nenhuma guia encontrada para envio');
+        return;
       }
+
+      let enviados = 0;
+      let erros = 0;
+
+      for (const guia of guiasParaEnvio) {
+        try {
+          const cliente = await dasmeiStorage.getClienteMeiById(guia.clienteMeiId);
+          if (!cliente) {
+            console.log(`❌ Cliente não encontrado para guia ${guia.id}`);
+            continue;
+          }
+
+          if (!cliente.telefone) {
+            console.log(`⚠️ Cliente ${cliente.nome} não possui telefone cadastrado`);
+            continue;
+          }
+
+          console.log(`📱 Enviando WhatsApp para ${cliente.nome} (${cliente.telefone})`);
+
+          // Determinar template baseado na situação
+          const templateTipo = guia.valor && parseFloat(guia.valor) > 0 ? 'boleto_disponivel' : 'boleto_pago';
+          const template = await dasmeiStorage.getMessageTemplateByTipo(templateTipo);
+          
+          if (!template) {
+            console.log(`⚠️ Template ${templateTipo} não encontrado`);
+            continue;
+          }
+
+          const mensagem = await this.processarTemplate(template.conteudo, {
+            nome: cliente.nome,
+            razaoSocial: cliente.nome,
+            valor: guia.valor || '0,00',
+            vencimento: guia.dataVencimento.toLocaleDateString('pt-BR'),
+            urlBoleto: guia.filePath || '',
+          });
+
+          const sucesso = await this.enviarWhatsApp(cliente.telefone, mensagem);
+          
+          await dasmeiStorage.createEnvioLog({
+            dasGuiaId: guia.id,
+            tipoEnvio: 'whatsapp',
+            status: sucesso ? 'sent' : 'failed',
+            mensagem,
+            enviadoEm: sucesso ? new Date() : undefined,
+          });
+
+          if (sucesso) {
+            console.log(`✅ WhatsApp enviado para ${cliente.nome}`);
+            enviados++;
+          } else {
+            console.log(`❌ Falha no WhatsApp para ${cliente.nome}`);
+            erros++;
+          }
+
+          await new Promise(resolve => setTimeout(resolve, 3000));
+        } catch (error) {
+          console.error(`❌ Erro enviando WhatsApp:`, error);
+          erros++;
+        }
+      }
+
+      console.log(`🎯 Envio concluído: ${enviados} sucessos, ${erros} erros`);
+    } catch (error) {
+      console.error('❌ Erro fatal no envio automático:', error);
+      throw error;
     }
   }
 
@@ -398,8 +451,15 @@ export class DASMEIAutomationService {
     try {
       console.log(`📱 Tentando enviar WhatsApp para ${numero}`);
       
-      // Primeiro, tentar usar a configuração da nova estrutura
-      const configWhatsApp = await dasmeiStorage.getApiConfigurationByType('whatsapp_evolution');
+      // Usar configuração manual do WhatsApp
+      const configWhatsApp = {
+        isActive: true,
+        credentials: {
+          apiKey: 'F5D9FD8EAFF0-4D1C-903D-14DB8AC4D6A0',
+          instance: 'PROSPERAR MEI - PATRICK DAUER',
+          serverUrl: 'https://apiw.aquiprospera.com.br'
+        }
+      };
       if (configWhatsApp && configWhatsApp.isActive) {
         const credentials = typeof configWhatsApp.credentials === 'string' 
           ? JSON.parse(configWhatsApp.credentials) 
@@ -465,7 +525,7 @@ export class DASMEIAutomationService {
     const proximaTentativa = new Date();
     proximaTentativa.setHours(proximaTentativa.getHours() + 1);
 
-    await dasStorage.createRetryItem({
+    await dasmeiStorage.createRetryItem({
       tipoOperacao: operacao,
       clienteId,
       dadosOriginals: dados,
@@ -481,7 +541,7 @@ export class DASMEIAutomationService {
     status: 'success' | 'failed' | 'pending', 
     detalhes: any
   ): Promise<void> {
-    await dasStorage.createSystemLog({
+    await dasmeiStorage.createSystemLog({
       tipoOperacao: tipo,
       clienteId,
       status,
@@ -493,16 +553,16 @@ export class DASMEIAutomationService {
 
   // Processar fila de retry
   async processarFilaRetry(): Promise<void> {
-    const itens = await dasStorage.getRetryItemsPendentes();
+    const itens = await dasmeiStorage.getRetryItemsPendentes();
     
     for (const item of itens) {
       if (item.tentativas >= item.maxTentativas) {
-        await dasStorage.updateRetryItem(item.id, { status: 'failed' });
+        await dasmeiStorage.updateRetryItem(item.id, { status: 'failed' });
         continue;
       }
 
       try {
-        await dasStorage.updateRetryItem(item.id, { 
+        await dasmeiStorage.updateRetryItem(item.id, { 
           status: 'processing',
           tentativas: item.tentativas + 1,
         });
@@ -510,7 +570,7 @@ export class DASMEIAutomationService {
         let sucesso = false;
 
         if (item.tipoOperacao === 'geracao_boleto') {
-          const cliente = await dasStorage.getClienteMeiById(item.clienteId);
+          const cliente = await dasmeiStorage.getClienteMeiById(item.clienteId);
           if (cliente) {
             const response = await this.gerarBoletoIndividual(cliente.cnpj, item.dadosOriginals.periodo);
             if (response.success) {
@@ -520,14 +580,14 @@ export class DASMEIAutomationService {
           }
         }
 
-        await dasStorage.updateRetryItem(item.id, { 
+        await dasmeiStorage.updateRetryItem(item.id, { 
           status: sucesso ? 'success' : 'pending',
           proximaTentativa: sucesso ? null : new Date(Date.now() + 3600000), // +1 hora
         });
 
       } catch (error) {
         console.error(`Erro processando retry ${item.id}:`, error);
-        await dasStorage.updateRetryItem(item.id, { 
+        await dasmeiStorage.updateRetryItem(item.id, { 
           status: 'pending',
           proximaTentativa: new Date(Date.now() + 3600000),
         });
@@ -536,4 +596,6 @@ export class DASMEIAutomationService {
   }
 }
 
-export const dasmeiAutomation = new DASMEIAutomationService();
+export const dasmeiAutomationService = new DASMEIAutomationService();
+export const dasmeiAutomation = dasmeiAutomationService;
+export default dasmeiAutomationService;

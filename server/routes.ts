@@ -2489,21 +2489,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/dasmei/generate-manual', authenticateToken, async (req, res) => {
     try {
-      const { dasmeiAutomationService } = await import('./services/dasmei-automation.js');
-      await dasmeiAutomationService.executarGeracaoAutomatica();
+      console.log('🚀 Iniciando geração manual de DAS-MEI...');
+      const automationModule = await import('./services/dasmei-automation.js');
+      console.log('📦 Módulo importado:', Object.keys(automationModule));
+      
+      const service = automationModule.dasmeiAutomationService || automationModule.default;
+      if (!service) {
+        throw new Error('Serviço de automação não encontrado');
+      }
+      
+      console.log('🔧 Serviço encontrado, executando geração...');
+      await service.executarGeracaoAutomatica();
+      console.log('✅ Geração manual concluída');
       res.json({ success: true, message: 'Geração manual iniciada' });
     } catch (error) {
-      res.status(500).json({ error: 'Erro na geração manual' });
+      console.error('❌ Erro na geração manual:', error);
+      res.status(500).json({ error: 'Erro na geração manual', details: error.message });
     }
   });
 
   app.post('/api/dasmei/send-manual', authenticateToken, async (req, res) => {
     try {
-      const { dasmeiAutomationService } = await import('./services/dasmei-automation.js');
-      await dasmeiAutomationService.executarEnvioAutomatico();
+      console.log('📧 Iniciando envio manual de mensagens...');
+      const automationModule = await import('./services/dasmei-automation.js');
+      console.log('📦 Módulo importado:', Object.keys(automationModule));
+      
+      const service = automationModule.dasmeiAutomationService || automationModule.default;
+      if (!service) {
+        throw new Error('Serviço de automação não encontrado');
+      }
+      
+      console.log('🔧 Serviço encontrado, executando envio...');
+      await service.executarEnvioAutomatico();
+      console.log('✅ Envio manual concluído');
       res.json({ success: true, message: 'Envio manual iniciado' });
     } catch (error) {
-      res.status(500).json({ error: 'Erro no envio manual' });
+      console.error('❌ Erro no envio manual:', error);
+      res.status(500).json({ error: 'Erro no envio manual', details: error.message });
     }
   });
 
