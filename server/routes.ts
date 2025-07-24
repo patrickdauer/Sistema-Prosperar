@@ -2875,6 +2875,110 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Rota para testar WhatsApp com dados reais
+  app.post('/api/dasmei/test-whatsapp', authenticateToken, async (req, res) => {
+    try {
+      const { telefone, email, cnpj } = req.body;
+      
+      if (!telefone) {
+        return res.status(400).json({
+          success: false,
+          message: 'Telefone é obrigatório para teste WhatsApp'
+        });
+      }
+
+      const results = {
+        whatsapp: { success: false, message: '', error: '' },
+        email: { success: false, message: '', error: '' },
+        sms: { success: false, message: '', error: '' }
+      };
+
+      // Buscar configuração do WhatsApp
+      const { dasStorage } = await import('./das-storage.js');
+      const whatsappConfig = await dasStorage.getApiConfigurationByType('whatsapp');
+      
+      if (!whatsappConfig || !whatsappConfig.isActive) {
+        results.whatsapp = {
+          success: false,
+          message: 'WhatsApp não configurado',
+          error: 'WhatsApp Evolution API não está configurado ou ativo'
+        };
+      } else {
+        try {
+          const credentials = typeof whatsappConfig.credentials === 'string' 
+            ? JSON.parse(whatsappConfig.credentials) 
+            : whatsappConfig.credentials;
+
+          const { serverUrl, apiKey, instance } = credentials;
+          
+          // Mensagem de teste
+          const mensagemTeste = `🧪 Teste do Sistema DAS-MEI\n\nEste é um teste da funcionalidade de WhatsApp.\n\nTelefone: ${telefone}\nHorário: ${new Date().toLocaleString('pt-BR')}\n\n✅ Sistema funcionando corretamente!`;
+          
+          // Garantir que a URL tenha protocolo
+          const baseUrl = serverUrl.startsWith('http') ? serverUrl : `https://${serverUrl}`;
+          const sendUrl = `${baseUrl}/message/sendText/${encodeURIComponent(instance)}`;
+          
+          const response = await fetch(sendUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': apiKey
+            },
+            body: JSON.stringify({
+              number: telefone,
+              text: mensagemTeste
+            })
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            results.whatsapp = {
+              success: true,
+              message: 'Mensagem de teste enviada com sucesso',
+              error: ''
+            };
+          } else {
+            const errorData = await response.text();
+            results.whatsapp = {
+              success: false,
+              message: 'Erro ao enviar mensagem de teste',
+              error: `Status: ${response.status} - ${errorData}`
+            };
+          }
+        } catch (error) {
+          console.error('Erro no teste WhatsApp:', error);
+          results.whatsapp = {
+            success: false,
+            message: 'Erro de conexão',
+            error: error.message
+          };
+        }
+      }
+
+      // Se email foi fornecido, testar também
+      if (email) {
+        results.email = {
+          success: true,
+          message: 'Email configurado (teste não implementado)',
+          error: ''
+        };
+      }
+
+      res.json({
+        success: true,
+        message: 'Teste realizado',
+        results
+      });
+    } catch (error) {
+      console.error('Erro no teste geral:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor',
+        error: error.message
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
