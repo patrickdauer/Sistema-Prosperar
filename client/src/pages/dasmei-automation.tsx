@@ -153,7 +153,7 @@ export default function DASMEIAutomationPage() {
       apiRequest(`/api/dasmei/scheduler/${action}`, { method: 'POST' }),
     onSuccess: () => {
       setIsSchedulerRunning(!isSchedulerRunning);
-      toast({ title: `Scheduler ${isSchedulerRunning ? 'parado' : 'iniciado'} com sucesso` });
+      toast({ title: `Agendador ${isSchedulerRunning ? 'parado' : 'iniciado'} com sucesso` });
     }
   });
 
@@ -406,12 +406,12 @@ export default function DASMEIAutomationPage() {
                 {isSchedulerRunning ? (
                   <>
                     <PauseCircle className="h-4 w-4 mr-2" />
-                    Parar Scheduler
+                    Parar Agendador
                   </>
                 ) : (
                   <>
                     <Play className="h-4 w-4 mr-2" />
-                    Iniciar Scheduler
+                    Iniciar Agendador
                   </>
                 )}
               </Button>
@@ -519,7 +519,7 @@ export default function DASMEIAutomationPage() {
                     </span>
                   </div>
                   <p className="text-xs text-gray-400 mt-1">
-                    Scheduler automático
+                    Agendador automático
                   </p>
                 </CardContent>
               </Card>
@@ -863,14 +863,14 @@ export default function DASMEIAutomationPage() {
             <h2 className="text-2xl font-bold text-green-400">Configurações de Automação</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Card Scheduler Automático */}
+              {/* Card Agendador Automático */}
               <Card className="bg-gray-800 border-gray-700">
                 <CardHeader>
-                  <CardTitle className="text-green-400">Scheduler Automático</CardTitle>
+                  <CardTitle className="text-green-400">Agendador Automático</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-white">Status do Scheduler</span>
+                    <span className="text-white">Status do Agendador</span>
                     <div className="flex items-center space-x-2">
                       <div className={`h-3 w-3 rounded-full ${isSchedulerRunning ? 'bg-green-400' : 'bg-red-400'}`} />
                       <span className="text-sm text-gray-300">
@@ -1391,7 +1391,7 @@ export default function DASMEIAutomationPage() {
                         <div>✅ Consulta automática de dados MEI</div>
                         <div>✅ Envio automático via WhatsApp</div>
                         <div>✅ Dashboard em tempo real</div>
-                        <div>✅ Scheduler automático ativo</div>
+                        <div>✅ Agendador automático ativo</div>
                       </div>
                     </div>
                   )}
