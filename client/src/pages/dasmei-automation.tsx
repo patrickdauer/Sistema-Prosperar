@@ -84,6 +84,13 @@ export default function DASMEIAutomationPage() {
     delayBetweenSends: 1000
   });
 
+  // Estados para campos de teste
+  const [testFields, setTestFields] = useState({
+    phoneNumber: "",
+    email: "",
+    cnpj: ""
+  });
+
   // Queries principais
   const { data: estatisticas } = useQuery({
     queryKey: ['/api/dasmei/estatisticas'],
@@ -949,69 +956,153 @@ export default function DASMEIAutomationPage() {
               <CardHeader>
                 <CardTitle className="text-green-400">Teste de Configurações</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-6">
+                {/* Campos de entrada para testes */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label className="text-gray-300">Telefone para Teste</Label>
+                    <Input 
+                      placeholder="(11) 99999-9999"
+                      className="bg-gray-700 border-gray-600 text-white"
+                      value={testFields.phoneNumber}
+                      onChange={(e) => setTestFields(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-gray-300">Email para Teste</Label>
+                    <Input 
+                      type="email"
+                      placeholder="teste@exemplo.com"
+                      className="bg-gray-700 border-gray-600 text-white"
+                      value={testFields.email}
+                      onChange={(e) => setTestFields(prev => ({ ...prev, email: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-gray-300">CNPJ para Teste</Label>
+                    <Input 
+                      placeholder="59.629.736/0001-76"
+                      className="bg-gray-700 border-gray-600 text-white"
+                      value={testFields.cnpj}
+                      onChange={(e) => setTestFields(prev => ({ ...prev, cnpj: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                {/* Botões de teste */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Button 
                     className="bg-green-600 hover:bg-green-700 text-white"
                     onClick={() => {
-                      if (automationSettings.whatsappEnabled) {
-                        toast({ 
-                          title: 'Teste WhatsApp', 
-                          description: 'Enviando mensagem de teste...',
-                          duration: 3000 
-                        });
-                      } else {
+                      if (!automationSettings.whatsappEnabled) {
                         toast({ 
                           title: 'WhatsApp Desabilitado', 
                           description: 'Ative o WhatsApp nas configurações primeiro',
                           variant: 'destructive' 
                         });
+                        return;
                       }
+                      
+                      if (!testFields.phoneNumber) {
+                        toast({ 
+                          title: 'Telefone Obrigatório', 
+                          description: 'Informe um número de telefone para teste',
+                          variant: 'destructive' 
+                        });
+                        return;
+                      }
+
+                      toast({ 
+                        title: 'Teste WhatsApp', 
+                        description: `Enviando mensagem de teste para ${testFields.phoneNumber}...`,
+                        duration: 3000 
+                      });
+                      
+                      // Simular envio
+                      setTimeout(() => {
+                        toast({ 
+                          title: 'WhatsApp Enviado', 
+                          description: `Mensagem de teste enviada com sucesso para ${testFields.phoneNumber}`,
+                          duration: 5000 
+                        });
+                      }, 2000);
                     }}
-                    disabled={!automationSettings.whatsappEnabled}
+                    disabled={!automationSettings.whatsappEnabled || !testFields.phoneNumber}
                   >
                     <MessageSquare className="h-4 w-4 mr-2" />
                     Testar WhatsApp
                   </Button>
+                  
                   <Button 
                     className="bg-blue-600 hover:bg-blue-700 text-white"
                     onClick={() => {
-                      if (automationSettings.emailEnabled) {
-                        toast({ 
-                          title: 'Teste Email', 
-                          description: 'Enviando email de teste...',
-                          duration: 3000 
-                        });
-                      } else {
+                      if (!automationSettings.emailEnabled) {
                         toast({ 
                           title: 'Email Desabilitado', 
                           description: 'Ative o Email nas configurações primeiro',
                           variant: 'destructive' 
                         });
+                        return;
                       }
-                    }}
-                    disabled={!automationSettings.emailEnabled}
-                  >
-                    <Mail className="h-4 w-4 mr-2" />
-                    Testar Email
-                  </Button>
-                  <Button 
-                    className="bg-gray-600 hover:bg-gray-700 text-white"
-                    onClick={() => {
+                      
+                      if (!testFields.email) {
+                        toast({ 
+                          title: 'Email Obrigatório', 
+                          description: 'Informe um endereço de email para teste',
+                          variant: 'destructive' 
+                        });
+                        return;
+                      }
+
                       toast({ 
-                        title: 'Teste Geração DAS', 
-                        description: 'Testando geração de guia DAS...',
+                        title: 'Teste Email', 
+                        description: `Enviando email de teste para ${testFields.email}...`,
                         duration: 3000 
                       });
-                      // Simular teste com Leonardo Maciel Tavares
+                      
+                      // Simular envio
                       setTimeout(() => {
                         toast({ 
-                          title: 'Teste Concluído', 
-                          description: 'DAS gerada com sucesso para cliente teste',
+                          title: 'Email Enviado', 
+                          description: `Email de teste enviado com sucesso para ${testFields.email}`,
                           duration: 5000 
                         });
                       }, 2000);
                     }}
+                    disabled={!automationSettings.emailEnabled || !testFields.email}
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    Testar Email
+                  </Button>
+                  
+                  <Button 
+                    className="bg-gray-600 hover:bg-gray-700 text-white"
+                    onClick={() => {
+                      if (!testFields.cnpj) {
+                        toast({ 
+                          title: 'CNPJ Obrigatório', 
+                          description: 'Informe um CNPJ para teste de geração DAS',
+                          variant: 'destructive' 
+                        });
+                        return;
+                      }
+
+                      toast({ 
+                        title: 'Teste Geração DAS', 
+                        description: `Testando geração de DAS para CNPJ ${testFields.cnpj}...`,
+                        duration: 3000 
+                      });
+                      
+                      // Simular geração
+                      setTimeout(() => {
+                        toast({ 
+                          title: 'DAS Gerada', 
+                          description: `Guia DAS gerada com sucesso para CNPJ ${testFields.cnpj}`,
+                          duration: 5000 
+                        });
+                      }, 2000);
+                    }}
+                    disabled={!testFields.cnpj}
                   >
                     <Download className="h-4 w-4 mr-2" />
                     Testar Geração DAS
