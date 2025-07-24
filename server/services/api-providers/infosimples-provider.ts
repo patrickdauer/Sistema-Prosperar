@@ -126,10 +126,21 @@ export class InfoSimplesProvider extends BaseApiProvider {
         periodo = `${String(previousMonth.getMonth() + 1).padStart(2, '0')}/${previousMonth.getFullYear()}`;
       }
 
-      // Validar formato do período (MM/YYYY)
-      const periodoRegex = /^(0[1-9]|1[0-2])\/\d{4}$/;
-      if (!periodoRegex.test(periodo)) {
-        throw new Error('Período deve estar no formato MM/YYYY');
+      // Converter período para formato AAAAMM se estiver em MM/YYYY
+      let periodoFormatado = periodo;
+      
+      // Se está no formato MM/YYYY, converter para AAAAMM
+      const periodoSlashRegex = /^(0[1-9]|1[0-2])\/(\d{4})$/;
+      const matchSlash = periodo.match(periodoSlashRegex);
+      if (matchSlash) {
+        const [, mes, ano] = matchSlash;
+        periodoFormatado = `${ano}${mes}`;
+      }
+      
+      // Se já está no formato AAAAMM, validar
+      const periodoYearMonthRegex = /^(\d{4})(0[1-9]|1[0-2])$/;
+      if (!periodoYearMonthRegex.test(periodoFormatado)) {
+        throw new Error('Período deve estar no formato MM/YYYY ou AAAAMM');
       }
 
       // No método gerarDAS, linha 118-123:
@@ -143,7 +154,7 @@ export class InfoSimplesProvider extends BaseApiProvider {
       const requestData = {
         token: this.credentials.token,
         cnpj: cnpjLimpo,
-        periodo: periodo,
+        periodo: periodoFormatado,
         timeout: this.apiTimeout,
         ignore_site_receipt: null
       };
@@ -151,7 +162,7 @@ export class InfoSimplesProvider extends BaseApiProvider {
       console.log('Enviando requisição para InfoSimples:', {
         url: `${this.config.baseUrl}/consultas/receita-federal/simples-das`,
         cnpj: cnpjLimpo,
-        periodo: periodo
+        periodo: periodoFormatado
       });
 
       const response = await fetch(`${this.config.baseUrl}/consultas/receita-federal/simples-das`, {

@@ -2057,6 +2057,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const resultado = await providerManager.gerarDAS(cnpj, mesAno);
       
+      // Se a geração foi bem-sucedida, salvar a guia no banco de dados
+      if (resultado.success && resultado.data && resultado.boleto) {
+        try {
+          const { dasStorage } = await import('./das-storage.js');
+          
+          // Buscar cliente MEI pelo CNPJ
+          const { dasmeiStorage } = await import('./dasmei-storage.js');
+          const clientes = await dasmeiStorage.getClientesMeiAtivos();
+          const cliente = clientes.find(c => c.cnpj.replace(/[^\d]/g, '') === cnpj.replace(/[^\d]/g, ''));
+          
+          if (cliente) {
+            const guiaData = {
+              cliente_mei_id: cliente.id,
+              mes_ano: mesAno || new Date().toISOString().slice(0, 7).replace('-', '/'),
+              data_vencimento: new Date(resultado.boleto.vencimento),
+              valor: resultado.boleto.valor.toString(),
+              file_path: resultado.boleto.url,
+              file_name: `DAS_${cnpj}_${mesAno || new Date().toISOString().slice(0, 7)}.pdf`,
+              download_status: 'pending',
+              provider: 'infosimples'
+            };
+            
+            await dasStorage.createDasGuia(guiaData);
+            console.log(`✅ Guia DAS salva no banco para cliente: ${cliente.nome}`);
+          }
+        } catch (dbError) {
+          console.error('Erro ao salvar guia no banco:', dbError);
+          // Não falhar a requisição se o salvamento falhar
+        }
+      }
+      
       res.json(resultado);
     } catch (error) {
       console.error('Erro ao gerar DAS:', error);
