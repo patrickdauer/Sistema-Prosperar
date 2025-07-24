@@ -146,19 +146,19 @@ The system uses a `business_registrations` table with:
 
 ## Recent Changes
 
-### July 24, 2025 - Sistema de Persistência de Configurações de API Totalmente Funcional
-- **Persistência Automática**: Configurações de API salvas automaticamente no banco de dados após configuração
-- **Carregamento na Inicialização**: Sistema carrega configurações salvas automaticamente ao iniciar o servidor
-- **Desconexão Manual**: Botão de desconectar disponível apenas quando API está conectada
-- **Estado Persistente**: Conexões mantidas entre reinicializações e atualizações do sistema
-- **Interface Atualizada**: Status de conexão reflete configurações salvas no banco de dados
-- **Validação de Dados**: Guias DAS agora persistem corretamente na tabela `das_guias` após geração
-- **Formato de Período**: Conversão automática de MM/YYYY para AAAAMM para compatibilidade com InfoSimples
-- **Logs de Configuração**: Sistema registra todas as operações de configuração e desconexão
-- **Sincronização UI**: Interface sincronizada com dados persistentes do servidor
-- **Sistema 100% Operacional**: InfoSimples conecta automaticamente, gera DAS reais e salva guias no banco
-- **Credenciais de Acesso**: admin/123456 funcionando perfeitamente
-- **Validação Completa**: Cliente Leonardo Maciel Tavares (CNPJ: 59629736000176) testado com sucesso
+### July 24, 2025 - Sistema DAS-MEI Completo com Download Funcional
+- **Geração de DAS Real**: Sistema agora gera DAS reais com valores corretos da InfoSimples API
+- **Download Funcional**: Implementado download direto de PDFs da DAS com autenticação JWT
+- **Período Correto**: Sistema configurado para gerar DAS do período atual (202507 - Julho 2025)
+- **Valores Reais**: DAS gerada com valor real de R$ 80,90 conforme API InfoSimples
+- **URL de Download**: Campo downloadUrl adicionado ao schema para armazenar links dos PDFs
+- **Interface Atualizada**: Botões de download funcionais na tabela de guias DAS
+- **Status Correto**: Guias com PDF disponível marcadas como "Disponível" (available)
+- **Persistência Automática**: Configurações InfoSimples carregam automaticamente na inicialização
+- **Data de Vencimento**: Correção na formatação de datas (20/08/2025 conforme Receita Federal)
+- **Autenticação Segura**: Rota de download protegida com token JWT
+- **Limpeza de Dados**: Remoção de guias pendentes e com valor zero
+- **Sistema Operacional**: Cliente Leonardo Maciel Tavares testado com sucesso (CNPJ: 59629736000176)
 
 ### July 17, 2025 - Sistema de Provedores de API Flexível e Modular
 - **Arquitetura Modular**: Implementado sistema de provedores de API flexível com base provider interface

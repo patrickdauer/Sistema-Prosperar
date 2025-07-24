@@ -755,9 +755,33 @@ export default function DASMEIAutomationPage() {
                               size="sm" 
                               variant="outline" 
                               className="border-gray-600 hover:bg-blue-700"
-                              onClick={() => {
+                              onClick={async () => {
                                 if (guia.downloadUrl || guia.downloadStatus === 'available') {
-                                  window.open(`/api/das/download/${guia.id}`, '_blank');
+                                  try {
+                                    const token = localStorage.getItem('token');
+                                    const response = await fetch(`/api/das/download/${guia.id}`, {
+                                      headers: {
+                                        'Authorization': `Bearer ${token}`
+                                      }
+                                    });
+                                    
+                                    if (response.ok) {
+                                      const blob = await response.blob();
+                                      const url = window.URL.createObjectURL(blob);
+                                      const a = document.createElement('a');
+                                      a.style.display = 'none';
+                                      a.href = url;
+                                      a.download = guia.fileName || `DAS_${guia.mesAno}.pdf`;
+                                      document.body.appendChild(a);
+                                      a.click();
+                                      window.URL.revokeObjectURL(url);
+                                      document.body.removeChild(a);
+                                    } else {
+                                      console.error('Erro no download:', response.statusText);
+                                    }
+                                  } catch (error) {
+                                    console.error('Erro ao fazer download:', error);
+                                  }
                                 }
                               }}
                               disabled={!guia.downloadUrl && guia.downloadStatus !== 'available'}

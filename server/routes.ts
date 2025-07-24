@@ -2199,8 +2199,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
             try {
               // Extrair dados da resposta InfoSimples
               const periodoData = resultado.data?.data?.[0]?.periodos?.[mesAno];
-              const dataVencimento = periodoData?.data_vencimento ? 
-                new Date(periodoData.data_vencimento.split('/').reverse().join('-')) : new Date();
+              
+              // Corrigir data de vencimento - usar formato correto dd/mm/yyyy
+              let dataVencimento = new Date();
+              if (periodoData?.data_vencimento) {
+                const [dia, mes, ano] = periodoData.data_vencimento.split('/');
+                dataVencimento = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
+              }
+              
               const valor = periodoData?.normalizado_valor_total_das || 0;
               const urlDas = periodoData?.url_das || '';
 
