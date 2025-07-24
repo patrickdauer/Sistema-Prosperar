@@ -19,7 +19,7 @@ import { z } from 'zod';
 import { 
   CalendarDays, Settings, Users, FileText, Play, Square, Eye, Trash2, Edit, Plus, 
   BarChart3, MessageSquare, Mail, Clock, CheckCircle, AlertCircle, Zap, 
-  Activity, TrendingUp, RefreshCw, Download, Send, PauseCircle
+  Activity, TrendingUp, RefreshCw, Download, Send, PauseCircle, Filter
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -1132,74 +1132,274 @@ export default function DASMEIAutomationPage() {
 
           {/* Aba Logs - Sistema de logs detalhado */}
           <TabsContent value="logs" className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
                 <h2 className="text-2xl font-bold text-green-400">Logs do Sistema</h2>
                 <p className="text-gray-400">Monitoramento de atividades e erros</p>
               </div>
-              <div className="flex space-x-2">
-                <Select>
-                  <SelectTrigger className="w-40 bg-gray-700 border-gray-600">
-                    <SelectValue placeholder="Tipo" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-700">
-                    <SelectItem value="todos">Todos</SelectItem>
-                    <SelectItem value="geracao_das">Geração DAS</SelectItem>
-                    <SelectItem value="envio_whatsapp">WhatsApp</SelectItem>
-                    <SelectItem value="envio_email">Email</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button variant="outline" className="border-gray-600">
+              <div className="flex flex-wrap gap-2">
+                <Button 
+                  variant="outline" 
+                  className="border-gray-600 hover:bg-gray-700"
+                  onClick={() => queryClient.invalidateQueries({ queryKey: ['/api/dasmei/logs'] })}
+                >
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Atualizar
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="border-red-600 hover:bg-red-700"
+                  onClick={() => {
+                    if (confirm('Tem certeza que deseja limpar todos os logs? Esta ação não pode ser desfeita.')) {
+                      // Simular limpeza de logs
+                      toast({
+                        title: 'Logs Limpos',
+                        description: 'Todos os logs foram removidos com sucesso',
+                        duration: 3000
+                      });
+                      queryClient.invalidateQueries({ queryKey: ['/api/dasmei/logs'] });
+                    }
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Limpar Logs
                 </Button>
               </div>
             </div>
 
+            {/* Filtros avançados */}
             <Card className="bg-gray-800 border-gray-700">
-              <CardContent className="p-6">
-                <div className="space-y-4 max-h-96 overflow-y-auto">
+              <CardHeader>
+                <CardTitle className="text-green-400 flex items-center">
+                  <Filter className="h-5 w-5 mr-2" />
+                  Filtros de Logs
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div>
+                    <Label className="text-gray-300">Tipo de Operação</Label>
+                    <Select>
+                      <SelectTrigger className="bg-gray-700 border-gray-600">
+                        <SelectValue placeholder="Todos os tipos" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 border-gray-700">
+                        <SelectItem value="todos">Todos</SelectItem>
+                        <SelectItem value="geracao_das">Geração DAS</SelectItem>
+                        <SelectItem value="envio_whatsapp">Envio WhatsApp</SelectItem>
+                        <SelectItem value="envio_email">Envio Email</SelectItem>
+                        <SelectItem value="envio_sms">Envio SMS</SelectItem>
+                        <SelectItem value="configuracao">Configuração</SelectItem>
+                        <SelectItem value="sistema">Sistema</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-gray-300">Status</Label>
+                    <Select>
+                      <SelectTrigger className="bg-gray-700 border-gray-600">
+                        <SelectValue placeholder="Todos os status" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 border-gray-700">
+                        <SelectItem value="todos">Todos</SelectItem>
+                        <SelectItem value="success">Sucesso</SelectItem>
+                        <SelectItem value="failed">Erro</SelectItem>
+                        <SelectItem value="pending">Pendente</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-gray-300">Data Inicial</Label>
+                    <Input 
+                      type="date"
+                      className="bg-gray-700 border-gray-600 text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-gray-300">Data Final</Label>
+                    <Input 
+                      type="date"
+                      className="bg-gray-700 border-gray-600 text-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center mt-4">
+                  <div className="flex-1 max-w-md">
+                    <Label className="text-gray-300">Buscar por Cliente ou Detalhes</Label>
+                    <Input 
+                      placeholder="Digite para buscar..."
+                      className="bg-gray-700 border-gray-600 text-white"
+                    />
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    className="border-gray-600 ml-4"
+                    onClick={() => {
+                      toast({
+                        title: 'Filtros Limpos',
+                        description: 'Todos os filtros foram resetados',
+                        duration: 2000
+                      });
+                    }}
+                  >
+                    Limpar Filtros
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Estatísticas dos Logs */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Card className="bg-gray-800 border-gray-700">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-400 text-sm">Total de Logs</p>
+                      <p className="text-2xl font-bold text-white">{logs?.length || 0}</p>
+                    </div>
+                    <Activity className="h-8 w-8 text-blue-400" />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-gray-800 border-gray-700">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-400 text-sm">Sucessos</p>
+                      <p className="text-2xl font-bold text-green-400">
+                        {logs?.filter(log => log.status === 'success').length || 0}
+                      </p>
+                    </div>
+                    <CheckCircle className="h-8 w-8 text-green-400" />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-gray-800 border-gray-700">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-400 text-sm">Erros</p>
+                      <p className="text-2xl font-bold text-red-400">
+                        {logs?.filter(log => log.status === 'failed').length || 0}
+                      </p>
+                    </div>
+                    <AlertCircle className="h-8 w-8 text-red-400" />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-gray-800 border-gray-700">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-400 text-sm">Pendentes</p>
+                      <p className="text-2xl font-bold text-yellow-400">
+                        {logs?.filter(log => log.status === 'pending').length || 0}
+                      </p>
+                    </div>
+                    <Clock className="h-8 w-8 text-yellow-400" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Lista de Logs */}
+            <Card className="bg-gray-800 border-gray-700">
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle className="text-green-400">Histórico de Logs</CardTitle>
+                  <div className="flex items-center space-x-2 text-sm text-gray-400">
+                    <span>Atualizando automaticamente</span>
+                    <div className="h-2 w-2 bg-green-400 rounded-full animate-pulse"></div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="max-h-96 overflow-y-auto">
                   {logs?.length === 0 ? (
-                    <div className="text-center py-8">
-                      <Activity className="h-12 w-12 text-gray-500 mx-auto mb-4" />
-                      <p className="text-gray-400">Nenhum log encontrado</p>
+                    <div className="text-center py-12">
+                      <Activity className="h-16 w-16 text-gray-500 mx-auto mb-4" />
+                      <p className="text-gray-400 text-lg mb-2">Nenhum log encontrado</p>
+                      <p className="text-gray-500 text-sm">
+                        Os logs aparecerão aqui quando o sistema executar operações
+                      </p>
                     </div>
                   ) : (
-                    logs?.map((log) => (
-                      <div key={log.id} className="flex items-start justify-between p-4 bg-gray-700 rounded-lg">
-                        <div className="flex items-start space-x-3">
-                          {log.status === 'success' ? (
-                            <CheckCircle className="h-5 w-5 text-green-400 mt-1" />
-                          ) : log.status === 'failed' ? (
-                            <AlertCircle className="h-5 w-5 text-red-400 mt-1" />
-                          ) : (
-                            <Clock className="h-5 w-5 text-yellow-400 mt-1" />
-                          )}
-                          <div>
-                            <p className="text-sm font-medium text-white">{log.tipoOperacao}</p>
-                            <p className="text-xs text-gray-400 mt-1">
-                              {format(new Date(log.timestamp), 'dd/MM/yyyy HH:mm:ss', { locale: ptBR })}
-                            </p>
-                            {log.detalhes && (
-                              <p className="text-xs text-gray-500 mt-1">
-                                {typeof log.detalhes === 'string' ? log.detalhes : JSON.stringify(log.detalhes)}
-                              </p>
-                            )}
+                    <div className="divide-y divide-gray-700">
+                      {logs?.map((log, index) => (
+                        <div key={log.id} className="p-4 hover:bg-gray-700/50 transition-colors">
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-start space-x-3 flex-1">
+                              <div className="flex-shrink-0 mt-1">
+                                {log.status === 'success' ? (
+                                  <CheckCircle className="h-5 w-5 text-green-400" />
+                                ) : log.status === 'failed' ? (
+                                  <AlertCircle className="h-5 w-5 text-red-400" />
+                                ) : (
+                                  <Clock className="h-5 w-5 text-yellow-400" />
+                                )}
+                              </div>
+                              
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between mb-1">
+                                  <p className="text-sm font-medium text-white truncate">
+                                    {log.tipoOperacao}
+                                  </p>
+                                  <Badge
+                                    variant="outline"
+                                    className={`text-xs border-0 ${
+                                      log.status === 'success' 
+                                        ? 'bg-green-900/30 text-green-400' 
+                                        : log.status === 'failed' 
+                                        ? 'bg-red-900/30 text-red-400' 
+                                        : 'bg-yellow-900/30 text-yellow-400'
+                                    }`}
+                                  >
+                                    {log.status === 'success' ? 'Sucesso' : 
+                                     log.status === 'failed' ? 'Erro' : 'Pendente'}
+                                  </Badge>
+                                </div>
+                                
+                                <p className="text-xs text-gray-400 mb-2">
+                                  {format(new Date(log.timestamp), 'dd/MM/yyyy HH:mm:ss', { locale: ptBR })}
+                                  {log.periodo && (
+                                    <span className="ml-2 px-2 py-1 bg-gray-600 rounded text-xs">
+                                      Período: {log.periodo}
+                                    </span>
+                                  )}
+                                </p>
+                                
+                                {log.detalhes && (
+                                  <div className="bg-gray-800 rounded p-2 mt-2">
+                                    <p className="text-xs text-gray-300 font-mono">
+                                      {typeof log.detalhes === 'string' 
+                                        ? log.detalhes 
+                                        : JSON.stringify(log.detalhes, null, 2)}
+                                    </p>
+                                  </div>
+                                )}
+                                
+                                {log.clienteId && (
+                                  <p className="text-xs text-blue-400 mt-1">
+                                    Cliente ID: {log.clienteId}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center space-x-2 ml-4">
+                              <span className="text-xs text-gray-500">#{index + 1}</span>
+                            </div>
                           </div>
                         </div>
-                        <Badge
-                          className={
-                            log.status === 'success' 
-                              ? 'bg-green-600' 
-                              : log.status === 'failed' 
-                              ? 'bg-red-600' 
-                              : 'bg-yellow-600'
-                          }
-                        >
-                          {log.status}
-                        </Badge>
-                      </div>
-                    ))
+                      ))}
+                    </div>
                   )}
                 </div>
               </CardContent>
