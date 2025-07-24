@@ -2166,7 +2166,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Buscar cliente MEI pelo CNPJ
           const { dasmeiStorage } = await import('./dasmei-storage.js');
           const clientes = await dasmeiStorage.getClientesMeiAtivos();
-          const cliente = clientes.find(c => c.cnpj.replace(/[^\d]/g, '') === cnpj.replace(/[^\d]/g, ''));
+          console.log(`🔍 Buscando cliente com CNPJ: ${cnpj}`);
+          console.log(`📊 Total de clientes MEI: ${clientes.length}`);
+          
+          const cliente = clientes.find(c => {
+            const clienteCnpj = c.cnpj.replace(/[^\d]/g, '');
+            const searchCnpj = cnpj.replace(/[^\d]/g, '');
+            console.log(`🔍 Comparando: ${clienteCnpj} === ${searchCnpj}`);
+            return clienteCnpj === searchCnpj;
+          });
+          
+          if (cliente) {
+            console.log(`✅ Cliente encontrado: ${cliente.nome} (ID: ${cliente.id})`);
+          } else {
+            console.log(`❌ Cliente não encontrado para CNPJ: ${cnpj}`);
+            console.log('📋 CNPJs disponíveis:', clientes.map(c => c.cnpj).slice(0, 5));
+          }
           
           if (cliente) {
             const guiaData = {
@@ -2396,12 +2411,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API para carregar configurações salvas
   app.get('/api/configurations', authenticateToken, async (req, res) => {
     try {
-      const configurations = await db.select().from(apiConfigurations);
+      const { dasStorage } = await import('./das-storage.js');
+      const configurations = await dasStorage.getAllApiConfigurations();
       
       const configMap: Record<string, any> = {};
       
       // Buscar a configuração do InfoSimples
-      const infosimples = configurations.find(c => c.name === 'infosimples' || c.type === 'das_provider');
+      const infosimples = configurations.find(c => c.name?.toLowerCase().includes('infosimples') || c.type === 'infosimples');
       if (infosimples) {
         configMap['infosimples'] = {
           config: infosimples.credentials,
@@ -2412,7 +2428,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Buscar a configuração do WhatsApp Evolution
-      const whatsapp = configurations.find(c => c.name === 'whatsapp_evolution' || c.type === 'messaging');
+      const whatsapp = configurations.find(c => c.name?.toLowerCase().includes('whatsapp') || c.type === 'whatsapp');
       if (whatsapp) {
         configMap['whatsapp_evolution'] = {
           config: whatsapp.credentials,
