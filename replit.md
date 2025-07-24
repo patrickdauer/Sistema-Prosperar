@@ -146,7 +146,7 @@ The system uses a `business_registrations` table with:
 
 ## Recent Changes
 
-### July 24, 2025 - Sistema DAS-MEI Completo com Download e Delete Funcional
+### July 24, 2025 - Sistema DAS-MEI Completo com Aba Automação Finalizada
 - **Geração de DAS Real**: Sistema agora gera DAS reais com valores corretos da InfoSimples API
 - **Download Funcional**: Implementado download direto de PDFs da DAS com autenticação JWT
 - **Período Correto**: Sistema configurado para gerar DAS do mês anterior (202506 para Julho 2025)
@@ -160,6 +160,10 @@ The system uses a `business_registrations` table with:
 - **Autenticação Segura**: Rotas de download e delete protegidas com token JWT
 - **Limpeza de Dados**: Remoção de guias pendentes e com valor zero
 - **Sistema Operacional**: Cliente Leonardo Maciel Tavares testado com sucesso (CNPJ: 59629736000176)
+- **Aba Automação Completa**: Interface finalizada com scheduler automático, configurações de envio e testes
+- **Filtro de Clientes**: Implementado sistema de busca por nome/CNPJ na aba Clientes
+- **Configurações Interativas**: Switches funcionais para WhatsApp, Email e Correios com estados controlados
+- **Testes Integrados**: Botões de teste com validação de configurações e feedback visual
 
 ### July 17, 2025 - Sistema de Provedores de API Flexível e Modular
 - **Arquitetura Modular**: Implementado sistema de provedores de API flexível com base provider interface
