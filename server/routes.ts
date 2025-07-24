@@ -2914,36 +2914,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Mensagem de teste
           const mensagemTeste = `🧪 Teste do Sistema DAS-MEI\n\nEste é um teste da funcionalidade de WhatsApp.\n\nTelefone: ${telefone}\nHorário: ${new Date().toLocaleString('pt-BR')}\n\n✅ Sistema funcionando corretamente!`;
           
-          // Garantir que a URL tenha protocolo
+          // Primeiro verificar se a instância está conectada
           const baseUrl = serverUrl.startsWith('http') ? serverUrl : `https://${serverUrl}`;
-          const sendUrl = `${baseUrl}/message/sendText/${encodeURIComponent(instance)}`;
+          const statusUrl = `${baseUrl}/instance/connectionState/${encodeURIComponent(instance)}`;
           
-          const response = await fetch(sendUrl, {
-            method: 'POST',
+          console.log(`🔍 Verificando conexão da instância WhatsApp: ${statusUrl}`);
+          
+          const statusResponse = await fetch(statusUrl, {
+            method: 'GET',
             headers: {
-              'Content-Type': 'application/json',
               'apikey': apiKey
-            },
-            body: JSON.stringify({
-              number: telefone,
-              text: mensagemTeste
-            })
+            }
           });
 
-          if (response.ok) {
-            const result = await response.json();
-            results.whatsapp = {
-              success: true,
-              message: 'Mensagem de teste enviada com sucesso',
-              error: ''
-            };
-          } else {
-            const errorData = await response.text();
+          if (!statusResponse.ok) {
             results.whatsapp = {
               success: false,
-              message: 'Erro ao enviar mensagem de teste',
-              error: `Status: ${response.status} - ${errorData}`
+              message: 'Erro na verificação de status da instância',
+              error: `Status da API: ${statusResponse.status} - ${await statusResponse.text()}`
             };
+          } else {
+            const statusData = await statusResponse.json();
+            console.log('📱 Status da instância WhatsApp:', statusData);
+            
+            // Tentar enviar mensagem independentemente do status (algumas APIs funcionam mesmo com status "closed")
+            const sendUrl = `${baseUrl}/message/sendText/${encodeURIComponent(instance)}`;
+            
+            const response = await fetch(sendUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'apikey': apiKey
+              },
+              body: JSON.stringify({
+                number: telefone,
+                text: mensagemTeste
+              })
+            });
+
+            if (response.ok) {
+              const result = await response.json();
+              console.log('✅ Resposta do envio WhatsApp:', result);
+              results.whatsapp = {
+                success: true,
+                message: 'Mensagem de teste enviada com sucesso',
+                error: ''
+              };
+            } else {
+              const errorData = await response.text();
+              console.log('❌ Erro no envio WhatsApp:', errorData);
+              results.whatsapp = {
+                success: false,
+                message: 'Erro ao enviar mensagem de teste',
+                error: `Status: ${response.status} - ${errorData}`
+              };
+            }
           }
         } catch (error) {
           console.error('Erro no teste WhatsApp:', error);
