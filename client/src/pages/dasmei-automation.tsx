@@ -534,7 +534,7 @@ export default function DASMEIAutomationPage() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Button
-                    onClick={() => {
+                    onClick={async () => {
                       if (!connectionStatus?.infosimples?.connected) {
                         toast({
                           title: 'InfoSimples Desconectado',
@@ -551,17 +551,45 @@ export default function DASMEIAutomationPage() {
                         duration: 3000
                       });
 
-                      // Simular processo de geração
-                      setTimeout(() => {
-                        const clientesAtivos = clientes?.filter(c => c.status === 'ativo') || [];
-                        toast({
-                          title: 'Guias Geradas',
-                          description: `${clientesAtivos.length} guias DAS-MEI foram geradas com sucesso.`,
-                          duration: 5000
+                      try {
+                        const response = await fetch('/api/dasmei/generate-manual', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                          }
                         });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                          toast({
+                            title: 'Guias Geradas com Sucesso',
+                            description: result.message || 'Guias DAS-MEI foram geradas com sucesso.',
+                            duration: 5000
+                          });
+                        } else {
+                          toast({
+                            title: 'Erro na Geração',
+                            description: result.message || 'Erro ao gerar guias DAS-MEI.',
+                            variant: 'destructive',
+                            duration: 5000
+                          });
+                        }
+
+                        // Atualizar dados após operação
                         queryClient.invalidateQueries({ queryKey: ['/api/dasmei/guias'] });
                         queryClient.invalidateQueries({ queryKey: ['/api/dasmei/estatisticas'] });
-                      }, 2500);
+                        queryClient.invalidateQueries({ queryKey: ['/api/dasmei/logs'] });
+                      } catch (error) {
+                        console.error('Erro na geração manual:', error);
+                        toast({
+                          title: 'Erro de Conexão',
+                          description: 'Erro ao conectar com o servidor.',
+                          variant: 'destructive',
+                          duration: 4000
+                        });
+                      }
                     }}
                     disabled={manualGenerationMutation?.isPending}
                     className="bg-green-600 hover:bg-green-700 h-20 flex flex-col items-center justify-center disabled:opacity-50"
@@ -571,8 +599,8 @@ export default function DASMEIAutomationPage() {
                   </Button>
                   
                   <Button
-                    onClick={() => {
-                      const guiasDisponiveis = guias?.filter(g => g.status === 'available' || g.downloadUrl) || [];
+                    onClick={async () => {
+                      const guiasDisponiveis = guias?.filter(g => g.downloadStatus === 'available' || g.downloadUrl) || [];
                       
                       if (guiasDisponiveis.length === 0) {
                         toast({
@@ -590,16 +618,44 @@ export default function DASMEIAutomationPage() {
                         duration: 3000
                       });
 
-                      // Simular envio
-                      setTimeout(() => {
-                        toast({
-                          title: 'WhatsApp Enviado',
-                          description: `${guiasDisponiveis.length} mensagens enviadas com sucesso.`,
-                          duration: 5000
+                      try {
+                        const response = await fetch('/api/dasmei/send-manual', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                          }
                         });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                          toast({
+                            title: 'WhatsApp Enviado com Sucesso',
+                            description: result.message || 'Mensagens WhatsApp enviadas com sucesso.',
+                            duration: 5000
+                          });
+                        } else {
+                          toast({
+                            title: 'Erro no Envio',
+                            description: result.message || 'Erro ao enviar mensagens WhatsApp.',
+                            variant: 'destructive',
+                            duration: 5000
+                          });
+                        }
+
+                        // Atualizar dados após operação
                         queryClient.invalidateQueries({ queryKey: ['/api/dasmei/logs'] });
                         queryClient.invalidateQueries({ queryKey: ['/api/dasmei/estatisticas'] });
-                      }, 2000);
+                      } catch (error) {
+                        console.error('Erro no envio manual:', error);
+                        toast({
+                          title: 'Erro de Conexão',
+                          description: 'Erro ao conectar com o servidor.',
+                          variant: 'destructive',
+                          duration: 4000
+                        });
+                      }
                     }}
                     disabled={manualSendMutation?.isPending}
                     className="bg-green-600 hover:bg-green-700 h-20 flex flex-col items-center justify-center disabled:opacity-50"
