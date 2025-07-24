@@ -910,6 +910,7 @@ export default function DASMEIAutomationPage() {
                     <Switch 
                       checked={automationSettings.whatsappEnabled}
                       onCheckedChange={(checked) => setAutomationSettings(prev => ({ ...prev, whatsappEnabled: checked }))}
+                      className="automation-switch"
                     />
                   </div>
                   <div className="flex justify-between items-center">
@@ -917,6 +918,7 @@ export default function DASMEIAutomationPage() {
                     <Switch 
                       checked={automationSettings.emailEnabled}
                       onCheckedChange={(checked) => setAutomationSettings(prev => ({ ...prev, emailEnabled: checked }))}
+                      className="automation-switch"
                     />
                   </div>
                   <div className="flex justify-between items-center">
@@ -924,6 +926,7 @@ export default function DASMEIAutomationPage() {
                     <Switch 
                       checked={automationSettings.correiosEnabled}
                       onCheckedChange={(checked) => setAutomationSettings(prev => ({ ...prev, correiosEnabled: checked }))}
+                      className="automation-switch"
                     />
                   </div>
                   <div>

@@ -2,6 +2,52 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Estilos customizados para switches de automação - Verde quando ativo (direita), Vermelho quando inativo (esquerda) */
+.automation-switch[data-state="checked"] {
+  background-color: #22c55e !important; /* Verde quando ativado (direita) */
+  border-color: #22c55e !important;
+}
+
+.automation-switch[data-state="unchecked"] {
+  background-color: #ef4444 !important; /* Vermelho quando desativado (esquerda) */
+  border-color: #ef4444 !important;
+}
+
+/* Garantir que o thumb (botão) seja branco e tenha transição suave */
+.automation-switch [data-state="checked"] > span,
+.automation-switch [data-state="unchecked"] > span {
+  background-color: #ffffff !important;
+  transition: transform 0.2s ease-in-out !important;
+}
+
+/* Adicionar estilos específicos para o componente Switch */
+.automation-switch {
+  position: relative;
+  display: inline-flex;
+  height: 24px;
+  width: 44px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+.automation-switch span {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  height: 16px;
+  width: 16px;
+  border-radius: 8px;
+  background-color: #ffffff;
+  transition: transform 0.2s ease-in-out;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.automation-switch[data-state="checked"] span {
+  transform: translateX(20px);
+}
+
 .btn-status-active-red {
   background-color: #e74c3c !important;
   color: #ffffff !important;
