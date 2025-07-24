@@ -1299,16 +1299,7 @@ export default function DASMEIAutomationPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Button 
                     className="bg-green-600 hover:bg-green-700 text-white"
-                    onClick={() => {
-                      if (!automationSettings.whatsappEnabled) {
-                        toast({ 
-                          title: 'WhatsApp Desabilitado', 
-                          description: 'Ative o WhatsApp nas configurações primeiro',
-                          variant: 'destructive' 
-                        });
-                        return;
-                      }
-                      
+                    onClick={async () => {
                       if (!testFields.phoneNumber) {
                         toast({ 
                           title: 'Telefone Obrigatório', 
@@ -1323,17 +1314,48 @@ export default function DASMEIAutomationPage() {
                         description: `Enviando mensagem de teste para ${testFields.phoneNumber}...`,
                         duration: 3000 
                       });
-                      
-                      // Simular envio
-                      setTimeout(() => {
-                        toast({ 
-                          title: 'WhatsApp Enviado', 
-                          description: `Mensagem de teste enviada com sucesso para ${testFields.phoneNumber}`,
-                          duration: 5000 
+
+                      try {
+                        const response = await fetch('/api/dasmei/test-whatsapp', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                          },
+                          body: JSON.stringify({
+                            telefone: testFields.phoneNumber,
+                            email: testFields.email,
+                            cnpj: testFields.cnpj
+                          })
                         });
-                      }, 2000);
+
+                        const result = await response.json();
+
+                        if (result.success && result.results?.whatsapp?.success) {
+                          toast({ 
+                            title: 'WhatsApp Enviado', 
+                            description: `Mensagem de teste enviada com sucesso para ${testFields.phoneNumber}`,
+                            duration: 5000 
+                          });
+                        } else {
+                          toast({ 
+                            title: 'Erro no WhatsApp', 
+                            description: result.results?.whatsapp?.error || 'Erro ao enviar mensagem de teste',
+                            variant: 'destructive',
+                            duration: 5000 
+                          });
+                        }
+                      } catch (error) {
+                        console.error('Erro no teste WhatsApp:', error);
+                        toast({ 
+                          title: 'Erro de Conexão', 
+                          description: 'Erro ao conectar com o servidor',
+                          variant: 'destructive',
+                          duration: 4000 
+                        });
+                      }
                     }}
-                    disabled={!automationSettings.whatsappEnabled || !testFields.phoneNumber}
+                    disabled={!testFields.phoneNumber}
                   >
                     <MessageSquare className="h-4 w-4 mr-2" />
                     Testar WhatsApp
@@ -1341,16 +1363,7 @@ export default function DASMEIAutomationPage() {
                   
                   <Button 
                     className="bg-green-600 hover:bg-green-700 text-white"
-                    onClick={() => {
-                      if (!automationSettings.emailEnabled) {
-                        toast({ 
-                          title: 'Email Desabilitado', 
-                          description: 'Ative o Email nas configurações primeiro',
-                          variant: 'destructive' 
-                        });
-                        return;
-                      }
-                      
+                    onClick={async () => {
                       if (!testFields.email) {
                         toast({ 
                           title: 'Email Obrigatório', 
@@ -1365,17 +1378,48 @@ export default function DASMEIAutomationPage() {
                         description: `Enviando email de teste para ${testFields.email}...`,
                         duration: 3000 
                       });
-                      
-                      // Simular envio
-                      setTimeout(() => {
-                        toast({ 
-                          title: 'Email Enviado', 
-                          description: `Email de teste enviado com sucesso para ${testFields.email}`,
-                          duration: 5000 
+
+                      try {
+                        const response = await fetch('/api/dasmei/test-whatsapp', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                          },
+                          body: JSON.stringify({
+                            telefone: testFields.phoneNumber,
+                            email: testFields.email,
+                            cnpj: testFields.cnpj
+                          })
                         });
-                      }, 2000);
+
+                        const result = await response.json();
+
+                        if (result.success && result.results?.email?.success) {
+                          toast({ 
+                            title: 'Email Enviado', 
+                            description: `Email de teste enviado com sucesso para ${testFields.email}`,
+                            duration: 5000 
+                          });
+                        } else {
+                          toast({ 
+                            title: 'Erro no Email', 
+                            description: result.results?.email?.error || 'Erro ao enviar email de teste',
+                            variant: 'destructive',
+                            duration: 5000 
+                          });
+                        }
+                      } catch (error) {
+                        console.error('Erro no teste Email:', error);
+                        toast({ 
+                          title: 'Erro de Conexão', 
+                          description: 'Erro ao conectar com o servidor',
+                          variant: 'destructive',
+                          duration: 4000 
+                        });
+                      }
                     }}
-                    disabled={!automationSettings.emailEnabled || !testFields.email}
+                    disabled={!testFields.email}
                   >
                     <Mail className="h-4 w-4 mr-2" />
                     Testar Email
@@ -1383,7 +1427,7 @@ export default function DASMEIAutomationPage() {
                   
                   <Button 
                     className="bg-green-600 hover:bg-green-700 text-white"
-                    onClick={() => {
+                    onClick={async () => {
                       if (!testFields.cnpj) {
                         toast({ 
                           title: 'CNPJ Obrigatório', 
@@ -1398,15 +1442,53 @@ export default function DASMEIAutomationPage() {
                         description: `Testando geração de DAS para CNPJ ${testFields.cnpj}...`,
                         duration: 3000 
                       });
-                      
-                      // Simular geração
-                      setTimeout(() => {
-                        toast({ 
-                          title: 'DAS Gerada', 
-                          description: `Guia DAS gerada com sucesso para CNPJ ${testFields.cnpj}`,
-                          duration: 5000 
+
+                      try {
+                        const response = await fetch('/api/infosimples/gerar-das', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                          },
+                          body: JSON.stringify({
+                            cnpj: testFields.cnpj,
+                            mesAno: (() => {
+                              const now = new Date();
+                              const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1);
+                              return lastMonth.getFullYear().toString() + (lastMonth.getMonth() + 1).toString().padStart(2, '0');
+                            })()
+                          })
                         });
-                      }, 2000);
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                          toast({ 
+                            title: 'DAS Gerada com Sucesso', 
+                            description: `Guia DAS gerada para CNPJ ${testFields.cnpj}. Valor: R$ ${result.data?.data?.[0]?.periodos ? Object.values(result.data.data[0].periodos)[0]?.normalizado_valor_total_das || '0,00' : '0,00'}`,
+                            duration: 5000 
+                          });
+
+                          // Atualizar dados após teste
+                          queryClient.invalidateQueries({ queryKey: ['/api/dasmei/guias'] });
+                          queryClient.invalidateQueries({ queryKey: ['/api/dasmei/estatisticas'] });
+                        } else {
+                          toast({ 
+                            title: 'Erro na Geração DAS', 
+                            description: result.message || 'Erro ao gerar guia DAS de teste',
+                            variant: 'destructive',
+                            duration: 5000 
+                          });
+                        }
+                      } catch (error) {
+                        console.error('Erro no teste DAS:', error);
+                        toast({ 
+                          title: 'Erro de Conexão', 
+                          description: 'Erro ao conectar com o servidor',
+                          variant: 'destructive',
+                          duration: 4000 
+                        });
+                      }
                     }}
                     disabled={!testFields.cnpj}
                   >
