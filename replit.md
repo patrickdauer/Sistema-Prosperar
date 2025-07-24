@@ -146,17 +146,18 @@ The system uses a `business_registrations` table with:
 
 ## Recent Changes
 
-### July 24, 2025 - Sistema DAS-MEI Completo com Download Funcional
+### July 24, 2025 - Sistema DAS-MEI Completo com Download e Delete Funcional
 - **Geração de DAS Real**: Sistema agora gera DAS reais com valores corretos da InfoSimples API
 - **Download Funcional**: Implementado download direto de PDFs da DAS com autenticação JWT
-- **Período Correto**: Sistema configurado para gerar DAS do período atual (202507 - Julho 2025)
-- **Valores Reais**: DAS gerada com valor real de R$ 80,90 conforme API InfoSimples
+- **Período Correto**: Sistema configurado para gerar DAS do mês anterior (202506 para Julho 2025)
+- **Valores Reais**: DAS gerada com valores reais conforme API InfoSimples (R$ 81,43 para período 202506)
 - **URL de Download**: Campo downloadUrl adicionado ao schema para armazenar links dos PDFs
-- **Interface Atualizada**: Botões de download funcionais na tabela de guias DAS
+- **Interface Atualizada**: Botões de download e delete funcionais na tabela de guias DAS
 - **Status Correto**: Guias com PDF disponível marcadas como "Disponível" (available)
+- **Funcionalidade Delete**: Implementado botão de deletar guias DAS com confirmação
 - **Persistência Automática**: Configurações InfoSimples carregam automaticamente na inicialização
-- **Data de Vencimento**: Correção na formatação de datas (20/08/2025 conforme Receita Federal)
-- **Autenticação Segura**: Rota de download protegida com token JWT
+- **Data de Vencimento**: Correção na formatação de datas conforme Receita Federal
+- **Autenticação Segura**: Rotas de download e delete protegidas com token JWT
 - **Limpeza de Dados**: Remoção de guias pendentes e com valor zero
 - **Sistema Operacional**: Cliente Leonardo Maciel Tavares testado com sucesso (CNPJ: 59629736000176)
 

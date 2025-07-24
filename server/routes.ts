@@ -2212,12 +2212,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
               const guiaData = {
                 clienteMeiId: cliente.id,
-                mesAno: mesAno || new Date().toISOString().slice(0, 6).replace('-', ''),
+                mesAno: mesAno || (() => {
+                  const now = new Date();
+                  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1);
+                  return lastMonth.getFullYear().toString() + (lastMonth.getMonth() + 1).toString().padStart(2, '0');
+                })(),
                 dataVencimento,
                 valor: valor.toString(),
                 filePath: null,
                 downloadUrl: urlDas,
-                fileName: `DAS_${cnpj}_${mesAno || new Date().toISOString().slice(0, 6).replace('-', '')}.pdf`,
+                fileName: `DAS_${cnpj}_${mesAno || (() => {
+                  const now = new Date();
+                  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1);
+                  return lastMonth.getFullYear().toString() + (lastMonth.getMonth() + 1).toString().padStart(2, '0');
+                })()}.pdf`,
                 downloadStatus: urlDas ? 'available' : 'pending', 
                 provider: 'infosimples'
               };
@@ -2315,6 +2323,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     } catch (error) {
       console.error('Erro ao fazer download da DAS:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Erro interno do servidor' 
+      });
+    }
+  });
+
+  // Rota para deletar DAS
+  app.delete('/api/das/guias/:id', authenticateToken, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { dasStorage } = await import('./das-storage.js');
+      
+      const guia = await dasStorage.getDasGuiaById(parseInt(id));
+      if (!guia) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'Guia DAS não encontrada' 
+        });
+      }
+
+      await dasStorage.deleteDasGuia(parseInt(id));
+      
+      res.json({ 
+        success: true,
+        message: 'Guia DAS deletada com sucesso' 
+      });
+
+    } catch (error) {
+      console.error('Erro ao deletar guia DAS:', error);
       res.status(500).json({ 
         success: false, 
         message: 'Erro interno do servidor' 

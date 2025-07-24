@@ -792,10 +792,32 @@ export default function DASMEIAutomationPage() {
                             <Button 
                               size="sm" 
                               variant="outline" 
-                              className="border-gray-600"
-                              title="Visualizar detalhes"
+                              className="border-gray-600 hover:bg-red-700"
+                              onClick={async () => {
+                                if (confirm('Tem certeza que deseja deletar esta guia DAS?')) {
+                                  try {
+                                    const token = localStorage.getItem('token');
+                                    const response = await fetch(`/api/das/guias/${guia.id}`, {
+                                      method: 'DELETE',
+                                      headers: {
+                                        'Authorization': `Bearer ${token}`
+                                      }
+                                    });
+                                    
+                                    if (response.ok) {
+                                      // Recarregar a lista de guias
+                                      window.location.reload();
+                                    } else {
+                                      console.error('Erro ao deletar guia:', response.statusText);
+                                    }
+                                  } catch (error) {
+                                    console.error('Erro ao deletar guia:', error);
+                                  }
+                                }
+                              }}
+                              title="Deletar guia DAS"
                             >
-                              <Eye className="h-4 w-4" />
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
                         </TableCell>

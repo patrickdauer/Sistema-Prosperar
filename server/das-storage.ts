@@ -244,7 +244,10 @@ export class DASStorage {
       .where(eq(programacaoEnvios.dasGuiaId, guiaId))
       .orderBy(desc(programacaoEnvios.createdAt));
   }
+
+  async deleteDasGuia(id: number): Promise<void> {
+    await db.delete(dasGuias).where(eq(dasGuias.id, id));
+  }
 }
 
-// Export singleton instance
 export const dasStorage = new DASStorage();
