@@ -137,11 +137,14 @@ export class InfoSimplesProvider extends BaseApiProvider {
         periodoFormatado = `${ano}${mes}`;
       }
       
-      // Se já está no formato AAAAMM, validar
+      // Validar período final no formato AAAAMM
       const periodoYearMonthRegex = /^(\d{4})(0[1-9]|1[0-2])$/;
       if (!periodoYearMonthRegex.test(periodoFormatado)) {
-        throw new Error('Período deve estar no formato MM/YYYY ou AAAAMM');
+        console.log(`❌ Período inválido: ${periodoFormatado}. Esperado formato AAAAMM`);
+        throw new Error('Período deve estar no formato MM/YYYY ou AAAAMM válido');
       }
+      
+      console.log(`✅ Período validado: ${periodo} → ${periodoFormatado}`);
 
       // No método gerarDAS, linha 118-123:
       // Limpar CNPJ (remover pontos e barras)

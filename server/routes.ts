@@ -2184,19 +2184,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           
           if (cliente) {
-            const guiaData = {
-              cliente_mei_id: cliente.id,
-              mes_ano: mesAno || new Date().toISOString().slice(0, 7).replace('-', '/'),
-              data_vencimento: new Date(resultado.boleto.vencimento),
-              valor: resultado.boleto.valor.toString(),
-              file_path: resultado.boleto.url,
-              file_name: `DAS_${cnpj}_${mesAno || new Date().toISOString().slice(0, 7)}.pdf`,
-              download_status: 'pending',
-              provider: 'infosimples'
-            };
-            
-            await dasStorage.createDasGuia(guiaData);
-            console.log(`✅ Guia DAS salva no banco para cliente: ${cliente.nome}`);
+            try {
+              const guiaData = {
+                clienteMeiId: cliente.id,
+                mesAno: mesAno || new Date().toISOString().slice(0, 7).replace('-', '/'),
+                dataVencimento: new Date(),
+                valor: result.boleto?.valor?.toString() || '0',
+                filePath: null,
+                fileName: `DAS_${cnpj}_${mesAno || new Date().toISOString().slice(0, 7)}.pdf`,
+                downloadStatus: 'pending', 
+                provider: 'infosimples'
+              };
+              
+              await dasStorage.createDasGuia(guiaData);
+              console.log(`✅ Guia DAS salva no banco para cliente: ${cliente.nome}`);
+            } catch (guiaError) {
+              console.error('Erro ao salvar guia DAS:', guiaError);
+            }
           }
         } catch (dbError) {
           console.error('Erro ao salvar guia no banco:', dbError);

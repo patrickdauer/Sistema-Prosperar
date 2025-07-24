@@ -238,25 +238,40 @@ export class ApiProviderManager {
 
   async loadSavedConfigurations(): Promise<void> {
     try {
+      console.log('🔄 Carregando configurações salvas...');
       const configurations = await dasStorage.getAllApiConfigurations();
+      console.log(`📊 Total configurações: ${configurations.length}`);
       
       // Buscar configuração ativa do InfoSimples
       const activeInfosimples = configurations.find(c => 
-        c.name === 'infosimples' && c.type === 'das_provider' && c.isActive
+        (c.name?.toLowerCase().includes('infosimples') || c.type === 'infosimples') && c.isActive
       );
       
+      console.log('🔍 Configuração InfoSimples encontrada:', activeInfosimples ? 'SIM' : 'NÃO');
+      
       if (activeInfosimples && activeInfosimples.credentials) {
+        console.log('🚀 Ativando InfoSimples com credenciais salvas...');
+        
         // Parse credentials if they're stored as JSON string
         let credentials = activeInfosimples.credentials;
         if (typeof credentials === 'string') {
-          credentials = JSON.parse(credentials);
+          try {
+            credentials = JSON.parse(credentials);
+          } catch (parseError) {
+            console.error('Erro ao fazer parse das credenciais:', parseError);
+            return;
+          }
         }
         
+        console.log('🔑 Credenciais:', { ...credentials, token: credentials.token ? '***HIDDEN***' : undefined });
+        
         this.activeProvider = new InfoSimplesProvider(credentials);
-        console.log('✅ Configuração InfoSimples carregada automaticamente do banco');
+        console.log('✅ InfoSimples ativado automaticamente do banco de dados');
+      } else {
+        console.log('⚠️ Nenhuma configuração InfoSimples ativa encontrada');
       }
     } catch (error) {
-      console.error('Erro ao carregar configurações salvas:', error);
+      console.error('❌ Erro ao carregar configurações salvas:', error);
     }
   }
 }
