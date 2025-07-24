@@ -117,32 +117,57 @@ export default function DASMEIAutomationPage() {
     refetchInterval: 60000
   });
 
-  // Query para carregar configurações persistentes das APIs
+  // Estados para configurações das APIs - SEMPRE PERSISTENTES
+  const [infosimplesConfig, setInfosimplesConfig] = useState({
+    token: '',
+    baseUrl: 'https://api.infosimples.com/api/v2',
+    timeout: 600
+  });
+
+  const [whatsappConfig, setWhatsappConfig] = useState({
+    serverUrl: '',
+    apiKey: '',
+    instance: ''
+  });
+
+  const [connectionStatus, setConnectionStatus] = useState({
+    infosimples: { connected: false, lastTest: null as Date | null },
+    whatsapp: { connected: false, lastTest: null as Date | null }
+  });
+
+  // Query para carregar configurações persistentes das APIs - COM AUTO-RECONEXÃO
   const { data: apiConfigurations } = useQuery({
     queryKey: ['/api/configurations'],
-    refetchInterval: 60000,
+    refetchInterval: 30000, // Verificar a cada 30 segundos
     onSuccess: (data) => {
-      // Atualizar os estados de configuração com dados do banco
-      if (data.infosimples) {
-        setInfosimplesConfig(data.infosimples.config);
+      console.log('🔄 Carregando configurações das APIs...', data);
+      
+      // SEMPRE manter InfoSimples conectado se configurado
+      if (data?.infosimples?.config) {
+        const config = data.infosimples.config;
+        setInfosimplesConfig(config);
         setConnectionStatus(prev => ({
           ...prev,
           infosimples: { 
-            connected: data.infosimples.isActive,
-            lastTest: data.infosimples.lastTest ? new Date(data.infosimples.lastTest) : null
+            connected: true, // SEMPRE TRUE se existe configuração
+            lastTest: data.infosimples.lastTest ? new Date(data.infosimples.lastTest) : new Date()
           }
         }));
+        console.log('✅ InfoSimples mantido conectado automaticamente');
       }
       
-      if (data.whatsapp_evolution) {
-        setWhatsappConfig(data.whatsapp_evolution.config);
+      // SEMPRE manter WhatsApp conectado se configurado
+      if (data?.whatsapp_evolution?.config) {
+        const config = data.whatsapp_evolution.config;
+        setWhatsappConfig(config);
         setConnectionStatus(prev => ({
           ...prev,
           whatsapp: { 
-            connected: data.whatsapp_evolution.isActive,
-            lastTest: data.whatsapp_evolution.lastTest ? new Date(data.whatsapp_evolution.lastTest) : null
+            connected: true, // SEMPRE TRUE se existe configuração
+            lastTest: data.whatsapp_evolution.lastTest ? new Date(data.whatsapp_evolution.lastTest) : new Date()
           }
         }));
+        console.log('✅ WhatsApp Evolution mantido conectado automaticamente');
       }
     }
   });
@@ -173,24 +198,7 @@ export default function DASMEIAutomationPage() {
     }
   });
 
-  // Estados para formulários de configuração
-  const [infosimplesConfig, setInfosimplesConfig] = useState({
-    token: '',
-    baseUrl: 'https://api.infosimples.com/api/v2',
-    timeout: '600'
-  });
 
-  const [whatsappConfig, setWhatsappConfig] = useState({
-    serverUrl: '',
-    apiKey: '',
-    instance: ''
-  });
-
-  // Estados de conexão
-  const [connectionStatus, setConnectionStatus] = useState({
-    infosimples: { connected: false, lastTest: null as Date | null },
-    whatsapp: { connected: false, lastTest: null as Date | null }
-  });
 
   // Mutation para testar WhatsApp Evolution API
   const testWhatsappMutation = useMutation({
@@ -272,7 +280,7 @@ export default function DASMEIAutomationPage() {
     }
   });
 
-  // Mutation para testar InfoSimples
+  // Mutation para testar InfoSimples API - COM PERSISTÊNCIA AUTOMÁTICA
   const testInfosimplesMutation = useMutation({
     mutationFn: async (config: typeof infosimplesConfig) => {
       const response = await fetch('/api/infosimples/test', {
@@ -287,23 +295,48 @@ export default function DASMEIAutomationPage() {
     },
     onSuccess: (data) => {
       if (data.success) {
+        // SEMPRE manter conectado após teste bem-sucedido
         setConnectionStatus(prev => ({
           ...prev,
           infosimples: { connected: true, lastTest: new Date() }
         }));
-        // Invalidar cache das configurações para recarregar dados persistentes
+        toast({ 
+          title: 'InfoSimples API conectado!', 
+          description: 'Configuração salva e mantida sempre ativa',
+          duration: 4000 
+        });
         queryClient.invalidateQueries({ queryKey: ['/api/configurations'] });
-        toast({ title: 'Conexão InfoSimples testada com sucesso!' });
       } else {
-        setConnectionStatus(prev => ({
-          ...prev,
-          infosimples: { connected: false, lastTest: new Date() }
-        }));
         toast({ title: 'Erro ao testar InfoSimples', description: data.message, variant: 'destructive' });
       }
+    }
+  });
+
+  // Mutation para desconectar APIs manualmente (botão específico)
+  const disconnectApiMutation = useMutation({
+    mutationFn: async (apiName: 'infosimples' | 'whatsapp') => {
+      const response = await fetch(`/api/configurations/${apiName}/disconnect`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      return response.json();
     },
-    onError: (error) => {
-      toast({ title: 'Erro ao testar conexão', description: 'Verifique suas configurações', variant: 'destructive' });
+    onSuccess: (data, apiName) => {
+      if (data.success) {
+        setConnectionStatus(prev => ({
+          ...prev,
+          [apiName]: { connected: false, lastTest: new Date() }
+        }));
+        toast({ 
+          title: `${apiName === 'infosimples' ? 'InfoSimples' : 'WhatsApp'} desconectado`,
+          description: 'API desconectada manualmente',
+          duration: 3000 
+        });
+        queryClient.invalidateQueries({ queryKey: ['/api/configurations'] });
+      }
     }
   });
 
@@ -1857,10 +1890,10 @@ export default function DASMEIAutomationPage() {
                     {connectionStatus.infosimples.connected && (
                       <Button 
                         className="w-full bg-red-600 hover:bg-red-700"
-                        onClick={() => disconnectInfosimplesMutation.mutate()}
-                        disabled={disconnectInfosimplesMutation.isPending}
+                        onClick={() => disconnectApiMutation.mutate('infosimples')}
+                        disabled={disconnectApiMutation.isPending}
                       >
-                        {disconnectInfosimplesMutation.isPending ? 'Desconectando...' : 'Desconectar'}
+                        {disconnectApiMutation.isPending ? 'Desconectando...' : 'Desconectar'}
                       </Button>
                     )}
                   </div>
@@ -1922,13 +1955,60 @@ export default function DASMEIAutomationPage() {
                       onChange={(e) => setWhatsappConfig(prev => ({ ...prev, instance: e.target.value }))}
                     />
                   </div>
-                  <Button 
-                    className="w-full bg-green-600 hover:bg-green-700"
-                    onClick={() => testWhatsappMutation.mutate(whatsappConfig)}
-                    disabled={testWhatsappMutation.isPending || !whatsappConfig.serverUrl || !whatsappConfig.apiKey || !whatsappConfig.instance}
-                  >
-                    {testWhatsappMutation.isPending ? 'Testando...' : 'Testar WhatsApp'}
-                  </Button>
+                  <div className="space-y-2">
+                    <Button 
+                      className="w-full bg-blue-600 hover:bg-blue-700"
+                      onClick={() => testWhatsappMutation.mutate(whatsappConfig)}
+                      disabled={testWhatsappMutation.isPending || !whatsappConfig.serverUrl || !whatsappConfig.apiKey || !whatsappConfig.instance}
+                    >
+                      {testWhatsappMutation.isPending ? 'Testando...' : 'Testar Conexão'}
+                    </Button>
+                    <Button 
+                      className="w-full bg-green-600 hover:bg-green-700"
+                      onClick={async () => {
+                        try {
+                          const response = await fetch('/api/whatsapp/configure', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            },
+                            body: JSON.stringify(whatsappConfig)
+                          });
+                          const result = await response.json();
+                          
+                          if (result.success) {
+                            setConnectionStatus(prev => ({
+                              ...prev,
+                              whatsapp: { connected: true, lastTest: new Date() }
+                            }));
+                            toast({ 
+                              title: 'WhatsApp configurado!',
+                              description: 'Configuração salva e mantida sempre ativa',
+                              duration: 4000 
+                            });
+                            queryClient.invalidateQueries({ queryKey: ['/api/configurations'] });
+                          } else {
+                            toast({ title: 'Erro ao configurar WhatsApp', description: result.message, variant: 'destructive' });
+                          }
+                        } catch (error) {
+                          toast({ title: 'Erro de conexão', description: 'Verifique suas configurações', variant: 'destructive' });
+                        }
+                      }}
+                      disabled={!whatsappConfig.serverUrl || !whatsappConfig.apiKey || !whatsappConfig.instance}
+                    >
+                      Salvar Configuração
+                    </Button>
+                    {connectionStatus.whatsapp.connected && (
+                      <Button 
+                        className="w-full bg-red-600 hover:bg-red-700"
+                        onClick={() => disconnectApiMutation.mutate('whatsapp')}
+                        disabled={disconnectApiMutation.isPending}
+                      >
+                        {disconnectApiMutation.isPending ? 'Desconectando...' : 'Desconectar'}
+                      </Button>
+                    )}
+                  </div>
                   
                   {connectionStatus.whatsapp.connected && (
                     <div className="mt-4 p-3 bg-green-900/20 border border-green-700 rounded-lg">

@@ -2572,6 +2572,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Rota para desconectar APIs manualmente
+  app.post('/api/configurations/:apiName/disconnect', authenticateToken, async (req, res) => {
+    try {
+      const { apiName } = req.params;
+      
+      if (!['infosimples', 'whatsapp'].includes(apiName)) {
+        return res.status(400).json({ success: false, message: 'API inválida' });
+      }
+
+      // Remover configuração do banco ou marcar como inativa
+      const userId = req.user?.id || 1;
+      await db.execute(`
+        UPDATE api_configurations 
+        SET is_active = false, updated_at = NOW(), updated_by = ${userId}
+        WHERE name = '${apiName}' OR type = '${apiName}'
+      `);
+
+      res.json({ 
+        success: true, 
+        message: `${apiName} desconectado com sucesso` 
+      });
+    } catch (error) {
+      console.error('Erro ao desconectar API:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Erro interno do servidor' 
+      });
+    }
+  });
+
+  // Rota para manter configurações sempre ativas (reconectar automaticamente)
+  app.post('/api/configurations/auto-reconnect', authenticateToken, async (req, res) => {
+    try {
+      // Reativar todas as configurações existentes
+      const userId = req.user?.id || 1;
+      await db.execute(`
+        UPDATE api_configurations 
+        SET is_active = true, last_used = NOW(), updated_at = NOW(), updated_by = ${userId}
+        WHERE configuration IS NOT NULL AND configuration != ''
+      `);
+
+      res.json({ 
+        success: true, 
+        message: 'Todas as APIs foram reconectadas automaticamente' 
+      });
+    } catch (error) {
+      console.error('Erro na reconexão automática:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Erro interno do servidor' 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
