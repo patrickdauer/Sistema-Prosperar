@@ -2128,9 +2128,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const testResult = await providerManager.testProvider('infosimples', credentials);
       
-      // Por enquanto, vamos continuar sem salvar no banco devido a problemas de sintaxe SQL
-      // A funcionalidade continuará funcionando sem persistência
-      console.log('Teste InfoSimples concluído - configuração não persistida no banco temporariamente');
+      // Salvar configuração no banco após teste bem-sucedido
+      if (testResult) {
+        try {
+          await dasStorage.saveApiConfiguration({
+            name: 'InfoSimples',
+            type: 'infosimples', 
+            isActive: true,
+            credentials,
+            configuration: {}
+          });
+          console.log('✅ Configuração InfoSimples salva e ativada no banco');
+        } catch (saveError) {
+          console.error('Erro ao salvar configuração:', saveError);
+        }
+      }
       
       res.json({ 
         success: testResult,
@@ -2189,7 +2201,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 clienteMeiId: cliente.id,
                 mesAno: mesAno || new Date().toISOString().slice(0, 7).replace('-', '/'),
                 dataVencimento: new Date(),
-                valor: result.boleto?.valor?.toString() || '0',
+                valor: resultado.boleto?.valor?.toString() || '0',
                 filePath: null,
                 fileName: `DAS_${cnpj}_${mesAno || new Date().toISOString().slice(0, 7)}.pdf`,
                 downloadStatus: 'pending', 
