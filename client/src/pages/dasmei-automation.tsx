@@ -1034,7 +1034,7 @@ export default function DASMEIAutomationPage() {
                   </Button>
                   
                   <Button 
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    className="bg-green-600 hover:bg-green-700 text-white"
                     onClick={() => {
                       if (!automationSettings.emailEnabled) {
                         toast({ 
@@ -1076,7 +1076,7 @@ export default function DASMEIAutomationPage() {
                   </Button>
                   
                   <Button 
-                    className="bg-gray-600 hover:bg-gray-700 text-white"
+                    className="bg-green-600 hover:bg-green-700 text-white"
                     onClick={() => {
                       if (!testFields.cnpj) {
                         toast({ 
