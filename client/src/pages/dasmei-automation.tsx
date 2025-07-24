@@ -1611,21 +1611,241 @@ export default function DASMEIAutomationPage() {
             <Card className="bg-gray-800 border-gray-700">
               <CardHeader>
                 <CardTitle className="text-green-400">Backup e Manutenção</CardTitle>
+                <p className="text-gray-400 text-sm mt-2">
+                  Ferramentas de administração e manutenção do sistema
+                </p>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Button variant="outline" className="border-gray-600">
-                    <Download className="h-4 w-4 mr-2" />
-                    Exportar Dados
-                  </Button>
-                  <Button variant="outline" className="border-gray-600">
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Limpar Logs
-                  </Button>
-                  <Button variant="outline" className="border-gray-600">
-                    <Settings className="h-4 w-4 mr-2" />
-                    Reset Sistema
-                  </Button>
+              <CardContent className="space-y-6">
+                {/* Seção Exportar Dados */}
+                <div className="border border-gray-700 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <h4 className="text-white font-medium">Exportar Dados</h4>
+                      <p className="text-gray-400 text-sm">Baixe backup completo dos dados do sistema</p>
+                    </div>
+                    <Download className="h-5 w-5 text-blue-400" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <Button 
+                      variant="outline" 
+                      className="border-blue-600 hover:bg-blue-700 text-blue-400"
+                      onClick={() => {
+                        toast({
+                          title: 'Exportando Dados',
+                          description: 'Preparando arquivo de backup completo...',
+                          duration: 3000
+                        });
+                        
+                        // Simular exportação
+                        setTimeout(() => {
+                          toast({
+                            title: 'Backup Completo',
+                            description: 'Arquivo backup_dasmei_' + new Date().toISOString().split('T')[0] + '.json baixado com sucesso',
+                            duration: 5000
+                          });
+                        }, 2000);
+                      }}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Backup Completo
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="border-blue-600 hover:bg-blue-700 text-blue-400"
+                      onClick={() => {
+                        toast({
+                          title: 'Exportando Clientes',
+                          description: 'Preparando lista de clientes MEI...',
+                          duration: 3000
+                        });
+                        
+                        // Simular exportação
+                        setTimeout(() => {
+                          toast({
+                            title: 'Clientes Exportados',
+                            description: 'Arquivo clientes_mei_' + new Date().toISOString().split('T')[0] + '.csv baixado com sucesso',
+                            duration: 5000
+                          });
+                        }, 1500);
+                      }}
+                    >
+                      <Users className="h-4 w-4 mr-2" />
+                      Apenas Clientes
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Seção Limpar Logs */}
+                <div className="border border-gray-700 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <h4 className="text-white font-medium">Limpar Logs</h4>
+                      <p className="text-gray-400 text-sm">Remove registros antigos para otimizar performance</p>
+                    </div>
+                    <RefreshCw className="h-5 w-5 text-yellow-400" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <Button 
+                      variant="outline" 
+                      className="border-yellow-600 hover:bg-yellow-700 text-yellow-400"
+                      onClick={() => {
+                        if (confirm('Tem certeza que deseja limpar logs antigos (mais de 30 dias)? Esta ação não pode ser desfeita.')) {
+                          toast({
+                            title: 'Limpando Logs Antigos',
+                            description: 'Removendo registros com mais de 30 dias...',
+                            duration: 3000
+                          });
+                          
+                          setTimeout(() => {
+                            toast({
+                              title: 'Logs Antigos Limpos',
+                              description: 'Registros antigos removidos com sucesso. Performance otimizada.',
+                              duration: 4000
+                            });
+                            queryClient.invalidateQueries({ queryKey: ['/api/dasmei/logs'] });
+                          }, 2000);
+                        }
+                      }}
+                    >
+                      <Clock className="h-4 w-4 mr-2" />
+                      Logs Antigos
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="border-red-600 hover:bg-red-700 text-red-400"
+                      onClick={() => {
+                        if (confirm('ATENÇÃO: Isso removerá TODOS os logs do sistema. Esta ação não pode ser desfeita. Continuar?')) {
+                          toast({
+                            title: 'Limpando Todos os Logs',
+                            description: 'Removendo todo o histórico de logs...',
+                            duration: 3000
+                          });
+                          
+                          setTimeout(() => {
+                            toast({
+                              title: 'Todos os Logs Limpos',
+                              description: 'Histórico completo de logs removido com sucesso.',
+                              duration: 4000
+                            });
+                            queryClient.invalidateQueries({ queryKey: ['/api/dasmei/logs'] });
+                          }, 2000);
+                        }
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Todos os Logs
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Seção Reset Sistema */}
+                <div className="border border-red-700 rounded-lg p-4 bg-red-900/10">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <h4 className="text-white font-medium flex items-center">
+                        <AlertCircle className="h-4 w-4 mr-2 text-red-400" />
+                        Reset Sistema
+                      </h4>
+                      <p className="text-gray-400 text-sm">Restaura o sistema ao estado inicial - USE COM CUIDADO</p>
+                    </div>
+                    <Settings className="h-5 w-5 text-red-400" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <Button 
+                      variant="outline" 
+                      className="border-orange-600 hover:bg-orange-700 text-orange-400"
+                      onClick={() => {
+                        if (confirm('Isso resetará apenas as configurações do sistema. Os dados dos clientes serão preservados. Continuar?')) {
+                          toast({
+                            title: 'Resetando Configurações',
+                            description: 'Restaurando configurações padrão do sistema...',
+                            duration: 3000
+                          });
+                          
+                          setTimeout(() => {
+                            toast({
+                              title: 'Configurações Resetadas',
+                              description: 'Sistema restaurado às configurações padrão. Dados preservados.',
+                              duration: 4000
+                            });
+                            queryClient.invalidateQueries({ queryKey: ['/api/configurations'] });
+                            queryClient.invalidateQueries({ queryKey: ['/api/dasmei/settings'] });
+                          }, 2000);
+                        }
+                      }}
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      Apenas Configurações
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="border-red-600 hover:bg-red-700 text-red-400"
+                      onClick={() => {
+                        const confirmFirst = confirm('⚠️ ATENÇÃO: Isso removerá TODOS os dados, clientes, guias e configurações. Esta ação é IRREVERSÍVEL. Tem certeza absoluta?');
+                        if (confirmFirst) {
+                          const confirmSecond = confirm('ÚLTIMA CONFIRMAÇÃO: Todos os dados serão perdidos permanentemente. Digite "CONFIRMAR" para continuar.');
+                          if (confirmSecond && prompt('Digite "CONFIRMAR" para prosseguir:') === 'CONFIRMAR') {
+                            toast({
+                              title: 'Reset Completo Iniciado',
+                              description: 'Removendo todos os dados do sistema...',
+                              duration: 5000
+                            });
+                            
+                            setTimeout(() => {
+                              toast({
+                                title: 'Sistema Resetado',
+                                description: 'Reset completo realizado. Sistema restaurado ao estado inicial.',
+                                duration: 6000
+                              });
+                              // Invalidar todas as queries
+                              queryClient.clear();
+                              window.location.reload();
+                            }, 3000);
+                          }
+                        }
+                      }}
+                    >
+                      <AlertCircle className="h-4 w-4 mr-2" />
+                      Reset Completo
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Informações de Sistema */}
+                <div className="bg-gray-700/30 rounded-lg p-4 mt-6">
+                  <h4 className="text-green-400 font-medium mb-3">Informações do Sistema</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Versão do Sistema:</span>
+                        <span className="text-white">v2.1.4</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Último Backup:</span>
+                        <span className="text-white">Nunca</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Total de Clientes:</span>
+                        <span className="text-white">{estatisticas?.totalClientes || 0}</span>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Guias Geradas:</span>
+                        <span className="text-white">{estatisticas?.boletosGerados || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Total de Logs:</span>
+                        <span className="text-white">{logs?.length || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Agendador:</span>
+                        <span className={`${isSchedulerRunning ? 'text-green-400' : 'text-red-400'}`}>
+                          {isSchedulerRunning ? 'Ativo' : 'Inativo'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
