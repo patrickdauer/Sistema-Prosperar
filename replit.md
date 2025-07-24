@@ -146,6 +146,17 @@ The system uses a `business_registrations` table with:
 
 ## Recent Changes
 
+### July 24, 2025 - Sistema de Persistência de Configurações de API Completo
+- **Persistência Automática**: Configurações de API salvas automaticamente no banco de dados após configuração
+- **Carregamento na Inicialização**: Sistema carrega configurações salvas automaticamente ao iniciar o servidor
+- **Desconexão Manual**: Botão de desconectar disponível apenas quando API está conectada
+- **Estado Persistente**: Conexões mantidas entre reinicializações e atualizações do sistema
+- **Interface Atualizada**: Status de conexão reflete configurações salvas no banco de dados
+- **Validação de Dados**: Guias DAS agora persistem corretamente na tabela `das_guias` após geração
+- **Formato de Período**: Conversão automática de MM/YYYY para AAAAMM para compatibilidade com InfoSimples
+- **Logs de Configuração**: Sistema registra todas as operações de configuração e desconexão
+- **Sincronização UI**: Interface sincronizada com dados persistentes do servidor
+
 ### July 17, 2025 - Sistema de Provedores de API Flexível e Modular
 - **Arquitetura Modular**: Implementado sistema de provedores de API flexível com base provider interface
 - **Provider Manager**: Sistema central para gerenciar múltiplos provedores de API (InfoSimples, Receita Federal, SERPRO)

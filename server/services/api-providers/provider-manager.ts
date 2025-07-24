@@ -226,6 +226,39 @@ export class ApiProviderManager {
     }
     return resultados;
   }
+
+  async deactivateProvider(providerId: string): Promise<void> {
+    console.log(`Deactivating provider: ${providerId}`);
+    
+    if (this.activeProvider && this.activeProvider.getName() === providerId) {
+      this.activeProvider = null;
+      console.log(`Provider ${providerId} deactivated`);
+    }
+  }
+
+  async loadSavedConfigurations(): Promise<void> {
+    try {
+      const configurations = await dasStorage.getAllApiConfigurations();
+      
+      // Buscar configuração ativa do InfoSimples
+      const activeInfosimples = configurations.find(c => 
+        c.name === 'infosimples' && c.type === 'das_provider' && c.isActive
+      );
+      
+      if (activeInfosimples && activeInfosimples.credentials) {
+        // Parse credentials if they're stored as JSON string
+        let credentials = activeInfosimples.credentials;
+        if (typeof credentials === 'string') {
+          credentials = JSON.parse(credentials);
+        }
+        
+        this.activeProvider = new InfoSimplesProvider(credentials);
+        console.log('✅ Configuração InfoSimples carregada automaticamente do banco');
+      }
+    } catch (error) {
+      console.error('Erro ao carregar configurações salvas:', error);
+    }
+  }
 }
 
 export const providerManager = ApiProviderManager.getInstance();

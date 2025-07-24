@@ -304,9 +304,40 @@ export default function DASMEIAutomationPage() {
     },
     onSuccess: (data) => {
       if (data.success) {
+        setConnectionStatus(prev => ({
+          ...prev,
+          infosimples: { connected: true, lastTest: new Date() }
+        }));
+        queryClient.invalidateQueries({ queryKey: ['/api/configurations'] });
         toast({ title: 'InfoSimples configurado com sucesso!' });
       } else {
         toast({ title: 'Erro ao configurar InfoSimples', description: data.message, variant: 'destructive' });
+      }
+    }
+  });
+
+  // Mutation para desconectar InfoSimples
+  const disconnectInfosimplesMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/infosimples/disconnect', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        setConnectionStatus(prev => ({
+          ...prev,
+          infosimples: { connected: false, lastTest: new Date() }
+        }));
+        queryClient.invalidateQueries({ queryKey: ['/api/configurations'] });
+        toast({ title: 'InfoSimples desconectado com sucesso!' });
+      } else {
+        toast({ title: 'Erro ao desconectar InfoSimples', description: data.message, variant: 'destructive' });
       }
     }
   });
@@ -977,6 +1008,15 @@ export default function DASMEIAutomationPage() {
                     >
                       {configureInfosimplesMutation.isPending ? 'Configurando...' : 'Salvar Configuração'}
                     </Button>
+                    {connectionStatus.infosimples.connected && (
+                      <Button 
+                        className="w-full bg-red-600 hover:bg-red-700"
+                        onClick={() => disconnectInfosimplesMutation.mutate()}
+                        disabled={disconnectInfosimplesMutation.isPending}
+                      >
+                        {disconnectInfosimplesMutation.isPending ? 'Desconectando...' : 'Desconectar'}
+                      </Button>
+                    )}
                   </div>
                   
                   {connectionStatus.infosimples.connected && (

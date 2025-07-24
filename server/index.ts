@@ -46,6 +46,15 @@ app.use((req, res, next) => {
     console.error('⚠ Erro ao inicializar scheduler DAS-MEI:', error);
   }
 
+  // Carregar configurações salvas dos provedores de API
+  try {
+    const { providerManager } = await import('./services/api-providers/provider-manager');
+    await providerManager.loadSavedConfigurations();
+    console.log('✓ Configurações de API carregadas com sucesso');
+  } catch (error) {
+    console.error('⚠ Erro ao carregar configurações de API:', error);
+  }
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

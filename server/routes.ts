@@ -1995,6 +1995,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Ativar o provedor
       await providerManager.switchProvider('infosimples', credentials, req.user.id);
       
+      // Salvar configuração no banco de dados
+      const { dasStorage } = await import('./das-storage.js');
+      const userId = req.user?.id || 1;
+      
+      try {
+        // Primeiro, desativar outras configurações do mesmo tipo
+        const existingConfigs = await dasStorage.getAllApiConfigurations();
+        for (const config of existingConfigs.filter(c => c.type === 'das_provider')) {
+          await dasStorage.updateApiConfiguration(config.id, { isActive: false });
+        }
+        
+        // Criar ou atualizar configuração InfoSimples
+        const existingInfosimples = existingConfigs.find(c => c.name === 'infosimples');
+        if (existingInfosimples) {
+          await dasStorage.updateApiConfiguration(existingInfosimples.id, {
+            credentials: credentials,
+            isActive: true,
+            lastUsed: new Date(),
+            updatedBy: userId
+          });
+        } else {
+          await dasStorage.createApiConfiguration({
+            name: 'infosimples',
+            type: 'das_provider',
+            credentials: credentials,
+            isActive: true,
+            lastUsed: new Date(),
+            createdBy: userId,
+            updatedBy: userId
+          });
+        }
+        
+        console.log('✅ Configuração InfoSimples salva no banco de dados');
+      } catch (dbError) {
+        console.error('Erro ao salvar configuração no banco:', dbError);
+        // Não falhar a requisição se o salvamento falhar
+      }
+      
       res.json({ 
         success: true, 
         message: 'InfoSimples configurado com sucesso' 
@@ -2004,6 +2042,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false, 
         message: 'Erro ao configurar InfoSimples' 
+      });
+    }
+  });
+
+  // Desconectar InfoSimples API
+  app.post('/api/infosimples/disconnect', authenticateToken, async (req, res) => {
+    try {
+      // Desativar o provedor no manager
+      await providerManager.switchProvider('infosimples', null, req.user.id);
+      
+      // Desativar configuração no banco de dados
+      const { dasStorage } = await import('./das-storage.js');
+      const existingConfigs = await dasStorage.getAllApiConfigurations();
+      const infosimplesConfig = existingConfigs.find(c => c.name === 'infosimples');
+      
+      if (infosimplesConfig) {
+        await dasStorage.updateApiConfiguration(infosimplesConfig.id, {
+          isActive: false,
+          lastUsed: new Date(),
+          updatedBy: req.user?.id || 1
+        });
+        console.log('✅ InfoSimples desconectado e configuração desativada no banco');
+      }
+      
+      res.json({ 
+        success: true, 
+        message: 'InfoSimples desconectado com sucesso' 
+      });
+    } catch (error) {
+      console.error('Erro ao desconectar InfoSimples:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Erro ao desconectar InfoSimples' 
+      });
+    }
+  });
+
+  app.post('/api/infosimples/disconnect', authenticateToken, async (req, res) => {
+    try {
+      // Desativar o provedor no provider manager
+      await providerManager.deactivateProvider('infosimples');
+      
+      // Desativar configuração no banco de dados
+      const { dasStorage } = await import('./das-storage.js');
+      const existingConfigs = await dasStorage.getAllApiConfigurations();
+      const infosimplesConfig = existingConfigs.find(c => c.name === 'infosimples');
+      
+      if (infosimplesConfig) {
+        await dasStorage.updateApiConfiguration(infosimplesConfig.id, {
+          isActive: false,
+          updatedBy: req.user?.id || 1
+        });
+      }
+      
+      res.json({ 
+        success: true, 
+        message: 'InfoSimples desconectado com sucesso' 
+      });
+    } catch (error) {
+      console.error('Erro ao desconectar InfoSimples:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Erro ao desconectar InfoSimples' 
       });
     }
   });
@@ -2300,24 +2401,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const configMap: Record<string, any> = {};
       
       // Buscar a configuração do InfoSimples
-      const infosimples = configurations.find(c => c.name === 'InfoSimples');
+      const infosimples = configurations.find(c => c.name === 'infosimples' || c.type === 'das_provider');
       if (infosimples) {
         configMap['infosimples'] = {
           config: infosimples.credentials,
-          isActive: infosimples.is_active,
-          lastTest: infosimples.last_used,
-          testStatus: infosimples.is_active ? 'success' : 'failed'
+          isActive: infosimples.isActive,
+          lastTest: infosimples.lastUsed,
+          testStatus: infosimples.isActive ? 'success' : 'failed'
         };
       }
       
       // Buscar a configuração do WhatsApp Evolution
-      const whatsapp = configurations.find(c => c.name === 'WhatsApp Evolution API');
+      const whatsapp = configurations.find(c => c.name === 'whatsapp_evolution' || c.type === 'messaging');
       if (whatsapp) {
         configMap['whatsapp_evolution'] = {
           config: whatsapp.credentials,
-          isActive: whatsapp.is_active,
-          lastTest: whatsapp.last_used,
-          testStatus: whatsapp.is_active ? 'success' : 'failed'
+          isActive: whatsapp.isActive,
+          lastTest: whatsapp.lastUsed,
+          testStatus: whatsapp.isActive ? 'success' : 'failed'
         };
       }
       
