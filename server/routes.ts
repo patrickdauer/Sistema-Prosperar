@@ -2426,7 +2426,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Salvar estado do scheduler no banco
       const { dasmeiStorage } = await import('./dasmei-storage.js');
-      await dasmeiStorage.saveAutomationSetting('scheduler_status', 'running', 'Status do agendador DAS-MEI', 'string');
+      await dasmeiStorage.upsertAutomationSetting('scheduler_status', 'running', 'Status do agendador DAS-MEI');
       
       res.json({ 
         success: true, 
@@ -2449,7 +2449,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Salvar estado do scheduler no banco
       const { dasmeiStorage } = await import('./dasmei-storage.js');
-      await dasmeiStorage.saveAutomationSetting('scheduler_status', 'stopped', 'Status do agendador DAS-MEI', 'string');
+      await dasmeiStorage.upsertAutomationSetting('scheduler_status', 'stopped', 'Status do agendador DAS-MEI');
       
       res.json({ 
         success: true, 
@@ -2470,19 +2470,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { dasmeiStorage } = await import('./dasmei-storage.js');
       const statusSetting = await dasmeiStorage.getAutomationSetting('scheduler_status');
-      const isRunning = statusSetting?.valor === 'running';
+      
+      // Agendador padrão ativo - só fica inativo se explicitamente configurado como stopped
+      const isRunning = statusSetting?.valor !== 'stopped';
       
       res.json({ 
         success: true, 
         isRunning,
-        status: statusSetting?.valor || 'stopped'
+        status: statusSetting?.valor || 'running'
       });
     } catch (error) {
       console.error('Erro ao verificar status do scheduler:', error);
       res.json({ 
         success: true, 
-        isRunning: false,
-        status: 'stopped'
+        isRunning: true,  // Padrão ativo mesmo com erro
+        status: 'running'
       });
     }
   });

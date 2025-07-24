@@ -40,7 +40,14 @@ app.use((req, res, next) => {
   // Inicializar o scheduler DAS-MEI
   try {
     const { dasScheduler } = await import('./services/das-scheduler');
+    const { dasmeiStorage } = await import('./dasmei-storage');
+    
+    // Iniciar o scheduler automaticamente
     dasScheduler.start();
+    
+    // Configurar status como ativo no banco de dados
+    await dasmeiStorage.upsertAutomationSetting('scheduler_status', 'running', 'Status do agendador DAS-MEI');
+    
     console.log('✓ Scheduler DAS-MEI iniciado com sucesso');
   } catch (error) {
     console.error('⚠ Erro ao inicializar scheduler DAS-MEI:', error);

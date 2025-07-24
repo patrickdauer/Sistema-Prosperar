@@ -71,7 +71,7 @@ export default function DASMEIAutomationPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedTab, setSelectedTab] = useState("dashboard");
-  const [isSchedulerRunning, setIsSchedulerRunning] = useState(false);
+  const [isSchedulerRunning, setIsSchedulerRunning] = useState(true); // Sempre iniciar como ativo por padrão
   
   // Carregar status do scheduler na inicialização
   useEffect(() => {
@@ -84,7 +84,8 @@ export default function DASMEIAutomationPage() {
         });
         const result = await response.json();
         if (result.success) {
-          setIsSchedulerRunning(result.isRunning || false);
+          // Agendador padrão ativo, só fica inativo se explicitamente configurado como parado
+          setIsSchedulerRunning(result.isRunning !== false);
         }
       } catch (error) {
         console.error('Erro ao carregar status do scheduler:', error);
