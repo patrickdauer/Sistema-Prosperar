@@ -561,43 +561,171 @@ export default function DASMEIAutomationPage() {
               </CardContent>
             </Card>
 
-            {/* Últimos logs */}
+            {/* Atividade Recente Completa */}
             <Card className="bg-gray-800 border-gray-700">
               <CardHeader>
                 <CardTitle className="text-green-400">Atividade Recente</CardTitle>
+                <p className="text-gray-400 text-sm">Últimas 10 operações do sistema</p>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {logs?.slice(0, 5).map((log) => (
-                    <div key={log.id} className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        {log.status === 'success' ? (
-                          <CheckCircle className="h-5 w-5 text-green-400" />
-                        ) : log.status === 'failed' ? (
-                          <AlertCircle className="h-5 w-5 text-red-400" />
-                        ) : (
-                          <Clock className="h-5 w-5 text-yellow-400" />
-                        )}
-                        <div>
-                          <p className="text-sm font-medium text-white">{log.tipoOperacao}</p>
-                          <p className="text-xs text-gray-400">
-                            {format(new Date(log.timestamp), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
-                          </p>
+                  {logs && logs.length > 0 ? (
+                    logs.slice(0, 10).map((log, index) => (
+                      <div key={log.id} className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg hover:bg-gray-700 transition-colors">
+                        <div className="flex items-center space-x-3">
+                          {log.status === 'success' ? (
+                            <CheckCircle className="h-4 w-4 text-green-400" />
+                          ) : log.status === 'failed' ? (
+                            <AlertCircle className="h-4 w-4 text-red-400" />
+                          ) : (
+                            <Clock className="h-4 w-4 text-yellow-400" />
+                          )}
+                          <div>
+                            <p className="text-sm font-medium text-white">{log.tipoOperacao}</p>
+                            <p className="text-xs text-gray-400">
+                              {format(new Date(log.timestamp), 'dd/MM HH:mm', { locale: ptBR })}
+                            </p>
+                          </div>
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className={`text-xs border-0 ${
+                            log.status === 'success' 
+                              ? 'bg-green-900/30 text-green-400' 
+                              : log.status === 'failed' 
+                              ? 'bg-red-900/30 text-red-400' 
+                              : 'bg-yellow-900/30 text-yellow-400'
+                          }`}
+                        >
+                          {log.status === 'success' ? 'Sucesso' : 
+                           log.status === 'failed' ? 'Erro' : 'Pendente'}
+                        </Badge>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <Activity className="h-12 w-12 text-gray-500 mx-auto mb-4" />
+                      <p className="text-gray-400 mb-2">Nenhuma atividade recente</p>
+                      <p className="text-gray-500 text-sm">
+                        As atividades aparecerão aqui quando o sistema executar operações
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Gráficos de Performance */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+              {/* Gráfico de Guias por Mês */}
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-green-400">Guias Geradas por Mês</CardTitle>
+                  <p className="text-gray-400 text-sm">Histórico de geração de DAS-MEI</p>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-64 flex items-center justify-center">
+                    <div className="text-center">
+                      <BarChart3 className="h-16 w-16 text-gray-500 mx-auto mb-4" />
+                      <p className="text-gray-400 mb-2">Gráfico de Guias por Mês</p>
+                      <p className="text-gray-500 text-sm">
+                        Dados serão exibidos quando houver guias geradas
+                      </p>
+                      <div className="mt-4 p-3 bg-blue-900/20 rounded-lg">
+                        <div className="text-2xl font-bold text-blue-400">
+                          {estatisticas?.boletosGerados || 0}
+                        </div>
+                        <p className="text-xs text-gray-400">Total de Guias</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Gráfico de Taxa de Sucesso */}
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-green-400">Taxa de Sucesso</CardTitle>
+                  <p className="text-gray-400 text-sm">Operações bem-sucedidas vs. falhas</p>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-64 flex items-center justify-center">
+                    <div className="text-center">
+                      <TrendingUp className="h-16 w-16 text-gray-500 mx-auto mb-4" />
+                      <p className="text-gray-400 mb-2">Taxa de Sucesso das Operações</p>
+                      <div className="grid grid-cols-2 gap-4 mt-4">
+                        <div className="text-center p-3 bg-green-900/20 rounded-lg">
+                          <div className="text-2xl font-bold text-green-400">
+                            {logs && logs.length > 0 
+                              ? Math.round((logs.filter(l => l.status === 'success').length / logs.length) * 100)
+                              : 0}%
+                          </div>
+                          <p className="text-xs text-gray-400">Sucesso</p>
+                        </div>
+                        <div className="text-center p-3 bg-red-900/20 rounded-lg">
+                          <div className="text-2xl font-bold text-red-400">
+                            {logs && logs.length > 0 
+                              ? Math.round((logs.filter(l => l.status === 'failed').length / logs.length) * 100)
+                              : 0}%
+                          </div>
+                          <p className="text-xs text-gray-400">Falhas</p>
                         </div>
                       </div>
-                      <Badge
-                        className={
-                          log.status === 'success' 
-                            ? 'bg-green-600' 
-                            : log.status === 'failed' 
-                            ? 'bg-red-600' 
-                            : 'bg-yellow-600'
-                        }
-                      >
-                        {log.status}
-                      </Badge>
                     </div>
-                  ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Status das Integrações */}
+            <Card className="bg-gray-800 border-gray-700 mt-6">
+              <CardHeader>
+                <CardTitle className="text-green-400">Status das Integrações</CardTitle>
+                <p className="text-gray-400 text-sm">Monitoramento em tempo real das APIs</p>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* InfoSimples Status */}
+                  <div className="flex items-center justify-between p-4 bg-gray-700/30 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className={`h-4 w-4 rounded-full ${connectionStatus?.infosimples?.connected ? 'bg-green-400' : 'bg-red-400'}`} />
+                      <div>
+                        <p className="text-white font-medium">InfoSimples</p>
+                        <p className="text-xs text-gray-400">
+                          {connectionStatus?.infosimples?.connected ? 'Conectado' : 'Desconectado'}
+                        </p>
+                      </div>
+                    </div>
+                    <Zap className={`h-5 w-5 ${connectionStatus?.infosimples?.connected ? 'text-green-400' : 'text-gray-500'}`} />
+                  </div>
+
+                  {/* WhatsApp Status */}
+                  <div className="flex items-center justify-between p-4 bg-gray-700/30 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className={`h-4 w-4 rounded-full ${connectionStatus?.whatsapp?.connected ? 'bg-green-400' : 'bg-red-400'}`} />
+                      <div>
+                        <p className="text-white font-medium">WhatsApp</p>
+                        <p className="text-xs text-gray-400">
+                          {connectionStatus?.whatsapp?.connected ? 'Conectado' : 'Desconectado'}
+                        </p>
+                      </div>
+                    </div>
+                    <MessageSquare className={`h-5 w-5 ${connectionStatus?.whatsapp?.connected ? 'text-green-400' : 'text-gray-500'}`} />
+                  </div>
+
+                  {/* Agendador Status */}
+                  <div className="flex items-center justify-between p-4 bg-gray-700/30 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className={`h-4 w-4 rounded-full ${isSchedulerRunning ? 'bg-green-400' : 'bg-red-400'}`} />
+                      <div>
+                        <p className="text-white font-medium">Agendador</p>
+                        <p className="text-xs text-gray-400">
+                          {isSchedulerRunning ? 'Ativo' : 'Inativo'}
+                        </p>
+                      </div>
+                    </div>
+                    <Clock className={`h-5 w-5 ${isSchedulerRunning ? 'text-green-400' : 'text-gray-500'}`} />
+                  </div>
                 </div>
               </CardContent>
             </Card>
