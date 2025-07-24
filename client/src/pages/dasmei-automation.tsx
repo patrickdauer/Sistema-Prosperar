@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -72,6 +72,27 @@ export default function DASMEIAutomationPage() {
   const queryClient = useQueryClient();
   const [selectedTab, setSelectedTab] = useState("dashboard");
   const [isSchedulerRunning, setIsSchedulerRunning] = useState(false);
+  
+  // Carregar status do scheduler na inicialização
+  useEffect(() => {
+    const loadSchedulerStatus = async () => {
+      try {
+        const response = await fetch('/api/dasmei/scheduler/status', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        const result = await response.json();
+        if (result.success) {
+          setIsSchedulerRunning(result.isRunning || false);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar status do scheduler:', error);
+      }
+    };
+    
+    loadSchedulerStatus();
+  }, []);
   const [clienteFilter, setClienteFilter] = useState("");
   
   // Estados para configurações de automação
@@ -178,11 +199,36 @@ export default function DASMEIAutomationPage() {
 
   // Mutations
   const toggleSchedulerMutation = useMutation({
-    mutationFn: (action: 'start' | 'stop') => 
-      apiRequest(`/api/dasmei/scheduler/${action}`, { method: 'POST' }),
-    onSuccess: () => {
-      setIsSchedulerRunning(!isSchedulerRunning);
-      toast({ title: `Agendador ${isSchedulerRunning ? 'parado' : 'iniciado'} com sucesso` });
+    mutationFn: async (action: 'start' | 'stop') => {
+      const response = await fetch(`/api/dasmei/scheduler/${action}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || result.message || 'Erro na operação');
+      }
+      return result;
+    },
+    onSuccess: (data, action) => {
+      const newStatus = action === 'start';
+      setIsSchedulerRunning(newStatus);
+      toast({ 
+        title: `Agendador ${newStatus ? 'iniciado' : 'parado'} com sucesso`,
+        description: data.message || `Status alterado para ${data.status}`,
+        duration: 3000
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Erro no Agendador',
+        description: error.message || 'Erro ao alterar status do agendador',
+        variant: 'destructive',
+        duration: 4000
+      });
     }
   });
 
@@ -1179,44 +1225,11 @@ export default function DASMEIAutomationPage() {
                       </span>
                       <Switch
                         checked={isSchedulerRunning}
-                        onCheckedChange={async (checked) => {
-                          try {
-                            const endpoint = checked ? '/api/dasmei/scheduler/start' : '/api/dasmei/scheduler/stop';
-                            const response = await fetch(endpoint, {
-                              method: 'POST',
-                              headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${localStorage.getItem('token')}`
-                              }
-                            });
-
-                            const result = await response.json();
-
-                            if (result.success) {
-                              setIsSchedulerRunning(checked);
-                              toast({
-                                title: checked ? 'Agendador Iniciado' : 'Agendador Parado',
-                                description: result.message || `Agendador automático ${checked ? 'ativado' : 'desativo'} com sucesso.`,
-                                duration: 3000
-                              });
-                            } else {
-                              toast({
-                                title: 'Erro no Agendador',
-                                description: result.message || 'Erro ao alterar status do agendador.',
-                                variant: 'destructive',
-                                duration: 4000
-                              });
-                            }
-                          } catch (error) {
-                            console.error('Erro ao alterar agendador:', error);
-                            toast({
-                              title: 'Erro de Conexão',
-                              description: 'Erro ao conectar com o servidor.',
-                              variant: 'destructive',
-                              duration: 4000
-                            });
-                          }
+                        onCheckedChange={(checked) => {
+                          const action = checked ? 'start' : 'stop';
+                          toggleSchedulerMutation.mutate(action);
                         }}
+                        disabled={toggleSchedulerMutation.isPending}
                         className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-600"
                       />
                     </div>

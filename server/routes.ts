@@ -2421,19 +2421,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/dasmei/scheduler/start', authenticateToken, async (req, res) => {
     try {
-      // Start scheduler logic here
-      res.json({ success: true, message: 'Scheduler iniciado' });
+      const { dasScheduler } = await import('./services/das-scheduler.js');
+      await dasScheduler.start();
+      
+      // Salvar estado do scheduler no banco
+      const { dasmeiStorage } = await import('./dasmei-storage.js');
+      await dasmeiStorage.saveAutomationSetting('scheduler_status', 'running', 'Status do agendador DAS-MEI', 'string');
+      
+      res.json({ 
+        success: true, 
+        message: 'Agendador DAS-MEI iniciado com sucesso',
+        status: 'running' 
+      });
     } catch (error) {
-      res.status(500).json({ error: 'Erro ao iniciar scheduler' });
+      console.error('Erro ao iniciar scheduler DASMEI:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Erro ao iniciar agendador' 
+      });
     }
   });
 
   app.post('/api/dasmei/scheduler/stop', authenticateToken, async (req, res) => {
     try {
-      // Stop scheduler logic here
-      res.json({ success: true, message: 'Scheduler parado' });
+      const { dasScheduler } = await import('./services/das-scheduler.js');
+      await dasScheduler.stop();
+      
+      // Salvar estado do scheduler no banco
+      const { dasmeiStorage } = await import('./dasmei-storage.js');
+      await dasmeiStorage.saveAutomationSetting('scheduler_status', 'stopped', 'Status do agendador DAS-MEI', 'string');
+      
+      res.json({ 
+        success: true, 
+        message: 'Agendador DAS-MEI parado com sucesso',
+        status: 'stopped' 
+      });
     } catch (error) {
-      res.status(500).json({ error: 'Erro ao parar scheduler' });
+      console.error('Erro ao parar scheduler DASMEI:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Erro ao parar agendador' 
+      });
+    }
+  });
+
+  // Rota para verificar status do scheduler
+  app.get('/api/dasmei/scheduler/status', authenticateToken, async (req, res) => {
+    try {
+      const { dasmeiStorage } = await import('./dasmei-storage.js');
+      const statusSetting = await dasmeiStorage.getAutomationSetting('scheduler_status');
+      const isRunning = statusSetting?.valor === 'running';
+      
+      res.json({ 
+        success: true, 
+        isRunning,
+        status: statusSetting?.valor || 'stopped'
+      });
+    } catch (error) {
+      console.error('Erro ao verificar status do scheduler:', error);
+      res.json({ 
+        success: true, 
+        isRunning: false,
+        status: 'stopped'
+      });
     }
   });
 
