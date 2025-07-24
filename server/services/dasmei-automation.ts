@@ -393,11 +393,51 @@ export class DASMEIAutomationService {
     return mensagem;
   }
 
-  // Enviar WhatsApp via Evolution API
+  // Enviar WhatsApp via Evolution API - VERSÃO CORRIGIDA
   private async enviarWhatsApp(numero: string, mensagem: string): Promise<boolean> {
     try {
-      const instancia = await dasStorage.getEvolutionInstanceAtiva();
+      console.log(`📱 Tentando enviar WhatsApp para ${numero}`);
+      
+      // Primeiro, tentar usar a configuração da nova estrutura
+      const configWhatsApp = await dasmeiStorage.getApiConfigurationByType('whatsapp_evolution');
+      if (configWhatsApp && configWhatsApp.isActive) {
+        const credentials = typeof configWhatsApp.credentials === 'string' 
+          ? JSON.parse(configWhatsApp.credentials) 
+          : configWhatsApp.credentials;
+        
+        const { serverUrl, apiKey, instance } = credentials;
+        const url = `${serverUrl}/message/sendText/${instance}`;
+        
+        console.log(`🔗 URL de envio: ${url}`);
+        
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': apiKey,
+          },
+          body: JSON.stringify({
+            number: numero,
+            text: mensagem,
+          }),
+        });
+        
+        const result = await response.json();
+        console.log(`📡 Resposta WhatsApp:`, { status: response.status, result });
+        
+        if (response.ok) {
+          console.log(`✅ WhatsApp enviado com sucesso para ${numero}`);
+          return true;
+        } else {
+          console.error(`❌ Erro no envio WhatsApp:`, result);
+          return false;
+        }
+      }
+      
+      // Fallback para o método antigo
+      const instancia = await dasmeiStorage.getEvolutionInstanceAtiva();
       if (!instancia) {
+        console.error('❌ Nenhuma instância WhatsApp configurada');
         return false;
       }
 
@@ -415,7 +455,7 @@ export class DASMEIAutomationService {
 
       return response.ok;
     } catch (error) {
-      console.error('Erro enviando WhatsApp:', error);
+      console.error('❌ Erro enviando WhatsApp:', error);
       return false;
     }
   }
