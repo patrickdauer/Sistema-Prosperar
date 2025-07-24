@@ -929,7 +929,7 @@ export default function DASMEIAutomationPage() {
                     />
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-white">Correios</span>
+                    <span className="text-white">SMS</span>
                     <Switch 
                       checked={automationSettings.correiosEnabled}
                       onCheckedChange={(checked) => setAutomationSettings(prev => ({ ...prev, correiosEnabled: checked }))}
