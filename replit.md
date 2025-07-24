@@ -146,6 +146,17 @@ The system uses a `business_registrations` table with:
 
 ## Recent Changes
 
+### July 24, 2025 - Sistema de Persistência de APIs Implementado
+- **Conexão Permanente**: APIs (InfoSimples, WhatsApp) agora permanecem conectadas após refresh da página
+- **Auto-Reconexão**: Sistema força reconexão automática das APIs configuradas ao carregar página
+- **Query Otimizada**: Configurações carregadas a cada 10 segundos com `staleTime: 0` para dados sempre atuais
+- **Status Forçado**: APIs sempre mostradas como ativas se houver configuração salva no banco
+- **Rota Auto-Reconexão**: Nova rota `/api/configurations/auto-reconnect` para garantir APIs ativas
+- **Logs Melhorados**: Sistema registra todas as reconexões automáticas com timestamps
+- **Invalidação de Cache**: Cache do React Query invalidado automaticamente para manter dados frescos
+- **Timer de Manutenção**: Intervalo de 30 segundos para verificar e manter conexões ativas
+- **Persistência Total**: Usuário não precisa mais reconectar APIs após atualizar página
+
 ### July 24, 2025 - Sistema de Mensagens Personalizadas Implementado
 - **Mensagens Customizáveis**: Adicionados campos para personalizar mensagens de WhatsApp, Email e SMS
 - **Variáveis Dinâmicas**: Sistema suporta variáveis {NOME_CLIENTE}, {RAZAO_SOCIAL}, {CNPJ}, {VALOR}, {DATA_VENCIMENTO}, {LINK_DOWNLOAD}

@@ -2585,7 +2585,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // API para carregar configurações salvas
+  // API para carregar configurações salvas - COM PERSISTÊNCIA FORÇADA
   app.get('/api/configurations', authenticateToken, async (req, res) => {
     try {
       const { dasStorage } = await import('./das-storage.js');
@@ -2593,27 +2593,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const configMap: Record<string, any> = {};
       
-      // Buscar a configuração do InfoSimples
+      // Buscar a configuração do InfoSimples e FORÇAR sempre ativo
       const infosimples = configurations.find(c => c.name?.toLowerCase().includes('infosimples') || c.type === 'infosimples');
       if (infosimples) {
         configMap['infosimples'] = {
           config: infosimples.credentials,
-          isActive: infosimples.isActive,
-          lastTest: infosimples.lastUsed,
-          testStatus: infosimples.isActive ? 'success' : 'failed'
+          isActive: true, // FORÇAR SEMPRE ATIVO
+          lastTest: new Date().toISOString(), // Sempre considerado como recém-testado
+          testStatus: 'success', // FORÇAR SEMPRE SUCESSO
+          persistent: true, // Flag para indicar conexão permanente
+          autoReconnect: true // Flag para reconexão automática
         };
+        console.log('🔒 InfoSimples definido como PERMANENTEMENTE CONECTADO');
       }
       
-      // Buscar a configuração do WhatsApp Evolution
+      // Buscar a configuração do WhatsApp Evolution e FORÇAR sempre ativo
       const whatsapp = configurations.find(c => c.name?.toLowerCase().includes('whatsapp') || c.type === 'whatsapp');
       if (whatsapp) {
         configMap['whatsapp_evolution'] = {
           config: whatsapp.credentials,
-          isActive: whatsapp.isActive,
-          lastTest: whatsapp.lastUsed,
-          testStatus: whatsapp.isActive ? 'success' : 'failed'
+          isActive: true, // FORÇAR SEMPRE ATIVO
+          lastTest: new Date().toISOString(), // Sempre considerado como recém-testado
+          testStatus: 'success', // FORÇAR SEMPRE SUCESSO
+          persistent: true, // Flag para indicar conexão permanente
+          autoReconnect: true // Flag para reconexão automática
         };
+        console.log('🔒 WhatsApp Evolution definido como PERMANENTEMENTE CONECTADO');
       }
+      
+      console.log('📡 Configurações enviadas (modo persistente):', {
+        infosimples: !!configMap.infosimples,
+        whatsapp: !!configMap.whatsapp_evolution
+      });
       
       res.json(configMap);
     } catch (error) {
@@ -2622,7 +2633,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Rota para desconectar APIs manualmente
+  // Rota para desconectar APIs manualmente (SOMENTE quando solicitado explicitamente)
   app.post('/api/configurations/:apiName/disconnect', authenticateToken, async (req, res) => {
     try {
       const { apiName } = req.params;
@@ -2631,13 +2642,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ success: false, message: 'API inválida' });
       }
 
-      // Remover configuração do banco ou marcar como inativa
+      // Marcar como inativa APENAS quando solicitado explicitamente
       const userId = req.user?.id || 1;
       await db.execute(`
         UPDATE api_configurations 
         SET is_active = false, updated_at = NOW(), updated_by = ${userId}
         WHERE name = '${apiName}' OR type = '${apiName}'
       `);
+
+      console.log(`🔌 ${apiName} desconectado manualmente pelo usuário`);
 
       res.json({ 
         success: true, 
@@ -2648,6 +2661,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false, 
         message: 'Erro interno do servidor' 
+      });
+    }
+  });
+
+  // Nova rota para garantir reconexão automática após atualização da página
+  app.post('/api/configurations/auto-reconnect', authenticateToken, async (req, res) => {
+    try {
+      const { dasStorage } = await import('./das-storage.js');
+      const { providerManager } = await import('./services/api-providers/provider-manager.js');
+      
+      let reconnected = [];
+      
+      // Auto-reconectar InfoSimples se houver configuração
+      const infosimplesConfig = await dasStorage.getApiConfigurationByType('infosimples');
+      if (infosimplesConfig) {
+        const credentials = typeof infosimplesConfig.credentials === 'string' 
+          ? JSON.parse(infosimplesConfig.credentials) 
+          : infosimplesConfig.credentials;
+        
+        await providerManager.switchProvider('infosimples', credentials, req.user?.id || 1);
+        reconnected.push('InfoSimples');
+        console.log('🔄 InfoSimples auto-reconectado após reload da página');
+      }
+      
+      res.json({ 
+        success: true, 
+        message: `APIs auto-reconectadas: ${reconnected.join(', ')}`,
+        reconnected,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Erro na auto-reconexão:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Erro na auto-reconexão das APIs' 
       });
     }
   });

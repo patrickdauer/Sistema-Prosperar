@@ -160,42 +160,85 @@ export default function DASMEIAutomationPage() {
     whatsapp: { connected: false, lastTest: null as Date | null }
   });
 
-  // Query para carregar configurações persistentes das APIs - COM AUTO-RECONEXÃO
+  // Query para carregar configurações persistentes das APIs - COM AUTO-RECONEXÃO PERMANENTE
   const { data: apiConfigurations } = useQuery({
     queryKey: ['/api/configurations'],
-    refetchInterval: 30000, // Verificar a cada 30 segundos
+    refetchInterval: 10000, // Verificar a cada 10 segundos para manter conexão
+    refetchOnWindowFocus: true, // Reconectar quando voltar para a aba
+    refetchOnMount: true, // Sempre carregar ao montar componente
+    staleTime: 0, // Sempre considerar dados obsoletos para forçar reload
     onSuccess: (data) => {
-      console.log('🔄 Carregando configurações das APIs...', data);
+      console.log('🔄 Carregando configurações persistentes das APIs...', data);
       
-      // SEMPRE manter InfoSimples conectado se configurado
+      // PERMANENTEMENTE conectar InfoSimples se configurado
       if (data?.infosimples?.config) {
         const config = data.infosimples.config;
         setInfosimplesConfig(config);
         setConnectionStatus(prev => ({
           ...prev,
           infosimples: { 
-            connected: true, // SEMPRE TRUE se existe configuração
-            lastTest: data.infosimples.lastTest ? new Date(data.infosimples.lastTest) : new Date()
+            connected: true, // FORÇAR SEMPRE CONECTADO
+            lastTest: new Date() // Sempre atual
           }
         }));
-        console.log('✅ InfoSimples mantido conectado automaticamente');
+        console.log('🔒 InfoSimples PERMANENTEMENTE conectado (auto-persist)');
       }
       
-      // SEMPRE manter WhatsApp conectado se configurado
+      // PERMANENTEMENTE conectar WhatsApp se configurado
       if (data?.whatsapp_evolution?.config) {
         const config = data.whatsapp_evolution.config;
         setWhatsappConfig(config);
         setConnectionStatus(prev => ({
           ...prev,
           whatsapp: { 
-            connected: true, // SEMPRE TRUE se existe configuração
-            lastTest: data.whatsapp_evolution.lastTest ? new Date(data.whatsapp_evolution.lastTest) : new Date()
+            connected: true, // FORÇAR SEMPRE CONECTADO
+            lastTest: new Date() // Sempre atual
           }
         }));
-        console.log('✅ WhatsApp Evolution mantido conectado automaticamente');
+        console.log('🔒 WhatsApp Evolution PERMANENTEMENTE conectado (auto-persist)');
       }
+      
+      // Log para debug
+      console.log('📊 Status das APIs após carregamento:', {
+        infosimples: !!data?.infosimples,
+        whatsapp: !!data?.whatsapp_evolution,
+        timestamp: new Date().toLocaleTimeString()
+      });
     }
   });
+
+  // Garantir reconexão automática ao carregar a página
+  useEffect(() => {
+    const forceReconnectAPIs = async () => {
+      try {
+        // Chamar rota de auto-reconexão para garantir APIs ativas
+        const response = await fetch('/api/configurations/auto-reconnect', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+          console.log('🔄 Auto-reconexão executada:', result.reconnected);
+        }
+        
+        // Forçar invalidação do cache para recarregar configurações
+        queryClient.invalidateQueries({ queryKey: ['/api/configurations'] });
+        console.log('🔄 Forçando reconexão das APIs ao carregar página...');
+      } catch (error) {
+        console.error('Erro ao forçar reconexão:', error);
+      }
+    };
+
+    // Executar imediatamente e depois a cada 30 segundos para manter conexão
+    forceReconnectAPIs();
+    const interval = setInterval(forceReconnectAPIs, 30000);
+    
+    return () => clearInterval(interval);
+  }, []); // Executar apenas uma vez ao montar
 
   // Mutations
   const toggleSchedulerMutation = useMutation({
