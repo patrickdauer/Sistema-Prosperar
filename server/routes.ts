@@ -2937,37 +2937,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const statusData = await statusResponse.json();
             console.log('📱 Status da instância WhatsApp:', statusData);
             
-            // Tentar enviar mensagem independentemente do status (algumas APIs funcionam mesmo com status "closed")
-            const sendUrl = `${baseUrl}/message/sendText/${encodeURIComponent(instance)}`;
+            const currentState = statusData?.instance?.state;
             
-            const response = await fetch(sendUrl, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'apikey': apiKey
-              },
-              body: JSON.stringify({
-                number: telefone,
-                text: mensagemTeste
-              })
-            });
-
-            if (response.ok) {
-              const result = await response.json();
-              console.log('✅ Resposta do envio WhatsApp:', result);
-              results.whatsapp = {
-                success: true,
-                message: 'Mensagem de teste enviada com sucesso',
-                error: ''
-              };
-            } else {
-              const errorData = await response.text();
-              console.log('❌ Erro no envio WhatsApp:', errorData);
+            if (currentState === 'connecting') {
               results.whatsapp = {
                 success: false,
-                message: 'Erro ao enviar mensagem de teste',
-                error: `Status: ${response.status} - ${errorData}`
+                message: 'WhatsApp está se conectando',
+                error: 'A instância está em processo de conexão. Aguarde alguns minutos e tente novamente. Para acelerar o processo, escaneie o QR Code no painel da Evolution API.'
               };
+            } else if (currentState === 'close' || currentState === 'closed') {
+              results.whatsapp = {
+                success: false,
+                message: 'WhatsApp desconectado',
+                error: 'A instância não está conectada. Acesse o painel da Evolution API e escaneie o QR Code para conectar.'
+              };
+            } else {
+              // Tentar enviar mensagem se o status for "open" ou outros estados válidos
+              const sendUrl = `${baseUrl}/message/sendText/${encodeURIComponent(instance)}`;
+              
+              const response = await fetch(sendUrl, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'apikey': apiKey
+                },
+                body: JSON.stringify({
+                  number: telefone,
+                  text: mensagemTeste
+                })
+              });
+
+              if (response.ok) {
+                const result = await response.json();
+                console.log('✅ Resposta do envio WhatsApp:', result);
+                results.whatsapp = {
+                  success: true,
+                  message: 'Mensagem de teste enviada com sucesso',
+                  error: ''
+                };
+              } else {
+                const errorData = await response.text();
+                console.log('❌ Erro no envio WhatsApp:', errorData);
+                results.whatsapp = {
+                  success: false,
+                  message: 'Erro ao enviar mensagem de teste',
+                  error: `Status: ${response.status} - ${errorData}`
+                };
+              }
             }
           }
         } catch (error) {

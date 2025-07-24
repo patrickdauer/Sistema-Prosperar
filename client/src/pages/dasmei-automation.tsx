@@ -1681,12 +1681,24 @@ export default function DASMEIAutomationPage() {
                             duration: 5000 
                           });
                         } else {
-                          toast({ 
-                            title: 'Erro no WhatsApp', 
-                            description: result.results?.whatsapp?.error || 'Erro ao enviar mensagem de teste',
-                            variant: 'destructive',
-                            duration: 5000 
-                          });
+                          const errorMessage = result.results?.whatsapp?.error || 'Erro ao enviar mensagem de teste';
+                          
+                          // Se for erro de conexão, mostrar botão para conectar
+                          if (errorMessage.includes('conectando') || errorMessage.includes('desconectado')) {
+                            toast({ 
+                              title: 'WhatsApp Desconectado', 
+                              description: 'A instância precisa ser conectada. Clique no botão "Conectar WhatsApp" abaixo.',
+                              variant: 'destructive',
+                              duration: 8000 
+                            });
+                          } else {
+                            toast({ 
+                              title: 'Erro no WhatsApp', 
+                              description: errorMessage,
+                              variant: 'destructive',
+                              duration: 5000 
+                            });
+                          }
                         }
                       } catch (error) {
                         console.error('Erro no teste WhatsApp:', error);
@@ -1702,6 +1714,42 @@ export default function DASMEIAutomationPage() {
                   >
                     <MessageSquare className="h-4 w-4 mr-2" />
                     Testar WhatsApp
+                  </Button>
+
+                  <Button 
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    onClick={async () => {
+                      try {
+                        // Abrir nova aba com o painel da Evolution API
+                        const whatsappConfig = configurations?.whatsapp_evolution?.config;
+                        if (whatsappConfig) {
+                          const managerUrl = `${whatsappConfig.serverUrl}/manager`;
+                          window.open(managerUrl, '_blank');
+                          
+                          toast({ 
+                            title: 'Conectar WhatsApp', 
+                            description: 'Painel Evolution API aberto. Encontre sua instância e escaneie o QR Code.',
+                            duration: 6000 
+                          });
+                        } else {
+                          toast({ 
+                            title: 'Erro', 
+                            description: 'Configuração do WhatsApp não encontrada',
+                            variant: 'destructive' 
+                          });
+                        }
+                      } catch (error) {
+                        console.error('Erro ao abrir painel:', error);
+                        toast({ 
+                          title: 'Erro', 
+                          description: 'Erro ao abrir painel de conexão',
+                          variant: 'destructive' 
+                        });
+                      }
+                    }}
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    Conectar WhatsApp
                   </Button>
                   
                   <Button 
