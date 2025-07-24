@@ -72,6 +72,7 @@ export default function DASMEIAutomationPage() {
   const queryClient = useQueryClient();
   const [selectedTab, setSelectedTab] = useState("dashboard");
   const [isSchedulerRunning, setIsSchedulerRunning] = useState(false);
+  const [clienteFilter, setClienteFilter] = useState("");
 
   // Queries principais
   const { data: estatisticas } = useQuery({
@@ -592,7 +593,14 @@ export default function DASMEIAutomationPage() {
                 <h2 className="text-2xl font-bold text-green-400">Clientes MEI</h2>
                 <p className="text-gray-400">Gerenciar clientes do sistema DAS-MEI</p>
               </div>
-              <Dialog>
+              <div className="flex items-center gap-3">
+                <Input 
+                  placeholder="Buscar por nome ou CNPJ..." 
+                  value={clienteFilter}
+                  onChange={(e) => setClienteFilter(e.target.value)}
+                  className="w-80 bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                />
+                <Dialog>
                 <DialogTrigger asChild>
                   <Button className="bg-green-600 hover:bg-green-700">
                     <Plus className="h-4 w-4 mr-2" />
@@ -626,6 +634,7 @@ export default function DASMEIAutomationPage() {
                   </div>
                 </DialogContent>
               </Dialog>
+              </div>
             </div>
 
             <Card className="bg-gray-800 border-gray-700">
@@ -642,7 +651,10 @@ export default function DASMEIAutomationPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {clientes?.map((cliente) => (
+                    {clientes?.filter(cliente => 
+                      cliente.nome.toLowerCase().includes(clienteFilter.toLowerCase()) ||
+                      cliente.cnpj.toLowerCase().includes(clienteFilter.toLowerCase())
+                    ).map((cliente) => (
                       <TableRow key={cliente.id} className="border-gray-700">
                         <TableCell className="text-white">{cliente.nome}</TableCell>
                         <TableCell className="text-gray-300">{cliente.cnpj}</TableCell>
