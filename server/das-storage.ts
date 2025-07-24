@@ -155,6 +155,19 @@ export class DASStorage {
     return await db.select().from(dasGuias).orderBy(desc(dasGuias.createdAt));
   }
 
+  async getDasGuiaById(id: number): Promise<DasGuia | undefined> {
+    const [guia] = await db.select().from(dasGuias).where(eq(dasGuias.id, id));
+    return guia;
+  }
+
+  async updateDasGuia(id: number, data: Partial<DasGuia>): Promise<DasGuia> {
+    const [guia] = await db.update(dasGuias)
+      .set(data)
+      .where(eq(dasGuias.id, id))
+      .returning();
+    return guia;
+  }
+
   async getDasGuiasVencendoHoje(data: Date): Promise<DasGuia[]> {
     const startOfDay = new Date(data);
     startOfDay.setHours(0, 0, 0, 0);

@@ -53,9 +53,10 @@ export const dasGuias = pgTable("das_guias", {
   dataVencimento: timestamp("data_vencimento").notNull(),
   valor: text("valor"),
   filePath: text("file_path"), // Caminho do arquivo PDF
+  downloadUrl: text("download_url"), // URL para download direto da DAS
   fileName: text("file_name"),
   downloadedAt: timestamp("downloaded_at"),
-  downloadStatus: text("download_status").default("pending"), // "pending", "success", "failed"
+  downloadStatus: text("download_status").default("pending"), // "pending", "success", "failed", "available"
   downloadError: text("download_error"),
   provider: text("provider"), // Qual API foi usada para baixar
   createdAt: timestamp("created_at").defaultNow(),

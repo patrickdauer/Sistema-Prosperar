@@ -2197,19 +2197,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           if (cliente) {
             try {
+              // Extrair dados da resposta InfoSimples
+              const periodoData = resultado.data?.data?.[0]?.periodos?.[mesAno];
+              const dataVencimento = periodoData?.data_vencimento ? 
+                new Date(periodoData.data_vencimento.split('/').reverse().join('-')) : new Date();
+              const valor = periodoData?.normalizado_valor_total_das || 0;
+              const urlDas = periodoData?.url_das || '';
+
               const guiaData = {
                 clienteMeiId: cliente.id,
-                mesAno: mesAno || new Date().toISOString().slice(0, 7).replace('-', '/'),
-                dataVencimento: new Date(),
-                valor: resultado.boleto?.valor?.toString() || '0',
+                mesAno: mesAno || new Date().toISOString().slice(0, 6).replace('-', ''),
+                dataVencimento,
+                valor: valor.toString(),
                 filePath: null,
-                fileName: `DAS_${cnpj}_${mesAno || new Date().toISOString().slice(0, 7)}.pdf`,
-                downloadStatus: 'pending', 
+                downloadUrl: urlDas,
+                fileName: `DAS_${cnpj}_${mesAno || new Date().toISOString().slice(0, 6).replace('-', '')}.pdf`,
+                downloadStatus: urlDas ? 'available' : 'pending', 
                 provider: 'infosimples'
               };
               
               await dasStorage.createDasGuia(guiaData);
-              console.log(`✅ Guia DAS salva no banco para cliente: ${cliente.nome}`);
+              console.log(`✅ Guia DAS salva no banco para cliente: ${cliente.nome} - Valor: R$ ${valor} - URL: ${urlDas ? 'Disponível' : 'Não disponível'}`);
             } catch (guiaError) {
               console.error('Erro ao salvar guia DAS:', guiaError);
             }
@@ -2252,6 +2260,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false, 
         message: error instanceof Error ? error.message : 'Erro ao gerar DAS em lote' 
+      });
+    }
+  });
+
+  // Rota para download de DAS
+  app.get('/api/das/download/:id', authenticateToken, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { dasStorage } = await import('./das-storage.js');
+      
+      const guia = await dasStorage.getDasGuiaById(parseInt(id));
+      if (!guia) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'Guia DAS não encontrada' 
+        });
+      }
+
+      if (!guia.downloadUrl) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'URL de download não disponível para esta guia' 
+        });
+      }
+
+      // Buscar o PDF na URL da InfoSimples
+      const response = await fetch(guia.downloadUrl);
+      if (!response.ok) {
+        return res.status(500).json({ 
+          success: false, 
+          message: 'Erro ao baixar PDF da InfoSimples' 
+        });
+      }
+
+      const pdfBuffer = await response.arrayBuffer();
+      
+      // Atualizar status de download
+      await dasStorage.updateDasGuia(guia.id, {
+        downloadedAt: new Date(),
+        downloadStatus: 'completed'
+      });
+
+      // Enviar o PDF
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${guia.fileName}"`);
+      res.send(Buffer.from(pdfBuffer));
+
+    } catch (error) {
+      console.error('Erro ao fazer download da DAS:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Erro interno do servidor' 
       });
     }
   });

@@ -740,21 +740,37 @@ export default function DASMEIAutomationPage() {
                         <TableCell className="text-gray-300">R$ {guia.valor}</TableCell>
                         <TableCell>
                           <Badge className={
-                            guia.downloadStatus === 'success' ? 'bg-green-600' :
-                            guia.downloadStatus === 'failed' ? 'bg-red-600' : 'bg-yellow-600'
+                            guia.downloadStatus === 'available' || guia.downloadStatus === 'completed' ? 'bg-green-600' :
+                            guia.downloadStatus === 'error' || guia.downloadStatus === 'failed' ? 'bg-red-600' : 
+                            'bg-yellow-600'
                           }>
-                            {guia.downloadStatus === 'success' ? 'Gerada' :
-                             guia.downloadStatus === 'failed' ? 'Erro' : 'Pendente'}
+                            {guia.downloadStatus === 'available' || guia.downloadStatus === 'completed' ? 'Disponível' :
+                             guia.downloadStatus === 'error' || guia.downloadStatus === 'failed' ? 'Erro' : 
+                             'Pendente'}
                           </Badge>
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
-                            {guia.downloadStatus === 'success' && (
-                              <Button size="sm" variant="outline" className="border-gray-600">
-                                <Download className="h-4 w-4" />
-                              </Button>
-                            )}
-                            <Button size="sm" variant="outline" className="border-gray-600">
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="border-gray-600 hover:bg-blue-700"
+                              onClick={() => {
+                                if (guia.downloadUrl || guia.downloadStatus === 'available') {
+                                  window.open(`/api/das/download/${guia.id}`, '_blank');
+                                }
+                              }}
+                              disabled={!guia.downloadUrl && guia.downloadStatus !== 'available'}
+                              title={guia.downloadUrl || guia.downloadStatus === 'available' ? "Download DAS PDF" : "PDF não disponível"}
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="border-gray-600"
+                              title="Visualizar detalhes"
+                            >
                               <Eye className="h-4 w-4" />
                             </Button>
                           </div>
