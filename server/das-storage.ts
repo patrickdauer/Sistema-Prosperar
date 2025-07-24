@@ -248,6 +248,15 @@ export class DASStorage {
   async deleteDasGuia(id: number): Promise<void> {
     await db.delete(dasGuias).where(eq(dasGuias.id, id));
   }
+
+  async getDasGuiaByClienteAndPeriodo(clienteId: number, periodo: string): Promise<DasGuia | undefined> {
+    const [guia] = await db.select().from(dasGuias)
+      .where(and(
+        eq(dasGuias.clienteMeiId, clienteId),
+        eq(dasGuias.mesAno, periodo)
+      ));
+    return guia;
+  }
 }
 
 export const dasStorage = new DASStorage();

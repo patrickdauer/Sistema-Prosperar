@@ -2197,41 +2197,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           if (cliente) {
             try {
-              // Extrair dados da resposta InfoSimples
-              const periodoData = resultado.data?.data?.[0]?.periodos?.[mesAno];
+              // Verificar se já existe guia para este período
+              const guiaExistente = await dasStorage.getDasGuiaByClienteAndPeriodo(cliente.id, mesAno);
               
-              // Corrigir data de vencimento - usar formato correto dd/mm/yyyy
-              let dataVencimento = new Date();
-              if (periodoData?.data_vencimento) {
-                const [dia, mes, ano] = periodoData.data_vencimento.split('/');
-                dataVencimento = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
-              }
-              
-              const valor = periodoData?.normalizado_valor_total_das || 0;
-              const urlDas = periodoData?.url_das || '';
+              if (guiaExistente) {
+                console.log(`⚠️ Guia DAS já existe para cliente ${cliente.nome} no período ${mesAno}`);
+              } else {
+                // Extrair dados da resposta InfoSimples
+                const periodoData = resultado.data?.data?.[0]?.periodos?.[mesAno];
+                
+                // Corrigir data de vencimento - usar formato correto dd/mm/yyyy
+                let dataVencimento = new Date();
+                if (periodoData?.data_vencimento) {
+                  const [dia, mes, ano] = periodoData.data_vencimento.split('/');
+                  dataVencimento = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
+                }
+                
+                const valor = periodoData?.normalizado_valor_total_das || 0;
+                const urlDas = periodoData?.url_das || '';
 
-              const guiaData = {
-                clienteMeiId: cliente.id,
-                mesAno: mesAno || (() => {
-                  const now = new Date();
-                  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1);
-                  return lastMonth.getFullYear().toString() + (lastMonth.getMonth() + 1).toString().padStart(2, '0');
-                })(),
-                dataVencimento,
-                valor: valor.toString(),
-                filePath: null,
-                downloadUrl: urlDas,
-                fileName: `DAS_${cnpj}_${mesAno || (() => {
-                  const now = new Date();
-                  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1);
-                  return lastMonth.getFullYear().toString() + (lastMonth.getMonth() + 1).toString().padStart(2, '0');
-                })()}.pdf`,
-                downloadStatus: urlDas ? 'available' : 'pending', 
-                provider: 'infosimples'
-              };
-              
-              await dasStorage.createDasGuia(guiaData);
-              console.log(`✅ Guia DAS salva no banco para cliente: ${cliente.nome} - Valor: R$ ${valor} - URL: ${urlDas ? 'Disponível' : 'Não disponível'}`);
+                const guiaData = {
+                  clienteMeiId: cliente.id,
+                  mesAno: mesAno || (() => {
+                    const now = new Date();
+                    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1);
+                    return lastMonth.getFullYear().toString() + (lastMonth.getMonth() + 1).toString().padStart(2, '0');
+                  })(),
+                  dataVencimento,
+                  valor: valor.toString(),
+                  filePath: null,
+                  downloadUrl: urlDas,
+                  fileName: `DAS_${cnpj}_${mesAno || (() => {
+                    const now = new Date();
+                    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1);
+                    return lastMonth.getFullYear().toString() + (lastMonth.getMonth() + 1).toString().padStart(2, '0');
+                  })()}.pdf`,
+                  downloadStatus: urlDas ? 'available' : 'pending', 
+                  provider: 'infosimples'
+                };
+                
+                await dasStorage.createDasGuia(guiaData);
+                console.log(`✅ Guia DAS salva no banco para cliente: ${cliente.nome} - Valor: R$ ${valor} - URL: ${urlDas ? 'Disponível' : 'Não disponível'}`);
+              }
             } catch (guiaError) {
               console.error('Erro ao salvar guia DAS:', guiaError);
             }
