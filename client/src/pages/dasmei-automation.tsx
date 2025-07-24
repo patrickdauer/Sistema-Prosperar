@@ -1135,11 +1135,53 @@ export default function DASMEIAutomationPage() {
                 <CardContent className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-white">Status do Agendador</span>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-3">
                       <div className={`h-3 w-3 rounded-full ${isSchedulerRunning ? 'bg-green-400' : 'bg-red-400'}`} />
                       <span className="text-sm text-gray-300">
                         {isSchedulerRunning ? 'Ativo' : 'Inativo'}
                       </span>
+                      <Switch
+                        checked={isSchedulerRunning}
+                        onCheckedChange={async (checked) => {
+                          try {
+                            const endpoint = checked ? '/api/dasmei/scheduler/start' : '/api/dasmei/scheduler/stop';
+                            const response = await fetch(endpoint, {
+                              method: 'POST',
+                              headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                              }
+                            });
+
+                            const result = await response.json();
+
+                            if (result.success) {
+                              setIsSchedulerRunning(checked);
+                              toast({
+                                title: checked ? 'Agendador Iniciado' : 'Agendador Parado',
+                                description: result.message || `Agendador automático ${checked ? 'ativado' : 'desativo'} com sucesso.`,
+                                duration: 3000
+                              });
+                            } else {
+                              toast({
+                                title: 'Erro no Agendador',
+                                description: result.message || 'Erro ao alterar status do agendador.',
+                                variant: 'destructive',
+                                duration: 4000
+                              });
+                            }
+                          } catch (error) {
+                            console.error('Erro ao alterar agendador:', error);
+                            toast({
+                              title: 'Erro de Conexão',
+                              description: 'Erro ao conectar com o servidor.',
+                              variant: 'destructive',
+                              duration: 4000
+                            });
+                          }
+                        }}
+                        className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-600"
+                      />
                     </div>
                   </div>
                   <div>
