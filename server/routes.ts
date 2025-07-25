@@ -2955,6 +2955,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
               // Tentar enviar mensagem se o status for "open" ou outros estados válidos
               const sendUrl = `${baseUrl}/message/sendText/${encodeURIComponent(instance)}`;
               
+              // Formatação correta do número com código do país (Brasil +55)
+              let formattedNumber = telefone.replace(/\D/g, ''); // Remove caracteres não numéricos
+              if (!formattedNumber.startsWith('55')) {
+                formattedNumber = '55' + formattedNumber; // Adiciona código do Brasil se não tiver
+              }
+              
+              console.log('📤 Teste WhatsApp - Dados do envio:', {
+                url: sendUrl,
+                number: formattedNumber,
+                original: telefone,
+                instance: instance
+              });
+              
               const response = await fetch(sendUrl, {
                 method: 'POST',
                 headers: {
@@ -2962,26 +2975,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   'apikey': apiKey
                 },
                 body: JSON.stringify({
-                  number: telefone,
-                  text: mensagemTeste
+                  number: formattedNumber,
+                  textMessage: {
+                    text: mensagemTeste
+                  }
                 })
               });
 
+              const responseText = await response.text();
+              console.log('📥 Resposta completa WhatsApp:', {
+                status: response.status,
+                statusText: response.statusText,
+                ok: response.ok,
+                body: responseText
+              });
+              
               if (response.ok) {
-                const result = await response.json();
-                console.log('✅ Resposta do envio WhatsApp:', result);
+                const result = JSON.parse(responseText);
+                console.log('✅ WhatsApp enviado com sucesso:', result);
                 results.whatsapp = {
                   success: true,
                   message: 'Mensagem de teste enviada com sucesso',
                   error: ''
                 };
               } else {
-                const errorData = await response.text();
-                console.log('❌ Erro no envio WhatsApp:', errorData);
+                console.log('❌ Erro no envio WhatsApp - Status:', response.status);
                 results.whatsapp = {
                   success: false,
                   message: 'Erro ao enviar mensagem de teste',
-                  error: `Status: ${response.status} - ${errorData}`
+                  error: `Status: ${response.status} - ${responseText}`
                 };
               }
             }

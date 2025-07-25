@@ -41,12 +41,19 @@ export class EvolutionWhatsAppService implements WhatsAppService {
         };
       }
 
-      const phoneNumber = phone.replace(/\D/g, ''); // Remove caracteres não numéricos
+      // Formatação correta do número com código do país (Brasil +55)
+      let phoneNumber = phone.replace(/\D/g, ''); // Remove caracteres não numéricos
+      if (!phoneNumber.startsWith('55')) {
+        phoneNumber = '55' + phoneNumber; // Adiciona código do Brasil se não tiver
+      }
+      
       const url = `${this.apiUrl}/message/sendText/${this.instanceName}`;
 
       const payload: any = {
         number: phoneNumber,
-        text: message
+        textMessage: {
+          text: message
+        }
       };
 
       // Se há anexo, usar endpoint diferente
@@ -77,6 +84,12 @@ export class EvolutionWhatsAppService implements WhatsAppService {
       }
 
       // Envio de mensagem de texto
+      console.log('📤 Enviando WhatsApp:', {
+        url: url,
+        number: phoneNumber,
+        textLength: message.length
+      });
+      
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -87,6 +100,11 @@ export class EvolutionWhatsAppService implements WhatsAppService {
       });
 
       const result = await response.json();
+      console.log('📥 Resposta WhatsApp:', {
+        status: response.status,
+        ok: response.ok,
+        result: result
+      });
       
       return {
         success: response.ok,
