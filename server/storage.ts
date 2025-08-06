@@ -668,6 +668,11 @@ export class DatabaseStorage implements IStorage {
       whereConditions.push(`possui_pro_labore = ${filters.possuiProLabore}`);
     }
     
+    if (filters?.status) {
+      console.log('📊 Status:', filters.status);
+      whereConditions.push(`status = '${filters.status}'`);
+    }
+    
     const whereClause = whereConditions.length > 0 
       ? `WHERE ${whereConditions.join(' AND ')}`
       : '';

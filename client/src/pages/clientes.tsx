@@ -66,8 +66,11 @@ export default function Clientes() {
     clienteDesdeInicio: '',
     clienteDesdeFim: '',
     possuiFuncionarios: '',
-    possuiProLabore: ''
+    possuiProLabore: '',
+    status: '' // Adicionado filtro de status
   });
+  
+  const [quickFilter, setQuickFilter] = useState(''); // Estado para filtro rápido
 
   // Função para buscar clientes
   const fetchClientes = async () => {
@@ -113,6 +116,15 @@ export default function Clientes() {
         params.append('possuiProLabore', filters.possuiProLabore);
       }
       
+      if (filters.status) {
+        params.append('status', filters.status);
+      }
+      
+      // Usar quickFilter se definido, caso contrário usar filtro normal
+      if (quickFilter) {
+        params.append('status', quickFilter);
+      }
+      
       const url = `/api/clientes${params.toString() ? `?${params.toString()}` : ''}`;
       
       const response = await fetch(url);
@@ -134,7 +146,7 @@ export default function Clientes() {
   // Buscar clientes ao carregar e quando searchTerm ou filtros mudarem
   useEffect(() => {
     fetchClientes();
-  }, [searchTerm, filters]);
+  }, [searchTerm, filters, quickFilter]);
 
   // Função para alternar status: ativo -> bloqueado -> inativo -> baixado -> ativo
   const toggleClienteStatus = async (id: number, currentStatus: string | null) => {
@@ -451,6 +463,97 @@ export default function Clientes() {
           </Button>
         </div>
 
+        {/* Filtros Rápidos por Status */}
+        <Card style={{ background: '#1f2937', border: '1px solid #374151' }} className="mb-6">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-medium text-gray-300">Filtro Rápido por Status</h3>
+              {quickFilter && (
+                <Button
+                  onClick={() => setQuickFilter('')}
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-400 hover:text-white h-6 px-2"
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Limpar
+                </Button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                onClick={() => setQuickFilter('')}
+                variant={quickFilter === '' ? 'default' : 'outline'}
+                size="sm"
+                className={`${
+                  quickFilter === ''
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                    : 'border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white'
+                }`}
+              >
+                <Users className="h-4 w-4 mr-1" />
+                Todos
+              </Button>
+              
+              <Button
+                onClick={() => setQuickFilter('ativo')}
+                variant={quickFilter === 'ativo' ? 'default' : 'outline'}
+                size="sm"
+                className={`${
+                  quickFilter === 'ativo'
+                    ? 'bg-green-600 hover:bg-green-700 text-white'
+                    : 'border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white'
+                }`}
+              >
+                <div className="h-2 w-2 rounded-full bg-green-400 mr-2"></div>
+                Ativos
+              </Button>
+              
+              <Button
+                onClick={() => setQuickFilter('bloqueado')}
+                variant={quickFilter === 'bloqueado' ? 'default' : 'outline'}
+                size="sm"
+                className={`${
+                  quickFilter === 'bloqueado'
+                    ? 'bg-red-600 hover:bg-red-700 text-white'
+                    : 'border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white'
+                }`}
+              >
+                <div className="h-2 w-2 rounded-full bg-red-400 mr-2"></div>
+                Bloqueados
+              </Button>
+              
+              <Button
+                onClick={() => setQuickFilter('inativo')}
+                variant={quickFilter === 'inativo' ? 'default' : 'outline'}
+                size="sm"
+                className={`${
+                  quickFilter === 'inativo'
+                    ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                    : 'border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white'
+                }`}
+              >
+                <div className="h-2 w-2 rounded-full bg-yellow-400 mr-2"></div>
+                Inativos
+              </Button>
+              
+              <Button
+                onClick={() => setQuickFilter('baixado')}
+                variant={quickFilter === 'baixado' ? 'default' : 'outline'}
+                size="sm"
+                className={`${
+                  quickFilter === 'baixado'
+                    ? 'bg-gray-600 hover:bg-gray-700 text-white'
+                    : 'border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white'
+                }`}
+              >
+                <div className="h-2 w-2 rounded-full bg-gray-400 mr-2"></div>
+                Baixados
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Filtros Avançados */}
         {showFilters && (
           <Card style={{ background: '#1f2937', border: '1px solid #374151' }} className="mb-6">
@@ -467,7 +570,8 @@ export default function Clientes() {
                       clienteDesdeInicio: '',
                       clienteDesdeFim: '',
                       possuiFuncionarios: '',
-                      possuiProLabore: ''
+                      possuiProLabore: '',
+                      status: ''
                     });
                   }}
                   variant="ghost"

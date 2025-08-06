@@ -1116,8 +1116,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dataAberturaInicio, 
         dataAberturaFim, 
         clienteDesdeInicio, 
-        clienteDesdeFim 
+        clienteDesdeFim,
+        possuiFuncionarios,
+        possuiProLabore,
+        status
       } = req.query;
+      
+      console.log('🔍 Filtros recebidos:', req.query);
       
       const filters = {
         cidade,
@@ -1125,7 +1130,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dataAberturaInicio,
         dataAberturaFim,
         clienteDesdeInicio,
-        clienteDesdeFim
+        clienteDesdeFim,
+        possuiFuncionarios,
+        possuiProLabore,
+        status
       };
       
       const searchTerm = search && typeof search === 'string' ? search : undefined;
