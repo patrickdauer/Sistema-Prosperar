@@ -957,7 +957,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Handle file uploads to Google Drive - upload to employee folder
       const files = req.files as Express.Multer.File[];
       if (files && files.length > 0) {
-        console.log(`Processing ${files.length} files for upload to employee folder: ${folderName}`);
+        console.log(`Processing ${files.length} files for upload to employee folder: ${employeeFolderId}`);
         
         try {
           for (const file of files) {
