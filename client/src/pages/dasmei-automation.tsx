@@ -1560,6 +1560,26 @@ export default function DASMEIAutomationPage() {
                 <CardTitle className="text-green-400">Teste de Configurações</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
+                {/* Alerta Status WhatsApp */}
+                <div className="p-4 bg-blue-900/20 border border-blue-700 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <AlertTriangle className="h-5 w-5 text-blue-400" />
+                    <span className="text-blue-400 font-medium">Status da Instância WhatsApp</span>
+                  </div>
+                  <p className="text-gray-300 text-sm mb-3">
+                    Para enviar mensagens WhatsApp, a instância precisa estar conectada (status 'open'). 
+                    Se aparecer erro de conexão, conecte a instância primeiro no manager.
+                  </p>
+                  <Button
+                    onClick={() => window.open('https://apiw.aquiprospera.com.br/manager', '_blank')}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    size="sm"
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Abrir Manager WhatsApp
+                  </Button>
+                </div>
+
                 {/* Campos de entrada para testes */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
