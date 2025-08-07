@@ -3057,9 +3057,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           result
         });
       } else {
+        // Tratamento específico para erros comuns
+        let errorMessage = result.message || `Erro ao enviar: ${response.status}`;
+        
+        if (result.response?.message === 'Connection Closed') {
+          errorMessage = 'Erro de conexão temporária. A instância perdeu conexão durante o envio. Tente novamente em alguns segundos.';
+        } else if (response.status === 500) {
+          errorMessage = `Erro interno da API Evolution (${response.status}). ${result.response?.message || 'Verifique a conexão da instância.'}`;
+        }
+        
         res.json({
           success: false,
-          message: result.message || `Erro ao enviar: ${response.status}`
+          message: errorMessage
         });
       }
     } catch (error) {
