@@ -20,11 +20,12 @@ Project Focus: Professional business registration system with complete automatio
 - **File Handling**: Multer for uploads, Puppeteer for PDF generation.
 - **Email Service**: Nodemailer.
 - **Cloud Storage**: Google Drive API integration.
+- **WhatsApp Integration**: Evolution API v2 with connection status verification.
 
 ### Core Features
 - **Multiple Partners Support**: Ability to add unlimited business partners with individual document uploads and data collection.
 - **Document Management**: Automatic Google Drive folder creation per business, with validated file uploads and specific naming conventions.
-- **Automated Workflows**: Includes email confirmations, PDF generation, WhatsApp notifications via n8n, and Google Drive organization.
+- **Automated Workflows**: Includes email confirmations, PDF generation, WhatsApp notifications via Evolution API, and Google Drive organization.
 - **Admin Dashboard**: Centralized view for managing submissions, filtering by status, searching, and downloading PDFs.
 - **Database Schema**: Utilizes a `business_registrations` table to store company, partner, and file data, alongside status tracking.
 - **API Endpoints**: Standard RESTful API for submission, retrieval, and PDF generation of registrations.
@@ -33,6 +34,7 @@ Project Focus: Professional business registration system with complete automatio
 - **UI/UX Decisions**: Default dark mode with toggle, modern component design using Shadcn/ui and Tailwind CSS.
 - **Technical Implementations**: Utilizes JWT for secure authentication, bcrypt for password hashing, and supports multi-partner data processing.
 - **System Design Choices**: Modular API provider system, flexible status management for clients and registrations, and robust error handling.
+- **DASMEI Automation**: Complete DAS-MEI automation system with scheduling, personalized message testing, WhatsApp Evolution API v2 integration with connection status verification, and comprehensive admin interface.
 
 ## External Dependencies
 - **Database**: @neondatabase/serverless for PostgreSQL.
@@ -43,4 +45,4 @@ Project Focus: Professional business registration system with complete automatio
 - **PDF Generation**: Puppeteer.
 - **Email Service**: Nodemailer.
 - **Cloud Storage**: googleapis (for Google Drive).
-- **Messaging/Automation**: n8n (for WhatsApp notifications).
+- **WhatsApp Integration**: Evolution API v2 (for automated WhatsApp messaging with connection verification).
