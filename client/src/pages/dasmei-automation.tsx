@@ -19,7 +19,8 @@ import { z } from 'zod';
 import { 
   CalendarDays, Settings, Users, FileText, Play, Square, Eye, Trash2, Edit, Plus, 
   BarChart3, MessageSquare, Mail, Clock, CheckCircle, AlertCircle, Zap, 
-  Activity, TrendingUp, RefreshCw, Download, Send, PauseCircle, Filter, ArrowLeft
+  Activity, TrendingUp, RefreshCw, Download, Send, PauseCircle, Filter, ArrowLeft,
+  ExternalLink, AlertTriangle
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
