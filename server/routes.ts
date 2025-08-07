@@ -3039,7 +3039,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const payload = {
         number: phoneNumber,
-        text: cleanMessage
+        options: {
+          delay: 1200,
+          presence: "composing"
+        },
+        textMessage: {
+          text: cleanMessage
+        }
       };
 
       console.log('📤 Enviando WhatsApp:', { url: sendUrl, number: phoneNumber });
