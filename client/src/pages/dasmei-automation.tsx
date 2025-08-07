@@ -1498,61 +1498,6 @@ export default function DASMEIAutomationPage() {
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Restaurar Padrão
                 </Button>
-                <Button 
-                  variant="outline"
-                  className="border-blue-600 hover:bg-blue-700"
-                  onClick={async () => {
-                    try {
-                      const response = await fetch('/api/dasmei/test-messages', {
-                        method: 'POST',
-                        headers: {
-                          'Content-Type': 'application/json',
-                          'Authorization': `Bearer ${localStorage.getItem('token')}`
-                        },
-                        body: JSON.stringify({
-                          whatsappMessage: automationSettings.whatsappMessage,
-                          emailMessage: automationSettings.emailMessage,
-                          smsMessage: automationSettings.smsMessage,
-                          testData: {
-                            nomeCliente: 'João Silva (TESTE)',
-                            razaoSocial: 'SILVA SERVICOS LTDA',
-                            cnpj: '12.345.678/0001-90',
-                            valor: '81,43',
-                            dataVencimento: '20/08/2025',
-                            linkDownload: 'https://exemplo.com/das-teste.pdf'
-                          }
-                        })
-                      });
-                      
-                      const result = await response.json();
-                      
-                      if (result.success) {
-                        toast({
-                          title: 'Teste de Mensagens Realizado',
-                          description: 'Mensagens de teste enviadas com sucesso!',
-                          duration: 4000
-                        });
-                      } else {
-                        toast({
-                          title: 'Erro no Teste',
-                          description: result.message || 'Erro ao testar mensagens',
-                          variant: 'destructive',
-                          duration: 4000
-                        });
-                      }
-                    } catch (error) {
-                      toast({
-                        title: 'Erro de Conexão',
-                        description: 'Erro ao conectar com o servidor',
-                        variant: 'destructive',
-                        duration: 4000
-                      });
-                    }
-                  }}
-                >
-                  <Eye className="h-4 w-4 mr-2" />
-                  Testar Mensagens
-                </Button>
               </div>
               
               <Button 
