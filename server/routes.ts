@@ -29,6 +29,7 @@ import fs from "fs";
 import { spawn } from "child_process";
 import { promisify } from "util";
 import { exec } from "child_process";
+import { google } from "googleapis";
 
 const execAsync = promisify(exec);
 
@@ -3406,6 +3407,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: false,
         message: 'Erro interno do servidor',
         error: error.message
+      });
+    }
+  });
+
+  // Drive Access Management Route
+  app.post('/api/drive/share-access', authenticateToken, async (req, res) => {
+    try {
+      const { userEmail } = req.body;
+      
+      if (!userEmail) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Email do usuário é obrigatório' 
+        });
+      }
+
+      console.log(`🔓 Compartilhando acesso do Drive para: ${userEmail}`);
+      
+      // Usar o serviço já configurado
+      const serviceAccountPath = path.join(process.cwd(), 'tanamao-464721-fabfbca1450e.json');
+      
+      const auth = new google.auth.GoogleAuth({
+        keyFile: serviceAccountPath,
+        scopes: [
+          'https://www.googleapis.com/auth/drive',
+          'https://www.googleapis.com/auth/drive.file'
+        ]
+      });
+
+      const drive = google.drive({ version: 'v3', auth });
+      const SHARED_DRIVE_ID = '0APe1WRUeIBtMUk9PVA';
+
+      // Adicionar permissão para o usuário
+      const permission = {
+        type: 'user',
+        role: 'organizer', // Máxima permissão para o proprietário
+        emailAddress: userEmail
+      };
+
+      const response = await drive.permissions.create({
+        fileId: SHARED_DRIVE_ID,
+        resource: permission,
+        supportsAllDrives: true,
+        sendNotificationEmail: true,
+        emailMessage: 'Acesso liberado ao Drive Compartilhado da Prosperar Contabilidade - Sistema de Gestão'
+      });
+
+      console.log(`✅ Acesso concedido para ${userEmail}`);
+      console.log(`Permission ID: ${response.data.id}`);
+      
+      return res.json({
+        success: true,
+        message: `Acesso concedido para ${userEmail}`,
+        permissionId: response.data.id,
+        driveLink: `https://drive.google.com/drive/folders/${SHARED_DRIVE_ID}`,
+        role: 'organizer'
+      });
+      
+    } catch (error) {
+      console.error('❌ Erro ao conceder acesso ao Drive:', error);
+      
+      return res.status(500).json({
+        success: false,
+        error: 'Erro ao conceder acesso ao Drive',
+        details: error.message,
+        solution: 'A conta de serviço pode não ter permissões adequadas no Drive Compartilhado'
       });
     }
   });

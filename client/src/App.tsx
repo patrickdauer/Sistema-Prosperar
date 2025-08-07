@@ -25,6 +25,7 @@ import NovoCliente from "@/pages/novo-cliente";
 import ClienteTasks from "@/pages/cliente-tasks";
 import DASMEIAutomationPage from "@/pages/dasmei-automation";
 import LinksPage from "@/pages/links";
+import { DriveAccessPage } from "@/pages/drive-access";
 
 function ProtectedDashboardInterno() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -179,6 +180,9 @@ function Router() {
       </Route>
       <Route path="/links">
         {() => isAuthenticated ? <LinksPage /> : <Landing />}
+      </Route>
+      <Route path="/drive-access">
+        {() => isAuthenticated ? <DriveAccessPage /> : <Landing />}
       </Route>
       
       {/* Fallback to Landing for unknown routes when not authenticated */}

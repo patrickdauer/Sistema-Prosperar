@@ -1,10 +1,14 @@
 // Script para dar acesso ao Drive Compartilhado
-const { google } = require('googleapis');
-const path = require('path');
+import { google } from 'googleapis';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 async function shareSharedDriveAccess(userEmail) {
   try {
-    const serviceAccountPath = path.join(process.cwd(), 'tanamao-464721-fabfbca1450e.json');
+    const serviceAccountPath = path.join(__dirname, 'tanamao-464721-fabfbca1450e.json');
     
     const auth = new google.auth.GoogleAuth({
       keyFile: serviceAccountPath,
@@ -40,7 +44,15 @@ async function shareSharedDriveAccess(userEmail) {
   }
 }
 
-// Para executar: node share-drive-access.js
-// shareSharedDriveAccess('seu-email@gmail.com');
+// Executar automaticamente
+shareSharedDriveAccess('patrickdauerpalestrante@gmail.com')
+  .then(result => {
+    console.log('Acesso liberado com sucesso!');
+    process.exit(0);
+  })
+  .catch(error => {
+    console.error('Erro:', error);
+    process.exit(1);
+  });
 
-module.exports = { shareSharedDriveAccess };
+export { shareSharedDriveAccess };

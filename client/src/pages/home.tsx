@@ -566,6 +566,32 @@ export default function Home() {
               </p>
             </CardContent>
           </Card>
+
+          {user?.role === 'admin' && (
+            <Card 
+              className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl" 
+              style={{ 
+                background: '#1a1a1a', 
+                border: '1px solid #333',
+                borderRadius: '8px'
+              }}
+              onClick={() => window.location.href = '/drive-access'}>
+              <CardHeader style={{ borderBottom: '1px solid #333' }}>
+                <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
+                  <Settings className="h-5 w-5" style={{ color: '#ff8c42' }} />
+                  Configuração Drive
+                </CardTitle>
+                <CardDescription style={{ color: '#888' }}>
+                  Configurar acesso ao Google Drive (Admin)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-white">
+                  Liberar acesso da conta de serviço ao Drive Compartilhado
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         <div 
