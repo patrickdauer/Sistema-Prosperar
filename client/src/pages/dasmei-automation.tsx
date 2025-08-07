@@ -1599,12 +1599,21 @@ export default function DASMEIAutomationPage() {
 
                       toast({ 
                         title: 'Teste WhatsApp', 
-                        description: `Enviando mensagem de teste para ${testFields.phoneNumber}...`,
+                        description: `Enviando mensagem personalizada para ${testFields.phoneNumber}...`,
                         duration: 3000 
                       });
 
                       try {
-                        const response = await fetch('/api/dasmei/test-whatsapp', {
+                        // Usar a mensagem personalizada do preview
+                        const mensagemPersonalizada = automationSettings.whatsappMessage
+                          .replace(/{NOME_CLIENTE}/g, 'João Silva')
+                          .replace(/{RAZAO_SOCIAL}/g, 'SILVA SERVICOS LTDA')
+                          .replace(/{CNPJ}/g, '12.345.678/0001-90')
+                          .replace(/{VALOR}/g, '81,43')
+                          .replace(/{DATA_VENCIMENTO}/g, '20/08/2025')
+                          .replace(/{LINK_DOWNLOAD}/g, 'https://exemplo.com/das-teste.pdf');
+
+                        const response = await fetch('/api/dasmei/send-whatsapp', {
                           method: 'POST',
                           headers: {
                             'Content-Type': 'application/json',
@@ -1612,21 +1621,20 @@ export default function DASMEIAutomationPage() {
                           },
                           body: JSON.stringify({
                             telefone: testFields.phoneNumber,
-                            email: testFields.email,
-                            cnpj: testFields.cnpj
+                            mensagem: mensagemPersonalizada
                           })
                         });
 
                         const result = await response.json();
 
-                        if (result.success && result.results?.whatsapp?.success) {
+                        if (result.success) {
                           toast({ 
                             title: 'WhatsApp Enviado', 
-                            description: `Mensagem de teste enviada com sucesso para ${testFields.phoneNumber}`,
+                            description: `Mensagem personalizada enviada para ${testFields.phoneNumber}`,
                             duration: 5000 
                           });
                         } else {
-                          const errorMessage = result.results?.whatsapp?.error || 'Erro ao enviar mensagem de teste';
+                          const errorMessage = result.message || 'Erro ao enviar mensagem';
                           
                           // Se for erro de conexão, mostrar botão para conectar
                           if (errorMessage.includes('conectando') || errorMessage.includes('desconectado')) {
@@ -1676,36 +1684,44 @@ export default function DASMEIAutomationPage() {
 
                       toast({ 
                         title: 'Teste Email', 
-                        description: `Enviando email de teste para ${testFields.email}...`,
+                        description: `Enviando email personalizado para ${testFields.email}...`,
                         duration: 3000 
                       });
 
                       try {
-                        const response = await fetch('/api/dasmei/test-whatsapp', {
+                        // Usar a mensagem personalizada do preview para email
+                        const mensagemPersonalizada = automationSettings.emailMessage
+                          .replace(/{NOME_CLIENTE}/g, 'João Silva')
+                          .replace(/{RAZAO_SOCIAL}/g, 'SILVA SERVICOS LTDA')
+                          .replace(/{CNPJ}/g, '12.345.678/0001-90')
+                          .replace(/{VALOR}/g, '81,43')
+                          .replace(/{DATA_VENCIMENTO}/g, '20/08/2025');
+
+                        const response = await fetch('/api/dasmei/send-email', {
                           method: 'POST',
                           headers: {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${localStorage.getItem('token')}`
                           },
                           body: JSON.stringify({
-                            telefone: testFields.phoneNumber,
                             email: testFields.email,
-                            cnpj: testFields.cnpj
+                            assunto: 'DAS-MEI - SILVA SERVICOS LTDA',
+                            mensagem: mensagemPersonalizada
                           })
                         });
 
                         const result = await response.json();
 
-                        if (result.success && result.results?.email?.success) {
+                        if (result.success) {
                           toast({ 
                             title: 'Email Enviado', 
-                            description: `Email de teste enviado com sucesso para ${testFields.email}`,
+                            description: `Email personalizado enviado para ${testFields.email}`,
                             duration: 5000 
                           });
                         } else {
                           toast({ 
                             title: 'Erro no Email', 
-                            description: result.results?.email?.error || 'Erro ao enviar email de teste',
+                            description: result.message || 'Erro ao enviar email personalizado',
                             variant: 'destructive',
                             duration: 5000 
                           });

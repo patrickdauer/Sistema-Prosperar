@@ -2944,6 +2944,153 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Rota para testar WhatsApp com dados reais
+  // Endpoint para enviar WhatsApp personalizado
+  app.post('/api/dasmei/send-whatsapp', authenticateToken, async (req, res) => {
+    try {
+      const { telefone, mensagem } = req.body;
+      
+      if (!telefone || !mensagem) {
+        return res.status(400).json({
+          success: false,
+          message: 'Telefone e mensagem são obrigatórios'
+        });
+      }
+
+      // Buscar configuração ativa do WhatsApp
+      let config = await dasStorage.getApiConfigurationByType('whatsapp');
+      
+      // Fallback temporário se não houver configuração
+      if (!config || !config.isActive) {
+        config = {
+          isActive: true,
+          credentials: {
+            serverUrl: 'https://apiw.aquiprospera.com.br',
+            apiKey: 'D041F72DEA1C-4319-ACC3-88532EB9E7A5',
+            instance: 'ADRIANA-PROSPERAR'
+          }
+        };
+      }
+
+      const credentials = typeof config.credentials === 'string' 
+        ? JSON.parse(config.credentials) 
+        : config.credentials;
+      const { serverUrl, apiKey, instance } = credentials;
+      
+      // Formatação do número
+      let phoneNumber = telefone.replace(/\D/g, '');
+      if (!phoneNumber.startsWith('55')) {
+        phoneNumber = '55' + phoneNumber;
+      }
+
+      // Garantir que a URL tenha protocolo
+      const baseUrl = serverUrl.startsWith('http') ? serverUrl : `https://${serverUrl}`;
+      const encodedInstance = encodeURIComponent(instance);
+
+      // Enviar mensagem via Evolution API
+      const sendUrl = `${baseUrl}/message/sendText/${encodedInstance}`;
+      const response = await fetch(sendUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': apiKey
+        },
+        body: JSON.stringify({
+          number: phoneNumber,
+          text: mensagem
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        res.json({
+          success: true,
+          message: 'Mensagem WhatsApp enviada com sucesso',
+          result
+        });
+      } else {
+        res.json({
+          success: false,
+          message: result.message || `Erro ao enviar: ${response.status}`
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao enviar WhatsApp personalizado:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor'
+      });
+    }
+  });
+
+  // Endpoint para enviar Email personalizado
+  app.post('/api/dasmei/send-email', authenticateToken, async (req, res) => {
+    try {
+      const { email, assunto, mensagem } = req.body;
+      
+      if (!email || !assunto || !mensagem) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email, assunto e mensagem são obrigatórios'
+        });
+      }
+
+      // Buscar configuração ativa do Email
+      const config = await dasStorage.getApiConfigurationByType('email');
+      if (!config || !config.isActive) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email não configurado. Configure o SendGrid primeiro.'
+        });
+      }
+
+      const { apiKey, fromEmail, fromName } = config.credentials;
+
+      const payload = {
+        personalizations: [{
+          to: [{ email }],
+          subject: assunto
+        }],
+        from: {
+          email: fromEmail,
+          name: fromName || 'Prosperar Contabilidade'
+        },
+        content: [{
+          type: 'text/html',
+          value: mensagem.replace(/\n/g, '<br>')
+        }]
+      };
+
+      const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        res.json({
+          success: true,
+          message: 'Email enviado com sucesso'
+        });
+      } else {
+        const errorResult = await response.json();
+        res.json({
+          success: false,
+          message: errorResult.errors?.[0]?.message || `Erro ao enviar email: ${response.status}`
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao enviar email personalizado:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor'
+      });
+    }
+  });
+
   app.post('/api/dasmei/test-whatsapp', authenticateToken, async (req, res) => {
     try {
       const { telefone, email, cnpj } = req.body;
