@@ -1632,7 +1632,7 @@ export default function DASMEIAutomationPage() {
                           if (errorMessage.includes('conectando') || errorMessage.includes('desconectado')) {
                             toast({ 
                               title: 'WhatsApp Desconectado', 
-                              description: 'A instância precisa ser conectada. Clique no botão "Conectar WhatsApp" abaixo.',
+                              description: 'A instância precisa ser conectada. Use o painel da Evolution API para conectar.',
                               variant: 'destructive',
                               duration: 8000 
                             });
@@ -1661,42 +1661,7 @@ export default function DASMEIAutomationPage() {
                     Testar WhatsApp
                   </Button>
 
-                  <Button 
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                    onClick={async () => {
-                      try {
-                        // Abrir nova aba com o painel da Evolution API
-                        const whatsappConfig = configurations?.whatsapp_evolution?.config;
-                        if (whatsappConfig) {
-                          const managerUrl = `${whatsappConfig.serverUrl}/manager`;
-                          window.open(managerUrl, '_blank');
-                          
-                          toast({ 
-                            title: 'Conectar WhatsApp', 
-                            description: 'Painel Evolution API aberto. Encontre sua instância e escaneie o QR Code.',
-                            duration: 6000 
-                          });
-                        } else {
-                          toast({ 
-                            title: 'Erro', 
-                            description: 'Configuração do WhatsApp não encontrada',
-                            variant: 'destructive' 
-                          });
-                        }
-                      } catch (error) {
-                        console.error('Erro ao abrir painel:', error);
-                        toast({ 
-                          title: 'Erro', 
-                          description: 'Erro ao abrir painel de conexão',
-                          variant: 'destructive' 
-                        });
-                      }
-                    }}
-                  >
-                    <Settings className="h-4 w-4 mr-2" />
-                    Conectar WhatsApp
-                  </Button>
-                  
+
                   <Button 
                     className="bg-green-600 hover:bg-green-700 text-white"
                     onClick={async () => {
