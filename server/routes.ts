@@ -2989,11 +2989,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const baseUrl = serverUrl.startsWith('http') ? serverUrl : `https://${serverUrl}`;
       const encodedInstance = encodeURIComponent(instance);
 
-      // Primeiro verificar se a instância está conectada
-      const statusUrl = `${baseUrl}/instance/connectionState/${encodedInstance}`;
-      console.log('🔍 Verificando status da instância:', statusUrl);
+      // Verificar se a instância está conectada usando fetchInstances (mais confiável)
+      const instancesUrl = `${baseUrl}/instance/fetchInstances`;
+      console.log('🔍 Verificando status da instância via fetchInstances:', instancesUrl);
       
-      const statusResponse = await fetch(statusUrl, {
+      const statusResponse = await fetch(instancesUrl, {
         method: 'GET',
         headers: {
           'apikey': apiKey
@@ -3007,15 +3007,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const statusData = await statusResponse.json();
-      console.log('📱 Status da instância:', statusData);
+      const instances = await statusResponse.json();
+      console.log('📱 Instâncias disponíveis:', instances);
       
-      const currentState = statusData?.instance?.state;
+      // Procurar pela instância específica
+      const currentInstance = instances.find((inst: any) => 
+        inst.name === instance || inst.instanceName === instance
+      );
       
-      if (currentState !== 'open') {
+      if (!currentInstance) {
         return res.json({
           success: false,
-          message: `WhatsApp não conectado. Status atual: ${currentState}. Conecte a instância primeiro.`
+          message: `Instância "${instance}" não encontrada. Verifique a configuração.`
+        });
+      }
+      
+      const connectionStatus = currentInstance.connectionStatus;
+      console.log('📊 Status da conexão:', connectionStatus);
+      
+      if (connectionStatus !== 'open') {
+        return res.json({
+          success: false,
+          message: `WhatsApp não conectado. Status atual: ${connectionStatus}. Conecte a instância primeiro.`
         });
       }
 
