@@ -19,7 +19,7 @@ import { z } from 'zod';
 import { 
   CalendarDays, Settings, Users, FileText, Play, Square, Eye, Trash2, Edit, Plus, 
   BarChart3, MessageSquare, Mail, Clock, CheckCircle, AlertCircle, Zap, 
-  Activity, TrendingUp, RefreshCw, Download, Send, PauseCircle, Filter
+  Activity, TrendingUp, RefreshCw, Download, Send, PauseCircle, Filter, ArrowLeft
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -516,10 +516,19 @@ export default function DASMEIAutomationPage() {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-green-400 flex items-center gap-2">
-                <CalendarDays className="h-6 w-6" />
-                DASMEI Automação
-              </h1>
+              <div className="flex items-center gap-4 mb-4">
+                <Button
+                  variant="ghost"
+                  onClick={() => window.location.href = '/home'}
+                  className="text-gray-400 hover:text-white hover:bg-gray-700 p-2"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+                <h1 className="text-2xl font-bold text-green-400 flex items-center gap-2">
+                  <CalendarDays className="h-6 w-6" />
+                  DASMEI Automação
+                </h1>
+              </div>
               <p className="text-gray-400 mt-1">
                 Sistema completo de geração e envio automático de guias DAS-MEI
               </p>
