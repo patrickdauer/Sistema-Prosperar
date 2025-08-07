@@ -2901,9 +2901,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sms: { success: false, message: '', error: '' }
       };
 
-      // Buscar configuração do WhatsApp
-      const { dasStorage } = await import('./das-storage.js');
-      const whatsappConfig = await dasStorage.getApiConfigurationByType('whatsapp');
+      // Usar configuração manual do WhatsApp (temporariamente)
+      const whatsappConfig = {
+        isActive: true,
+        credentials: {
+          serverUrl: 'https://apiw.aquiprospera.com.br',
+          apiKey: 'D041F72DEA1C-4319-ACC3-88532EB9E7A5',
+          instance: 'ADRIANA-PROSPERAR'
+        }
+      };
       
       if (!whatsappConfig || !whatsappConfig.isActive) {
         results.whatsapp = {
