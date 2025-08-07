@@ -2986,22 +2986,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const baseUrl = serverUrl.startsWith('http') ? serverUrl : `https://${serverUrl}`;
       const encodedInstance = encodeURIComponent(instance);
 
+      // Primeiro verificar se a instância está conectada
+      const statusUrl = `${baseUrl}/instance/connectionState/${encodedInstance}`;
+      console.log('🔍 Verificando status da instância:', statusUrl);
+      
+      const statusResponse = await fetch(statusUrl, {
+        method: 'GET',
+        headers: {
+          'apikey': apiKey
+        }
+      });
+
+      if (!statusResponse.ok) {
+        return res.json({
+          success: false,
+          message: `Erro ao verificar status da instância: ${statusResponse.status}`
+        });
+      }
+
+      const statusData = await statusResponse.json();
+      console.log('📱 Status da instância:', statusData);
+      
+      const currentState = statusData?.instance?.state;
+      
+      if (currentState !== 'open') {
+        return res.json({
+          success: false,
+          message: `WhatsApp não conectado. Status atual: ${currentState}. Conecte a instância primeiro.`
+        });
+      }
+
       // Enviar mensagem via Evolution API (formato correto v2)
       const sendUrl = `${baseUrl}/message/sendText/${encodedInstance}`;
       
-      // Log para debug
-      console.log('📤 Enviando WhatsApp personalizado:', {
-        url: sendUrl,
-        number: phoneNumber,
-        messageLength: mensagem.length
-      });
       const payload = {
         number: phoneNumber,
         text: mensagem,
         delay: 1200
       };
 
-      console.log('📦 Payload enviado:', JSON.stringify(payload, null, 2));
+      console.log('📤 Enviando WhatsApp:', { url: sendUrl, number: phoneNumber });
 
       const response = await fetch(sendUrl, {
         method: 'POST',
@@ -3012,14 +3036,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         body: JSON.stringify(payload)
       });
 
-      console.log('📊 Resposta Evolution API:', {
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok
-      });
-
       const result = await response.json();
-      console.log('📋 Resultado Evolution API:', result);
+      console.log('📋 Resultado Evolution API:', { status: response.status, result });
 
       if (response.ok) {
         res.json({
