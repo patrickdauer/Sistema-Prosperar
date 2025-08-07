@@ -2953,19 +2953,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             const currentState = statusData?.instance?.state;
             
-            if (currentState === 'connecting') {
-              results.whatsapp = {
-                success: false,
-                message: 'WhatsApp está se conectando',
-                error: 'A instância está em processo de conexão. Aguarde alguns minutos e tente novamente. Para acelerar o processo, escaneie o QR Code no painel da Evolution API.'
-              };
-            } else if (currentState === 'close' || currentState === 'closed') {
+            // Permitir teste mesmo se estiver "connecting" - apenas verificar se não está "close"
+            if (currentState === 'close' || currentState === 'closed') {
               results.whatsapp = {
                 success: false,
                 message: 'WhatsApp desconectado',
                 error: 'A instância não está conectada. Acesse o painel da Evolution API e escaneie o QR Code para conectar.'
               };
             } else {
+              // Tentar enviar mesmo se estiver "connecting" ou "open"
+              if (currentState === 'connecting') {
+                console.log('⚠️ Instância ainda conectando, mas tentando enviar mesmo assim...');
+              }
               // Tentar enviar mensagem se o status for "open" ou outros estados válidos
               const sendUrl = `${baseUrl}/message/sendText/${encodeURIComponent(instance)}`;
               
@@ -2990,9 +2989,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 },
                 body: JSON.stringify({
                   number: formattedNumber,
-                  textMessage: {
-                    text: mensagemTeste
-                  }
+                  text: mensagemTeste
                 })
               });
 
