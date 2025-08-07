@@ -455,8 +455,8 @@ export class DASMEIAutomationService {
       const configWhatsApp = {
         isActive: true,
         credentials: {
-          apiKey: '654E84BAD5F1-43E8-945E-78D1466B698E',
-          instance: 'PATRICK DAUER - IPHONE',
+          apiKey: 'D041F72DEA1C-4319-ACC3-88532EB9E7A5',
+          instance: 'ADRIANA-PROSPERAR',
           serverUrl: 'https://apiw.aquiprospera.com.br'
         }
       };

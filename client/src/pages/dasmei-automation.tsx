@@ -2395,7 +2395,7 @@ export default function DASMEIAutomationPage() {
                       type="password"
                       placeholder="API Key configurada"
                       className="bg-gray-700 border-gray-600"
-                      value="654E84BAD5F1-43E8-945E-78D1466B698E"
+                      value="D041F72DEA1C-4319-ACC3-88532EB9E7A5"
                       readOnly
                     />
                   </div>
@@ -2404,7 +2404,7 @@ export default function DASMEIAutomationPage() {
                     <Input 
                       placeholder="Instância configurada"
                       className="bg-gray-700 border-gray-600"
-                      value="PATRICK DAUER - IPHONE"
+                      value="ADRIANA-PROSPERAR"
                       readOnly
                     />
                   </div>
@@ -2413,8 +2413,8 @@ export default function DASMEIAutomationPage() {
                       className="w-full bg-blue-600 hover:bg-blue-700"
                       onClick={() => testWhatsappMutation.mutate({
                         serverUrl: 'https://apiw.aquiprospera.com.br',
-                        apiKey: '654E84BAD5F1-43E8-945E-78D1466B698E',
-                        instance: 'PATRICK DAUER - IPHONE'
+                        apiKey: 'D041F72DEA1C-4319-ACC3-88532EB9E7A5',
+                        instance: 'ADRIANA-PROSPERAR'
                       })}
                       disabled={testWhatsappMutation.isPending}
                     >
@@ -2435,7 +2435,7 @@ export default function DASMEIAutomationPage() {
                       WhatsApp Evolution configurado e ativo. Pronto para envios automáticos de DAS-MEI.
                     </p>
                     <p className="text-gray-400 text-xs mt-1">
-                      Status: Operacional | Instância: PATRICK DAUER - IPHONE | Última sincronização: {new Date().toLocaleString('pt-BR')}
+                      Status: Operacional | Instância: ADRIANA-PROSPERAR | Última sincronização: {new Date().toLocaleString('pt-BR')}
                     </p>
                   </div>
                 </CardContent>
