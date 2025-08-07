@@ -3044,21 +3044,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log('📤 Enviando WhatsApp:', { url: sendUrl, number: phoneNumber });
 
-      const response = await fetch(sendUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': apiKey
-        },
-        body: JSON.stringify(payload)
-      });
+      // Sistema de retry para Connection Closed
+      let attempts = 0;
+      let response;
+      let result;
+      
+      while (attempts < 3) {
+        attempts++;
+        console.log(`🔄 Tentativa ${attempts}/3 de envio WhatsApp`);
+        
+        try {
+          response = await fetch(sendUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': apiKey
+            },
+            body: JSON.stringify(payload)
+          });
 
-      const result = await response.json();
-      console.log('📋 Resultado Evolution API:', { 
-        status: response.status, 
-        ok: response.ok,
-        result: result 
-      });
+          result = await response.json();
+          console.log(`📋 Resultado tentativa ${attempts}:`, { 
+            status: response.status, 
+            ok: response.ok,
+            result: result 
+          });
+
+          // Se sucesso, parar retry
+          if (response.ok) {
+            console.log('✅ Envio bem-sucedido!');
+            break;
+          }
+          
+          // Se erro definitivo (não Connection Closed), parar retry
+          if (result.response?.message !== 'Connection Closed') {
+            console.log('❌ Erro definitivo, não fazendo retry');
+            break;
+          }
+          
+          // Se Connection Closed e ainda há tentativas, aguardar antes de retry
+          if (attempts < 3) {
+            console.log('⏳ Connection Closed detectado, aguardando 3s antes de retry...');
+            await new Promise(resolve => setTimeout(resolve, 3000));
+          }
+          
+        } catch (fetchError) {
+          console.error(`❌ Erro na tentativa ${attempts}:`, fetchError);
+          if (attempts === 3) {
+            return res.json({
+              success: false,
+              message: 'Erro de conexão após 3 tentativas. Verifique a instância WhatsApp.'
+            });
+          }
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+      }
 
       // Se houver erro 400, mostrar detalhes específicos
       if (response.status === 400 && result.response?.message) {
@@ -3068,7 +3108,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (response.ok) {
         res.json({
           success: true,
-          message: 'Mensagem WhatsApp enviada com sucesso',
+          message: `Mensagem WhatsApp enviada com sucesso (tentativa ${attempts})`,
           result
         });
       } else {
@@ -3076,7 +3116,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let errorMessage = result.message || `Erro ao enviar: ${response.status}`;
         
         if (result.response?.message === 'Connection Closed') {
-          errorMessage = 'Erro de conexão temporária. A instância perdeu conexão durante o envio. Tente novamente em alguns segundos.';
+          errorMessage = `Erro de conexão persistente após ${attempts} tentativas. A instância está instável. Tente reconectar no manager da Evolution API.`;
         } else if (response.status === 500) {
           errorMessage = `Erro interno da API Evolution (${response.status}). ${result.response?.message || 'Verifique a conexão da instância.'}`;
         }
