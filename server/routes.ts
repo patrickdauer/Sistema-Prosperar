@@ -2986,20 +2986,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const baseUrl = serverUrl.startsWith('http') ? serverUrl : `https://${serverUrl}`;
       const encodedInstance = encodeURIComponent(instance);
 
+      // Enviar mensagem via Evolution API (formato correto v2)
+      const sendUrl = `${baseUrl}/message/sendText/${encodedInstance}`;
+      
       // Log para debug
       console.log('📤 Enviando WhatsApp personalizado:', {
         url: sendUrl,
         number: phoneNumber,
         messageLength: mensagem.length
       });
-
-      // Enviar mensagem via Evolution API (formato correto v2)
-      const sendUrl = `${baseUrl}/message/sendText/${encodedInstance}`;
       const payload = {
         number: phoneNumber,
-        textMessage: {
-          text: mensagem
-        }
+        text: mensagem,
+        delay: 1200
       };
 
       console.log('📦 Payload enviado:', JSON.stringify(payload, null, 2));
