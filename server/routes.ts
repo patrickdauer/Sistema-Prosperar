@@ -2976,11 +2976,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         : config.credentials;
       const { serverUrl, apiKey, instance } = credentials;
       
-      // Formatação do número
+      // Formatação do número (manter formato original que funciona)
       let phoneNumber = telefone.replace(/\D/g, '');
       if (!phoneNumber.startsWith('55')) {
         phoneNumber = '55' + phoneNumber;
       }
+      
+      // Garantir que não tenha caracteres especiais na mensagem
+      const cleanMessage = mensagem.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
 
       // Garantir que a URL tenha protocolo
       const baseUrl = serverUrl.startsWith('http') ? serverUrl : `https://${serverUrl}`;
@@ -3021,8 +3024,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const payload = {
         number: phoneNumber,
-        text: mensagem,
-        delay: 1200
+        text: cleanMessage
       };
 
       console.log('📤 Enviando WhatsApp:', { url: sendUrl, number: phoneNumber });
@@ -3037,7 +3039,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const result = await response.json();
-      console.log('📋 Resultado Evolution API:', { status: response.status, result });
+      console.log('📋 Resultado Evolution API:', { 
+        status: response.status, 
+        ok: response.ok,
+        result: result 
+      });
+
+      // Se houver erro 400, mostrar detalhes específicos
+      if (response.status === 400 && result.response?.message) {
+        console.log('❌ Detalhes do erro 400:', result.response.message);
+      }
 
       if (response.ok) {
         res.json({
