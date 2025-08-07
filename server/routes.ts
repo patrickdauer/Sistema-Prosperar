@@ -2986,21 +2986,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const baseUrl = serverUrl.startsWith('http') ? serverUrl : `https://${serverUrl}`;
       const encodedInstance = encodeURIComponent(instance);
 
-      // Enviar mensagem via Evolution API
+      // Log para debug
+      console.log('📤 Enviando WhatsApp personalizado:', {
+        url: sendUrl,
+        number: phoneNumber,
+        messageLength: mensagem.length
+      });
+
+      // Enviar mensagem via Evolution API (formato correto v2)
       const sendUrl = `${baseUrl}/message/sendText/${encodedInstance}`;
+      const payload = {
+        number: phoneNumber,
+        textMessage: {
+          text: mensagem
+        }
+      };
+
+      console.log('📦 Payload enviado:', JSON.stringify(payload, null, 2));
+
       const response = await fetch(sendUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'apikey': apiKey
         },
-        body: JSON.stringify({
-          number: phoneNumber,
-          text: mensagem
-        })
+        body: JSON.stringify(payload)
+      });
+
+      console.log('📊 Resposta Evolution API:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
       });
 
       const result = await response.json();
+      console.log('📋 Resultado Evolution API:', result);
 
       if (response.ok) {
         res.json({
