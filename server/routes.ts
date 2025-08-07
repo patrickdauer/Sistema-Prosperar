@@ -3037,27 +3037,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Enviar mensagem via Evolution API (formato correto v2)
       const sendUrl = `${baseUrl}/message/sendText/${encodedInstance}`;
       
-      const payload = {
-        number: phoneNumber,
-        options: {
-          delay: 1200,
-          presence: "composing"
+      // Tentar os 3 formatos possíveis da Evolution API
+      const formats = [
+        // Formato v1 completo
+        {
+          number: phoneNumber,
+          options: {
+            delay: 1200,
+            presence: "composing"
+          },
+          textMessage: {
+            text: cleanMessage
+          }
         },
-        textMessage: {
+        // Formato v1 simples
+        {
+          number: phoneNumber,
           text: cleanMessage
+        },
+        // Formato híbrido
+        {
+          number: phoneNumber,
+          text: cleanMessage,
+          textMessage: {
+            text: cleanMessage
+          }
         }
-      };
+      ];
+      
+      let payload = formats[0]; // Começar com formato completo
 
       console.log('📤 Enviando WhatsApp:', { url: sendUrl, number: phoneNumber });
 
-      // Sistema de retry para Connection Closed
+      // Sistema de retry com tentativas de diferentes formatos
       let attempts = 0;
+      let formatIndex = 0;
       let response;
       let result;
       
-      while (attempts < 3) {
+      while (attempts < 6) { // 2 tentativas por formato (3 formatos)
         attempts++;
-        console.log(`🔄 Tentativa ${attempts}/3 de envio WhatsApp`);
+        payload = formats[formatIndex];
+        
+        console.log(`🔄 Tentativa ${attempts}/6 - Formato ${formatIndex + 1}/3:`);
+        console.log('📦 Payload:', JSON.stringify(payload, null, 2));
         
         try {
           response = await fetch(sendUrl, {
@@ -3076,33 +3099,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
             result: result 
           });
 
-          // Se sucesso, parar retry
+          // Se sucesso, parar todas as tentativas
           if (response.ok) {
-            console.log('✅ Envio bem-sucedido!');
+            console.log(`✅ Envio bem-sucedido com formato ${formatIndex + 1}!`);
             break;
           }
           
-          // Se erro definitivo (não Connection Closed), parar retry
-          if (result.response?.message !== 'Connection Closed') {
-            console.log('❌ Erro definitivo, não fazendo retry');
-            break;
+          // Se erro 400 (formato inválido), tentar próximo formato
+          if (response.status === 400) {
+            console.log('🔄 Erro 400 - tentando próximo formato...');
+            formatIndex = (formatIndex + 1) % formats.length;
+            continue;
           }
           
-          // Se Connection Closed e ainda há tentativas, aguardar antes de retry
-          if (attempts < 3) {
-            console.log('⏳ Connection Closed detectado, aguardando 3s antes de retry...');
-            await new Promise(resolve => setTimeout(resolve, 3000));
+          // Se Connection Closed, tentar novamente com mesmo formato
+          if (result.response?.message === 'Connection Closed') {
+            console.log('⏳ Connection Closed - aguardando 2s antes de retry...');
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            continue;
           }
+          
+          // Outros erros, tentar próximo formato
+          formatIndex = (formatIndex + 1) % formats.length;
           
         } catch (fetchError) {
           console.error(`❌ Erro na tentativa ${attempts}:`, fetchError);
-          if (attempts === 3) {
-            return res.json({
-              success: false,
-              message: 'Erro de conexão após 3 tentativas. Verifique a instância WhatsApp.'
-            });
-          }
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          await new Promise(resolve => setTimeout(resolve, 1000));
         }
       }
 
@@ -3111,10 +3133,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('❌ Detalhes do erro 400:', result.response.message);
       }
 
+      // Verificar se houve falha total
+      if (attempts >= 6) {
+        return res.json({
+          success: false,
+          message: `Falha após ${attempts} tentativas com todos os formatos. Último erro: ${result?.message || 'Erro desconhecido'}`
+        });
+      }
+
       if (response.ok) {
         res.json({
           success: true,
-          message: `Mensagem WhatsApp enviada com sucesso (tentativa ${attempts})`,
+          message: `Mensagem WhatsApp enviada com sucesso (formato ${formatIndex + 1}, tentativa ${attempts})`,
           result
         });
       } else {
@@ -3122,9 +3152,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let errorMessage = result.message || `Erro ao enviar: ${response.status}`;
         
         if (result.response?.message === 'Connection Closed') {
-          errorMessage = `Erro de conexão persistente após ${attempts} tentativas. A instância está instável. Tente reconectar no manager da Evolution API.`;
+          errorMessage = `Erro de conexão persistente. A instância está instável. Tente reconectar no manager da Evolution API.`;
         } else if (response.status === 500) {
           errorMessage = `Erro interno da API Evolution (${response.status}). ${result.response?.message || 'Verifique a conexão da instância.'}`;
+        } else if (response.status === 400) {
+          errorMessage = `Erro de formato após todas as tentativas (400). Detalhes: ${JSON.stringify(result.response?.message || result)}`;
         }
         
         res.json({
