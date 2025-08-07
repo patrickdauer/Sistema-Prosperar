@@ -2841,6 +2841,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: 'Mensagem WhatsApp processada com sucesso',
           preview: processedWhatsApp
         };
+        
+        // ENVIAR MENSAGEM REAL VIA WHATSAPP
+        try {
+          // Usar configuração manual do WhatsApp
+          const whatsappConfig = {
+            isActive: true,
+            credentials: {
+              serverUrl: 'https://apiw.aquiprospera.com.br',
+              apiKey: 'D041F72DEA1C-4319-ACC3-88532EB9E7A5',
+              instance: 'ADRIANA-PROSPERAR'
+            }
+          };
+          
+          if (whatsappConfig?.isActive) {
+            const credentials = whatsappConfig.credentials;
+            const { serverUrl, apiKey, instance } = credentials;
+            
+            const baseUrl = serverUrl.startsWith('http') ? serverUrl : `https://${serverUrl}`;
+            const sendUrl = `${baseUrl}/message/sendText/${encodeURIComponent(instance)}`;
+            
+            // Número de teste fixo
+            const numeroTeste = '5547999639533';
+            
+            console.log('📤 Enviando WhatsApp REAL de teste:', {
+              url: sendUrl,
+              number: numeroTeste,
+              messagePreview: processedWhatsApp.substring(0, 100) + '...'
+            });
+            
+            const response = await fetch(sendUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'apikey': apiKey
+              },
+              body: JSON.stringify({
+                number: numeroTeste,
+                text: processedWhatsApp
+              })
+            });
+
+            const responseText = await response.text();
+            console.log('📥 Resposta WhatsApp REAL:', {
+              status: response.status,
+              ok: response.ok,
+              body: responseText.substring(0, 200)
+            });
+            
+            if (response.ok) {
+              results.whatsapp.message = `✅ Mensagem ENVIADA via WhatsApp para ${numeroTeste}`;
+              results.whatsapp.realSent = true;
+            } else {
+              results.whatsapp.message = `⚠️ Preview OK, mas erro no envio: ${response.status}`;
+              results.whatsapp.sendError = responseText;
+            }
+          }
+        } catch (whatsappError) {
+          console.error('Erro no envio WhatsApp:', whatsappError);
+          results.whatsapp.message = `⚠️ Preview OK, mas erro no envio: ${whatsappError.message}`;
+        }
       } catch (error) {
         results.whatsapp.message = 'Erro ao processar mensagem WhatsApp';
       }
