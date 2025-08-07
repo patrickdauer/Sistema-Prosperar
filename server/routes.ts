@@ -2965,8 +2965,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           isActive: true,
           credentials: {
             serverUrl: 'https://apiw.aquiprospera.com.br',
-            apiKey: 'D041F72DEA1C-4319-ACC3-88532EB9E7A5',
-            instance: 'ADRIANA-PROSPERAR'
+            apiKey: '464CD9B4FCCD-4EFA-8C99-CAF7D7D50825',
+            instance: 'PATRICK-DAUER-OFICIAL'
           }
         };
       }
