@@ -1581,75 +1581,7 @@ export default function DASMEIAutomationPage() {
                   </Button>
                 </div>
 
-                {/* Preview das Mensagens */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <Card className="bg-gray-700 border-gray-600">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-green-400 text-sm flex items-center">
-                        <MessageSquare className="h-4 w-4 mr-2" />
-                        Preview WhatsApp
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="bg-green-100 text-green-900 p-3 rounded-lg text-xs max-h-32 overflow-y-auto">
-                        {automationSettings.whatsappMessage
-                          ?.replace(/{NOME_CLIENTE}/g, 'João Silva')
-                          ?.replace(/{RAZAO_SOCIAL}/g, 'SILVA SERVICOS LTDA')
-                          ?.replace(/{CNPJ}/g, '12.345.678/0001-90')
-                          ?.replace(/{VALOR}/g, '81,43')
-                          ?.replace(/{DATA_VENCIMENTO}/g, '20/08/2025')
-                          ?.replace(/{LINK_DOWNLOAD}/g, 'https://exemplo.com/das-teste.pdf') || 'Mensagem não configurada'}
-                      </div>
-                    </CardContent>
-                  </Card>
 
-                  <Card className="bg-gray-700 border-gray-600">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-blue-400 text-sm flex items-center">
-                        <Mail className="h-4 w-4 mr-2" />
-                        Preview Email
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="bg-blue-100 text-blue-900 p-3 rounded-lg text-xs max-h-32 overflow-y-auto">
-                        <div className="font-bold mb-1">
-                          Assunto: {automationSettings.emailSubject
-                            ?.replace(/{NOME_CLIENTE}/g, 'João Silva')
-                            ?.replace(/{RAZAO_SOCIAL}/g, 'SILVA SERVICOS LTDA') || 'Assunto não configurado'}
-                        </div>
-                        <div>
-                          {automationSettings.emailMessage
-                            ?.replace(/{NOME_CLIENTE}/g, 'João Silva')
-                            ?.replace(/{RAZAO_SOCIAL}/g, 'SILVA SERVICOS LTDA')
-                            ?.replace(/{CNPJ}/g, '12.345.678/0001-90')
-                            ?.replace(/{VALOR}/g, '81,43')
-                            ?.replace(/{DATA_VENCIMENTO}/g, '20/08/2025')
-                            ?.replace(/{LINK_DOWNLOAD}/g, 'https://exemplo.com/das-teste.pdf') || 'Mensagem não configurada'}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-gray-700 border-gray-600">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-yellow-400 text-sm flex items-center">
-                        <MessageSquare className="h-4 w-4 mr-2" />
-                        Preview SMS
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="bg-yellow-100 text-yellow-900 p-3 rounded-lg text-xs max-h-32 overflow-y-auto">
-                        {automationSettings.smsMessage
-                          ?.replace(/{NOME_CLIENTE}/g, 'João Silva')
-                          ?.replace(/{RAZAO_SOCIAL}/g, 'SILVA SERVICOS LTDA')
-                          ?.replace(/{CNPJ}/g, '12.345.678/0001-90')
-                          ?.replace(/{VALOR}/g, '81,43')
-                          ?.replace(/{DATA_VENCIMENTO}/g, '20/08/2025')
-                          ?.replace(/{LINK_DOWNLOAD}/g, 'https://exemplo.com/das-teste.pdf') || 'Mensagem não configurada'}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
 
                 {/* Campos de entrada para testes */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

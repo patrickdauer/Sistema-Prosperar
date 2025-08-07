@@ -2976,11 +2976,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         : config.credentials;
       const { serverUrl, apiKey, instance } = credentials;
       
-      // Formatação do número (manter formato original que funciona)
-      let phoneNumber = telefone.replace(/\D/g, '');
-      if (!phoneNumber.startsWith('55')) {
-        phoneNumber = '55' + phoneNumber;
+      // Formatação do número - SEMPRE adicionar 55 se for número brasileiro de 11 dígitos
+      let phoneNumber = telefone.replace(/\D/g, ''); // Remove caracteres não numéricos
+      if (phoneNumber.length === 11 && !phoneNumber.startsWith('55')) {
+        phoneNumber = '55' + phoneNumber; // Adiciona 55 para números brasileiros
       }
+      
+      console.log('📞 Número formatado:', { original: telefone, formatado: phoneNumber });
       
       // Garantir que não tenha caracteres especiais na mensagem
       const cleanMessage = mensagem.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
