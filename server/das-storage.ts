@@ -127,13 +127,9 @@ export class DASStorage {
     return guia;
   }
 
-  async getDasGuia(id: number): Promise<DasGuia | undefined> {
+  async getDasGuiaById(id: number): Promise<DasGuia | undefined> {
     const [guia] = await db.select().from(dasGuias).where(eq(dasGuias.id, id));
     return guia;
-  }
-
-  async getDasGuiaById(id: number): Promise<DasGuia | undefined> {
-    return this.getDasGuia(id);
   }
 
   async getDasGuiaByClienteAndMes(clienteId: number, mesAno: string): Promise<DasGuia | undefined> {
@@ -153,11 +149,6 @@ export class DASStorage {
 
   async getAllDasGuias(): Promise<DasGuia[]> {
     return await db.select().from(dasGuias).orderBy(desc(dasGuias.createdAt));
-  }
-
-  async getDasGuiaById(id: number): Promise<DasGuia | undefined> {
-    const [guia] = await db.select().from(dasGuias).where(eq(dasGuias.id, id));
-    return guia;
   }
 
   async updateDasGuia(id: number, data: Partial<DasGuia>): Promise<DasGuia> {
@@ -182,14 +173,6 @@ export class DASStorage {
       ));
   }
 
-  async updateDasGuia(id: number, data: Partial<DasGuia>): Promise<DasGuia> {
-    const [guia] = await db.update(dasGuias)
-      .set(data)
-      .where(eq(dasGuias.id, id))
-      .returning();
-    return guia;
-  }
-
   async deleteDasGuia(id: number): Promise<void> {
     await db.delete(dasGuias).where(eq(dasGuias.id, id));
   }
@@ -210,44 +193,7 @@ export class DASStorage {
     return await db.select().from(envioLogs).orderBy(desc(envioLogs.createdAt));
   }
 
-  // Programação de Envios
-  async createProgramacaoEnvio(data: InsertProgramacaoEnvio): Promise<ProgramacaoEnvio> {
-    const [programacao] = await db.insert(programacaoEnvios).values(data).returning();
-    return programacao;
-  }
 
-  async getProgramacaoEnviosByData(data: Date): Promise<ProgramacaoEnvio[]> {
-    const startOfDay = new Date(data);
-    startOfDay.setHours(0, 0, 0, 0);
-    
-    const endOfDay = new Date(data);
-    endOfDay.setHours(23, 59, 59, 999);
-
-    return await db.select().from(programacaoEnvios)
-      .where(and(
-        gte(programacaoEnvios.dataAgendada, startOfDay),
-        lte(programacaoEnvios.dataAgendada, endOfDay),
-        eq(programacaoEnvios.status, 'agendado')
-      ));
-  }
-
-  async updateProgramacaoEnvio(id: number, data: Partial<ProgramacaoEnvio>): Promise<ProgramacaoEnvio> {
-    const [programacao] = await db.update(programacaoEnvios)
-      .set(data)
-      .where(eq(programacaoEnvios.id, id))
-      .returning();
-    return programacao;
-  }
-
-  async getProgramacaoEnviosByGuia(guiaId: number): Promise<ProgramacaoEnvio[]> {
-    return await db.select().from(programacaoEnvios)
-      .where(eq(programacaoEnvios.dasGuiaId, guiaId))
-      .orderBy(desc(programacaoEnvios.createdAt));
-  }
-
-  async deleteDasGuia(id: number): Promise<void> {
-    await db.delete(dasGuias).where(eq(dasGuias.id, id));
-  }
 
   async getDasGuiaByClienteAndPeriodo(clienteId: number, periodo: string): Promise<DasGuia | undefined> {
     const [guia] = await db.select().from(dasGuias)

@@ -2004,7 +2004,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await providerManager.switchProvider('infosimples', credentials, req.user.id);
       
       // Salvar configuração no banco de dados
-      const { dasStorage } = await import('./das-storage.js');
+      const { dasStorage } = await import('./das-storage');
       const userId = req.user?.id || 1;
       
       try {
@@ -2061,7 +2061,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await providerManager.switchProvider('infosimples', null, req.user.id);
       
       // Desativar configuração no banco de dados
-      const { dasStorage } = await import('./das-storage.js');
+      const { dasStorage } = await import('./das-storage');
       const existingConfigs = await dasStorage.getAllApiConfigurations();
       const infosimplesConfig = existingConfigs.find(c => c.name === 'infosimples');
       
@@ -2093,7 +2093,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await providerManager.deactivateProvider('infosimples');
       
       // Desativar configuração no banco de dados
-      const { dasStorage } = await import('./das-storage.js');
+      const { dasStorage } = await import('./das-storage');
       const existingConfigs = await dasStorage.getAllApiConfigurations();
       const infosimplesConfig = existingConfigs.find(c => c.name === 'infosimples');
       
@@ -2181,7 +2181,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Se a geração foi bem-sucedida, salvar a guia no banco de dados
       if (resultado.success && resultado.data && resultado.boleto) {
         try {
-          const { dasStorage } = await import('./das-storage.js');
+          const { dasStorage } = await import('./das-storage');
           
           // Buscar cliente MEI pelo CNPJ
           const { dasmeiStorage } = await import('./dasmei-storage.js');
@@ -2297,7 +2297,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/das/download/:id', authenticateToken, async (req, res) => {
     try {
       const { id } = req.params;
-      const { dasStorage } = await import('./das-storage.js');
+      const { dasStorage } = await import('./das-storage');
       
       const guia = await dasStorage.getDasGuiaById(parseInt(id));
       if (!guia) {
@@ -2349,7 +2349,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete('/api/das/guias/:id', authenticateToken, async (req, res) => {
     try {
       const { id } = req.params;
-      const { dasStorage } = await import('./das-storage.js');
+      const { dasStorage } = await import('./das-storage');
       
       const guia = await dasStorage.getDasGuiaById(parseInt(id));
       if (!guia) {
@@ -2399,7 +2399,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/dasmei/guias', authenticateToken, async (req, res) => {
     try {
-      const { dasStorage } = await import('./das-storage.js');
+      const { dasStorage } = await import('./das-storage');
       const guias = await dasStorage.getAllDasGuias();
       res.json(guias || []);
     } catch (error) {
@@ -2620,7 +2620,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API para carregar configurações salvas - COM PERSISTÊNCIA FORÇADA
   app.get('/api/configurations', authenticateToken, async (req, res) => {
     try {
-      const { dasStorage } = await import('./das-storage.js');
+      const { dasStorage } = await import('./das-storage');
       const configurations = await dasStorage.getAllApiConfigurations();
       
       const configMap: Record<string, any> = {};
@@ -2700,7 +2700,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Nova rota para garantir reconexão automática após atualização da página
   app.post('/api/configurations/auto-reconnect', authenticateToken, async (req, res) => {
     try {
-      const { dasStorage } = await import('./das-storage.js');
+      const { dasStorage } = await import('./das-storage');
       const { providerManager } = await import('./services/api-providers/provider-manager.js');
       
       let reconnected = [];
