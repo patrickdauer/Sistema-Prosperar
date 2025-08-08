@@ -1019,12 +1019,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("Error sending webhook:", error);
       }
       
+      // Generate public download links for all uploaded files
+      const publicLinks: any[] = [];
+      
+      try {
+        // Add PDF link
+        if (pdfUrl) {
+          const pdfPublicLink = await objectStorageService.generatePublicDownloadLink(pdfUrl, 168); // 7 days
+          publicLinks.push({
+            type: 'pdf',
+            name: pdfFileName,
+            url: pdfPublicLink
+          });
+        }
+        
+        // Add uploaded files links
+        for (const fileUrl of uploadedFileUrls) {
+          const fileName = fileUrl.split('/').pop()?.split('_').slice(1).join('_') || 'document';
+          const publicLink = await objectStorageService.generatePublicDownloadLink(fileUrl, 168); // 7 days
+          publicLinks.push({
+            type: 'document',
+            name: fileName,
+            url: publicLink
+          });
+        }
+      } catch (error) {
+        console.error("❌ Error generating public links:", error);
+      }
+
       res.json({ 
         message: "Solicitação de contratação enviada com sucesso!", 
         id: contratacao.id,
         googleDriveLink: objectStorageLink,
         uploadedFiles: uploadedFileUrls,
-        pdfUrl: pdfUrl
+        pdfUrl: pdfUrl,
+        publicDownloadLinks: publicLinks
       });
     } catch (error) {
       console.error("Error creating contratacao:", error);
@@ -1063,6 +1092,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching contratacao:", error);
       res.status(500).json({ message: "Erro ao buscar contratação" });
+    }
+  });
+
+  // Generate public download links for contratacao files
+  app.get("/api/contratacao-funcionarios/:id/download-links", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const contratacao = await storage.getContratacao(id);
+      
+      if (!contratacao) {
+        return res.status(404).json({ message: "Contratação não encontrada" });
+      }
+
+      const objectStorageService = new ObjectStorageService();
+      const employeeName = contratacao.nomeFuncionario || 'Funcionario';
+      const employeeSubFolder = `funcionarios/${id}_${employeeName.replace(/[^a-zA-Z0-9]/g, '_')}`;
+      
+      // Generate links for files in the employee folder
+      const bucketName = "replit-objstore-a07a4d86-f9d1-4e27-91b5-bbc366dec51f";
+      const bucket = objectStorageClient.bucket(bucketName);
+      
+      const privateDir = process.env.PRIVATE_OBJECT_DIR || "";
+      const [files] = await bucket.getFiles({
+        prefix: `${privateDir}/${employeeSubFolder}/`
+      });
+
+      const downloadLinks = [];
+      
+      for (const file of files) {
+        const fileName = file.name.split('/').pop() || '';
+        const publicLink = await objectStorageService.generatePublicDownloadLink(`/objects/${file.name}`, 168);
+        
+        downloadLinks.push({
+          name: fileName.split('_').slice(1).join('_') || fileName, // Remove UUID prefix
+          url: publicLink,
+          type: fileName.endsWith('.pdf') ? 'pdf' : 'document'
+        });
+      }
+
+      res.json({
+        contratacaoId: id,
+        employeeName: contratacao.nomeFuncionario,
+        downloadLinks
+      });
+    } catch (error) {
+      console.error("Error generating download links:", error);
+      res.status(500).json({ message: "Erro ao gerar links de download" });
     }
   });
 

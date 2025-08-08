@@ -160,18 +160,8 @@ export class ObjectStorageService {
       throw new ObjectNotFoundError();
     }
 
-    const parts = objectPath.slice(1).split("/");
-    if (parts.length < 2) {
-      throw new ObjectNotFoundError();
-    }
-
-    const entityId = parts.slice(1).join("/");
-    let entityDir = this.getPrivateObjectDir();
-    if (!entityDir.endsWith("/")) {
-      entityDir = `${entityDir}/`;
-    }
-    const objectEntityPath = `${entityDir}${entityId}`;
-    const { bucketName, objectName } = parseObjectPath(objectEntityPath);
+    const objectName = objectPath.slice(9); // Remove "/objects/"
+    const bucketName = "replit-objstore-a07a4d86-f9d1-4e27-91b5-bbc366dec51f";
     const bucket = objectStorageClient.bucket(bucketName);
     const objectFile = bucket.file(objectName);
     const [exists] = await objectFile.exists();
@@ -242,11 +232,12 @@ export class ObjectStorageService {
   async uploadPrivateFile(fileName: string, fileBuffer: Buffer, subFolder?: string): Promise<string> {
     const privateObjectDir = this.getPrivateObjectDir();
     const objectId = randomUUID();
-    const objectPath = subFolder 
+    const objectName = subFolder 
       ? `${privateObjectDir}/${subFolder}/${objectId}_${fileName}`
       : `${privateObjectDir}/uploads/${objectId}_${fileName}`;
 
-    const { bucketName, objectName } = parseObjectPath(objectPath);
+    // Use the default bucket directly
+    const bucketName = "replit-objstore-a07a4d86-f9d1-4e27-91b5-bbc366dec51f";
     const bucket = objectStorageClient.bucket(bucketName);
     const file = bucket.file(objectName);
 
@@ -256,7 +247,20 @@ export class ObjectStorageService {
       },
     });
 
-    return `/objects/${subFolder ? `${subFolder}/` : 'uploads/'}${objectId}_${fileName}`;
+    return `/objects/${objectName}`;
+  }
+
+  // Generate a public download link for a private file
+  async generatePublicDownloadLink(objectPath: string, ttlHours: number = 24): Promise<string> {
+    const objectName = objectPath.startsWith("/objects/") ? objectPath.slice(9) : objectPath;
+    const bucketName = "replit-objstore-a07a4d86-f9d1-4e27-91b5-bbc366dec51f";
+    
+    return signObjectURL({
+      bucketName,
+      objectName,
+      method: "GET",
+      ttlSec: ttlHours * 3600, // Convert hours to seconds
+    });
   }
 
   private getContentType(fileName: string): string {
@@ -276,19 +280,34 @@ function parseObjectPath(path: string): {
   bucketName: string;
   objectName: string;
 } {
+  // For private directory, use the default bucket and the path as object name
+  const privateDir = process.env.PRIVATE_OBJECT_DIR || "";
+  
+  if (path.startsWith(`/${privateDir}`) || path.startsWith(privateDir)) {
+    // Get the default bucket ID from environment
+    const defaultBucket = "replit-objstore-a07a4d86-f9d1-4e27-91b5-bbc366dec51f";
+    const objectName = path.startsWith("/") ? path.slice(1) : path;
+    
+    return {
+      bucketName: defaultBucket,
+      objectName,
+    };
+  }
+  
+  // Fallback to original parsing logic
   if (!path.startsWith("/")) {
     path = `/${path}`;
   }
   const pathParts = path.split("/");
-  if (pathParts.length < 3) {
-    throw new Error("Invalid path: must contain at least a bucket name");
+  if (pathParts.length < 2) {
+    throw new Error("Invalid path: must contain at least an object name");
   }
 
-  const bucketName = pathParts[1];
-  const objectName = pathParts.slice(2).join("/");
+  const defaultBucket = "replit-objstore-a07a4d86-f9d1-4e27-91b5-bbc366dec51f";
+  const objectName = pathParts.slice(1).join("/");
 
   return {
-    bucketName,
+    bucketName: defaultBucket,
     objectName,
   };
 }
