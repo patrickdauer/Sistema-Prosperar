@@ -1048,14 +1048,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         emailInfo = { success: false, error: error.message };
       }
       
-      // Generate external Object Storage folder link
+      // Note: Replit Object Storage doesn't support direct web access to folders
       const folderPath = `prosperar-publico/FUNCIONARIOS/${contratacao.id}_${employeeName.replace(/[^a-zA-Z0-9]/g, '_')}`;
-      const externalFolderLink = `https://replit.com/@DearestLikableDeadcode/workspace/object-storage?path=${encodeURIComponent(folderPath)}`;
       
       // Send webhook with public links and email info
       try {
         console.log("Sending webhook with public download links and email data...");
-        await webhookService.sendContratacaoData(contratacao, objectStorageLink, publicLinks, emailInfo, externalFolderLink);
+        await webhookService.sendContratacaoData(contratacao, objectStorageLink, publicLinks, emailInfo, folderPath);
         console.log("Webhook sent successfully");
       } catch (error) {
         console.error("Error sending webhook:", error);
@@ -1065,13 +1064,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let successMessage = "Solicitação de contratação enviada com sucesso!";
       
       if (publicLinks.length > 0) {
-        successMessage += `\n\n📎 Links públicos gerados (válidos por 7 dias):\n`;
+        successMessage += `\n\n📎 Links públicos de download (válidos por 7 dias):\n`;
         publicLinks.forEach(link => {
           successMessage += `📄 ${link.name}: ${link.url}\n`;
         });
       }
       
-      successMessage += `\n\n📁 Pasta no Object Storage:\n🔗 ${externalFolderLink}`;
+      successMessage += `\n\n📁 Arquivos salvos no Object Storage em: ${folderPath}`;
+      successMessage += `\n💡 Acesse via workspace do Replit > Object Storage para visualizar todos os arquivos`;
 
       res.json({ 
         message: successMessage,
@@ -1081,7 +1081,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         pdfUrl: pdfUrl,
         publicDownloadLinks: publicLinks,
         downloadLinksText: publicLinks.map(link => `${link.name}: ${link.url}`).join('\n'),
-        externalFolderLink: externalFolderLink
+        folderPath: folderPath
       });
     } catch (error) {
       console.error("Error creating contratacao:", error);

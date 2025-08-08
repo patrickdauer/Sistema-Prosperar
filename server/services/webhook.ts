@@ -7,7 +7,7 @@ export class WebhookService {
     this.webhookUrl = webhookUrl;
   }
 
-  async sendContratacaoData(contratacao: ContratacaoFuncionario, folderLink?: string, publicLinks?: any[], emailInfo?: any, externalFolderLink?: string): Promise<boolean> {
+  async sendContratacaoData(contratacao: ContratacaoFuncionario, folderLink?: string, publicLinks?: any[], emailInfo?: any, folderPath?: string): Promise<boolean> {
     try {
       const payload = {
         id: contratacao.id,
@@ -68,8 +68,8 @@ export class WebhookService {
         },
         googleDriveFolder: folderLink,
         objectStorage: {
-          folderPath: folderLink,
-          externalFolderLink: externalFolderLink,
+          folderPath: folderPath || folderLink,
+          note: "Files accessible via Replit workspace > Object Storage",
           publicDownloadLinks: publicLinks || []
         }
       };

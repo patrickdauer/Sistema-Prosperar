@@ -171,9 +171,10 @@ export default function ContratacaoFuncionarios() {
         
         let alertMessage = `📎 Links de Download (válidos por 7 dias):\n\n${linksText}`;
         
-        // Add Object Storage folder link if available
-        if (responseData.externalFolderLink) {
-          alertMessage += `\n\n📁 Pasta no Object Storage:\n${responseData.externalFolderLink}`;
+        // Add Object Storage folder info if available
+        if (responseData.folderPath) {
+          alertMessage += `\n\n📁 Arquivos salvos em: ${responseData.folderPath}`;
+          alertMessage += `\n💡 Acesse via workspace do Replit > Object Storage`;
         }
         
         alertMessage += `\n\nOu verifique o console (F12) para copiar os links.`;
