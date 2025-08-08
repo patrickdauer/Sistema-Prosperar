@@ -248,6 +248,12 @@ export class DASMEIStorage {
       .orderBy(asc(clientesMei.nome));
   }
 
+  async getAllClientesMei(): Promise<ClienteMei[]> {
+    return await db.select()
+      .from(clientesMei)
+      .orderBy(asc(clientesMei.nome));
+  }
+
   async getClienteMeiById(id: number): Promise<ClienteMei | null> {
     const [cliente] = await db.select().from(clientesMei).where(eq(clientesMei.id, id));
     return cliente || null;

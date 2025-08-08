@@ -2631,7 +2631,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/dasmei/clientes', authenticateToken, async (req, res) => {
     try {
       const { dasmeiStorage } = await import('./dasmei-storage.js');
-      const clientes = await dasmeiStorage.getClientesMeiAtivos();
+      const clientes = await dasmeiStorage.getAllClientesMei();
       res.json(clientes);
     } catch (error) {
       res.status(500).json({ error: 'Erro ao buscar clientes' });
