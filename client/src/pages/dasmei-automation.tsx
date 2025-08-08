@@ -1189,9 +1189,12 @@ export default function DASMEIAutomationPage() {
                       return;
                     }
 
-                    if (confirm(`Gerar guias DAS-MEI para ${clientesSemGuia.length} clientes que ainda não possuem guias este mês? Isso pode consumir créditos da API InfoSimples.`)) {
-                      generateBulkGuiasMutation.mutate();
-                    }
+                    toast({
+                      title: 'Iniciando geração em massa',
+                      description: `Gerando guias DAS-MEI para ${clientesSemGuia.length} clientes`,
+                      duration: 4000
+                    });
+                    generateBulkGuiasMutation.mutate();
                   }}
                   disabled={generateBulkGuiasMutation.isPending || !clientes?.length}
                   title="Gerar guias para todos os clientes que ainda não possuem no mês atual"
