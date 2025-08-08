@@ -107,11 +107,21 @@ export class DASMEIAutomationService {
     
     try {
       // Preparar dados no formato correto para InfoSimples
+      const cnpjLimpo = cnpj.replace(/[^\d]/g, '');
+      const dataPagamento = new Date().toISOString().split('T')[0];
+      
+      console.log(`📋 Parâmetros API InfoSimples:`, {
+        cnpj: cnpjLimpo,
+        periodo: periodoFinal,
+        data_pagamento: dataPagamento,
+        token: this.infosimplesToken ? 'presente' : 'ausente'
+      });
+      
       const formData = new URLSearchParams();
-      formData.append('cnpj', cnpj.replace(/[^\d]/g, ''));
+      formData.append('cnpj', cnpjLimpo);
       formData.append('token', this.infosimplesToken);
       formData.append('periodo', periodoFinal);
-      formData.append('data_pagamento', new Date().toISOString().split('T')[0]);
+      formData.append('data_pagamento', dataPagamento);
       
       const response = await fetch('https://api.infosimples.com/api/v2/consultas/receita-federal/simples-das', {
         method: 'POST',
@@ -127,8 +137,16 @@ export class DASMEIAutomationService {
 
       const result = await response.json();
       
+      console.log(`📡 Resposta InfoSimples:`, {
+        code: result.code,
+        service: result.header?.service,
+        parameters: result.header?.parameters,
+        message: result.code_message
+      });
+      
       if (result.code !== 200) {
-        throw new Error(result.code_message || 'Erro na API InfoSimples');
+        console.error(`❌ Erro API InfoSimples (${result.code}):`, result.code_message);
+        throw new Error(`${result.code}: ${result.code_message || 'Erro na API InfoSimples'}`);
       }
 
       return {
