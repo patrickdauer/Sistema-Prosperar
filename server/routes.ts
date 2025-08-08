@@ -5,7 +5,8 @@ import { db } from "./db";
 import { insertBusinessRegistrationSchema } from "@shared/schema";
 import { insertContratacaoSchema } from "@shared/contratacao-schema";
 import { apiConfigurations } from "@shared/dasmei-schema";
-import { eq } from "drizzle-orm";
+import { clientesMei, dasGuias } from "@shared/das-schema";
+import { eq, and, isNull } from "drizzle-orm";
 import multer from "multer";
 import { z } from "zod";
 import { generateBusinessRegistrationPDF } from "./services/pdf";
@@ -2928,6 +2929,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint para recuperar guias perdidas (créditos consumidos mas não salvas)
+  app.post('/api/dasmei/recover-guides', authenticateToken, async (req, res) => {
+    try {
+      const { mesAno } = req.body;
+      
+      if (!mesAno || !/^\d{4}-\d{2}$/.test(mesAno)) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Formato de mês/ano inválido. Use YYYY-MM' 
+        });
+      }
+
+      console.log(`🔄 Recuperando guias perdidas para período ${mesAno}`);
+      
+      // Buscar clientes ativos que não têm guia para o período
+      const clientesSemGuia = await db.select()
+        .from(clientesMei)
+        .leftJoin(dasGuias, and(
+          eq(clientesMei.id, dasGuias.clienteMeiId),
+          eq(dasGuias.mesAno, mesAno)
+        ))
+        .where(and(
+          eq(clientesMei.isActive, true),
+          isNull(dasGuias.id)
+        ));
+
+      console.log(`📊 Encontrados ${clientesSemGuia.length} clientes sem guia para ${mesAno}`);
+      
+      // Importar e configurar o serviço de automação
+      const automationModule = await import('./services/dasmei-automation.js');
+      const service = automationModule.dasmeiAutomationService || automationModule.default;
+      
+      if (!service) {
+        throw new Error('Serviço de automação DAS-MEI não encontrado');
+      }
+
+      const clienteIds = clientesSemGuia.map(item => item.clientes_mei.id);
+      
+      // Executar recuperação
+      const results = await service.executarGeracaoEmMassa(clienteIds, mesAno);
+      
+      console.log(`✅ Recuperação concluída: ${results.sucessos} guias recuperadas, ${results.erros} erros`);
+      
+      res.json({ 
+        success: true, 
+        message: `Recuperação concluída: ${results.sucessos} guias recuperadas`,
+        details: results,
+        clientesSemGuia: clientesSemGuia.length
+      });
+      
+    } catch (error) {
+      console.error('❌ Erro na recuperação de guias:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Erro na recuperação de guias',
+        error: error.message 
+      });
+    }
+  });
+
   // Endpoint para geração em massa de guias DAS-MEI
   app.post('/api/dasmei/generate-bulk', authenticateToken, async (req, res) => {
     try {
@@ -2948,6 +3009,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log(`🚀 Iniciando geração em massa para ${clienteIds.length} clientes no período ${mesAno}`);
+      console.log(`📋 IDs dos clientes:`, clienteIds);
       
       // Importar e configurar o serviço de automação
       const automationModule = await import('./services/dasmei-automation.js');
@@ -2961,6 +3023,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const results = await service.executarGeracaoEmMassa(clienteIds, mesAno);
       
       console.log(`✅ Geração em massa concluída: ${results.sucessos} sucessos, ${results.erros} erros`);
+      console.log(`📊 Detalhes completos:`, JSON.stringify(results, null, 2));
       
       res.json({ 
         success: true, 

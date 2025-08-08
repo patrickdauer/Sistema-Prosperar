@@ -514,6 +514,54 @@ export default function DASMEIAutomationPage() {
     }
   });
 
+  // Mutation para recuperar guias perdidas (quando créditos foram consumidos mas guias não foram salvas)
+  const recoverGuidesMutation = useMutation({
+    mutationFn: async () => {
+      // Verificar se InfoSimples está conectado
+      if (!connectionStatus.infosimples.connected) {
+        throw new Error('InfoSimples não está conectado. Clique em "Conectar InfoSimples" primeiro.');
+      }
+
+      const currentMonth = new Date().getMonth() + 1;
+      const currentYear = new Date().getFullYear();
+      const mesAno = `${currentYear}-${currentMonth.toString().padStart(2, '0')}`;
+
+      const response = await fetch('/api/dasmei/recover-guides', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ mesAno })
+      });
+      
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.message || 'Erro ao recuperar guias');
+      }
+      
+      return result;
+    },
+    onSuccess: (data) => {
+      toast({ 
+        title: 'Recuperação concluída!', 
+        description: `${data.details.sucessos} guias recuperadas com sucesso`,
+        duration: 6000
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/dasmei/guias'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/dasmei/logs'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/dasmei/estatisticas'] });
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: 'Erro na recuperação', 
+        description: error.message || 'Erro ao recuperar guias perdidas', 
+        variant: 'destructive',
+        duration: 6000
+      });
+    }
+  });
+
   // Mutation para testar InfoSimples API - COM PERSISTÊNCIA AUTOMÁTICA
   const testInfosimplesMutation = useMutation({
     mutationFn: async (config: typeof infosimplesConfig) => {
@@ -1223,6 +1271,31 @@ export default function DASMEIAutomationPage() {
                     <>
                       <Download className="h-4 w-4 mr-2" />
                       Gerar Todas as Guias
+                    </>
+                  )}
+                </Button>
+                <Button
+                  className="bg-yellow-600 hover:bg-yellow-700"
+                  onClick={() => {
+                    toast({
+                      title: 'Recuperando guias perdidas',
+                      description: 'Tentando recuperar guias que consumiram créditos mas não foram salvas',
+                      duration: 4000
+                    });
+                    recoverGuidesMutation.mutate();
+                  }}
+                  disabled={recoverGuidesMutation.isPending}
+                  title="Recuperar guias que consumiram créditos mas não foram salvas no banco"
+                >
+                  {recoverGuidesMutation.isPending ? (
+                    <>
+                      <Clock className="h-4 w-4 mr-2 animate-spin" />
+                      Recuperando...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Recuperar Guias Perdidas
                     </>
                   )}
                 </Button>
