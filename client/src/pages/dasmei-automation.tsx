@@ -235,11 +235,8 @@ export default function DASMEIAutomationPage() {
       }
     };
 
-    // Executar imediatamente e depois a cada 30 segundos para manter conexão
+    // Executar apenas uma vez ao carregar a página (removido auto-reconexão para economizar créditos)
     forceReconnectAPIs();
-    const interval = setInterval(forceReconnectAPIs, 30000);
-    
-    return () => clearInterval(interval);
   }, []); // Executar apenas uma vez ao montar
 
   // Mutations
