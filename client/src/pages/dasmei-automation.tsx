@@ -20,7 +20,7 @@ import {
   CalendarDays, Settings, Users, FileText, Play, Square, Eye, Trash2, Edit, Plus, 
   BarChart3, MessageSquare, Mail, Clock, CheckCircle, AlertCircle, Zap, 
   Activity, TrendingUp, RefreshCw, Download, Send, PauseCircle, Filter, ArrowLeft,
-  ExternalLink, AlertTriangle
+  ExternalLink, AlertTriangle, Copy
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -1194,7 +1194,44 @@ export default function DASMEIAutomationPage() {
                       <TableRow key={cliente.id} className="border-gray-700">
                         <TableCell className="text-white">{cliente.nome}</TableCell>
                         <TableCell className="text-gray-300">{cliente.cnpj}</TableCell>
-                        <TableCell className="text-gray-300">{cliente.telefone || '-'}</TableCell>
+                        <TableCell className="text-gray-300">
+                          <div className="flex items-center space-x-2">
+                            <span>{cliente.telefone || '-'}</span>
+                            {cliente.telefone && (
+                              <div className="flex space-x-1">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-6 w-6 p-0 hover:bg-gray-600"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(cliente.telefone);
+                                    toast({
+                                      title: 'Telefone copiado!',
+                                      description: `Número ${cliente.telefone} copiado para a área de transferência`,
+                                      duration: 2000
+                                    });
+                                  }}
+                                  title="Copiar telefone"
+                                >
+                                  <Copy className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-6 w-6 p-0 hover:bg-green-600"
+                                  onClick={() => {
+                                    const phoneNumber = cliente.telefone.replace(/\D/g, '');
+                                    const whatsappUrl = `https://wa.me/55${phoneNumber}`;
+                                    window.open(whatsappUrl, '_blank');
+                                  }}
+                                  title="Enviar mensagem WhatsApp"
+                                >
+                                  <MessageSquare className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
                         <TableCell className="text-gray-300">{cliente.email || '-'}</TableCell>
                         <TableCell>
                           <Badge className={cliente.isActive ? 'bg-green-600' : 'bg-red-600'}>
