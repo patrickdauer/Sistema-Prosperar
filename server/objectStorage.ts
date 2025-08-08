@@ -241,13 +241,43 @@ export class ObjectStorageService {
     const bucket = objectStorageClient.bucket(bucketName);
     const file = bucket.file(objectName);
 
+    console.log(`🔄 Uploading to bucket: ${bucketName}`);
+    console.log(`🔄 Object path: ${objectName}`);
+
     await file.save(fileBuffer, {
       metadata: {
         contentType: this.getContentType(fileName),
       },
     });
 
+    console.log(`✅ File saved successfully: ${objectName}`);
     return `/objects/${objectName}`;
+  }
+
+  // Upload a file to public storage (visible in Object Storage UI)
+  async uploadPublicFile(fileName: string, fileBuffer: Buffer, subFolder?: string): Promise<string> {
+    const publicDir = "PROSPERAR_FUNCIONARIOS_DOS_CLIENTES";
+    const objectId = randomUUID();
+    const objectName = subFolder 
+      ? `${publicDir}/${subFolder}/${objectId}_${fileName}`
+      : `${publicDir}/uploads/${objectId}_${fileName}`;
+
+    // Use the default bucket directly
+    const bucketName = "replit-objstore-a07a4d86-f9d1-4e27-91b5-bbc366dec51f";
+    const bucket = objectStorageClient.bucket(bucketName);
+    const file = bucket.file(objectName);
+
+    console.log(`🔄 Uploading to public bucket: ${bucketName}`);
+    console.log(`🔄 Public object path: ${objectName}`);
+
+    await file.save(fileBuffer, {
+      metadata: {
+        contentType: this.getContentType(fileName),
+      },
+    });
+
+    console.log(`✅ Public file saved successfully: ${objectName}`);
+    return `/public-objects/${objectName}`;
   }
 
   // Generate a public download link for a private file

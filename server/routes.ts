@@ -950,10 +950,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Initializing Replit Object Storage for employee documents...");
       const objectStorageService = new ObjectStorageService();
       const employeeName = contratacao.nomeFuncionario || 'Funcionario';
-      const employeeSubFolder = `PROSPERAR FUNCIONÁRIOS DOS CLIENTES/${contratacao.id}_${employeeName.replace(/[^a-zA-Z0-9]/g, '_')}`;
+      const employeeSubFolder = `PROSPERAR_FUNCIONARIOS_DOS_CLIENTES/${contratacao.id}_${employeeName.replace(/[^a-zA-Z0-9]/g, '_')}`;
       
       // Update contratacao with object storage reference
-      const objectStorageLink = `Object Storage: PROSPERAR FUNCIONÁRIOS DOS CLIENTES/${contratacao.id}_${employeeName}`;
+      const objectStorageLink = `Object Storage: PROSPERAR_FUNCIONARIOS_DOS_CLIENTES/${contratacao.id}_${employeeName}`;
       await storage.updateContratacaoFuncionario(contratacao.id, { googleDriveLink: objectStorageLink });
       console.log(`📁 Object Storage configurado para funcionário: ${employeeSubFolder}`);
       
@@ -970,9 +970,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log(`Uploading file: ${fileName} to Object Storage`);
             
             try {
-              const fileUrl = await objectStorageService.uploadPrivateFile(fileName, file.buffer, employeeSubFolder);
+              const fileUrl = await objectStorageService.uploadPublicFile(fileName, file.buffer, employeeSubFolder);
               uploadedFileUrls.push(fileUrl);
-              console.log(`✅ File uploaded successfully to Object Storage: ${fileName}`);
+              console.log(`✅ File uploaded successfully to public Object Storage: ${fileName}`);
               console.log(`📎 File URL: ${fileUrl}`);
             } catch (error) {
               console.error(`❌ Upload failed to Object Storage: ${fileName}`, error);
@@ -994,9 +994,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let pdfUrl = '';
       
       try {
-        console.log(`Uploading PDF: ${pdfFileName} to Object Storage`);
-        pdfUrl = await objectStorageService.uploadPrivateFile(pdfFileName, pdfBuffer, employeeSubFolder);
-        console.log(`✅ PDF uploaded successfully to Object Storage: ${pdfUrl}`);
+        console.log(`Uploading PDF: ${pdfFileName} to public Object Storage`);
+        pdfUrl = await objectStorageService.uploadPublicFile(pdfFileName, pdfBuffer, employeeSubFolder);
+        console.log(`✅ PDF uploaded successfully to public Object Storage: ${pdfUrl}`);
       } catch (error) {
         console.error("❌ Error uploading PDF to Object Storage:", error);
       }
