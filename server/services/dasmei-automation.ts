@@ -756,30 +756,19 @@ export class DASMEIAutomationService {
     const guia: InsertDasGuia = {
       clienteMeiId: cliente.id,
       mesAno: mesAno,
-      cnpj: cliente.cnpj,
-      razaoSocial: guiaData.razaoSocial,
-      periodo: periodo,
       dataVencimento: dataVencimento,
-      valorDas: parseFloat(periodData.valorTotalDas.replace(',', '.')) || 0,
-      situacao: periodData.situacao,
-      urlDownload: periodData.urlDas,
-      createdAt: new Date(),
-      status: 'gerada'
+      valor: periodData.valorTotalDas,
+      filePath: null,
+      downloadUrl: periodData.urlDas,
+      fileName: `DAS_${cliente.cnpj}_${mesAno.replace('-', '')}.pdf`,
+      downloadedAt: new Date(),
+      downloadStatus: 'available',
+      provider: 'infosimples'
     };
 
     await dasmeiStorage.createDasGuia(guia);
     
-    // Log da operação
-    const logEntry: InsertEnvioLog = {
-      clienteId: cliente.id,
-      tipoOperacao: 'geracao_guia',
-      status: 'success',
-      detalhes: `Guia DAS-MEI gerada para o período ${mesAno}`,
-      timestamp: new Date(),
-      periodo: mesAno
-    };
-
-    await dasmeiStorage.createEnvioLog(logEntry);
+    console.log(`✅ Guia DAS salva no banco para cliente: ${cliente.nome} - Período: ${mesAno} - Valor: ${periodData.valorTotalDas}`);
   }
 }
 
