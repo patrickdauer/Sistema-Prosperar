@@ -30,6 +30,7 @@ import { spawn } from "child_process";
 import { promisify } from "util";
 import { exec } from "child_process";
 import { google } from "googleapis";
+import { localStorageService } from "./services/local-storage";
 
 const execAsync = promisify(exec);
 
@@ -930,10 +931,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const contratacao = await storage.createContratacaoFuncionario(insertData);
       console.log("Contratacao record created with ID:", contratacao.id);
       
-      // Create individual folder for employee in Shared Drive using improved method
-      console.log("Creating individual folder for employee in Shared Drive...");
+      // Try creating folder in Google Drive first, fallback to local storage
+      console.log("Creating storage for employee documents...");
       let employeeFolderId: string;
       let employeeFolderLink: string;
+      let useLocalStorage = false;
       
       try {
         const employeeName = contratacao.nomeFuncionario || 'Funcionario';
@@ -943,57 +945,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Update contratacao with employee folder link
         await storage.updateContratacaoFuncionario(contratacao.id, { googleDriveLink: employeeFolderLink });
-        console.log(`✅ Individual employee folder created successfully`);
+        console.log(`✅ Google Drive folder created successfully`);
         console.log(`📁 Folder ID: ${employeeFolderId}`);
         console.log(`🔗 Folder URL: ${employeeFolderLink}`);
       } catch (error) {
-        console.error("❌ Error creating individual employee folder:", error);
-        // Fallback to Shared Drive root  
-        employeeFolderId = '0APe1WRUeIBtMUk9PVA';
-        employeeFolderLink = `https://drive.google.com/drive/folders/${employeeFolderId}`;
+        console.error("❌ Google Drive unavailable, using local storage:", error.message);
+        useLocalStorage = true;
+        
+        // Create local folder for employee
+        const employeeName = contratacao.nomeFuncionario || 'Funcionario';
+        const localFolderPath = await localStorageService.createEmployeeFolder(employeeName);
+        
+        // Update contratacao with local path info
+        employeeFolderLink = `Local: ${localFolderPath}`;
         await storage.updateContratacaoFuncionario(contratacao.id, { googleDriveLink: employeeFolderLink });
-        console.log(`📁 Using Shared Drive root as fallback: ${employeeFolderLink}`);
+        console.log(`📁 Local storage folder created: ${localFolderPath}`);
       }
       
-      // Handle file uploads to Google Drive - upload to employee folder
+      // Handle file uploads - Google Drive or local storage
       const files = req.files as Express.Multer.File[];
       if (files && files.length > 0) {
-        console.log(`Processing ${files.length} files for upload to employee folder: ${employeeFolderId}`);
+        console.log(`Processing ${files.length} files for upload`);
         
-        try {
-          for (const file of files) {
-            const fileName = `${file.originalname}`;
-            console.log(`Uploading file: ${fileName} to employee folder`);
+        if (useLocalStorage) {
+          // Save files locally
+          try {
+            const employeeName = contratacao.nomeFuncionario || 'Funcionario';
+            const filesData = files.map(file => ({
+              name: file.originalname,
+              buffer: file.buffer
+            }));
             
-            try {
-              // Try uploading document to employee folder using Python script
-              console.log(`Uploading document using Python script to folder: ${employeeFolderId}`);
-              
-              // Save document to temporary file
-              const tempFilePath = `temp_${Date.now()}_${fileName}`;
-              fs.writeFileSync(tempFilePath, file.buffer);
-              
-              // Execute Python script using exec
-              const pythonCommand = `python upload_pdf_to_folder.py "${tempFilePath}" "${employeeFolderId}" "${fileName}"`;
-              const { stdout, stderr } = await execAsync(pythonCommand);
-              
-              // Clean up temp file
-              fs.unlinkSync(tempFilePath);
-              
-              if (stderr) {
-                console.error(`❌ Python document upload failed: ${fileName}`, stderr);
-                throw new Error(`Python upload failed: ${stderr}`);
-              } else {
-                console.log(`✅ Document uploaded successfully to employee folder using Python: ${fileName}`);
-                console.log(`Python output: ${stdout}`);
-              }
-            } catch (error) {
-              console.error(`❌ Upload failed to employee folder: ${fileName}`, error);
-              console.log(`Fallback: Document will be available via email attachment`);
-            }
+            const result = await localStorageService.saveEmployeeDocuments(employeeName, filesData);
+            console.log(`✅ ${files.length} files saved locally: ${result.folderPath}`);
+          } catch (error) {
+            console.error("❌ Error saving files locally:", error);
           }
-        } catch (error) {
-          console.error("Error processing file uploads:", error);
+        } else {
+          // Upload to Google Drive
+          try {
+            for (const file of files) {
+              const fileName = `${file.originalname}`;
+              console.log(`Uploading file: ${fileName} to Google Drive folder`);
+              
+              try {
+                // Save document to temporary file
+                const tempFilePath = `temp_${Date.now()}_${fileName}`;
+                fs.writeFileSync(tempFilePath, file.buffer);
+                
+                // Execute Python script using exec
+                const pythonCommand = `python upload_pdf_to_folder.py "${tempFilePath}" "${employeeFolderId}" "${fileName}"`;
+                const { stdout, stderr } = await execAsync(pythonCommand);
+                
+                // Clean up temp file
+                fs.unlinkSync(tempFilePath);
+                
+                if (stderr) {
+                  console.error(`❌ Python document upload failed: ${fileName}`, stderr);
+                  throw new Error(`Python upload failed: ${stderr}`);
+                } else {
+                  console.log(`✅ Document uploaded successfully to Google Drive: ${fileName}`);
+                }
+              } catch (error) {
+                console.error(`❌ Upload failed to Google Drive: ${fileName}`, error);
+                console.log(`Fallback: Document will be available via email attachment`);
+              }
+            }
+          } catch (error) {
+            console.error("Error processing file uploads:", error);
+          }
         }
       }
       
@@ -1001,14 +1021,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Generating PDF...");
       const pdfBuffer = await generateContratacaoPDF(contratacao);
       
-      // Upload PDF to Google Drive - upload to employee folder
-      try {
-        const pdfFileName = `Contratacao_${contratacao.nomeFuncionario || 'Funcionario'}.pdf`;
-        console.log(`Uploading PDF: ${pdfFileName} to employee folder`);
-        
+      // Save PDF - Google Drive or local storage
+      const pdfFileName = `Contratacao_${contratacao.nomeFuncionario || 'Funcionario'}.pdf`;
+      
+      if (useLocalStorage) {
+        // Save PDF locally
         try {
-          // Try uploading to employee folder using Python script
-          console.log(`Uploading PDF using Python script to folder: ${employeeFolderId}`);
+          const employeeName = contratacao.nomeFuncionario || 'Funcionario';
+          const result = await localStorageService.savePDF(employeeName, pdfFileName, pdfBuffer);
+          console.log(`✅ PDF saved locally: ${result.filePath}`);
+        } catch (error) {
+          console.error("❌ Error saving PDF locally:", error);
+        }
+      } else {
+        // Upload PDF to Google Drive
+        try {
+          console.log(`Uploading PDF: ${pdfFileName} to Google Drive`);
           
           // Save PDF to temporary file
           const tempPdfPath = `temp_${Date.now()}_${pdfFileName}`;
@@ -1023,25 +1051,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           if (stderr) {
             console.error(`❌ Python PDF upload failed:`, stderr);
-            throw new Error(`Python upload failed: ${stderr}`);
+            // Try fallback to Shared Drive root
+            try {
+              const prefixedPdfFileName = `${contratacao.id}_${contratacao.razaoSocial || 'Empresa'}_Contratacao_${contratacao.nomeFuncionario || 'Funcionario'}.pdf`;
+              const pdfResult = await googleDriveNewService.uploadPDF(prefixedPdfFileName, pdfBuffer, googleDriveSharedService.getSharedDriveId());
+              console.log("✅ PDF uploaded successfully to Shared Drive root");
+            } catch (fallbackError) {
+              console.error("❌ All PDF uploads failed:", fallbackError);
+            }
           } else {
-            console.log(`✅ PDF uploaded successfully to employee folder using Python!`);
-            console.log(`Python output: ${stdout}`);
+            console.log(`✅ PDF uploaded successfully to Google Drive`);
           }
         } catch (error) {
-          console.error("❌ PDF upload failed to employee folder:", error);
-          // Try fallback to Shared Drive root with prefix
-          try {
-            const prefixedPdfFileName = `${contratacao.id}_${contratacao.razaoSocial || 'Empresa'}_Contratacao_${contratacao.nomeFuncionario || 'Funcionario'}.pdf`;
-            const pdfResult = await googleDriveNewService.uploadPDF(prefixedPdfFileName, pdfBuffer, googleDriveSharedService.getSharedDriveId());
-            console.log("✅ PDF uploaded successfully to Shared Drive root");
-          } catch (fallbackError) {
-            console.error("❌ All PDF uploads failed:", fallbackError);
-          }
+          console.error("Error uploading PDF to Google Drive:", error);
+          console.log("PDF generated successfully (upload failed)");
         }
-      } catch (error) {
-        console.error("Error uploading PDF to Google Drive:", error);
-        console.log("PDF generated successfully (upload failed)");
       }
       
       // Send emails
