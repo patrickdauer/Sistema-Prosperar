@@ -2421,6 +2421,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 if (periodoData?.data_vencimento) {
                   const [dia, mes, ano] = periodoData.data_vencimento.split('/');
                   dataVencimento = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
+                  console.log(`📅 Data de vencimento original: ${periodoData.data_vencimento}`);
+                  console.log(`📅 Data de vencimento processada: ${dataVencimento.toISOString()}`);
+                } else {
+                  console.log(`⚠️ Data de vencimento não encontrada nos dados do período`);
                 }
                 
                 const valor = periodoData?.normalizado_valor_total_das || 0;
