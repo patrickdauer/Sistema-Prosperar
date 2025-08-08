@@ -173,6 +173,30 @@ export default function Home() {
             </CardContent>
           </Card>
 
+          <Card 
+            className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl" 
+            style={{ 
+              background: '#1a1a1a', 
+              border: '1px solid #333',
+              borderRadius: '8px'
+            }}
+            onClick={() => window.location.href = '/arquivos'}>
+            <CardHeader style={{ borderBottom: '1px solid #333' }}>
+              <CardTitle className="flex items-center gap-2" style={{ color: '#22c55e' }}>
+                <HardDrive className="h-5 w-5" style={{ color: '#ff8c42' }} />
+                Arquivos Públicos
+              </CardTitle>
+              <CardDescription style={{ color: '#888' }}>
+                Sistema de gerenciamento de arquivos externos
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-white">
+                Navegue e baixe arquivos organizados por pastas (funcionários, documentos, etc.)
+              </p>
+            </CardContent>
+          </Card>
+
 
 
           {user?.role === 'admin' && (
