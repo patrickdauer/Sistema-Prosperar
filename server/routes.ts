@@ -1055,13 +1055,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("Error sending webhook:", error);
       }
 
+      // Create message with download links
+      let successMessage = "Solicitação de contratação enviada com sucesso!";
+      
+      if (publicLinks.length > 0) {
+        successMessage += `\n\n📎 Links públicos gerados (válidos por 7 dias):\n`;
+        publicLinks.forEach(link => {
+          successMessage += `📄 ${link.name}: ${link.url}\n`;
+        });
+      }
+
       res.json({ 
-        message: "Solicitação de contratação enviada com sucesso!", 
+        message: successMessage,
         id: contratacao.id,
         googleDriveLink: objectStorageLink,
         uploadedFiles: uploadedFileUrls,
         pdfUrl: pdfUrl,
-        publicDownloadLinks: publicLinks
+        publicDownloadLinks: publicLinks,
+        downloadLinksText: publicLinks.map(link => `${link.name}: ${link.url}`).join('\n')
       });
     } catch (error) {
       console.error("Error creating contratacao:", error);
