@@ -854,7 +854,13 @@ export default function DASMEIAutomationPage() {
                             <Clock className="h-4 w-4 text-yellow-400" />
                           )}
                           <div>
-                            <p className="text-sm font-medium text-white">{log.tipoOperacao}</p>
+                            <p className="text-sm font-medium text-white">
+                              {log.tipoOperacao === 'geracao_boleto' ? 'Geração de Guia' : 
+                               log.tipoOperacao === 'geracao_guia' ? 'Geração de Guia' :
+                               log.tipoOperacao === 'envio_whatsapp' ? 'Envio WhatsApp' :
+                               log.tipoOperacao === 'envio_email' ? 'Envio Email' :
+                               log.tipoOperacao}
+                            </p>
                             <p className="text-xs text-gray-400">
                               {format(new Date(log.timestamp), 'dd/MM HH:mm', { locale: ptBR })}
                             </p>

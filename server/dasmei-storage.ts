@@ -315,7 +315,7 @@ export class DASMEIStorage {
   // Estatísticas do sistema
   async getEstatisticasPeriodo(periodo: string): Promise<{
     totalClientes: number;
-    boletosGerados: number;
+    guiasGeradas: number;
     whatsappEnviados: number;
     falhas: number;
   }> {
@@ -323,7 +323,7 @@ export class DASMEIStorage {
       .from(clientesMei)
       .where(eq(clientesMei.isActive, true));
 
-    const boletosGerados = await db.select()
+    const guiasGeradas = await db.select()
       .from(dasGuias)
       .where(eq(dasGuias.mesAno, periodo));
 
@@ -343,7 +343,7 @@ export class DASMEIStorage {
 
     return {
       totalClientes: totalClientes.length,
-      boletosGerados: boletosGerados.length,
+      guiasGeradas: guiasGeradas.length,
       whatsappEnviados: whatsappEnviados.length,
       falhas: falhas.length,
     };
