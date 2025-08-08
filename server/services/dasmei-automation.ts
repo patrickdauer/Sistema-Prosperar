@@ -115,8 +115,7 @@ export class DASMEIAutomationService {
           cnpj: cnpj.replace(/[^\d]/g, ''), // Somente números
           token: this.infosimplesToken,
           periodo: periodoFinal,
-          timeout: 600,
-          ignore_site_receipt: true,
+          data_pagamento: new Date().toISOString().split('T')[0], // Formato YYYY-MM-DD
         }),
       });
 
