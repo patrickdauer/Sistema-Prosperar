@@ -2780,6 +2780,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint para geração em massa de guias DAS-MEI
+  app.post('/api/dasmei/generate-bulk', authenticateToken, async (req, res) => {
+    try {
+      const { clienteIds, mesAno } = req.body;
+      
+      if (!clienteIds || !Array.isArray(clienteIds) || clienteIds.length === 0) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Lista de IDs de clientes é obrigatória' 
+        });
+      }
+
+      if (!mesAno || !/^\d{4}-\d{2}$/.test(mesAno)) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Formato de mês/ano inválido. Use YYYY-MM' 
+        });
+      }
+
+      console.log(`🚀 Iniciando geração em massa para ${clienteIds.length} clientes no período ${mesAno}`);
+      
+      // Importar e configurar o serviço de automação
+      const automationModule = await import('./services/dasmei-automation.js');
+      const service = automationModule.dasmeiAutomationService || automationModule.default;
+      
+      if (!service) {
+        throw new Error('Serviço de automação DAS-MEI não encontrado');
+      }
+
+      // Executar geração em massa
+      const results = await service.executarGeracaoEmMassa(clienteIds, mesAno);
+      
+      console.log(`✅ Geração em massa concluída: ${results.sucessos} sucessos, ${results.erros} erros`);
+      
+      res.json({ 
+        success: true, 
+        message: `Geração em massa concluída: ${results.sucessos} guias geradas`,
+        details: results
+      });
+      
+    } catch (error) {
+      console.error('❌ Erro na geração em massa:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Erro na geração em massa de guias',
+        error: error.message 
+      });
+    }
+  });
+
   // WhatsApp Evolution API Test Route
   app.post('/api/whatsapp/test', authenticateToken, async (req, res) => {
     try {

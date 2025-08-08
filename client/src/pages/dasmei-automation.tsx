@@ -384,6 +384,64 @@ export default function DASMEIAutomationPage() {
     }
   });
 
+  // Mutation para gerar guias em massa (apenas para clientes sem guias no mês atual)
+  const generateBulkGuiasMutation = useMutation({
+    mutationFn: async () => {
+      const currentMonth = new Date().getMonth() + 1;
+      const currentYear = new Date().getFullYear();
+      const mesAno = `${currentYear}-${currentMonth.toString().padStart(2, '0')}`;
+      
+      // Filtrar clientes que ainda não têm guia no mês atual
+      const clientesSemGuia = clientes?.filter(cliente => {
+        const temGuiaNoMes = guias?.some(guia => 
+          guia.clienteMeiId === cliente.id && guia.mesAno === mesAno
+        );
+        return !temGuiaNoMes && cliente.isActive;
+      }) || [];
+
+      if (clientesSemGuia.length === 0) {
+        throw new Error('Todos os clientes ativos já possuem guias para este mês');
+      }
+
+      const response = await fetch('/api/dasmei/generate-bulk', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          clienteIds: clientesSemGuia.map(c => c.id),
+          mesAno: mesAno
+        })
+      });
+      
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.message || 'Erro ao gerar guias em massa');
+      }
+      
+      return { ...result, clientesProcessados: clientesSemGuia.length };
+    },
+    onSuccess: (data) => {
+      toast({ 
+        title: 'Geração em massa concluída!', 
+        description: `${data.clientesProcessados} guias geradas com sucesso para este mês`,
+        duration: 6000
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/dasmei/guias'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/dasmei/logs'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/dasmei/estatisticas'] });
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: 'Erro na geração em massa', 
+        description: error.message || 'Verifique se InfoSimples API está configurada', 
+        variant: 'destructive',
+        duration: 6000
+      });
+    }
+  });
+
   // Mutation para testar InfoSimples API - COM PERSISTÊNCIA AUTOMÁTICA
   const testInfosimplesMutation = useMutation({
     mutationFn: async (config: typeof infosimplesConfig) => {
@@ -1024,7 +1082,10 @@ export default function DASMEIAutomationPage() {
             <div className="flex justify-between items-center">
               <div>
                 <h2 className="text-2xl font-bold text-green-400">Clientes MEI</h2>
-                <p className="text-gray-400">Gerenciar clientes do sistema DAS-MEI</p>
+                <p className="text-gray-400">
+                  Gerenciar clientes do sistema DAS-MEI • 
+                  <span className="text-green-400 font-semibold"> {clientes?.length || 0} clientes</span>
+                </p>
               </div>
               <div className="flex items-center gap-3">
                 <Input 
@@ -1033,6 +1094,48 @@ export default function DASMEIAutomationPage() {
                   onChange={(e) => setClienteFilter(e.target.value)}
                   className="w-80 bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                 />
+                <Button 
+                  className="bg-blue-600 hover:bg-blue-700"
+                  onClick={() => {
+                    const currentMonth = new Date().getMonth() + 1;
+                    const currentYear = new Date().getFullYear();
+                    const mesAno = `${currentYear}-${currentMonth.toString().padStart(2, '0')}`;
+                    
+                    const clientesSemGuia = clientes?.filter(cliente => {
+                      const temGuiaNoMes = guias?.some(guia => 
+                        guia.clienteMeiId === cliente.id && guia.mesAno === mesAno
+                      );
+                      return !temGuiaNoMes && cliente.isActive;
+                    }) || [];
+
+                    if (clientesSemGuia.length === 0) {
+                      toast({
+                        title: 'Nenhuma guia para gerar',
+                        description: 'Todos os clientes ativos já possuem guias para este mês',
+                        duration: 4000
+                      });
+                      return;
+                    }
+
+                    if (confirm(`Gerar guias DAS-MEI para ${clientesSemGuia.length} clientes que ainda não possuem guias este mês? Isso pode consumir créditos da API InfoSimples.`)) {
+                      generateBulkGuiasMutation.mutate();
+                    }
+                  }}
+                  disabled={generateBulkGuiasMutation.isPending || !clientes?.length}
+                  title="Gerar guias para todos os clientes que ainda não possuem no mês atual"
+                >
+                  {generateBulkGuiasMutation.isPending ? (
+                    <>
+                      <Clock className="h-4 w-4 mr-2 animate-spin" />
+                      Gerando...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="h-4 w-4 mr-2" />
+                      Gerar Todas as Guias
+                    </>
+                  )}
+                </Button>
                 <Dialog>
                 <DialogTrigger asChild>
                   <Button className="bg-green-600 hover:bg-green-700">

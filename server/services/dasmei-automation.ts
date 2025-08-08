@@ -594,6 +594,174 @@ export class DASMEIAutomationService {
       }
     }
   }
+
+  // Método para geração em massa de guias DAS-MEI
+  async executarGeracaoEmMassa(clienteIds: number[], mesAno: string): Promise<{ sucessos: number, erros: number, detalhes: any[] }> {
+    console.log(`🚀 Iniciando geração em massa para ${clienteIds.length} clientes no período ${mesAno}`);
+    
+    await this.initializeApiToken();
+    
+    let sucessos = 0;
+    let erros = 0;
+    const detalhes: any[] = [];
+    
+    // Converter mesAno de YYYY-MM para MM/YYYY
+    const [year, month] = mesAno.split('-');
+    const periodo = `${month}/${year}`;
+    
+    for (const clienteId of clienteIds) {
+      try {
+        console.log(`📝 Processando cliente ID: ${clienteId}`);
+        
+        // Buscar dados do cliente
+        const cliente = await dasmeiStorage.getClienteMeiById(clienteId);
+        if (!cliente) {
+          console.error(`❌ Cliente ID ${clienteId} não encontrado`);
+          erros++;
+          detalhes.push({
+            clienteId,
+            status: 'erro',
+            erro: 'Cliente não encontrado'
+          });
+          continue;
+        }
+        
+        console.log(`👤 Processando cliente: ${cliente.nome} (${cliente.cnpj})`);
+        
+        // Verificar se já existe guia para este mês
+        const guiaExistente = await dasmeiStorage.getGuiaByClienteAndMes(clienteId, mesAno);
+        if (guiaExistente) {
+          console.log(`⚠️ Cliente ${cliente.nome} já possui guia para ${mesAno}`);
+          detalhes.push({
+            clienteId,
+            clienteNome: cliente.nome,
+            cnpj: cliente.cnpj,
+            status: 'já_existe',
+            mensagem: 'Guia já gerada para este período'
+          });
+          continue;
+        }
+        
+        // Gerar guia via InfoSimples API
+        const response = await this.gerarGuiaIndividual(cliente.cnpj, periodo);
+        
+        if (response.success && response.data) {
+          // Processar e salvar a guia
+          await this.processarESalvarGuia(cliente, response, mesAno);
+          
+          sucessos++;
+          detalhes.push({
+            clienteId,
+            clienteNome: cliente.nome,
+            cnpj: cliente.cnpj,
+            status: 'sucesso',
+            periodo: mesAno
+          });
+          
+          console.log(`✅ Guia gerada com sucesso para ${cliente.nome}`);
+          
+          // Delay entre gerações para não sobrecarregar a API
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+        } else {
+          console.error(`❌ Erro ao gerar guia para ${cliente.nome}:`, response.error);
+          erros++;
+          detalhes.push({
+            clienteId,
+            clienteNome: cliente.nome,
+            cnpj: cliente.cnpj,
+            status: 'erro',
+            erro: response.error || 'Erro na API InfoSimples'
+          });
+        }
+        
+      } catch (error) {
+        console.error(`❌ Erro inesperado processando cliente ID ${clienteId}:`, error);
+        erros++;
+        detalhes.push({
+          clienteId,
+          status: 'erro',
+          erro: error.message || 'Erro inesperado'
+        });
+      }
+    }
+    
+    console.log(`📊 Geração em massa concluída: ${sucessos} sucessos, ${erros} erros`);
+    
+    return {
+      sucessos,
+      erros,
+      detalhes
+    };
+  }
+
+  // Método auxiliar para processar e salvar guia (adaptado para aceitar mesAno customizado)
+  private async processarESalvarGuia(cliente: ClienteMei, response: DASMEIResponse, mesAnoCustom?: string): Promise<void> {
+    if (!response.data || response.data.length === 0) {
+      throw new Error('Dados da guia não encontrados na resposta');
+    }
+
+    const guiaData = response.data[0];
+    const periodos = Object.keys(guiaData.periodos);
+    
+    if (periodos.length === 0) {
+      throw new Error('Nenhum período encontrado na resposta');
+    }
+
+    const periodo = periodos[0];
+    const periodData = guiaData.periodos[periodo];
+    
+    // Usar mesAno customizado se fornecido, senão derivar do período
+    let mesAno: string;
+    if (mesAnoCustom) {
+      mesAno = mesAnoCustom;
+    } else {
+      // Converter de YYYYMM para YYYY-MM
+      const year = periodo.substring(0, 4);
+      const month = periodo.substring(4, 6);
+      mesAno = `${year}-${month}`;
+    }
+
+    // Processar data de vencimento
+    let dataVencimento: Date;
+    try {
+      // A data vem no formato DD/MM/YYYY
+      const [dia, mes, ano] = periodData.dataVencimento.split('/');
+      dataVencimento = new Date(Date.UTC(parseInt(ano), parseInt(mes) - 1, parseInt(dia)));
+      console.log(`📅 Data de vencimento processada: ${dataVencimento.toISOString()} (UTC)`);
+    } catch (error) {
+      console.error('❌ Erro ao processar data de vencimento:', error);
+      dataVencimento = new Date();
+    }
+
+    const guia: InsertDasGuia = {
+      clienteMeiId: cliente.id,
+      mesAno: mesAno,
+      cnpj: cliente.cnpj,
+      razaoSocial: guiaData.razaoSocial,
+      periodo: periodo,
+      dataVencimento: dataVencimento,
+      valorDas: parseFloat(periodData.valorTotalDas.replace(',', '.')) || 0,
+      situacao: periodData.situacao,
+      urlDownload: periodData.urlDas,
+      createdAt: new Date(),
+      status: 'gerada'
+    };
+
+    await dasmeiStorage.createDasGuia(guia);
+    
+    // Log da operação
+    const logEntry: InsertEnvioLog = {
+      clienteId: cliente.id,
+      tipoOperacao: 'geracao_guia',
+      status: 'success',
+      detalhes: `Guia DAS-MEI gerada para o período ${mesAno}`,
+      timestamp: new Date(),
+      periodo: mesAno
+    };
+
+    await dasmeiStorage.createEnvioLog(logEntry);
+  }
 }
 
 export const dasmeiAutomationService = new DASMEIAutomationService();

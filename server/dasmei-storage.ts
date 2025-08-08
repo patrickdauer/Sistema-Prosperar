@@ -263,6 +263,16 @@ export class DASMEIStorage {
     return guia || null;
   }
 
+  async getGuiaByClienteAndMes(clienteId: number, mesAno: string): Promise<DasGuia | null> {
+    const [guia] = await db.select()
+      .from(dasGuias)
+      .where(and(
+        eq(dasGuias.clienteMeiId, clienteId),
+        eq(dasGuias.mesAno, mesAno)
+      ));
+    return guia || null;
+  }
+
   async getDasGuiasSemEnvio(periodo: string): Promise<DasGuia[]> {
     // Buscar guias que não têm logs de envio WhatsApp bem-sucedidos
     const guiasComEnvio = await db.select({ guiaId: envioLogs.dasGuiaId })
