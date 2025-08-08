@@ -1158,6 +1158,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Direct file download endpoint
+  app.get("/api/download-file", async (req, res) => {
+    try {
+      const filePath = req.query.path as string;
+      if (!filePath) {
+        return res.status(400).json({ message: "Path parameter is required" });
+      }
+
+      console.log(`📥 Downloading file: ${filePath}`);
+
+      const bucketName = 'replit-objstore-a07a4d86-f9d1-4e27-91b5-bbc366dec51f';
+      const bucket = objectStorageClient.bucket(bucketName);
+      const file = bucket.file(filePath);
+
+      // Check if file exists
+      const [exists] = await file.exists();
+      if (!exists) {
+        return res.status(404).json({ message: "Arquivo não encontrado" });
+      }
+
+      // Get file metadata
+      const [metadata] = await file.getMetadata();
+      const fileName = filePath.split('/').pop() || 'download';
+
+      // Set appropriate headers for download
+      res.set({
+        'Content-Type': metadata.contentType || 'application/octet-stream',
+        'Content-Length': metadata.size,
+        'Content-Disposition': `attachment; filename="${fileName}"`,
+        'Cache-Control': 'public, max-age=3600'
+      });
+
+      // Stream the file to the response
+      const stream = file.createReadStream();
+      
+      stream.on('error', (err) => {
+        console.error('Stream error:', err);
+        if (!res.headersSent) {
+          res.status(500).json({ message: "Erro ao baixar arquivo" });
+        }
+      });
+
+      stream.pipe(res);
+
+    } catch (error) {
+      console.error("Error downloading file:", error);
+      res.status(500).json({ 
+        message: "Erro ao baixar arquivo",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Generate public download links for contratacao files
   app.get("/api/contratacao-funcionarios/:id/download-links", async (req, res) => {
     try {

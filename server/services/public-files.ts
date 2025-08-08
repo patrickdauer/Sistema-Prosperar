@@ -69,13 +69,8 @@ export class PublicFilesService {
           try {
             const [metadata] = await file.getMetadata();
             
-            // Generate public download link
-            let downloadUrl;
-            try {
-              downloadUrl = await this.objectStorageService.generatePublicDownloadLink(`/${file.name}`, 168); // 7 days
-            } catch (error) {
-              console.error(`Error generating download link for ${file.name}:`, error);
-            }
+            // Generate public download link through our API
+            const downloadUrl = `/api/download-file?path=${encodeURIComponent(file.name)}`;
 
             fileItems.push({
               name: relativePath,
@@ -140,12 +135,7 @@ export class PublicFilesService {
           try {
             const [metadata] = await file.getMetadata();
             
-            let downloadUrl;
-            try {
-              downloadUrl = await this.objectStorageService.generatePublicDownloadLink(`/${file.name}`, 168);
-            } catch (error) {
-              console.error(`Error generating download link for ${file.name}:`, error);
-            }
+            const downloadUrl = `/api/download-file?path=${encodeURIComponent(file.name)}`;
 
             results.push({
               name: fileName,
