@@ -1169,9 +1169,24 @@ export default function DASMEIAutomationPage() {
                 <Button 
                   className="bg-blue-600 hover:bg-blue-700"
                   onClick={() => {
-                    const currentMonth = new Date().getMonth() + 1;
+                    // Usar o formato correto para compatibilidade com o backend
+                    const currentMonth = new Date().getMonth(); // 0-based
                     const currentYear = new Date().getFullYear();
-                    const mesAno = `${currentYear}-${currentMonth.toString().padStart(2, '0')}`;
+                    
+                    // DAS é sempre do mês anterior
+                    let targetMonth, targetYear;
+                    if (currentMonth === 0) {
+                      // Janeiro - DAS de dezembro do ano anterior
+                      targetMonth = 12;
+                      targetYear = currentYear - 1;
+                    } else {
+                      // Outros meses - DAS do mês anterior
+                      targetMonth = currentMonth;
+                      targetYear = currentYear;
+                    }
+                    
+                    const mesAno = `${targetYear}${targetMonth.toString().padStart(2, '0')}`;
+                    console.log('🔍 Buscando guias para período:', mesAno);
                     
                     const clientesSemGuia = clientes?.filter(cliente => {
                       const temGuiaNoMes = guias?.some(guia => 
