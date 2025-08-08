@@ -696,6 +696,43 @@ export default function Clientes() {
           </Card>
         )}
 
+        {/* Contador de resultados */}
+        {!loading && (
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-4">
+              <h3 className="text-lg font-semibold text-white">Resultados</h3>
+              <div className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                {clientes.length} {clientes.length === 1 ? 'cliente encontrado' : 'clientes encontrados'}
+              </div>
+            </div>
+            {(searchTerm || quickFilter || Object.values(filters).some(value => value !== '')) && (
+              <Button
+                onClick={() => {
+                  setSearchTerm('');
+                  setQuickFilter('');
+                  setFilters({
+                    cidade: '',
+                    regimeTributario: '',
+                    dataAberturaInicio: '',
+                    dataAberturaFim: '',
+                    clienteDesdeInicio: '',
+                    clienteDesdeFim: '',
+                    possuiFuncionarios: '',
+                    possuiProLabore: '',
+                    status: ''
+                  });
+                }}
+                variant="outline"
+                size="sm"
+                className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
+              >
+                <X className="h-4 w-4 mr-2" />
+                Limpar Filtros
+              </Button>
+            )}
+          </div>
+        )}
+
         {/* Lista simplificada de clientes */}
         {loading ? (
           <div className="text-center py-8">
