@@ -950,10 +950,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Initializing Replit Object Storage for employee documents...");
       const objectStorageService = new ObjectStorageService();
       const employeeName = contratacao.nomeFuncionario || 'Funcionario';
-      const employeeSubFolder = `PROSPERAR_FUNCIONARIOS_DOS_CLIENTES/${contratacao.id}_${employeeName.replace(/[^a-zA-Z0-9]/g, '_')}`;
+      const employeeSubFolder = `FUNCIONARIOS/${contratacao.id}_${employeeName.replace(/[^a-zA-Z0-9]/g, '_')}`;
       
       // Update contratacao with object storage reference
-      const objectStorageLink = `Object Storage: PROSPERAR_FUNCIONARIOS_DOS_CLIENTES/${contratacao.id}_${employeeName}`;
+      const objectStorageLink = `Object Storage: prosperar-publico/FUNCIONARIOS/${contratacao.id}_${employeeName}`;
       await storage.updateContratacaoFuncionario(contratacao.id, { googleDriveLink: objectStorageLink });
       console.log(`📁 Object Storage configurado para funcionário: ${employeeSubFolder}`);
       

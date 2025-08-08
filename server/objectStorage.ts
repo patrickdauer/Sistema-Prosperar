@@ -256,7 +256,8 @@ export class ObjectStorageService {
 
   // Upload a file to public storage (visible in Object Storage UI)
   async uploadPublicFile(fileName: string, fileBuffer: Buffer, subFolder?: string): Promise<string> {
-    const publicDir = "PROSPERAR_FUNCIONARIOS_DOS_CLIENTES";
+    const publicSearchPaths = this.getPublicObjectSearchPaths();
+    const publicDir = publicSearchPaths[0]; // Use the first configured public path
     const objectId = randomUUID();
     const objectName = subFolder 
       ? `${publicDir}/${subFolder}/${objectId}_${fileName}`
@@ -282,7 +283,10 @@ export class ObjectStorageService {
 
   // Generate a public download link for a private file
   async generatePublicDownloadLink(objectPath: string, ttlHours: number = 24): Promise<string> {
-    const objectName = objectPath.startsWith("/objects/") ? objectPath.slice(9) : objectPath;
+    let objectName = objectPath.startsWith("/public-objects/") ? objectPath.slice(16) : objectPath;
+    if (objectName.startsWith("/objects/")) {
+      objectName = objectName.slice(9);
+    }
     const bucketName = "replit-objstore-a07a4d86-f9d1-4e27-91b5-bbc366dec51f";
     
     return signObjectURL({
