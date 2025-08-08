@@ -94,8 +94,8 @@ export class DASMEIAutomationService {
     return proximaData;
   }
 
-  // Gerar boleto individual via InfoSimples
-  async gerarBoletoIndividual(cnpj: string, periodo?: string): Promise<DASMEIResponse> {
+  // Gerar guia individual via InfoSimples
+  async gerarGuiaIndividual(cnpj: string, periodo?: string): Promise<DASMEIResponse> {
     if (!this.infosimplesToken) {
       await this.initializeApiToken();
       if (!this.infosimplesToken) {
@@ -142,8 +142,8 @@ export class DASMEIAutomationService {
     }
   }
 
-  // Processar e salvar boleto no banco
-  async processarESalvarBoleto(cliente: ClienteMei, apiResponse: DASMEIResponse): Promise<number | null> {
+  // Processar e salvar guia no banco
+  async processarESalvarGuia(cliente: ClienteMei, apiResponse: DASMEIResponse): Promise<number | null> {
     if (!apiResponse.success || !apiResponse.data || apiResponse.data.length === 0) {
       return null;
     }
@@ -173,7 +173,7 @@ export class DASMEIAutomationService {
       
       // Log da operação
       await dasmeiStorage.createSystemLog({
-        tipoOperacao: 'geracao_boleto',
+        tipoOperacao: 'geracao_guia',
         clienteId: cliente.id,
         status: 'success',
         detalhes: {
@@ -189,7 +189,7 @@ export class DASMEIAutomationService {
       return guia.id;
     } catch (error) {
       await dasmeiStorage.createSystemLog({
-        tipoOperacao: 'geracao_boleto',
+        tipoOperacao: 'geracao_guia',
         clienteId: cliente.id,
         status: 'failed',
         detalhes: {
@@ -203,7 +203,7 @@ export class DASMEIAutomationService {
     }
   }
 
-  // Automação principal - gerar todos os boletos do mês
+  // Automação principal - gerar todas as guias do mês
   async executarGeracaoAutomatica(): Promise<void> {
     try {
       console.log('🚀 Iniciando geração automática de DAS-MEI...');
@@ -238,7 +238,7 @@ export class DASMEIAutomationService {
             continue;
           }
 
-          const response = await this.gerarBoletoIndividual(cliente.cnpj, periodo);
+          const response = await this.gerarGuiaIndividual(cliente.cnpj, periodo);
           
           if (response.success && response.data && response.data.length > 0) {
             const dasData = response.data[0];
@@ -254,25 +254,25 @@ export class DASMEIAutomationService {
                 filePath: periodoData.urlDas,
               });
 
-              await this.logOperacao('geracao_boleto', cliente.id, 'success', {
+              await this.logOperacao('geracao_guia', cliente.id, 'success', {
                 periodo,
                 valor: periodoData.valorTotalDas,
                 url: periodoData.urlDas,
               });
 
-              console.log(`✅ Boleto gerado para ${cliente.nome} - Valor: R$ ${periodoData.valorTotalDas}`);
+              console.log(`✅ Guia gerada para ${cliente.nome} - Valor: R$ ${periodoData.valorTotalDas}`);
               gerados++;
             }
           } else {
             console.log(`❌ Erro na geração para ${cliente.nome}: ${response.error}`);
             erros++;
             
-            await this.adicionarAoRetry('geracao_boleto', cliente.id, {
+            await this.adicionarAoRetry('geracao_guia', cliente.id, {
               periodo,
               erro: response.error,
             });
 
-            await this.logOperacao('geracao_boleto', cliente.id, 'failed', {
+            await this.logOperacao('geracao_guia', cliente.id, 'failed', {
               periodo,
               erro: response.error,
             });
@@ -281,10 +281,10 @@ export class DASMEIAutomationService {
           // Delay entre requisições para não sobrecarregar a API
           await new Promise(resolve => setTimeout(resolve, 2000));
         } catch (error) {
-          console.error(`❌ Erro gerando boleto para ${cliente.nome}:`, error);
+          console.error(`❌ Erro gerando guia para ${cliente.nome}:`, error);
           erros++;
           
-          await this.adicionarAoRetry('geracao_boleto', cliente.id, {
+          await this.adicionarAoRetry('geracao_guia', cliente.id, {
             periodo,
             erro: error instanceof Error ? error.message : 'Erro desconhecido',
           });
@@ -569,12 +569,12 @@ export class DASMEIAutomationService {
 
         let sucesso = false;
 
-        if (item.tipoOperacao === 'geracao_boleto') {
+        if (item.tipoOperacao === 'geracao_guia') {
           const cliente = await dasmeiStorage.getClienteMeiById(item.clienteId);
           if (cliente) {
-            const response = await this.gerarBoletoIndividual(cliente.cnpj, item.dadosOriginals.periodo);
+            const response = await this.gerarGuiaIndividual(cliente.cnpj, item.dadosOriginals.periodo);
             if (response.success) {
-              await this.processarESalvarBoleto(cliente, response);
+              await this.processarESalvarGuia(cliente, response);
               sucesso = true;
             }
           }

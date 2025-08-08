@@ -2333,7 +2333,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const resultado = await providerManager.gerarDAS(cnpj, mesAno);
       
       // Se a geração foi bem-sucedida, salvar a guia no banco de dados
-      if (resultado.success && resultado.data && resultado.boleto) {
+      if (resultado.success && resultado.data) {
         try {
           const { dasStorage } = await import('./das-storage');
           

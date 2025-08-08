@@ -616,7 +616,7 @@ export default function DASMEIAutomationPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-white">
-                    {estatisticas?.boletosGerados || 0}
+                    {estatisticas?.guiasGeradas || 0}
                   </div>
                   <p className="text-xs text-gray-400 mt-1">
                     Este mês
@@ -906,7 +906,7 @@ export default function DASMEIAutomationPage() {
                       </p>
                       <div className="mt-4 p-3 bg-blue-900/20 rounded-lg">
                         <div className="text-2xl font-bold text-blue-400">
-                          {estatisticas?.boletosGerados || 0}
+                          {estatisticas?.guiasGeradas || 0}
                         </div>
                         <p className="text-xs text-gray-400">Total de Guias</p>
                       </div>
@@ -2537,7 +2537,7 @@ export default function DASMEIAutomationPage() {
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-gray-400">Guias Geradas:</span>
-                        <span className="text-white">{estatisticas?.boletosGerados || 0}</span>
+                        <span className="text-white">{estatisticas?.guiasGeradas || 0}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-400">Total de Logs:</span>
