@@ -1048,10 +1048,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         emailInfo = { success: false, error: error.message };
       }
       
+      // Generate external Object Storage folder link
+      const folderPath = `prosperar-publico/FUNCIONARIOS/${contratacao.id}_${employeeName.replace(/[^a-zA-Z0-9]/g, '_')}`;
+      const externalFolderLink = `https://replit.com/@DearestLikableDeadcode/workspace/object-storage?path=${encodeURIComponent(folderPath)}`;
+      
       // Send webhook with public links and email info
       try {
         console.log("Sending webhook with public download links and email data...");
-        await webhookService.sendContratacaoData(contratacao, objectStorageLink, publicLinks, emailInfo);
+        await webhookService.sendContratacaoData(contratacao, objectStorageLink, publicLinks, emailInfo, externalFolderLink);
         console.log("Webhook sent successfully");
       } catch (error) {
         console.error("Error sending webhook:", error);
@@ -1066,6 +1070,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           successMessage += `📄 ${link.name}: ${link.url}\n`;
         });
       }
+      
+      successMessage += `\n\n📁 Pasta no Object Storage:\n🔗 ${externalFolderLink}`;
 
       res.json({ 
         message: successMessage,
@@ -1074,7 +1080,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         uploadedFiles: uploadedFileUrls,
         pdfUrl: pdfUrl,
         publicDownloadLinks: publicLinks,
-        downloadLinksText: publicLinks.map(link => `${link.name}: ${link.url}`).join('\n')
+        downloadLinksText: publicLinks.map(link => `${link.name}: ${link.url}`).join('\n'),
+        externalFolderLink: externalFolderLink
       });
     } catch (error) {
       console.error("Error creating contratacao:", error);
