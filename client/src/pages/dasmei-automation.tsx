@@ -162,42 +162,42 @@ export default function DASMEIAutomationPage() {
     whatsapp: { connected: false, lastTest: null as Date | null }
   });
 
-  // Query para carregar configurações persistentes das APIs - COM AUTO-RECONEXÃO PERMANENTE
+  // Query para carregar configurações das APIs - SEM AUTO-RECONEXÃO (economizar créditos)
   const { data: apiConfigurations } = useQuery({
     queryKey: ['/api/configurations'],
-    refetchInterval: 10000, // Verificar a cada 10 segundos para manter conexão
-    refetchOnWindowFocus: true, // Reconectar quando voltar para a aba
-    refetchOnMount: true, // Sempre carregar ao montar componente
-    staleTime: 0, // Sempre considerar dados obsoletos para forçar reload
+    refetchInterval: false, // DESABILITADO: Não verificar automaticamente para economizar créditos
+    refetchOnWindowFocus: false, // DESABILITADO: Não reconectar automaticamente
+    refetchOnMount: true, // Carregar apenas ao montar componente
+    staleTime: 5 * 60 * 1000, // Cache por 5 minutos para evitar chamadas desnecessárias
     onSuccess: (data) => {
       console.log('🔄 Carregando configurações persistentes das APIs...', data);
       
-      // PERMANENTEMENTE conectar InfoSimples se configurado
+      // Carregar configurações das APIs sem conectar automaticamente (economizar créditos)
       if (data?.infosimples?.config) {
         const config = data.infosimples.config;
         setInfosimplesConfig(config);
         setConnectionStatus(prev => ({
           ...prev,
           infosimples: { 
-            connected: true, // FORÇAR SEMPRE CONECTADO
-            lastTest: new Date() // Sempre atual
+            connected: false, // Não conectar automaticamente para economizar créditos
+            lastTest: null
           }
         }));
-        console.log('🔒 InfoSimples PERMANENTEMENTE conectado (auto-persist)');
+        console.log('⚙️ InfoSimples configurado mas desconectado (economizar créditos)');
       }
       
-      // PERMANENTEMENTE conectar WhatsApp se configurado
+      // Carregar configurações WhatsApp sem conectar automaticamente
       if (data?.whatsapp_evolution?.config) {
         const config = data.whatsapp_evolution.config;
         setWhatsappConfig(config);
         setConnectionStatus(prev => ({
           ...prev,
           whatsapp: { 
-            connected: true, // FORÇAR SEMPRE CONECTADO
-            lastTest: new Date() // Sempre atual
+            connected: false, // Não conectar automaticamente
+            lastTest: null
           }
         }));
-        console.log('🔒 WhatsApp Evolution PERMANENTEMENTE conectado (auto-persist)');
+        console.log('⚙️ WhatsApp Evolution configurado mas desconectado');
       }
       
       // Log para debug
@@ -209,34 +209,10 @@ export default function DASMEIAutomationPage() {
     }
   });
 
-  // Garantir reconexão automática ao carregar a página
+  // DESABILITADO: Auto-reconexão removida para economizar créditos da API InfoSimples
+  // As APIs só serão conectadas quando o usuário clicar no botão "Conectar" de cada serviço
   useEffect(() => {
-    const forceReconnectAPIs = async () => {
-      try {
-        // Chamar rota de auto-reconexão para garantir APIs ativas
-        const response = await fetch('/api/configurations/auto-reconnect', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        
-        const result = await response.json();
-        if (result.success) {
-          console.log('🔄 Auto-reconexão executada:', result.reconnected);
-        }
-        
-        // Forçar invalidação do cache para recarregar configurações
-        queryClient.invalidateQueries({ queryKey: ['/api/configurations'] });
-        console.log('🔄 Forçando reconexão das APIs ao carregar página...');
-      } catch (error) {
-        console.error('Erro ao forçar reconexão:', error);
-      }
-    };
-
-    // Executar apenas uma vez ao carregar a página (removido auto-reconexão para economizar créditos)
-    forceReconnectAPIs();
+    console.log('💡 Auto-reconexão desabilitada para economizar créditos - use os botões de conectar manualmente');
   }, []); // Executar apenas uma vez ao montar
 
   // Mutations
