@@ -1168,6 +1168,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`📥 Downloading file: ${filePath}`);
 
+      // Import the object storage client
+      const { objectStorageClient } = await import('./objectStorage');
       const bucketName = 'replit-objstore-a07a4d86-f9d1-4e27-91b5-bbc366dec51f';
       const bucket = objectStorageClient.bucket(bucketName);
       const file = bucket.file(filePath);
