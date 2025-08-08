@@ -2420,9 +2420,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 let dataVencimento = new Date();
                 if (periodoData?.data_vencimento) {
                   const [dia, mes, ano] = periodoData.data_vencimento.split('/');
-                  dataVencimento = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
+                  // Criar data em UTC para evitar problemas de timezone
+                  dataVencimento = new Date(Date.UTC(parseInt(ano), parseInt(mes) - 1, parseInt(dia), 12, 0, 0));
                   console.log(`📅 Data de vencimento original: ${periodoData.data_vencimento}`);
-                  console.log(`📅 Data de vencimento processada: ${dataVencimento.toISOString()}`);
+                  console.log(`📅 Data de vencimento processada (UTC): ${dataVencimento.toISOString()}`);
+                  console.log(`📅 Data de vencimento local: ${dataVencimento.toLocaleDateString('pt-BR')}`);
                 } else {
                   console.log(`⚠️ Data de vencimento não encontrada nos dados do período`);
                 }

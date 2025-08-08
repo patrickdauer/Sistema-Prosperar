@@ -174,6 +174,9 @@ export class DASStorage {
   }
 
   async deleteDasGuia(id: number): Promise<void> {
+    // Primeiro deletar os logs de envio relacionados
+    await db.delete(envioLogs).where(eq(envioLogs.dasGuiaId, id));
+    // Depois deletar a guia DAS
     await db.delete(dasGuias).where(eq(dasGuias.id, id));
   }
 
