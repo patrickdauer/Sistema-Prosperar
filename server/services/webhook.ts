@@ -7,12 +7,18 @@ export class WebhookService {
     this.webhookUrl = webhookUrl;
   }
 
-  async sendContratacaoData(contratacao: ContratacaoFuncionario, folderLink?: string, publicLinks?: any[]): Promise<boolean> {
+  async sendContratacaoData(contratacao: ContratacaoFuncionario, folderLink?: string, publicLinks?: any[], emailInfo?: any): Promise<boolean> {
     try {
       const payload = {
         id: contratacao.id,
         timestamp: new Date().toISOString(),
         type: 'contratacao_funcionario',
+        emailSent: emailInfo ? {
+          success: emailInfo.success,
+          recipients: emailInfo.recipients,
+          timestamp: emailInfo.timestamp,
+          messageId: emailInfo.messageId
+        } : null,
         data: {
           empresa: {
             razaoSocial: contratacao.razaoSocial,

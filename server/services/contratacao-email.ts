@@ -105,19 +105,43 @@ export async function sendContratacaoEmails(contratacao: ContratacaoFuncionario,
       'empresasdp01@gmail.com'
     ];
 
+    const emailResults = [];
+    const timestamp = new Date().toISOString();
+
     for (const email of emailAddresses) {
-      await transporter.sendMail({
+      const result = await transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: email,
         subject: `Nova Contratação: ${contratacao.nomeFuncionario} - ${contratacao.razaoSocial}`,
         html: emailContent,
       });
+      
+      emailResults.push({
+        recipient: email,
+        messageId: result.messageId,
+        success: true
+      });
     }
 
     console.log('Emails de contratação enviados com sucesso');
-    return true;
+    
+    return {
+      success: true,
+      timestamp,
+      recipients: emailResults,
+      totalSent: emailResults.length,
+      subject: `Nova Contratação: ${contratacao.nomeFuncionario} - ${contratacao.razaoSocial}`,
+      hasDownloadLinks: publicLinks && publicLinks.length > 0
+    };
   } catch (error) {
     console.error('Erro ao enviar emails de contratação:', error);
-    return false;
+    
+    return {
+      success: false,
+      timestamp: new Date().toISOString(),
+      error: error.message,
+      recipients: [],
+      totalSent: 0
+    };
   }
 }

@@ -950,10 +950,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Initializing Replit Object Storage for employee documents...");
       const objectStorageService = new ObjectStorageService();
       const employeeName = contratacao.nomeFuncionario || 'Funcionario';
-      const employeeSubFolder = `funcionarios/${contratacao.id}_${employeeName.replace(/[^a-zA-Z0-9]/g, '_')}`;
+      const employeeSubFolder = `PROSPERAR FUNCIONÁRIOS DOS CLIENTES/${contratacao.id}_${employeeName.replace(/[^a-zA-Z0-9]/g, '_')}`;
       
       // Update contratacao with object storage reference
-      const objectStorageLink = `Object Storage: funcionarios/${contratacao.id}_${employeeName}`;
+      const objectStorageLink = `Object Storage: PROSPERAR FUNCIONÁRIOS DOS CLIENTES/${contratacao.id}_${employeeName}`;
       await storage.updateContratacaoFuncionario(contratacao.id, { googleDriveLink: objectStorageLink });
       console.log(`📁 Object Storage configurado para funcionário: ${employeeSubFolder}`);
       
@@ -1037,19 +1037,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("❌ Error generating public links:", error);
       }
 
-      // Send emails with public links
+      // Send emails with public links and get email info for webhook
+      let emailInfo = null;
       try {
         console.log("Sending emails with public download links...");
-        await sendContratacaoEmails(contratacao, objectStorageLink, publicLinks);
+        emailInfo = await sendContratacaoEmails(contratacao, objectStorageLink, publicLinks);
         console.log("Emails sent successfully");
       } catch (error) {
         console.error("Error sending emails:", error);
+        emailInfo = { success: false, error: error.message };
       }
       
-      // Send webhook with public links
+      // Send webhook with public links and email info
       try {
-        console.log("Sending webhook with public download links...");
-        await webhookService.sendContratacaoData(contratacao, objectStorageLink, publicLinks);
+        console.log("Sending webhook with public download links and email data...");
+        await webhookService.sendContratacaoData(contratacao, objectStorageLink, publicLinks, emailInfo);
         console.log("Webhook sent successfully");
       } catch (error) {
         console.error("Error sending webhook:", error);
