@@ -2332,8 +2332,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const resultado = await providerManager.gerarDAS(cnpj, mesAno);
       
+      // Verificar se há erros específicos da InfoSimples
+      if (resultado.success && resultado.data && resultado.data.errors && resultado.data.errors.length > 0) {
+        const errors = resultado.data.errors;
+        console.log('⚠️ Erros da InfoSimples:', errors);
+        
+        // Verificar se é erro de saldo
+        if (errors.some(error => error.includes('sem saldo'))) {
+          return res.status(400).json({
+            success: false,
+            message: 'Conta InfoSimples sem saldo. Adicione créditos para gerar guias DAS.',
+            error: 'insufficient_balance'
+          });
+        }
+        
+        // Outros erros
+        return res.status(400).json({
+          success: false,
+          message: `Erro na InfoSimples: ${errors.join(', ')}`,
+          error: 'api_error'
+        });
+      }
+      
       // Se a geração foi bem-sucedida, salvar a guia no banco de dados
-      if (resultado.success && resultado.data) {
+      if (resultado.success && resultado.data && (!resultado.data.errors || resultado.data.errors.length === 0)) {
         try {
           const { dasStorage } = await import('./das-storage');
           

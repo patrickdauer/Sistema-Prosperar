@@ -359,10 +359,22 @@ export default function DASMEIAutomationPage() {
         queryClient.invalidateQueries({ queryKey: ['/api/dasmei/guias'] });
         queryClient.invalidateQueries({ queryKey: ['/api/dasmei/logs'] });
       } else {
+        // Tratamento específico para diferentes tipos de erro
+        let title = 'Erro ao gerar guia';
+        let description = data.message || 'Verifique se as APIs estão configuradas';
+        
+        if (data.error === 'insufficient_balance') {
+          title = 'Conta sem saldo';
+          description = 'A conta InfoSimples não tem saldo suficiente. Adicione créditos para gerar guias DAS.';
+        } else if (data.error === 'api_error') {
+          title = 'Erro na API InfoSimples';
+        }
+        
         toast({ 
-          title: 'Erro ao gerar guia', 
-          description: data.error || 'Verifique se as APIs estão configuradas', 
-          variant: 'destructive' 
+          title,
+          description, 
+          variant: 'destructive',
+          duration: 6000
         });
       }
     },
