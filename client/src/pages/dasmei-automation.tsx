@@ -169,12 +169,16 @@ export default function DASMEIAutomationPage() {
     refetchOnWindowFocus: false, // DESABILITADO: Não reconectar automaticamente
     refetchOnMount: true, // Carregar apenas ao montar componente
     staleTime: 5 * 60 * 1000, // Cache por 5 minutos para evitar chamadas desnecessárias
-    onSuccess: (data) => {
-      console.log('🔄 Carregando configurações persistentes das APIs...', data);
+  });
+
+  // Effect para processar configurações quando carregadas
+  useEffect(() => {
+    if (apiConfigurations) {
+      console.log('🔄 Carregando configurações persistentes das APIs...', apiConfigurations);
       
       // Carregar configurações das APIs sem conectar automaticamente (economizar créditos)
-      if (data?.infosimples?.config) {
-        const config = data.infosimples.config;
+      if (apiConfigurations?.infosimples?.config) {
+        const config = apiConfigurations.infosimples.config;
         setInfosimplesConfig(config);
         setConnectionStatus(prev => ({
           ...prev,
@@ -187,8 +191,8 @@ export default function DASMEIAutomationPage() {
       }
       
       // Carregar configurações WhatsApp sem conectar automaticamente
-      if (data?.whatsapp_evolution?.config) {
-        const config = data.whatsapp_evolution.config;
+      if (apiConfigurations?.whatsapp_evolution?.config) {
+        const config = apiConfigurations.whatsapp_evolution.config;
         setWhatsappConfig(config);
         setConnectionStatus(prev => ({
           ...prev,
@@ -202,12 +206,12 @@ export default function DASMEIAutomationPage() {
       
       // Log para debug
       console.log('📊 Status das APIs após carregamento:', {
-        infosimples: !!data?.infosimples,
-        whatsapp: !!data?.whatsapp_evolution,
+        infosimples: !!apiConfigurations?.infosimples,
+        whatsapp: !!apiConfigurations?.whatsapp_evolution,
         timestamp: new Date().toLocaleTimeString()
       });
     }
-  });
+  }, [apiConfigurations]);
 
   // DESABILITADO: Auto-reconexão removida para economizar créditos da API InfoSimples
   // As APIs só serão conectadas quando o usuário clicar no botão "Conectar" de cada serviço
@@ -218,20 +222,29 @@ export default function DASMEIAutomationPage() {
   // Mutation para conectar InfoSimples manualmente
   const connectInfoSimplesMutation = useMutation({
     mutationFn: async () => {
+      console.log('🔄 Iniciando conexão manual do InfoSimples...');
+      const token = localStorage.getItem('token');
+      console.log('🔑 Token:', token ? 'presente' : 'ausente');
+      
       const response = await fetch('/api/infosimples/connect', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         }
       });
+      
+      console.log('📡 Response status:', response.status);
       const result = await response.json();
+      console.log('📊 Response data:', result);
+      
       if (!result.success) {
         throw new Error(result.message || 'Erro ao conectar InfoSimples');
       }
       return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('✅ InfoSimples conectado com sucesso:', data);
       setConnectionStatus(prev => ({
         ...prev,
         infosimples: { connected: true, lastTest: new Date() }
@@ -243,6 +256,7 @@ export default function DASMEIAutomationPage() {
       });
     },
     onError: (error: any) => {
+      console.error('❌ Erro ao conectar InfoSimples:', error);
       toast({ 
         title: 'Erro ao conectar InfoSimples', 
         description: error.message || 'Verifique suas configurações', 
