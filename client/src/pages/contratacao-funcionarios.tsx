@@ -169,8 +169,17 @@ export default function ContratacaoFuncionarios() {
           .map((link: any) => `${link.name}: ${link.url}`)
           .join('\n\n');
         
+        let alertMessage = `📎 Links de Download (válidos por 7 dias):\n\n${linksText}`;
+        
+        // Add Object Storage folder link if available
+        if (responseData.externalFolderLink) {
+          alertMessage += `\n\n📁 Pasta no Object Storage:\n${responseData.externalFolderLink}`;
+        }
+        
+        alertMessage += `\n\nOu verifique o console (F12) para copiar os links.`;
+        
         setTimeout(() => {
-          alert(`📎 Links de Download (válidos por 7 dias):\n\n${linksText}\n\nOu verifique o console (F12) para copiar os links.`);
+          alert(alertMessage);
         }, 1000);
       }
       
