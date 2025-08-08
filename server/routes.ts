@@ -2454,6 +2454,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   provider: 'infosimples'
                 };
                 
+                console.log(`📊 Dados finais da guia:`, JSON.stringify(guiaData, null, 2));
+                
                 const novaGuia = await dasStorage.createDasGuia(guiaData);
                 console.log(`✅ Guia DAS salva no banco para cliente: ${cliente.nome} - Valor: R$ ${valor} - URL: ${urlDas ? 'Disponível' : 'Não disponível'}`);
                 
