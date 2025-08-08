@@ -2128,6 +2128,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // InfoSimples API routes
+  
+  // Endpoint para conectar InfoSimples manualmente (economizar créditos)
+  app.post('/api/infosimples/connect', authenticateToken, async (req, res) => {
+    try {
+      const { dasStorage } = await import('./das-storage');
+      
+      // Buscar configuração existente do InfoSimples
+      const configs = await dasStorage.getAllApiConfigurations();
+      const infosimplesConfig = configs.find(c => c.name === 'infosimples' && c.isActive);
+      
+      if (!infosimplesConfig) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'InfoSimples não está configurado. Configure primeiro nas configurações.' 
+        });
+      }
+      
+      // Testar conexão com as credenciais salvas
+      const testResult = await providerManager.testProvider('infosimples', infosimplesConfig.credentials);
+      if (!testResult) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Erro ao conectar InfoSimples. Verifique as credenciais.' 
+        });
+      }
+      
+      // Ativar o provedor temporariamente (apenas para esta sessão)
+      await providerManager.switchProvider('infosimples', infosimplesConfig.credentials, req.user.id);
+      
+      // Atualizar lastUsed
+      await dasStorage.updateApiConfiguration(infosimplesConfig.id, {
+        lastUsed: new Date(),
+        updatedBy: req.user?.id || 1
+      });
+      
+      console.log('✅ InfoSimples conectado manualmente para esta sessão');
+      
+      res.json({ 
+        success: true, 
+        message: 'InfoSimples conectado com sucesso - agora você pode gerar guias DAS' 
+      });
+    } catch (error) {
+      console.error('Erro ao conectar InfoSimples:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Erro interno do servidor' 
+      });
+    }
+  });
+  
+  // Endpoint para conectar WhatsApp manualmente
+  app.post('/api/whatsapp/connect', authenticateToken, async (req, res) => {
+    try {
+      const { dasStorage } = await import('./das-storage');
+      
+      // Buscar configuração existente do WhatsApp
+      const configs = await dasStorage.getAllApiConfigurations();
+      const whatsappConfig = configs.find(c => c.name === 'whatsapp_evolution' && c.isActive);
+      
+      if (!whatsappConfig) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'WhatsApp Evolution não está configurado. Configure primeiro nas configurações.' 
+        });
+      }
+      
+      // Testar conexão WhatsApp
+      const { EvolutionWhatsAppService } = await import('./services/messaging');
+      const whatsappService = new EvolutionWhatsAppService(whatsappConfig.credentials);
+      const isConnected = await whatsappService.testConnection();
+      
+      if (!isConnected) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Erro ao conectar WhatsApp Evolution. Verifique as credenciais.' 
+        });
+      }
+      
+      // Atualizar lastUsed
+      await dasStorage.updateApiConfiguration(whatsappConfig.id, {
+        lastUsed: new Date(),
+        updatedBy: req.user?.id || 1
+      });
+      
+      console.log('✅ WhatsApp Evolution conectado manualmente para esta sessão');
+      
+      res.json({ 
+        success: true, 
+        message: 'WhatsApp Evolution conectado com sucesso' 
+      });
+    } catch (error) {
+      console.error('Erro ao conectar WhatsApp:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Erro interno do servidor' 
+      });
+    }
+  });
+
   app.post('/api/infosimples/configure', authenticateToken, async (req, res) => {
     try {
       const { token, baseUrl, timeout } = req.body;

@@ -20,7 +20,7 @@ import {
   CalendarDays, Settings, Users, FileText, Play, Square, Eye, Trash2, Edit, Plus, 
   BarChart3, MessageSquare, Mail, Clock, CheckCircle, AlertCircle, Zap, 
   Activity, TrendingUp, RefreshCw, Download, Send, PauseCircle, Filter, ArrowLeft,
-  ExternalLink, AlertTriangle, Copy
+  ExternalLink, AlertTriangle, Copy, Plug, Loader2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -215,6 +215,78 @@ export default function DASMEIAutomationPage() {
     console.log('💡 Auto-reconexão desabilitada para economizar créditos - use os botões de conectar manualmente');
   }, []); // Executar apenas uma vez ao montar
 
+  // Mutation para conectar InfoSimples manualmente
+  const connectInfoSimplesMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/infosimples/connect', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.message || 'Erro ao conectar InfoSimples');
+      }
+      return result;
+    },
+    onSuccess: () => {
+      setConnectionStatus(prev => ({
+        ...prev,
+        infosimples: { connected: true, lastTest: new Date() }
+      }));
+      toast({ 
+        title: 'InfoSimples conectado!', 
+        description: 'API conectada com sucesso - agora você pode gerar guias DAS',
+        duration: 3000
+      });
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: 'Erro ao conectar InfoSimples', 
+        description: error.message || 'Verifique suas configurações', 
+        variant: 'destructive' 
+      });
+    }
+  });
+
+  // Mutation para conectar WhatsApp manualmente
+  const connectWhatsAppMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/whatsapp/connect', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.message || 'Erro ao conectar WhatsApp');
+      }
+      return result;
+    },
+    onSuccess: () => {
+      setConnectionStatus(prev => ({
+        ...prev,
+        whatsapp: { connected: true, lastTest: new Date() }
+      }));
+      toast({ 
+        title: 'WhatsApp conectado!', 
+        description: 'Evolution API conectada com sucesso',
+        duration: 3000
+      });
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: 'Erro ao conectar WhatsApp', 
+        description: error.message || 'Verifique suas configurações', 
+        variant: 'destructive' 
+      });
+    }
+  });
+
   // Mutations
   const toggleSchedulerMutation = useMutation({
     mutationFn: async (action: 'start' | 'stop') => {
@@ -306,6 +378,11 @@ export default function DASMEIAutomationPage() {
   // Mutation para gerar guia individual
   const generateIndividualGuiaMutation = useMutation({
     mutationFn: async ({ clienteId, cnpj }: { clienteId: number, cnpj: string }) => {
+      // Verificar se InfoSimples está conectado
+      if (!connectionStatus.infosimples.connected) {
+        throw new Error('InfoSimples não está conectado. Clique em "Conectar InfoSimples" primeiro.');
+      }
+
       const currentMonth = new Date().getMonth() + 1;
       const currentYear = new Date().getFullYear();
       const periodo = `${currentMonth.toString().padStart(2, '0')}/${currentYear}`;
@@ -363,6 +440,11 @@ export default function DASMEIAutomationPage() {
   // Mutation para gerar guias em massa (apenas para clientes sem guias no mês atual)
   const generateBulkGuiasMutation = useMutation({
     mutationFn: async () => {
+      // Verificar se InfoSimples está conectado
+      if (!connectionStatus.infosimples.connected) {
+        throw new Error('InfoSimples não está conectado. Clique em "Conectar InfoSimples" primeiro.');
+      }
+
       const currentMonth = new Date().getMonth() + 1;
       const currentYear = new Date().getFullYear();
       const mesAno = `${currentYear}-${currentMonth.toString().padStart(2, '0')}`;
@@ -1393,6 +1475,118 @@ export default function DASMEIAutomationPage() {
           {/* Aba Automação - Configurações do sistema */}
           <TabsContent value="automacao" className="space-y-6">
             <h2 className="text-2xl font-bold text-green-400">Configurações de Automação</h2>
+            
+            {/* Status de Conexão das APIs */}
+            <Card className="bg-gray-800 border-gray-700">
+              <CardHeader>
+                <CardTitle className="text-yellow-400 flex items-center gap-2">
+                  <Plug className="h-5 w-5" />
+                  Status de Conexão das APIs
+                </CardTitle>
+                <p className="text-gray-400 text-sm">
+                  Conecte as APIs manualmente para economizar créditos. Só consuma créditos quando necessário.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* InfoSimples API */}
+                  <div className="p-4 bg-gray-700 rounded-lg">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-5 w-5 text-blue-400" />
+                        <span className="font-medium text-white">InfoSimples API</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className={`h-3 w-3 rounded-full ${connectionStatus.infosimples.connected ? 'bg-green-400' : 'bg-red-400'}`} />
+                        <span className="text-sm text-gray-300">
+                          {connectionStatus.infosimples.connected ? 'Conectado' : 'Desconectado'}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-400 mb-3">
+                      {connectionStatus.infosimples.connected 
+                        ? 'API conectada - pode gerar guias DAS'
+                        : 'Clique para conectar e gerar guias DAS'
+                      }
+                    </p>
+                    <Button
+                      onClick={() => connectInfoSimplesMutation.mutate()}
+                      disabled={connectInfoSimplesMutation.isPending || connectionStatus.infosimples.connected}
+                      size="sm"
+                      className={connectionStatus.infosimples.connected 
+                        ? 'bg-green-600 hover:bg-green-700' 
+                        : 'bg-blue-600 hover:bg-blue-700'
+                      }
+                    >
+                      {connectInfoSimplesMutation.isPending ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Conectando...
+                        </>
+                      ) : connectionStatus.infosimples.connected ? (
+                        <>
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          Conectado
+                        </>
+                      ) : (
+                        <>
+                          <Plug className="h-4 w-4 mr-2" />
+                          Conectar InfoSimples
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  {/* WhatsApp Evolution API */}
+                  <div className="p-4 bg-gray-700 rounded-lg">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <MessageSquare className="h-5 w-5 text-green-400" />
+                        <span className="font-medium text-white">WhatsApp Evolution</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className={`h-3 w-3 rounded-full ${connectionStatus.whatsapp.connected ? 'bg-green-400' : 'bg-red-400'}`} />
+                        <span className="text-sm text-gray-300">
+                          {connectionStatus.whatsapp.connected ? 'Conectado' : 'Desconectado'}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-400 mb-3">
+                      {connectionStatus.whatsapp.connected 
+                        ? 'API conectada - pode enviar mensagens'
+                        : 'Clique para conectar e enviar WhatsApp'
+                      }
+                    </p>
+                    <Button
+                      onClick={() => connectWhatsAppMutation.mutate()}
+                      disabled={connectWhatsAppMutation.isPending || connectionStatus.whatsapp.connected}
+                      size="sm"
+                      className={connectionStatus.whatsapp.connected 
+                        ? 'bg-green-600 hover:bg-green-700' 
+                        : 'bg-green-600 hover:bg-green-700'
+                      }
+                    >
+                      {connectWhatsAppMutation.isPending ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Conectando...
+                        </>
+                      ) : connectionStatus.whatsapp.connected ? (
+                        <>
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          Conectado
+                        </>
+                      ) : (
+                        <>
+                          <Plug className="h-4 w-4 mr-2" />
+                          Conectar WhatsApp
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Card Agendador Automático */}
