@@ -1123,6 +1123,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public Files API - Browse Object Storage like a file manager
+  app.get("/api/public-files", async (req, res) => {
+    try {
+      const path = (req.query.path as string) || 'prosperar-publico';
+      const search = req.query.search as string;
+
+      // Import the service here to avoid circular dependency
+      const { publicFilesService } = await import('./services/public-files');
+
+      if (search) {
+        console.log(`🔍 Searching for "${search}" in ${path}`);
+        const searchResults = await publicFilesService.searchFiles(search, path);
+        return res.json({
+          currentPath: path,
+          folders: [],
+          files: searchResults,
+          totalFiles: searchResults.length,
+          totalFolders: 0,
+          isSearchResult: true,
+          searchQuery: search
+        });
+      }
+
+      const folderContents = await publicFilesService.browseFolder(path);
+      res.json(folderContents);
+
+    } catch (error) {
+      console.error("Error browsing public files:", error);
+      res.status(500).json({ 
+        message: "Erro ao listar arquivos",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Generate public download links for contratacao files
   app.get("/api/contratacao-funcionarios/:id/download-links", async (req, res) => {
     try {

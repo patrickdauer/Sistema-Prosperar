@@ -26,6 +26,7 @@ import ClienteTasks from "@/pages/cliente-tasks";
 import DASMEIAutomationPage from "@/pages/dasmei-automation";
 import LinksPage from "@/pages/links";
 import { DriveAccessPage } from "@/pages/drive-access";
+import PublicFiles from "@/pages/public-files";
 
 function ProtectedDashboardInterno() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -116,6 +117,8 @@ function Router() {
       <Route path="/business-registration" component={BusinessRegistration} />
       <Route path="/contratacao-funcionarios" component={ContratacaoFuncionarios} />
       <Route path="/simulador-custo" component={SimuladorCusto} />
+      <Route path="/arquivos" component={PublicFiles} />
+      <Route path="/public-files" component={PublicFiles} />
       <Route path="/login" component={Login} />
       <Route path="/equipe" component={Login} />
       
