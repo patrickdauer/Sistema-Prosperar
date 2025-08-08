@@ -2365,8 +2365,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
               if (guiaExistente) {
                 console.log(`⚠️ Guia DAS já existe para cliente ${cliente.nome} no período ${mesAno}`);
               } else {
+                // Log da resposta completa para debug
+                console.log('📋 Resposta completa da InfoSimples:', JSON.stringify(resultado.data, null, 2));
+                
                 // Extrair dados da resposta InfoSimples
                 const periodoData = resultado.data?.data?.[0]?.periodos?.[mesAno];
+                console.log(`📅 Dados do período ${mesAno}:`, JSON.stringify(periodoData, null, 2));
                 
                 // Corrigir data de vencimento - usar formato correto dd/mm/yyyy
                 let dataVencimento = new Date();
