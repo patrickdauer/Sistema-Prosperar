@@ -7,7 +7,7 @@ export class WebhookService {
     this.webhookUrl = webhookUrl;
   }
 
-  async sendContratacaoData(contratacao: ContratacaoFuncionario, folderLink?: string): Promise<boolean> {
+  async sendContratacaoData(contratacao: ContratacaoFuncionario, folderLink?: string, publicLinks?: any[]): Promise<boolean> {
     try {
       const payload = {
         id: contratacao.id,
@@ -60,8 +60,18 @@ export class WebhookService {
             observacoes: contratacao.observacoes
           }
         },
-        googleDriveFolder: folderLink
+        googleDriveFolder: folderLink,
+        objectStorage: {
+          folderPath: folderLink,
+          publicDownloadLinks: publicLinks || []
+        }
       };
+
+      console.log('📤 Sending webhook payload with public links:', {
+        id: contratacao.id,
+        publicLinksCount: publicLinks?.length || 0,
+        publicLinks: publicLinks?.map(link => ({ name: link.name, type: link.type })) || []
+      });
 
       const response = await fetch(this.webhookUrl, {
         method: 'POST',

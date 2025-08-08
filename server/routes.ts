@@ -1046,10 +1046,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("Error sending emails:", error);
       }
       
-      // Send webhook
+      // Send webhook with public links
       try {
-        console.log("Sending webhook...");
-        await webhookService.sendContratacaoData(contratacao, objectStorageLink);
+        console.log("Sending webhook with public download links...");
+        await webhookService.sendContratacaoData(contratacao, objectStorageLink, publicLinks);
         console.log("Webhook sent successfully");
       } catch (error) {
         console.error("Error sending webhook:", error);
