@@ -2391,8 +2391,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 console.log('📋 Resposta completa da InfoSimples:', JSON.stringify(resultado.data, null, 2));
                 
                 // Extrair dados da resposta InfoSimples
-                const periodoData = resultado.data?.data?.[0]?.periodos?.[mesAno];
-                console.log(`📅 Dados do período ${mesAno}:`, JSON.stringify(periodoData, null, 2));
+                const dadosCompletos = resultado.data?.data?.[0];
+                console.log(`📋 Dados completos do cliente:`, JSON.stringify(dadosCompletos, null, 2));
+                
+                // Tentar diferentes formas de acessar os dados do período
+                let periodoData = dadosCompletos?.periodos?.[mesAno];
+                
+                // Se não encontrou pelo mesAno, tentar buscar no formato YYYYMM
+                if (!periodoData && mesAno) {
+                  const anoMes = mesAno.replace('/', '');
+                  periodoData = dadosCompletos?.periodos?.[anoMes];
+                  console.log(`🔍 Tentando com formato ${anoMes}:`, JSON.stringify(periodoData, null, 2));
+                }
+                
+                // Se ainda não encontrou, pegar o primeiro período disponível
+                if (!periodoData && dadosCompletos?.periodos) {
+                  const periodos = Object.keys(dadosCompletos.periodos);
+                  if (periodos.length > 0) {
+                    const primeiroPeriodo = periodos[0];
+                    periodoData = dadosCompletos.periodos[primeiroPeriodo];
+                    console.log(`📅 Usando primeiro período disponível (${primeiroPeriodo}):`, JSON.stringify(periodoData, null, 2));
+                  }
+                }
+                
+                console.log(`📅 Dados finais do período ${mesAno}:`, JSON.stringify(periodoData, null, 2));
                 
                 // Corrigir data de vencimento - usar formato correto dd/mm/yyyy
                 let dataVencimento = new Date();
@@ -2403,6 +2425,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 
                 const valor = periodoData?.normalizado_valor_total_das || 0;
                 const urlDas = periodoData?.url_das || '';
+                
+                console.log(`💰 Valor extraído: R$ ${valor}`);
+                console.log(`🔗 URL DAS extraída: ${urlDas || 'Não disponível'}`);
 
                 const guiaData = {
                   clienteMeiId: cliente.id,
