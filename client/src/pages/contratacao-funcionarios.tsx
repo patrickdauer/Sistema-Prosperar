@@ -145,11 +145,28 @@ export default function ContratacaoFuncionarios() {
 
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (responseData: any) => {
+      console.log("Response data:", responseData);
+      
+      let description = "Entraremos em contato em breve para finalizar o processo.";
+      
+      if (responseData.publicDownloadLinks && responseData.publicDownloadLinks.length > 0) {
+        description += `\n\n📎 Links públicos de download gerados (válidos por 7 dias):\n${responseData.publicDownloadLinks.map((link: any) => `• ${link.name}`).join('\n')}`;
+      }
+      
       toast({
         title: "Solicitação enviada com sucesso!",
-        description: "Entraremos em contato em breve para finalizar o processo.",
+        description,
       });
+      
+      // Show download links in console for easy access
+      if (responseData.publicDownloadLinks) {
+        console.log("📎 Links públicos de download:");
+        responseData.publicDownloadLinks.forEach((link: any) => {
+          console.log(`📄 ${link.name}: ${link.url}`);
+        });
+      }
+      
       form.reset();
       setDocumentos([]);
     },

@@ -1001,10 +1001,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("❌ Error uploading PDF to Object Storage:", error);
       }
       
-      // Send emails
+      // Generate public download links for all uploaded files
+      const publicLinks: any[] = [];
+      
       try {
-        console.log("Sending emails...");
-        await sendContratacaoEmails(contratacao, objectStorageLink);
+        console.log("🔗 Generating public download links...");
+        
+        // Add PDF link
+        if (pdfUrl) {
+          console.log(`🔗 Generating PDF link for: ${pdfUrl}`);
+          const pdfPublicLink = await objectStorageService.generatePublicDownloadLink(pdfUrl, 168); // 7 days
+          publicLinks.push({
+            type: 'pdf',
+            name: pdfFileName,
+            url: pdfPublicLink
+          });
+          console.log(`✅ PDF public link generated: ${pdfPublicLink}`);
+        }
+        
+        // Add uploaded files links
+        for (const fileUrl of uploadedFileUrls) {
+          console.log(`🔗 Generating link for uploaded file: ${fileUrl}`);
+          const fileName = fileUrl.split('/').pop()?.split('_').slice(1).join('_') || 'document';
+          const publicLink = await objectStorageService.generatePublicDownloadLink(fileUrl, 168); // 7 days
+          publicLinks.push({
+            type: 'document',
+            name: fileName,
+            url: publicLink
+          });
+          console.log(`✅ File public link generated: ${publicLink}`);
+        }
+        
+        console.log(`🔗 Total ${publicLinks.length} public links generated`);
+      } catch (error) {
+        console.error("❌ Error generating public links:", error);
+      }
+
+      // Send emails with public links
+      try {
+        console.log("Sending emails with public download links...");
+        await sendContratacaoEmails(contratacao, objectStorageLink, publicLinks);
         console.log("Emails sent successfully");
       } catch (error) {
         console.error("Error sending emails:", error);
@@ -1017,34 +1053,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log("Webhook sent successfully");
       } catch (error) {
         console.error("Error sending webhook:", error);
-      }
-      
-      // Generate public download links for all uploaded files
-      const publicLinks: any[] = [];
-      
-      try {
-        // Add PDF link
-        if (pdfUrl) {
-          const pdfPublicLink = await objectStorageService.generatePublicDownloadLink(pdfUrl, 168); // 7 days
-          publicLinks.push({
-            type: 'pdf',
-            name: pdfFileName,
-            url: pdfPublicLink
-          });
-        }
-        
-        // Add uploaded files links
-        for (const fileUrl of uploadedFileUrls) {
-          const fileName = fileUrl.split('/').pop()?.split('_').slice(1).join('_') || 'document';
-          const publicLink = await objectStorageService.generatePublicDownloadLink(fileUrl, 168); // 7 days
-          publicLinks.push({
-            type: 'document',
-            name: fileName,
-            url: publicLink
-          });
-        }
-      } catch (error) {
-        console.error("❌ Error generating public links:", error);
       }
 
       res.json({ 

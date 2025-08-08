@@ -9,7 +9,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export async function sendContratacaoEmails(contratacao: ContratacaoFuncionario, folderLink?: string) {
+export async function sendContratacaoEmails(contratacao: ContratacaoFuncionario, folderLink?: string, publicLinks?: any[]) {
   const emailContent = `
     <h2>Nova Solicitação de Contratação de Funcionário</h2>
     
@@ -73,11 +73,24 @@ export async function sendContratacaoEmails(contratacao: ContratacaoFuncionario,
     <p>${contratacao.observacoes}</p>` : ''}
     
     ${folderLink ? `
-    <h3>📂 Documentos no Google Drive:</h3>
+    <h3>📂 Documentos no Object Storage:</h3>
     <p>Todos os documentos enviados foram organizados em uma pasta exclusiva:</p>
-    <a href="${folderLink}" target="_blank" style="color: #4CAF50; text-decoration: none;">
-      🔗 Acessar Pasta no Google Drive
-    </a>
+    <p style="color: #4CAF50; font-weight: bold;">🔗 Object Storage: ${folderLink}</p>
+    ` : ''}
+    
+    ${publicLinks && publicLinks.length > 0 ? `
+    <h3>📎 Links Públicos para Download:</h3>
+    <p>Os links abaixo são válidos por 7 dias e podem ser acessados sem login:</p>
+    <ul style="list-style: none; padding: 0;">
+    ${publicLinks.map(link => `
+      <li style="margin: 10px 0; padding: 10px; background: #f5f5f5; border-radius: 5px;">
+        <strong>📄 ${link.name}</strong><br>
+        <a href="${link.url}" target="_blank" style="color: #007bff; text-decoration: none; word-break: break-all;">
+          ${link.url}
+        </a>
+      </li>
+    `).join('')}
+    </ul>
     ` : ''}
     
     <hr>
