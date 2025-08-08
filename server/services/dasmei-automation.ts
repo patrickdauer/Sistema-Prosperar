@@ -106,17 +106,19 @@ export class DASMEIAutomationService {
     const periodoFinal = periodo || this.getCurrentPeriod();
     
     try {
+      // Preparar dados no formato correto para InfoSimples
+      const formData = new URLSearchParams();
+      formData.append('cnpj', cnpj.replace(/[^\d]/g, ''));
+      formData.append('token', this.infosimplesToken);
+      formData.append('periodo', periodoFinal);
+      formData.append('data_pagamento', new Date().toISOString().split('T')[0]);
+      
       const response = await fetch('https://api.infosimples.com/api/v2/consultas/receita-federal/simples-das', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: JSON.stringify({
-          cnpj: cnpj.replace(/[^\d]/g, ''), // Somente números
-          token: this.infosimplesToken,
-          periodo: periodoFinal,
-          data_pagamento: new Date().toISOString().split('T')[0], // Formato YYYY-MM-DD
-        }),
+        body: formData.toString(),
       });
 
       if (!response.ok) {
