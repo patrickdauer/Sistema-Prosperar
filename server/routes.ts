@@ -2394,12 +2394,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1);
                     return lastMonth.getFullYear().toString() + (lastMonth.getMonth() + 1).toString().padStart(2, '0');
                   })()}.pdf`,
-                  downloadStatus: urlDas ? 'available' : 'pending', 
+                  downloadStatus: urlDas ? 'available' : 'pending',
+                  downloadedAt: urlDas ? new Date() : null, 
                   provider: 'infosimples'
                 };
                 
-                await dasStorage.createDasGuia(guiaData);
+                const novaGuia = await dasStorage.createDasGuia(guiaData);
                 console.log(`✅ Guia DAS salva no banco para cliente: ${cliente.nome} - Valor: R$ ${valor} - URL: ${urlDas ? 'Disponível' : 'Não disponível'}`);
+                
+                // Se temos a URL, vamos verificar se o PDF está disponível para download
+                if (urlDas) {
+                  try {
+                    console.log(`🔍 Verificando disponibilidade do PDF: ${urlDas}`);
+                    const pdfResponse = await fetch(urlDas, { method: 'HEAD' }); // Usar HEAD para não baixar o arquivo
+                    
+                    if (pdfResponse.ok) {
+                      await dasStorage.updateDasGuia(novaGuia.id, {
+                        downloadStatus: 'available'
+                      });
+                      console.log(`✅ PDF verificado e disponível para download - Guia ID: ${novaGuia.id}`);
+                    } else {
+                      console.log(`⚠️ PDF não está disponível na URL - Status: ${pdfResponse.status}`);
+                      await dasStorage.updateDasGuia(novaGuia.id, {
+                        downloadStatus: 'error',
+                        downloadError: `HTTP ${pdfResponse.status}: PDF não disponível`
+                      });
+                    }
+                  } catch (pdfError) {
+                    console.log(`⚠️ Erro ao verificar PDF:`, pdfError);
+                    await dasStorage.updateDasGuia(novaGuia.id, {
+                      downloadStatus: 'error',
+                      downloadError: 'Erro ao conectar com o servidor de PDFs'
+                    });
+                  }
+                }
               }
             } catch (guiaError) {
               console.error('Erro ao salvar guia DAS:', guiaError);
