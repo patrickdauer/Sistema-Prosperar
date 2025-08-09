@@ -789,7 +789,27 @@ export default function Clientes() {
 
                     {/* Celular */}
                     <div className="col-span-2 text-sm text-gray-300">
-                      {cliente.celular || 'N/A'}
+                      <div className="flex items-center gap-2">
+                        <span>{cliente.celular || 'N/A'}</span>
+                        {cliente.celular && (
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => copyToClipboard(cliente.celular, 'Celular')}
+                              className="p-1 rounded hover:bg-gray-600 transition-colors"
+                              title="Copiar celular"
+                            >
+                              <Copy className="h-3 w-3 text-gray-400 hover:text-white" />
+                            </button>
+                            <button
+                              onClick={() => openWhatsApp(cliente.celular)}
+                              className="p-1 rounded hover:bg-gray-600 transition-colors"
+                              title="Abrir WhatsApp"
+                            >
+                              <MessageCircle className="h-3 w-3 text-green-400 hover:text-green-300" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* Status */}
