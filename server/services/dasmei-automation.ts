@@ -108,19 +108,63 @@ export class DASMEIAutomationService {
     const periodoFinal = periodo || this.getCurrentPeriod();
     
     try {
-      // Preparar dados no formato correto para InfoSimples
+      // Provider switch (webhook para testes sem crédito)
+      const provider = process.env.DASMEI_PROVIDER || 'infosimples';
       const cnpjLimpo = cnpj.replace(/[^\d]/g, '');
+
+      if (provider === 'webhook') {
+        const webhookUrl = process.env.DASMEI_WEBHOOK_URL || 'https://webhook.verbo.company/webhook/06860172-4e84-45fd-92ac-0a2b0ee272b9';
+        console.log('🔄 DASMEI_PROVIDER=webhook → chamando URL de teste:', webhookUrl);
+
+        const resp = await fetch(webhookUrl, { method: 'POST' });
+        if (!resp.ok) {
+          throw new Error(`Webhook HTTP ${resp.status}: ${resp.statusText}`);
+        }
+        const raw = await resp.json();
+        const root = Array.isArray(raw) ? raw[0] : raw;
+
+        // Normalizar payload: snake_case → camelCase compatível com o restante do fluxo
+        const dataArray = root?.data || [];
+        const normalized = (dataArray as any[]).map((d: any) => {
+          const periodos: Record<string, any> = {};
+          const src = d.periodos || {};
+          for (const [key, val] of Object.entries(src)) {
+            const v: any = val as any;
+            periodos[key] = {
+              urlDas: v.url_das ?? v.urlDas,
+              dataVencimento: v.data_vencimento ?? v.dataVencimento,
+              valorTotalDas: v.valor_total_das ?? v.valorTotalDas,
+              situacao: v.situacao,
+              principal: v.principal,
+              multas: v.multas,
+              juros: v.juros,
+              total: v.total,
+            };
+          }
+          return {
+            cnpj: d.cnpj || cnpjLimpo,
+            razaoSocial: d.razao_social || d.razaoSocial || '',
+            periodo: d.periodo || periodoFinal,
+            periodos,
+          };
+        });
+
+        return { success: true, data: normalized };
+      }
+
+      // Preparar dados no formato correto para InfoSimples
+      const cnpjLimpo2 = cnpjLimpo;
       const dataPagamento = new Date().toISOString().split('T')[0];
       
       console.log(`📋 Parâmetros API InfoSimples:`, {
-        cnpj: cnpjLimpo,
+        cnpj: cnpjLimpo2,
         periodo: periodoFinal,
         data_pagamento: dataPagamento,
         token: this.infosimplesToken ? 'presente' : 'ausente'
       });
       
       const formData = new URLSearchParams();
-      formData.append('cnpj', cnpjLimpo);
+      formData.append('cnpj', cnpjLimpo2);
       formData.append('token', this.infosimplesToken);
       formData.append('periodo', periodoFinal);
       formData.append('data_pagamento', dataPagamento);
