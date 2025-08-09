@@ -3041,6 +3041,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint para enfileirar geração em massa (processamento assíncrono pela fila de retry)
+  app.post('/api/dasmei/generate-bulk-queued', authenticateToken, async (req, res) => {
+    try {
+      const { clienteIds, mesAno } = req.body;
+      if (!Array.isArray(clienteIds) || !mesAno) {
+        return res.status(400).json({ error: 'Parâmetros inválidos: clienteIds[] e mesAno são obrigatórios' });
+      }
+
+      const automationModule = await import('./services/dasmei-automation.js');
+      const service = automationModule.dasmeiAutomationService || automationModule.default;
+      if (!service) {
+        throw new Error('Serviço de automação não encontrado');
+      }
+
+      const result = await service.enfileirarGeracaoEmMassa(clienteIds, mesAno);
+      res.json({ ok: true, ...result });
+    } catch (error: any) {
+      console.error('Erro ao enfileirar geração em massa:', error);
+      res.status(500).json({ error: error.message || 'Erro interno' });
+    }
+  });
+
+  // Processar fila de retry (manual)
+  app.post('/api/dasmei/retry/process', authenticateToken, async (req, res) => {
+    try {
+      const automationModule = await import('./services/dasmei-automation.js');
+      const service = automationModule.dasmeiAutomationService || automationModule.default;
+      if (!service) {
+        throw new Error('Serviço de automação não encontrado');
+      }
+      await service.processarFilaRetry();
+      res.json({ ok: true });
+    } catch (error: any) {
+      console.error('Erro ao processar fila de retry:', error);
+      res.status(500).json({ error: error.message || 'Erro interno' });
+    }
+  });
+
+  // Cachear PDF de uma guia específica (útil para backfill)
+  app.post('/api/dasmei/cache-pdf', authenticateToken, async (req, res) => {
+    try {
+      const { guiaId } = req.body;
+      if (!guiaId) {
+        return res.status(400).json({ error: 'guiaId é obrigatório' });
+      }
+      const automationModule = await import('./services/dasmei-automation.js');
+      const service = automationModule.dasmeiAutomationService || automationModule.default;
+      if (!service) {
+        throw new Error('Serviço de automação não encontrado');
+      }
+      const ok = await service.cachePdfPorGuiaId(Number(guiaId));
+      res.json({ ok });
+    } catch (error: any) {
+      console.error('Erro ao cachear PDF:', error);
+      res.status(500).json({ error: error.message || 'Erro interno' });
+    }
+  });
+
   // WhatsApp Evolution API Test Route
   app.post('/api/whatsapp/test', authenticateToken, async (req, res) => {
     try {

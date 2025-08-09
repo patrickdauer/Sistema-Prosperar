@@ -12,6 +12,8 @@ import {
   InsertAutomationSetting,
   InsertFeriado
 } from '../../shared/dasmei-schema.js';
+import { promises as fs } from 'fs';
+import { join } from 'path';
 
 export interface DASMEIResponse {
   success: boolean;
@@ -161,63 +163,12 @@ export class DASMEIAutomationService {
     }
   }
 
-  // Processar e salvar guia no banco
-  async processarESalvarGuia(cliente: ClienteMei, apiResponse: DASMEIResponse): Promise<number | null> {
-    if (!apiResponse.success || !apiResponse.data || apiResponse.data.length === 0) {
-      return null;
-    }
-
-    const data = apiResponse.data[0];
-    const periodo = this.getCurrentPeriod();
-    const periodData = data.periodos[periodo];
-
-    if (!periodData) {
-      return null;
-    }
-
+  // Processar e salvar guia no banco (mantido para compatibilidade, delega para versão privada)
+  async processarESalvarGuia(cliente: ClienteMei, apiResponse: DASMEIResponse, mesAnoCustom?: string): Promise<number | null> {
     try {
-      const dasGuia: InsertDasGuia = {
-        clienteMeiId: cliente.id,
-        mesAno: periodo,
-        dataVencimento: new Date(periodData.dataVencimento.split('/').reverse().join('-')),
-        valor: periodData.valorTotalDas,
-        filePath: periodData.urlDas,
-        fileName: `DAS_${cliente.cnpj}_${periodo}.pdf`,
-        downloadedAt: new Date(),
-        downloadStatus: 'success',
-        provider: 'infosimples',
-      };
-
-      const guia = await dasmeiStorage.createDasGuia(dasGuia);
-      
-      // Log da operação
-      await dasmeiStorage.createSystemLog({
-        tipoOperacao: 'geracao_guia',
-        clienteId: cliente.id,
-        status: 'success',
-        detalhes: {
-          periodo,
-          valor: periodData.valorTotalDas,
-          situacao: periodData.situacao,
-          razaoSocial: data.razaoSocial,
-        },
-        periodo,
-        operador: 'automatico'
-      });
-
-      return guia.id;
-    } catch (error) {
-      await dasmeiStorage.createSystemLog({
-        tipoOperacao: 'geracao_guia',
-        clienteId: cliente.id,
-        status: 'failed',
-        detalhes: {
-          periodo,
-          erro: error instanceof Error ? error.message : 'Erro desconhecido',
-        },
-        periodo,
-        operador: 'automatico'
-      });
+      await this.processarESalvarGuiaPrivado(cliente, apiResponse, mesAnoCustom);
+      return 1; // valor simbólico não utilizado; manter assinatura
+    } catch {
       return null;
     }
   }
@@ -264,14 +215,8 @@ export class DASMEIAutomationService {
             const periodoData = dasData.periodos[periodo];
             
             if (periodoData) {
-              await dasmeiStorage.createDasGuia({
-                clienteMeiId: cliente.id,
-                mesAno: periodo,
-                valor: periodoData.valorTotalDas,
-                dataVencimento: periodoData.dataVencimento ? new Date(periodoData.dataVencimento) : new Date(),
-                status: 'generated',
-                filePath: periodoData.urlDas,
-              });
+              // Usar rotina unificada de processamento para garantir cache do PDF
+              await this.processarESalvarGuiaPrivado(cliente, response);
 
               await this.logOperacao('geracao_guia', cliente.id, 'success', {
                 periodo,
@@ -315,6 +260,19 @@ export class DASMEIAutomationService {
       console.error('❌ Erro fatal na geração automática:', error);
       throw error;
     }
+  }
+
+  // Público: cachear PDF por ID de guia (para backfill)
+  async cachePdfPorGuiaId(guiaId: number): Promise<boolean> {
+    const guia = await dasmeiStorage.getDasGuiaById(guiaId);
+    if (!guia) return false;
+    if ((guia as any).filePath) return true; // já cacheado
+    await this.cachePdfIfPossible(
+      guiaId,
+      (guia as any).downloadUrl,
+      (guia as any).fileName || `DAS_${Date.now()}.pdf`
+    );
+    return true;
   }
 
   // Envio automático de WhatsApp
@@ -365,7 +323,7 @@ export class DASMEIAutomationService {
             razaoSocial: cliente.nome,
             valor: guia.valor || '0,00',
             vencimento: guia.dataVencimento.toLocaleDateString('pt-BR'),
-            urlBoleto: guia.filePath || '',
+            urlBoleto: (guia as any).downloadUrl || (guia as any).filePath || '',
           });
 
           const sucesso = await this.enviarWhatsApp(cliente.telefone, mensagem);
@@ -463,6 +421,36 @@ export class DASMEIAutomationService {
     }
     
     return mensagem;
+  }
+
+  // Salvar buffer de PDF localmente
+  private async savePdfBufferToLocal(buffer: Buffer, fileName: string): Promise<string> {
+    const uploadsDir = join(process.cwd(), 'uploads', 'das');
+    await fs.mkdir(uploadsDir, { recursive: true });
+    const filePath = join(uploadsDir, fileName);
+    await fs.writeFile(filePath, buffer);
+    return filePath;
+  }
+
+  // Tentar baixar e cachear o PDF se houver URL disponível
+  private async cachePdfIfPossible(guiaId: number, downloadUrl: string | null | undefined, fileNameFallback: string): Promise<void> {
+    if (!downloadUrl) return;
+    try {
+      const response = await fetch(downloadUrl);
+      if (!response.ok) return;
+      const arrayBuffer = await response.arrayBuffer();
+      const pdfBuffer = Buffer.from(arrayBuffer);
+      const filePath = await this.savePdfBufferToLocal(pdfBuffer, fileNameFallback);
+      await dasmeiStorage.updateDasGuia(guiaId, {
+        filePath,
+        fileName: fileNameFallback,
+        downloadedAt: new Date(),
+        downloadStatus: 'success',
+        downloadUrl: downloadUrl,
+      });
+    } catch (e) {
+      // Mantém apenas a URL se falhar no cache
+    }
   }
 
   // Enviar WhatsApp via Evolution API - VERSÃO CORRIGIDA
@@ -715,7 +703,7 @@ export class DASMEIAutomationService {
   }
 
   // Método auxiliar para processar e salvar guia (adaptado para aceitar mesAno customizado)
-  private async processarESalvarGuia(cliente: ClienteMei, response: DASMEIResponse, mesAnoCustom?: string): Promise<void> {
+  private async processarESalvarGuiaPrivado(cliente: ClienteMei, response: DASMEIResponse, mesAnoCustom?: string): Promise<void> {
     if (!response.data || response.data.length === 0) {
       throw new Error('Dados da guia não encontrados na resposta');
     }
@@ -766,9 +754,29 @@ export class DASMEIAutomationService {
       provider: 'infosimples'
     };
 
-    await dasmeiStorage.createDasGuia(guia);
-    
+    const created = await dasmeiStorage.createDasGuia(guia);
+
+    // Tentar cache local do PDF para evitar múltiplas requisições futuras
+    await this.cachePdfIfPossible(
+      created.id,
+      periodData.urlDas,
+      guia.fileName as string
+    );
+
     console.log(`✅ Guia DAS salva no banco para cliente: ${cliente.nome} - Período: ${mesAno} - Valor: ${periodData.valorTotalDas}`);
+  }
+
+  // Enfileirar geração em massa (processamento sequencial via retry queue)
+  async enfileirarGeracaoEmMassa(clienteIds: number[], mesAno: string): Promise<{ enfileirados: number }> {
+    // Converter mesAno de YYYY-MM para MM/YYYY
+    const [year, month] = mesAno.split('-');
+    const periodo = `${month}/${year}`;
+    let count = 0;
+    for (const clienteId of clienteIds) {
+      await this.adicionarAoRetry('geracao_guia', clienteId, { periodo });
+      count++;
+    }
+    return { enfileirados: count };
   }
 }
 

@@ -1,4 +1,4 @@
-import { eq, and, desc, asc, gte, lte, isNull, ne } from "drizzle-orm";
+import { eq, and, desc, asc, gte, lte, isNull, ne, notInArray } from "drizzle-orm";
 import { db } from "./db.js";
 import { 
   messageTemplates,
@@ -300,7 +300,7 @@ export class DASMEIStorage {
       .from(dasGuias)
       .where(and(
         eq(dasGuias.mesAno, periodo),
-        ne(dasGuias.id, guiaIdsComEnvio[0]) // Simplified for now
+        notInArray(dasGuias.id, guiaIdsComEnvio)
       ));
   }
 
@@ -323,9 +323,24 @@ export class DASMEIStorage {
     return guia;
   }
 
+  async updateDasGuia(id: number, data: Partial<InsertDasGuia>): Promise<DasGuia> {
+    const [guia] = await db
+      .update(dasGuias)
+      .set({ ...data })
+      .where(eq(dasGuias.id, id))
+      .returning();
+    return guia;
+  }
+
   async createEnvioLog(data: InsertEnvioLog): Promise<EnvioLog> {
     const [log] = await db.insert(envioLogs).values(data).returning();
     return log;
+  }
+
+  // Utilidade: buscar guia por ID (para cache posterior/reattempt)
+  async getDasGuiaById(id: number): Promise<DasGuia | null> {
+    const [guia] = await db.select().from(dasGuias).where(eq(dasGuias.id, id));
+    return guia || null;
   }
 
   // Estatísticas do sistema
