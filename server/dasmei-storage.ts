@@ -33,6 +33,12 @@ import {
 } from "../shared/das-schema.js";
 
 export class DASMEIStorage {
+  constructor() {
+    // Configurar variáveis de ambiente para DASMEI
+    process.env.DASMEI_PROVIDER = 'webhook';
+    process.env.DASMEI_WEBHOOK_URL = 'https://webhook.verbo.company/webhook/06860172-4e84-45fd-92ac-0a2b0ee272b9';
+  }
+
   // Templates de mensagem
   async createMessageTemplate(data: InsertMessageTemplate): Promise<MessageTemplate> {
     const [template] = await db.insert(messageTemplates).values(data).returning();
