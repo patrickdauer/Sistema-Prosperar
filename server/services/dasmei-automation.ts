@@ -876,6 +876,59 @@ export class DASMEIAutomationService {
     }
     return { enfileirados: count };
   }
+
+  // Gerar guia para um cliente específico por ID
+  async gerarGuiaParaClienteId(clienteId: number, mesAno?: string): Promise<{ ok: boolean; detalhe?: string }> {
+    try {
+      console.log(`🎯 Gerando guia individual para clienteId: ${clienteId}`);
+      
+      const cliente = await dasmeiStorage.getClienteMeiById(clienteId);
+      if (!cliente) {
+        return { ok: false, detalhe: 'Cliente não encontrado' };
+      }
+
+      if (!cliente.isActive) {
+        return { ok: false, detalhe: 'Cliente inativo' };
+      }
+
+      // Se mesAno não fornecido, usar período atual
+      const periodoFinal = mesAno ? mesAno.replace('-', '') : this.getCurrentPeriod();
+      
+      // Verificar se já existe guia para este período
+      const guiaExistente = await dasmeiStorage.getGuiaByClienteAndMes(clienteId, periodoFinal);
+      if (guiaExistente && (guiaExistente.filePath || guiaExistente.downloadUrl)) {
+        return { ok: true, detalhe: 'Guia já existe para este período' };
+      }
+
+      const response = await this.gerarGuiaIndividual(cliente.cnpj, periodoFinal);
+      if (!response.success) {
+        return { ok: false, detalhe: response.error || 'Erro na API' };
+      }
+
+      await this.processarESalvarGuiaPrivado(cliente, response, mesAno);
+      return { ok: true, detalhe: 'Guia gerada com sucesso' };
+    } catch (error) {
+      console.error('❌ Erro ao gerar guia por clienteId:', error);
+      return { ok: false, detalhe: error instanceof Error ? error.message : 'Erro desconhecido' };
+    }
+  }
+
+  // Gerar guia para um cliente específico por CNPJ
+  async gerarGuiaParaCnpj(cnpj: string, mesAno?: string): Promise<{ ok: boolean; detalhe?: string }> {
+    try {
+      console.log(`🎯 Gerando guia individual para CNPJ: ${cnpj}`);
+      
+      const cliente = await dasmeiStorage.getClienteMeiByCnpj(cnpj);
+      if (!cliente) {
+        return { ok: false, detalhe: 'Cliente não encontrado para este CNPJ' };
+      }
+
+      return await this.gerarGuiaParaClienteId(cliente.id, mesAno);
+    } catch (error) {
+      console.error('❌ Erro ao gerar guia por CNPJ:', error);
+      return { ok: false, detalhe: error instanceof Error ? error.message : 'Erro desconhecido' };
+    }
+  }
 }
 
 export const dasmeiAutomationService = new DASMEIAutomationService();
