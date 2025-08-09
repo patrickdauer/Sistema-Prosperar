@@ -140,16 +140,21 @@ export default function Clientes() {
           try {
             const statusResp = await fetch('/api/dasmei/status-db', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+              },
               body: JSON.stringify({ cnpjs })
             });
             if (statusResp.ok) {
               const statusData = await statusResp.json();
               setDasStatus(statusData);
             } else {
+              console.error('Erro ao buscar status DAS:', statusResp.status, statusResp.statusText);
               setDasStatus({});
             }
           } catch (e) {
+            console.error('Erro na requisição de status DAS:', e);
             setDasStatus({});
           }
         } else {
