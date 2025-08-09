@@ -34,9 +34,8 @@ import {
 
 export class DASMEIStorage {
   constructor() {
-    // Configurar variáveis de ambiente para DASMEI
-    process.env.DASMEI_PROVIDER = 'webhook';
-    process.env.DASMEI_WEBHOOK_URL = 'https://webhook.verbo.company/webhook/06860172-4e84-45fd-92ac-0a2b0ee272b9';
+    // Usar sistema de produção InfoSimples
+    process.env.DASMEI_PROVIDER = 'infosimples';
   }
 
   // Templates de mensagem

@@ -420,10 +420,8 @@ export default function DASMEIAutomationPage() {
   // Mutation para gerar guia individual
   const generateIndividualGuiaMutation = useMutation({
     mutationFn: async ({ clienteId, cnpj }: { clienteId: number, cnpj: string }) => {
-      // Em modo de desenvolvimento, permite gerar mesmo sem InfoSimples conectado (webhook)
-      // Em produção, requer InfoSimples conectado
-      const isDevMode = process.env.NODE_ENV === 'development';
-      if (!isDevMode && !connectionStatus.infosimples.connected) {
+      // Verificar se InfoSimples está conectado
+      if (!connectionStatus.infosimples.connected) {
         throw new Error('InfoSimples não está conectado. Clique em "Conectar InfoSimples" primeiro.');
       }
 
