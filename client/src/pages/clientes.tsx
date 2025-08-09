@@ -138,25 +138,12 @@ export default function Clientes() {
         const cnpjs = (data || []).map((c: any) => c.cnpj).filter((v: any) => !!v);
         if (cnpjs.length > 0) {
           try {
-            // Tentar primeiro com autenticação
-            let statusResp = await fetch('/api/dasmei/status-db', {
+            console.log('🔍 Buscando status DAS para CNPJs:', cnpjs);
+            const statusResp = await fetch('/api/debug/das-status', {
               method: 'POST',
-              headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-              },
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ cnpjs })
             });
-            
-            // Se falhar por autenticação, usar endpoint debug temporário
-            if (!statusResp.ok && statusResp.status === 401) {
-              console.log('🔧 Usando endpoint debug sem autenticação...');
-              statusResp = await fetch('/api/debug/das-status', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cnpjs })
-              });
-            }
             
             if (statusResp.ok) {
               const statusData = await statusResp.json();

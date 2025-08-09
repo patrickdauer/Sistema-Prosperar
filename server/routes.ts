@@ -3135,12 +3135,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!Array.isArray(cnpjs) || cnpjs.length === 0) {
         return res.status(400).json({ error: 'cnpjs[] é obrigatório' });
       }
+      
+      console.log('🔍 DEBUG Iniciando verificação de status DAS para CNPJs:', cnpjs);
       const { dasmeiStorage } = await import('./dasmei-storage.js');
+      
+      // Teste direto se o cliente existe
+      for (const cnpj of cnpjs) {
+        const cliente = await dasmeiStorage.getClienteMeiByCnpj(cnpj);
+        console.log(`🔍 Cliente para CNPJ ${cnpj}:`, cliente ? `${cliente.nome} (ID: ${cliente.id})` : 'NULL');
+      }
+      
       const status = await dasmeiStorage.getDasStatusByCnpjs(cnpjs, mesAno);
       console.log('🔍 DEBUG Status DAS para CNPJs:', cnpjs, '→ Resultado:', JSON.stringify(status, null, 2));
       res.json(status);
     } catch (error: any) {
-      console.error('Erro ao obter status das (debug):', error);
+      console.error('💥 Erro ao obter status das (debug):', error);
       res.status(500).json({ error: error.message || 'Erro interno' });
     }
   });

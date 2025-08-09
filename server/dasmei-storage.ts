@@ -423,7 +423,8 @@ export class DASMEIStorage {
           guia = g || null;
         }
 
-        if (guia && (guia as any).filePath) {
+        // DAS disponível se tem filePath OU se status é 'completed'
+        if (guia && ((guia as any).filePath || (guia as any).downloadStatus === 'completed')) {
           resultado[cnpj] = {
             disponivel: true,
             mesAno: guia.mesAno as any,
@@ -432,7 +433,7 @@ export class DASMEIStorage {
         } else {
           resultado[cnpj] = { disponivel: false };
         }
-      } catch {
+      } catch (error) {
         resultado[cnpj] = { disponivel: false };
       }
     }
