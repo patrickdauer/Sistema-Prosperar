@@ -1,4 +1,4 @@
-import { eq, and, desc, asc, gte, lte, isNull, ne, notInArray } from "drizzle-orm";
+import { eq, and, desc, asc, gte, lte, isNull, ne, notInArray, or } from "drizzle-orm";
 import { db } from "./db.js";
 import { 
   messageTemplates,
@@ -265,10 +265,14 @@ export class DASMEIStorage {
   }
 
   async getClienteMeiByCnpj(cnpj: string): Promise<ClienteMei | null> {
+    const cleaned = cnpj.replace(/[^\d]/g, '');
     const [cliente] = await db
       .select()
       .from(clientesMei)
-      .where(eq(clientesMei.cnpj, cnpj));
+      .where(or(
+        eq(clientesMei.cnpj, cnpj),
+        eq(clientesMei.cnpj, cleaned)
+      ));
     return cliente || null;
   }
 

@@ -144,10 +144,16 @@ export default function DASMEIAutomationPage() {
           setDasStatus({});
           return;
         }
+        // calcular mesAnterior (YYYY-MM)
+        const now = new Date();
+        const year = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+        const month = now.getMonth() === 0 ? 12 : now.getMonth();
+        const mesAno = `${year}-${String(month).padStart(2, '0')}`;
+
         const resp = await fetch('/api/dasmei/status-db', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cnpjs })
+          body: JSON.stringify({ cnpjs, mesAno })
         });
         if (!resp.ok) {
           setDasStatus({});

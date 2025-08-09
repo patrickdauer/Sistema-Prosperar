@@ -139,10 +139,16 @@ export default function Clientes() {
         if (cnpjs.length > 0) {
           try {
             console.log('🔍 Buscando status DAS para CNPJs:', cnpjs);
-            const statusResp = await fetch('/api/debug/das-status', {
+            // calcular mesAnterior (YYYY-MM)
+            const now = new Date();
+            const year = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+            const month = now.getMonth() === 0 ? 12 : now.getMonth();
+            const mesAno = `${year}-${String(month).padStart(2, '0')}`;
+
+            const statusResp = await fetch('/api/dasmei/status-db', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ cnpjs })
+              body: JSON.stringify({ cnpjs, mesAno })
             });
             
             if (statusResp.ok) {
