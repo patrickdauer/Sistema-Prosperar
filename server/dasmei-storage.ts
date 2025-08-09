@@ -416,7 +416,17 @@ export class DASMEIStorage {
 
         let guia: DasGuia | null = null;
         if (mesAno) {
-          guia = await this.getGuiaByClienteAndMes(cliente.id, mesAno);
+          const alt = mesAno.replace('-', '');
+          const [g] = await db
+            .select()
+            .from(dasGuias)
+            .where(and(
+              eq(dasGuias.clienteMeiId, cliente.id),
+              or(eq(dasGuias.mesAno, mesAno), eq(dasGuias.mesAno, alt))
+            ))
+            .orderBy(desc(dasGuias.createdAt))
+            .limit(1);
+          guia = g || null;
         } else {
           const [g] = await db
             .select()
@@ -427,8 +437,9 @@ export class DASMEIStorage {
           guia = g || null;
         }
 
-        // DAS disponível se tem filePath OU se status é 'completed'
-        if (guia && ((guia as any).filePath || (guia as any).downloadStatus === 'completed')) {
+        const hasLocalFile = guia && (guia as any).filePath;
+        const hasDownloadUrl = guia && (guia as any).downloadUrl;
+        if (guia && (hasLocalFile || hasDownloadUrl)) {
           resultado[cnpj] = {
             disponivel: true,
             mesAno: guia.mesAno as any,
