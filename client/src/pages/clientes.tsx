@@ -43,10 +43,13 @@ interface Cliente {
   created_at: string;
 }
 
+type DasStatusMap = Record<string, { disponivel: boolean; mesAno?: string; fileName?: string }>;
+
 export default function Clientes() {
   const [searchTerm, setSearchTerm] = useState('');
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dasStatus, setDasStatus] = useState<DasStatusMap>({});
   const [, setLocation] = useLocation();
   
   // Estados para modal de adicionar tarefa
@@ -131,9 +134,31 @@ export default function Clientes() {
       if (response.ok) {
         const data = await response.json();
         setClientes(data);
+        // Buscar status DAS por CNPJ em lote, baseado apenas no banco (sem APIs externas)
+        const cnpjs = (data || []).map((c: any) => c.cnpj).filter((v: any) => !!v);
+        if (cnpjs.length > 0) {
+          try {
+            const statusResp = await fetch('/api/dasmei/status-db', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ cnpjs })
+            });
+            if (statusResp.ok) {
+              const statusData = await statusResp.json();
+              setDasStatus(statusData);
+            } else {
+              setDasStatus({});
+            }
+          } catch (e) {
+            setDasStatus({});
+          }
+        } else {
+          setDasStatus({});
+        }
       } else {
         console.error('Erro ao buscar clientes');
         setClientes([]);
+        setDasStatus({});
       }
     } catch (error) {
       console.error('Erro ao buscar clientes:', error);
@@ -750,8 +775,9 @@ export default function Clientes() {
             <div className="grid grid-cols-12 gap-4 p-4 text-sm font-medium text-gray-400 border-b border-gray-600">
               <div className="col-span-3">Nome do Cliente</div>
               <div className="col-span-2">CNPJ</div>
-              <div className="col-span-2">Contato</div>
+              <div className="col-span-1">Contato</div>
               <div className="col-span-2">Celular</div>
+              <div className="col-span-1 text-center">DAS Disponível?</div>
               <div className="col-span-1 text-center">Status</div>
               <div className="col-span-2">Ações</div>
             </div>
@@ -783,8 +809,24 @@ export default function Clientes() {
                     </div>
 
                     {/* Contato */}
-                    <div className="col-span-2 text-sm text-gray-300">
+                    <div className="col-span-1 text-sm text-gray-300">
                       {cliente.contato || 'N/A'}
+                    </div>
+                    {/* DAS Disponível? */}
+                    <div className="col-span-1 flex justify-center">
+                      {(() => {
+                        const cnpj = cliente.cnpj || '';
+                        const status = dasStatus[cnpj];
+                        const ok = status?.disponivel;
+                        return (
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`h-3 w-3 rounded-full ${ok ? 'bg-green-500' : 'bg-red-500'}`}
+                              title={ok ? 'Guia com PDF salva' : 'Sem PDF salvo'}
+                            />
+                          </div>
+                        );
+                      })()}
                     </div>
 
                     {/* Celular */}

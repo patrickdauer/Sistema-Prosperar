@@ -387,6 +387,53 @@ export class DASMEIStorage {
       falhas: falhas.length,
     };
   }
+
+  // Status por CNPJs (somente BD): retorna se há guia com PDF salvo (filePath) para o mesAno informado
+  // Se mesAno não for informado, considera a guia mais recente do cliente que tenha filePath
+  async getDasStatusByCnpjs(
+    cnpjs: string[],
+    mesAno?: string
+  ): Promise<Record<string, { disponivel: boolean; mesAno?: string; fileName?: string }>> {
+    const resultado: Record<string, { disponivel: boolean; mesAno?: string; fileName?: string }> = {};
+    if (!cnpjs || cnpjs.length === 0) return resultado;
+
+    for (const cnpj of cnpjs) {
+      try {
+        const cliente = await this.getClienteMeiByCnpj(cnpj);
+        if (!cliente) {
+          resultado[cnpj] = { disponivel: false };
+          continue;
+        }
+
+        let guia: DasGuia | null = null;
+        if (mesAno) {
+          guia = await this.getGuiaByClienteAndMes(cliente.id, mesAno);
+        } else {
+          const [g] = await db
+            .select()
+            .from(dasGuias)
+            .where(eq(dasGuias.clienteMeiId, cliente.id))
+            .orderBy(desc(dasGuias.createdAt))
+            .limit(1);
+          guia = g || null;
+        }
+
+        if (guia && (guia as any).filePath) {
+          resultado[cnpj] = {
+            disponivel: true,
+            mesAno: guia.mesAno as any,
+            fileName: (guia as any).fileName || undefined
+          };
+        } else {
+          resultado[cnpj] = { disponivel: false };
+        }
+      } catch {
+        resultado[cnpj] = { disponivel: false };
+      }
+    }
+
+    return resultado;
+  }
 }
 
 export const dasmeiStorage = new DASMEIStorage();

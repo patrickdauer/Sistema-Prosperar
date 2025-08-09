@@ -3111,6 +3111,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Status por CNPJs baseado apenas no banco (sem chamar APIs externas)
+  app.post('/api/dasmei/status-db', authenticateToken, async (req, res) => {
+    try {
+      const { cnpjs, mesAno } = req.body || {};
+      if (!Array.isArray(cnpjs) || cnpjs.length === 0) {
+        return res.status(400).json({ error: 'cnpjs[] é obrigatório' });
+      }
+      const { dasmeiStorage } = await import('./dasmei-storage.js');
+      const status = await dasmeiStorage.getDasStatusByCnpjs(cnpjs, mesAno);
+      res.json(status);
+    } catch (error: any) {
+      console.error('Erro ao obter status das (db):', error);
+      res.status(500).json({ error: error.message || 'Erro interno' });
+    }
+  });
+
   // WhatsApp Evolution API Test Route
   app.post('/api/whatsapp/test', authenticateToken, async (req, res) => {
     try {
