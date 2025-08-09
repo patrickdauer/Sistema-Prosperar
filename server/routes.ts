@@ -2887,22 +2887,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Geração manual – modo granular: por clienteId OU por cnpj; se vazio, executa automático (lote)
   app.post('/api/dasmei/generate-manual', authenticateToken, async (req, res) => {
     try {
-      console.log('🚀 Iniciando geração manual de DAS-MEI...');
+      const { clienteId, cnpj, mesAno } = req.body || {};
+      console.log('🚀 Geração manual de DAS-MEI...', { clienteId, cnpj, mesAno });
       const automationModule = await import('./services/dasmei-automation.js');
-      console.log('📦 Módulo importado:', Object.keys(automationModule));
-      
       const service = automationModule.dasmeiAutomationService || automationModule.default;
       if (!service) {
         throw new Error('Serviço de automação não encontrado');
       }
-      
-      console.log('🔧 Serviço encontrado, executando geração...');
-      await service.executarGeracaoAutomatica();
-      console.log('✅ Geração manual concluída');
-      res.json({ success: true, message: 'Geração manual iniciada' });
-    } catch (error) {
+
+      let result;
+      if (clienteId) {
+        result = await service.gerarGuiaParaClienteId(Number(clienteId), mesAno);
+      } else if (cnpj) {
+        result = await service.gerarGuiaParaCnpj(String(cnpj), mesAno);
+      } else {
+        // fallback: geração para todos (com cache e fila)
+        await service.executarGeracaoAutomatica();
+        result = { ok: true, detalhe: 'Geração em lote disparada' };
+      }
+
+      if (!result?.ok) {
+        return res.status(400).json({ success: false, error: result?.detalhe || 'Falha ao gerar guia' });
+      }
+
+      res.json({ success: true, ...result });
+    } catch (error: any) {
       console.error('❌ Erro na geração manual:', error);
       res.status(500).json({ error: 'Erro na geração manual', details: error.message });
     }

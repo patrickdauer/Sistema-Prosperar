@@ -259,6 +259,14 @@ export class DASMEIStorage {
     return cliente || null;
   }
 
+  async getClienteMeiByCnpj(cnpj: string): Promise<ClienteMei | null> {
+    const [cliente] = await db
+      .select()
+      .from(clientesMei)
+      .where(eq(clientesMei.cnpj, cnpj));
+    return cliente || null;
+  }
+
   async getDasGuiaByClienteAndPeriodo(clienteId: number, periodo: string): Promise<DasGuia | null> {
     const [guia] = await db.select()
       .from(dasGuias)

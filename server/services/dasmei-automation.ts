@@ -766,6 +766,32 @@ export class DASMEIAutomationService {
     console.log(`✅ Guia DAS salva no banco para cliente: ${cliente.nome} - Período: ${mesAno} - Valor: ${periodData.valorTotalDas}`);
   }
 
+  // Gerar guia de um único cliente por ID (mesAno no formato YYYY-MM)
+  async gerarGuiaParaClienteId(clienteId: number, mesAno?: string): Promise<{ ok: boolean; guiaCriada?: boolean; detalhe?: any }> {
+    const cliente = await dasmeiStorage.getClienteMeiById(clienteId);
+    if (!cliente) return { ok: false, detalhe: 'Cliente não encontrado' };
+
+    const periodoFinal = mesAno ? `${mesAno.split('-')[1]}/${mesAno.split('-')[0]}` : undefined; // MM/YYYY
+    const response = await this.gerarGuiaIndividual(cliente.cnpj, periodoFinal);
+    if (!response.success) return { ok: false, detalhe: response.error };
+
+    await this.processarESalvarGuiaPrivado(cliente, response, mesAno);
+    return { ok: true, guiaCriada: true };
+  }
+
+  // Gerar guia de um único cliente por CNPJ (mesAno no formato YYYY-MM)
+  async gerarGuiaParaCnpj(cnpj: string, mesAno?: string): Promise<{ ok: boolean; guiaCriada?: boolean; detalhe?: any }> {
+    const cliente = await dasmeiStorage.getClienteMeiByCnpj(cnpj);
+    if (!cliente) return { ok: false, detalhe: 'Cliente não encontrado' };
+
+    const periodoFinal = mesAno ? `${mesAno.split('-')[1]}/${mesAno.split('-')[0]}` : undefined; // MM/YYYY
+    const response = await this.gerarGuiaIndividual(cliente.cnpj, periodoFinal);
+    if (!response.success) return { ok: false, detalhe: response.error };
+
+    await this.processarESalvarGuiaPrivado(cliente, response, mesAno);
+    return { ok: true, guiaCriada: true };
+  }
+
   // Enfileirar geração em massa (processamento sequencial via retry queue)
   async enfileirarGeracaoEmMassa(clienteIds: number[], mesAno: string): Promise<{ enfileirados: number }> {
     // Converter mesAno de YYYY-MM para MM/YYYY
