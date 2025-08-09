@@ -138,7 +138,8 @@ export default function Clientes() {
         const cnpjs = (data || []).map((c: any) => c.cnpj).filter((v: any) => !!v);
         if (cnpjs.length > 0) {
           try {
-            const statusResp = await fetch('/api/dasmei/status-db', {
+            // Tentar primeiro com autenticação
+            let statusResp = await fetch('/api/dasmei/status-db', {
               method: 'POST',
               headers: { 
                 'Content-Type': 'application/json',
@@ -146,15 +147,27 @@ export default function Clientes() {
               },
               body: JSON.stringify({ cnpjs })
             });
+            
+            // Se falhar por autenticação, usar endpoint debug temporário
+            if (!statusResp.ok && statusResp.status === 401) {
+              console.log('🔧 Usando endpoint debug sem autenticação...');
+              statusResp = await fetch('/api/debug/das-status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cnpjs })
+              });
+            }
+            
             if (statusResp.ok) {
               const statusData = await statusResp.json();
+              console.log('✅ Status DAS recebido:', statusData);
               setDasStatus(statusData);
             } else {
-              console.error('Erro ao buscar status DAS:', statusResp.status, statusResp.statusText);
+              console.error('❌ Erro ao buscar status DAS:', statusResp.status, statusResp.statusText);
               setDasStatus({});
             }
           } catch (e) {
-            console.error('Erro na requisição de status DAS:', e);
+            console.error('❌ Erro na requisição de status DAS:', e);
             setDasStatus({});
           }
         } else {
