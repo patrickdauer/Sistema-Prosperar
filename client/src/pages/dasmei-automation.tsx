@@ -96,6 +96,7 @@ export default function DASMEIAutomationPage() {
     loadSchedulerStatus();
   }, []);
   const [clienteFilter, setClienteFilter] = useState("");
+  const [dasStatus, setDasStatus] = useState<Record<string, { disponivel: boolean; mesAno?: string; fileName?: string }>>({});
   
   // Estados para configurações de automação
   const [automationSettings, setAutomationSettings] = useState({
@@ -133,6 +134,33 @@ export default function DASMEIAutomationPage() {
     queryKey: ['/api/dasmei/guias'],
     refetchInterval: 30000
   });
+
+  // Buscar status DAS (apenas BD) para os clientes MEI listados
+  useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        const cnpjs = (clientes || []).map(c => c.cnpj).filter(Boolean);
+        if (!cnpjs.length) {
+          setDasStatus({});
+          return;
+        }
+        const resp = await fetch('/api/dasmei/status-db', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cnpjs })
+        });
+        if (!resp.ok) {
+          setDasStatus({});
+          return;
+        }
+        const data = await resp.json();
+        setDasStatus(data);
+      } catch (e) {
+        setDasStatus({});
+      }
+    };
+    fetchStatus();
+  }, [clientes]);
 
   const { data: logs } = useQuery<SystemLog[]>({
     queryKey: ['/api/dasmei/logs'],
@@ -1344,7 +1372,8 @@ export default function DASMEIAutomationPage() {
                       <TableHead className="text-gray-300">Nome</TableHead>
                       <TableHead className="text-gray-300">CNPJ</TableHead>
                       <TableHead className="text-gray-300">Telefone</TableHead>
-                      <TableHead className="text-gray-300">Email</TableHead>
+                    <TableHead className="text-gray-300">Email</TableHead>
+                    <TableHead className="text-gray-300 text-center">DAS Disponível?</TableHead>
                       <TableHead className="text-gray-300">Status</TableHead>
                       <TableHead className="text-gray-300">Ações</TableHead>
                     </TableRow>
@@ -1396,6 +1425,20 @@ export default function DASMEIAutomationPage() {
                           </div>
                         </TableCell>
                         <TableCell className="text-gray-300">{cliente.email || '-'}</TableCell>
+                        <TableCell className="text-gray-300">
+                          <div className="flex justify-center">
+                            {(() => {
+                              const s = dasStatus[cliente.cnpj];
+                              const ok = s?.disponivel;
+                              return (
+                                <span
+                                  className={`h-3 w-3 rounded-full ${ok ? 'bg-green-500' : 'bg-red-500'}`}
+                                  title={ok ? 'Guia com PDF salva' : 'Sem PDF salvo'}
+                                />
+                              );
+                            })()}
+                          </div>
+                        </TableCell>
                         <TableCell>
                           <Badge className={cliente.isActive ? 'bg-green-600' : 'bg-red-600'}>
                             {cliente.isActive ? 'Ativo' : 'Inativo'}
