@@ -423,30 +423,28 @@ export default function DASMEIAutomationPage() {
     }
   });
 
-  // Mutation para gerar guia individual
-  const generateIndividualGuiaMutation = useMutation({
-    mutationFn: async ({ clienteId, cnpj }: { clienteId: number, cnpj: string }) => {
-      // Verificar se InfoSimples está conectado
-      if (!connectionStatus.infosimples.connected) {
-        throw new Error('InfoSimples não está conectado. Clique em "Conectar InfoSimples" primeiro.');
-      }
+  // Loading por cliente
+  const [pendingByCliente, setPendingByCliente] = useState<Record<number, boolean>>({});
 
-      const currentMonth = new Date().getMonth() + 1;
-      const currentYear = new Date().getFullYear();
-      const periodo = `${currentMonth.toString().padStart(2, '0')}/${currentYear}`;
-      
-      const response = await fetch('/api/infosimples/gerar-das', {
+  // Mutation para gerar guia individual (usa backend unificado e controla loader por linha)
+  const generateIndividualGuiaMutation = useMutation({
+    mutationFn: async ({ clienteId }: { clienteId: number }) => {
+      const response = await fetch('/api/dasmei/generate-manual', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({
-          cnpj: cnpj,
-          periodo: periodo
-        })
+        body: JSON.stringify({ clienteId })
       });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err?.error || 'Falha ao gerar guia');
+      }
       return response.json();
+    },
+    onMutate: ({ clienteId }) => {
+      setPendingByCliente(prev => ({ ...prev, [clienteId]: true }));
     },
     onSuccess: (data, variables) => {
       if (data.success) {
@@ -482,6 +480,11 @@ export default function DASMEIAutomationPage() {
         description: 'Verifique se InfoSimples API está configurada', 
         variant: 'destructive' 
       });
+    },
+    onSettled: (_data, _error, variables) => {
+      if (variables?.clienteId) {
+        setPendingByCliente(prev => ({ ...prev, [variables.clienteId]: false }));
+      }
     }
   });
 
@@ -1456,14 +1459,11 @@ export default function DASMEIAutomationPage() {
                               size="sm" 
                               variant="outline" 
                               className="border-gray-600 hover:bg-green-700 hover:border-green-500"
-                              onClick={() => generateIndividualGuiaMutation.mutate({ 
-                                clienteId: cliente.id, 
-                                cnpj: cliente.cnpj 
-                              })}
-                              disabled={generateIndividualGuiaMutation.isPending}
+                              onClick={() => generateIndividualGuiaMutation.mutate({ clienteId: cliente.id })}
+                              disabled={pendingByCliente?.[cliente.id]}
                               title="Gerar guia DAS-MEI individual"
                             >
-                              {generateIndividualGuiaMutation.isPending ? (
+                              {pendingByCliente?.[cliente.id] ? (
                                 <Clock className="h-4 w-4 animate-spin" />
                               ) : (
                                 <Download className="h-4 w-4" />
