@@ -2479,7 +2479,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const resultado = await providerManager.gerarDAS(cnpj, mesAno);
+      // Usar o serviço DASMEI que suporta webhook
+      const { DASMEIAutomationService } = await import('./services/dasmei-automation.js');
+      const service = new DASMEIAutomationService();
+      const resultado = await service.gerarGuiaIndividual(cnpj, mesAno);
       
       // Verificar se há erros específicos da InfoSimples
       if (resultado.success && resultado.data && resultado.data.errors && resultado.data.errors.length > 0) {
